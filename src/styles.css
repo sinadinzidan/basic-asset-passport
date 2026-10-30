@@ -1,0 +1,32 @@
+@import '@cognite/aura/styles.source.css';
+
+@source '../node_modules/@cognite/aura/dist/components';
+
+:root {
+  --font-inter: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-source-code-pro: "Source Code Pro", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+
+  /*
+   * Brand: the Aura "nordic" (teal) ramp on the primary, link and focus-ring tokens. This is the only place the
+   * look is customised, so every Aura component picks it up. Each token is an alias to a ramp step, never a raw
+   * value, and every override is paired with a dark-mode value below. To rebrand, point these at another ramp.
+   */
+  --primary-background: var(--nordic-650);
+  --primary-background-hover: var(--nordic-700);
+  --foreground-on-primary: var(--mountain-50);
+  --link-foreground: var(--nordic-600);
+  --ring: var(--nordic-500);
+
+  /* Accessibility: Aura's light muted text (mountain-550) measures 4.45:1 on the page background, just under WCAG AA. */
+  --muted-foreground: var(--mountain-600);
+}
+
+.dark {
+  --primary-background: var(--nordic-400);
+  --primary-background-hover: var(--nordic-300);
+  --foreground-on-primary: var(--mountain-950);
+  --link-foreground: var(--nordic-300);
+  --ring: var(--nordic-400);
+  --muted-foreground: var(--mountain-400);
+}
