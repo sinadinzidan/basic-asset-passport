@@ -5,6 +5,19 @@ import { PassportTab } from '../../enums/passportTab';
 import { parseInitialState, serializeAppState } from '../appState';
 
 describe('parseInitialState', () => {
+  it('returns an empty state for a link that is missing, not JSON or not an object', () => {
+    for (const saved of [undefined, '', 'not json', 'null', '42', '"text"', '[]', '[{"assetPage":2}]']) {
+      expect(parseInitialState(saved)).toEqual({});
+    }
+  });
+  it('drops only the invalid fields and ignores unknown ones', () => {
+    expect(parseInitialState('{"assetPage":-1,"assetSearch":"pump","unexpected":true,"selectedEquipmentId":7}')).toEqual({ assetSearch: 'pump' });
+  });
+  it('rejects a page number that is fractional or beyond the safe integer range', () => {
+    expect(parseInitialState('{"assetPage":1.5}')).toEqual({});
+    expect(parseInitialState('{"assetPage":1e21}')).toEqual({});
+    expect(parseInitialState('{"assetPage":0}')).toEqual({ assetPage: 0 });
+  });
   it('restores a passport tab and ignores unknown tabs', () => {
     expect(parseInitialState('{"passportTab":"documents"}')).toEqual({ passportTab: PassportTab.DOCUMENTS });
     expect(parseInitialState('{"passportTab":"unknown"}')).toEqual({});

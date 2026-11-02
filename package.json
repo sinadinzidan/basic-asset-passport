@@ -1,6 +1,6 @@
 {
   "name": "asset-passport",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "engines": {
@@ -28,13 +28,12 @@
     "@cognite/sdk": "^10.10.0",
     "@tabler/icons-react": "^3.35.0",
     "@tanstack/react-query": "^5.90.10",
-    "clsx": "^2.1.1",
     "motion": "^14.7.1",
     "pdfjs-dist": "5.4.296",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-pdf": "^10.5.0",
-    "tailwind-merge": "^3.4.0"
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@eslint/js": "9.39.4",

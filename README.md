@@ -116,7 +116,13 @@ Tests use mocked CDF SDK responses and do not need live CDF access. They live in
   (`AppTopbar`, `DataTable`, `TablePanel`, `StateMessage`, `PageHeader`, `ErrorBoundary`).
 - `src/components/assets/AssetList.tsx`: live asset list (search, table, pagination).
 - `src/hooks/assets/useAssetList.ts`: query and authenticated client access.
-- `src/services/assets/assetService.ts`: injected CDF instances query and mapping.
+- `src/hooks/navigation/useAppNavigation.ts` and `src/lib/navigation.ts`: where the user is in the app. The moves
+  (open an asset, change tab, search, page, preview a file) are pure functions that hold the rules for what each one
+  keeps and leaves out of the shared link; the hook applies them to the latest state and saves it through the host.
+- `src/lib/appState.ts`: reads and writes the Fusion shared link. The link is outside input, so it is parsed with a
+  Zod schema and an invalid field is dropped without discarding the rest.
+- `src/services/assets/assetService.ts`: injected CDF instances query and mapping. CDF returns data model properties as
+  untyped JSON, so each one is parsed with a Zod schema before it is used.
 - `src/enums/`: shared fixed values as enums (`PassportTab`, `AssetView`, `ThemeMode`, `FileViewerType`); members and string values are UPPER_SNAKE_CASE. What is written to Fusion shared links and browser storage keeps its original lowercase values (`src/constants/persistence.ts`), so saved links and choices still work.
 - `src/constants/`: named limits, sizes, durations and display labels (`labels.ts` maps each enum member to its text).
 
@@ -140,6 +146,15 @@ tasks, 429 retries with jittered exponential backoff) and the dashboard is
 wrapped in an `ErrorBoundary`. A deploy uploads a `DRAFT`; publishing needs a
 developer signature, and production projects also need application
 certification (or Dev status on a non-production project).
+
+### Content Security Policy and network access
+
+Production apps run under Cognite's baseline Content Security Policy (`connect-src` allows the app and
+`https://*.cognitedata.com`; images may be `blob:`; workers may be `blob:`; Google Fonts are allowed). This app needs
+nothing beyond it: every CDF call, including the file downloads for the viewer, goes to a `cognitedata.com` host, the
+PDF worker is bundled with the app, and files are shown from `blob:` URLs. `manifest.json` therefore keeps an empty
+`permissions.network` list. This was checked by opening a real P&ID PDF in Fusion against the dev server, which sends
+the same policy. If a future change adds another origin, add it to `manifest.json` instead of loosening anything.
 
 ### Dependency upgrade plan
 

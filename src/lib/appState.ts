@@ -1,3 +1,5 @@
+import { z } from 'zod';
+
 import { ASSET_PAGE_SIZE_OPTIONS, ASSET_SEARCH_MAX_LENGTH } from '../constants/assets';
 import { ASSET_VIEW_STORED_VALUES, PASSPORT_TAB_STORED_VALUES } from '../constants/persistence';
 import { AssetView } from '../enums/assetView';
@@ -17,76 +19,56 @@ export type AppState = {
   selectedFile?: FileSelection;
 };
 
+/** A saved asset or file: its full instance identity and a name that is never blank. */
+const selectionSchema = z.object({
+  space: z.string().min(1),
+  externalId: z.string().min(1),
+  name: z.string(),
+}).transform(({ space, externalId, name }) => ({ space, externalId, name: name.trim() || externalId }));
+
+/** A field that is missing or invalid is left out, so one bad value never discards the rest of a saved link. */
+function optionalField<Schema extends z.ZodType>(schema: Schema) {
+  return schema.optional().catch(undefined);
+}
+
+const savedStateSchema = z.object({
+  passportTab: optionalField(z.unknown().transform((value) => fromStoredValue(PassportTab, PASSPORT_TAB_STORED_VALUES, value))),
+  assetSearch: optionalField(z.string().max(ASSET_SEARCH_MAX_LENGTH).transform((value) => value.trim()).pipe(z.string().min(1))),
+  assetPageSize: optionalField(z.number().refine((size) => ASSET_PAGE_SIZE_OPTIONS.some((option) => option === size))),
+  selectedEquipmentId: optionalField(z.string().min(1)),
+  // The list view is the default and is never saved, so only the grid is read back.
+  assetView: optionalField(z.unknown().transform((value) => fromStoredValue(AssetView, ASSET_VIEW_STORED_VALUES, value)).pipe(z.literal(AssetView.GRID))),
+  assetPage: optionalField(z.number().int().nonnegative()),
+  selectedAsset: optionalField(selectionSchema),
+  selectedFile: optionalField(selectionSchema),
+});
+
+/** Reads the state saved in a Fusion shared link. The link is outside input, so it is validated, never trusted. */
 export function parseInitialState(initialState: string | undefined): AppState {
   if (!initialState) return {};
 
+  let value: unknown;
   try {
-    const value: unknown = JSON.parse(initialState);
-    if (typeof value !== 'object' || value === null) return {};
-    const state: AppState = {};
-    const passportTab = 'passportTab' in value ? fromStoredValue(PassportTab, PASSPORT_TAB_STORED_VALUES, value.passportTab) : undefined;
-    if (passportTab !== undefined) state.passportTab = passportTab;
-    if ('assetSearch' in value && typeof value.assetSearch === 'string'
-      && value.assetSearch.trim().length > 0 && value.assetSearch.length <= ASSET_SEARCH_MAX_LENGTH) {
-      state.assetSearch = value.assetSearch.trim();
-    }
-    if ('assetPageSize' in value && typeof value.assetPageSize === 'number' && ASSET_PAGE_SIZE_OPTIONS.some((option) => option === value.assetPageSize)) {
-      state.assetPageSize = value.assetPageSize;
-    }
-    if ('selectedEquipmentId' in value && typeof value.selectedEquipmentId === 'string' && value.selectedEquipmentId.length > 0) {
-      state.selectedEquipmentId = value.selectedEquipmentId;
-    }
-    const assetView = 'assetView' in value ? fromStoredValue(AssetView, ASSET_VIEW_STORED_VALUES, value.assetView) : undefined;
-    if (assetView === AssetView.GRID) state.assetView = assetView;
-    if ('assetPage' in value && typeof value.assetPage === 'number' && Number.isSafeInteger(value.assetPage) && value.assetPage >= 0) {
-      state.assetPage = value.assetPage;
-    }
-    if (
-      'selectedAsset' in value &&
-      typeof value.selectedAsset === 'object' &&
-      value.selectedAsset !== null &&
-      'space' in value.selectedAsset &&
-      typeof value.selectedAsset.space === 'string' &&
-      value.selectedAsset.space.length > 0 &&
-      'externalId' in value.selectedAsset &&
-      typeof value.selectedAsset.externalId === 'string' &&
-      value.selectedAsset.externalId.length > 0 &&
-      'name' in value.selectedAsset &&
-      typeof value.selectedAsset.name === 'string'
-    ) {
-      state.selectedAsset = {
-        space: value.selectedAsset.space,
-        externalId: value.selectedAsset.externalId,
-        // A blank saved name would leave the breadcrumb and page title empty.
-        name: value.selectedAsset.name.trim() || value.selectedAsset.externalId,
-      };
-    }
-    if (
-      state.selectedAsset &&
-      'selectedFile' in value &&
-      typeof value.selectedFile === 'object' &&
-      value.selectedFile !== null &&
-      'space' in value.selectedFile &&
-      typeof value.selectedFile.space === 'string' &&
-      value.selectedFile.space.length > 0 &&
-      'externalId' in value.selectedFile &&
-      typeof value.selectedFile.externalId === 'string' &&
-      value.selectedFile.externalId.length > 0 &&
-      'name' in value.selectedFile &&
-      typeof value.selectedFile.name === 'string'
-    ) {
-      state.selectedFile = {
-        space: value.selectedFile.space,
-        externalId: value.selectedFile.externalId,
-        name: value.selectedFile.name.trim() || value.selectedFile.externalId,
-      };
-    }
-    return state;
+    value = JSON.parse(initialState);
   } catch {
     return {};
   }
 
-  return {};
+  const parsed = savedStateSchema.safeParse(value);
+  if (!parsed.success) return {};
+  const { passportTab, assetSearch, assetPageSize, selectedEquipmentId, assetView, assetPage, selectedAsset, selectedFile } = parsed.data;
+
+  return {
+    ...(passportTab !== undefined && { passportTab }),
+    ...(assetSearch !== undefined && { assetSearch }),
+    ...(assetPageSize !== undefined && { assetPageSize }),
+    ...(selectedEquipmentId !== undefined && { selectedEquipmentId }),
+    ...(assetView !== undefined && { assetView }),
+    ...(assetPage !== undefined && { assetPage }),
+    ...(selectedAsset !== undefined && { selectedAsset }),
+    // A file is only meaningful on top of an asset.
+    ...(selectedAsset !== undefined && selectedFile !== undefined && { selectedFile }),
+  };
 }
 
 /** Writes the state for the Fusion shared link, using the stored values rather than the enum members. */

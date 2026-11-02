@@ -1,4 +1,5 @@
 import type { CogniteClient, ViewReference } from '@cognite/sdk';
+import { z } from 'zod';
 
 import { ASSET_SEARCH_LIMIT, ASSET_VIEW, EQUIPMENT_VIEW, FILE_VIEW } from '../../constants/assets';
 import { cdfTaskRunner } from '../../lib/cdfTaskRunner';
@@ -23,29 +24,24 @@ function readProperty(instance: PropertyCarrier, view: ViewReference, property: 
   return instance.properties?.[view.space]?.[`${view.externalId}/${view.version}`]?.[property];
 }
 
-function isInstanceReference(value: unknown): value is InstanceReference {
-  return typeof value === 'object' && value !== null
-    && 'space' in value && typeof value.space === 'string'
-    && 'externalId' in value && typeof value.externalId === 'string';
+// CDF returns data model properties as untyped JSON, so each one is parsed with a schema before the app uses it.
+const instanceReferenceSchema = z.object({ space: z.string(), externalId: z.string() });
+const referenceListSchema = z.array(instanceReferenceSchema).nullish().transform((references) => references ?? undefined);
+// Blank text counts as missing, so a name of spaces falls back to the external id instead of rendering nothing.
+const optionalTextSchema = z.string().nullish().transform((text) => text?.trim() || undefined);
+
+function parseProperty<Schema extends z.ZodType>(schema: Schema, instance: PropertyCarrier, view: ViewReference, property: string): z.output<Schema> {
+  const result = schema.safeParse(readProperty(instance, view, property));
+  if (!result.success) throw new Error(`Invalid ${property} property on ${instance.space}/${instance.externalId}.`);
+  return result.data;
 }
 
 function readReferenceList(instance: PropertyCarrier, view: ViewReference, property: string): InstanceReference[] | undefined {
-  const value = readProperty(instance, view, property);
-  if (value === undefined || value === null) return undefined;
-  if (!Array.isArray(value) || !value.every(isInstanceReference)) {
-    throw new Error(`Invalid ${property} property on ${instance.space}/${instance.externalId}.`);
-  }
-  return value.map(({ space, externalId }) => ({ space, externalId }));
+  return parseProperty(referenceListSchema, instance, view, property);
 }
 
 function readStringProperty(instance: PropertyCarrier, view: ViewReference, property: string): string | undefined {
-  const value = readProperty(instance, view, property);
-  if (value === undefined || value === null) return undefined;
-  if (typeof value !== 'string') {
-    throw new Error(`Invalid ${property} property on ${instance.space}/${instance.externalId}.`);
-  }
-  // Blank text counts as missing, so a name of spaces falls back to the external id instead of rendering nothing.
-  return value.trim() || undefined;
+  return parseProperty(optionalTextSchema, instance, view, property);
 }
 
 function toAssetRecord(asset: QueryInstance): AssetRecord {

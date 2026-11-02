@@ -25,4 +25,25 @@ export default defineConfig({
   worker: {
     format: 'es',
   },
+  build: {
+    rollupOptions: {
+      // Zod's own source has two tree-shaking comments Rollup cannot place; it drops them and nothing changes. Only that
+      // notice is hidden, so any other warning still shows.
+      onwarn(warning, defaultHandler) {
+        if (warning.code === 'INVALID_ANNOTATION' && warning.id?.includes('node_modules/zod/')) return;
+        defaultHandler(warning);
+      },
+      output: {
+        // Large vendor libraries get their own files: each stays under the size warning and keeps its cache entry
+        // across releases that only change the app. The PDF viewer is a separate, lazily loaded chunk already.
+        manualChunks(id: string) {
+          if (!id.includes('node_modules')) return undefined;
+          if (/node_modules\/(react|react-dom|scheduler)\//.test(id)) return 'react';
+          if (/node_modules\/@cognite\/(sdk|sdk-core)\//.test(id)) return 'cognite-sdk';
+          if (/node_modules\/(zod|@tanstack\/(react-query|query-core))\//.test(id)) return 'data';
+          return undefined;
+        },
+      },
+    },
+  },
 });
