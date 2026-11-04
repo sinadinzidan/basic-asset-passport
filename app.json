@@ -1,16 +1,14 @@
 {
   "name": "Asset Passport",
-  "description": "Live equipment passport: specifications and documents from CDF",
+  "description": "A Flows application that list and shows properties of an asset.",
   "externalId": "asset-passport",
-  "versionTag": "1.0.0",
+  "versionTag": "0.0.1",
   "infra": "appsApi",
   "deployments": [
     {
-      "org": "flows-builder",
-      "project": "flows-builder",
-      "baseUrl": "https://westeurope-1.cognitedata.com",
-      "deployClientId": "",
-      "deploySecretName": "FLOWS_BUILDER_FLOWS_BUILDER_WESTEUROPE_1"
+      "org": "adnoc",
+      "project": "sub-cgnt-adg-idi-dev",
+      "baseUrl": "https://p001.plink.az-dxb-psaas-001.cognitedata.com"
     }
   ]
 }

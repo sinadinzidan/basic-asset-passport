@@ -1,6 +1,10 @@
 {
   "manifestVersion": 1,
   "permissions": {
-    "network": []
+    "network": [
+      {
+        "sources": ["https://p001.plink.az-dxb-psaas-001.cognitedata.com"]
+      }
+    ]
   }
 }
