@@ -1,8 +1,8 @@
-import { Badge } from '@cognite/aura/components/badge';
 import { Button } from '@cognite/aura/components/button';
 import { IconArrowLeft } from '@tabler/icons-react';
 
 import { AssetDetailsTabs } from '../../components/assets/AssetDetailsTabs';
+import { CriticalityPill } from '../../components/general/CriticalityPill';
 import { LoadingNotice } from '../../components/general/LoadingNotice';
 import { PageHeader } from '../../components/general/PageHeader';
 import { PageShell } from '../../components/general/PageShell';
@@ -95,9 +95,7 @@ export function AssetEquipmentRegister({
               />
             ) : null}
             {assetCriticality ? (
-              <Badge className="h-7 rounded-full px-3" variant="secondary">
-                Criticality {assetCriticality}
-              </Badge>
+              <CriticalityPill criticality={assetCriticality} />
             ) : null}
           </>
         }

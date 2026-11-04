@@ -29,6 +29,8 @@ read from CDF: there is no mock mode, dummy data, or simulated content.
 - Opening an asset shows its name (or external ID when unnamed) as the page
   title with a back button, plus status and criticality badges when present.
   An Operating status is shown with the success style and a check icon.
+  Criticality is shown as its own value (for example "A - High criticality")
+  with a colour by class: A red, B amber, C blue, anything else grey.
 - Two tabs: Properties (the asset's properties) and Equipments (the
   `Equipment` nodes whose `asset` relation points to the asset, up to 1000,
   with a count badge on the tab). Each equipment shows its name, "Equipment ID:

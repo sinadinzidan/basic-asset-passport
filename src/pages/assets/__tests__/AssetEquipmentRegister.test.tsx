@@ -97,7 +97,7 @@ describe(AssetEquipmentRegister.name, () => {
       screen.getByText('Operating', { selector: '[data-slot="badge"]' }),
     ).toBeInTheDocument();
     expect(
-      screen.getByText('Criticality A - High criticality'),
+      screen.getByText('A - High criticality', { selector: '[data-tone]' }),
     ).toBeInTheDocument();
   });
 
