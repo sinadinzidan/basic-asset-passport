@@ -979,57 +979,74 @@ button.hud-body:focus-visible {
   letter-spacing: 0.02em;
 }
 
-/* ---------- Pills: Aura badges as glowing, fully rounded status pills ---------- */
+/* ---------- Pills: the lit tab look, for status and criticality ---------- */
 
+/*
+ * A pill is a small active tab: cut corners, a gradient fill, a bright
+ * line along the bottom and the same capitals. The colour variables are set
+ * per tone below; --pill-line is the bottom line and --pill-text the label.
+ */
 .neon-stage [data-slot='badge'] {
   --pill: var(--neon-cyan);
-  height: 1.375rem;
-  padding: 0 0.65rem;
-  font-family: var(--font-source-code-pro);
+  --pill-line: var(--blue-300);
+  --pill-text: var(--blue-50);
+  --pill-cut: 6px;
+  height: 1.625rem;
+  padding: 0 0.8rem;
+  font-family: var(--font-display);
   font-size: 0.6875rem;
-  font-weight: 500;
-  letter-spacing: 0.03em;
-  color: color-mix(in srgb, var(--pill) 45%, var(--blue-50));
-  border-radius: 9999px;
-  border: 1px solid color-mix(in srgb, var(--pill) 42%, transparent);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--pill-text);
+  border: 0;
+  border-radius: 0;
   background: linear-gradient(
     180deg,
-    color-mix(in srgb, var(--pill) 24%, transparent),
-    color-mix(in srgb, var(--pill) 8%, transparent)
+    color-mix(in srgb, var(--pill) 40%, transparent),
+    color-mix(in srgb, var(--pill) 12%, transparent)
   );
-  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--blue-100) 14%, transparent);
+  box-shadow:
+    inset 0 -2px 0 var(--pill-line),
+    inset 0 1px 0 color-mix(in srgb, var(--blue-100) 30%, transparent);
+  clip-path: polygon(
+    var(--pill-cut) 0,
+    100% 0,
+    100% calc(100% - var(--pill-cut)),
+    calc(100% - var(--pill-cut)) 100%,
+    0 100%,
+    0 var(--pill-cut)
+  );
+}
+
+/* Neutral: the same shape, dimmer, so an active status stands out. */
+.neon-stage [data-slot='badge'][class*='bg-secondary-background'] {
+  --pill: var(--blue-600);
+  --pill-line: var(--blue-500);
+  --pill-text: var(--blue-100);
 }
 
 .neon-stage [data-slot='badge'][class*='bg-critical-background'] {
   --pill: var(--neon-red);
-  color: color-mix(in srgb, var(--neon-red) 55%, var(--blue-50));
-  box-shadow:
-    inset 0 1px 0 color-mix(in srgb, var(--blue-100) 12%, transparent),
-    0 0 12px color-mix(in srgb, var(--neon-red) 32%, transparent);
+  --pill-line: var(--red-400);
+  --pill-text: var(--red-50);
 }
 
 .neon-stage [data-slot='badge'][class*='bg-warning-background'] {
   --pill: var(--neon-amber);
-  color: color-mix(in srgb, var(--neon-amber) 60%, var(--blue-50));
-  box-shadow:
-    inset 0 1px 0 color-mix(in srgb, var(--blue-100) 12%, transparent),
-    0 0 12px color-mix(in srgb, var(--neon-amber) 26%, transparent);
-}
-
-.neon-stage [data-slot='badge'][class*='bg-secondary-background'] {
-  --pill: var(--neon-cyan);
+  --pill-line: var(--amber-300);
+  --pill-text: var(--amber-50);
 }
 
 .neon-stage [data-slot='badge'][class*='bg-success-background'] {
-  --pill: var(--neon-green);
-  color: color-mix(in srgb, var(--neon-green) 55%, var(--blue-50));
-  box-shadow:
-    inset 0 1px 0 color-mix(in srgb, var(--blue-100) 12%, transparent),
-    0 0 12px color-mix(in srgb, var(--neon-green) 30%, transparent);
+  --pill: var(--neon-cyan);
+  --pill-line: var(--blue-300);
+  --pill-text: var(--blue-50);
 }
 
 .neon-stage [data-slot='badge'][class*='bg-info-background'] {
   --pill: var(--neon-sky);
+  --pill-line: var(--blue-300);
 }
 
 /* Status dot badges keep their dot-sized shape. */
@@ -1282,4 +1299,8 @@ button.hud-body:focus-visible {
   line-height: 1;
   color: var(--blue-100);
   border-radius: 50%;
+  clip-path: none;
+  background: color-mix(in srgb, var(--neon-cyan) 30%, transparent);
+  box-shadow: inset 0 0 0 1px
+    color-mix(in srgb, var(--neon-cyan) 45%, transparent);
 }

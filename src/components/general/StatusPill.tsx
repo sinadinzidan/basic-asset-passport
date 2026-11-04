@@ -33,7 +33,7 @@ export function StatusPill({ status, tone = 'neutral' }: StatusPillProps) {
       ) : (
         <span
           aria-hidden
-          className="size-1.5 shrink-0 rounded-full bg-muted-foreground"
+          className="size-1.5 shrink-0 rotate-45 bg-muted-foreground"
         />
       )}
       {label}

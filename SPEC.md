@@ -80,7 +80,9 @@ off by default and labelled on screen.
   components live in `src/components/general/`.
 - Panels (`HudPanel`) have cut corners, a lit gradient edge, a glow and a
   light that travels along the border. Tabs are a cut-corner glass rail with a
-  lit active tab. Pills glow in their status colour, buttons use mono capitals,
+  lit active tab. Status and criticality pills use the same lit-tab look (cut
+  corners, gradient fill, bright bottom line, capitals); Operating is lit blue,
+  other statuses are dimmer, criticality A is red and B is amber. Buttons use mono capitals,
   and the page sits on `NeonStage` (grid, rings and two slow glows).
 - Every notice (load errors, the connection error, the mock-mode banner) uses
   one app-owned alert, `AppAlert`: a tinted, bordered row with an icon, an

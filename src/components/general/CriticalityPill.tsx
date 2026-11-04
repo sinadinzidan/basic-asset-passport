@@ -34,7 +34,7 @@ export function CriticalityPill({ criticality }: CriticalityPillProps) {
     >
       <span
         aria-hidden
-        className={`size-1.5 shrink-0 rounded-full ${DOT_CLASS_BY_TONE[tone]}`}
+        className={`size-1.5 shrink-0 rotate-45 ${DOT_CLASS_BY_TONE[tone]}`}
       />
       {criticality}
     </Badge>
