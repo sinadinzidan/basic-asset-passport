@@ -83,8 +83,8 @@ off by default and labelled on screen.
   components live in `src/components/general/`.
 - Panels (`HudPanel`) have cut corners, a lit gradient edge, a glow and a
   light that travels along the border. Tabs in a panel sit on a full-width
-  header strip with a lit active tab. Type is Chakra Petch for titles, labels,
-  tabs, pills and buttons, Inter for body text and Source Code Pro for IDs. Status and criticality pills use the same lit-tab look (cut
+  header strip with a lit active tab. Type is Chakra Petch throughout, with
+  Source Code Pro for IDs. Status and criticality pills use the same lit-tab look (cut
   corners, gradient fill, bright bottom line, capitals) with a colour taken
   from the data: Operating is blue, maintenance amber, other statuses grey;
   criticality A is red, B amber and C green. The register's Criticality column
