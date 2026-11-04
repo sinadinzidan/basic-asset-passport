@@ -16,20 +16,31 @@ describe(StatusPill.name, () => {
     expect(screen.getByText('Not provided')).toBeInTheDocument();
   });
 
-  it('marks a success status with a check icon', () => {
+  it('marks an active status with a check icon', () => {
     const { container } = render(
-      <StatusPill status="Operating" tone="success" />,
+      <StatusPill status="Operating" tone="active" />,
     );
 
     expect(container.querySelector('svg')).toBeInTheDocument();
     expect(
       screen.getByText('Operating').closest('[data-tone]'),
-    ).toHaveAttribute('data-tone', 'success');
+    ).toHaveAttribute('data-tone', 'active');
   });
 
   it('marks a neutral status with a dot instead of an icon', () => {
     const { container } = render(<StatusPill status="IN SERVICE" />);
 
     expect(container.querySelector('svg')).not.toBeInTheDocument();
+  });
+
+  it('marks a warning status with a dot and its own tone', () => {
+    const { container } = render(
+      <StatusPill status="Under maintenance" tone="warning" />,
+    );
+
+    expect(container.querySelector('svg')).not.toBeInTheDocument();
+    expect(
+      screen.getByText('Under maintenance').closest('[data-tone]'),
+    ).toHaveAttribute('data-tone', 'warning');
   });
 });

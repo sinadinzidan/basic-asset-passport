@@ -14,7 +14,7 @@ describe(CriticalityPill.name, () => {
   it.each([
     ['A - High criticality', 'error'],
     ['B - Medium criticality', 'warning'],
-    ['C - Low criticality', 'info'],
+    ['C - Low criticality', 'success'],
     ['Unknown', 'neutral'],
   ] as const)('marks "%s" with the %s tone', (criticality, tone) => {
     render(<CriticalityPill criticality={criticality} />);

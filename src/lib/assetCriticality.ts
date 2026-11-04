@@ -1,11 +1,11 @@
-export type CriticalityTone = 'error' | 'warning' | 'info' | 'neutral';
+export type CriticalityTone = 'error' | 'warning' | 'success' | 'neutral';
 
 const CRITICALITY_CLASS_PATTERN = /^\s*([abc])\b/i;
 
 const TONE_BY_CRITICALITY_CLASS: Record<string, CriticalityTone> = {
   a: 'error',
   b: 'warning',
-  c: 'info',
+  c: 'success',
 };
 
 // CDF stores criticality as free text that starts with its class letter,

@@ -29,9 +29,10 @@ off by default and labelled on screen.
 
 - Opening an asset shows its name (or external ID when unnamed) as the page
   title with a back button, plus status and criticality badges when present.
-  An Operating status is shown with the success style and a check icon.
+  Pill colours follow the data: an Operating status is blue with a check
+  icon, a maintenance status is amber and any other status is grey.
   Criticality is shown as its own value (for example "A - High criticality")
-  with a colour by class: A red, B amber, C blue, anything else grey.
+  with a colour by class: A red, B amber, C green, anything else grey.
 - Two tabs: Properties (the asset's properties) and Equipments (the
   `Equipment` nodes whose `asset` relation points to the asset, up to 1000,
   with a count badge on the tab). Each equipment shows its name, "Equipment ID:
@@ -81,9 +82,11 @@ off by default and labelled on screen.
 - Panels (`HudPanel`) have cut corners, a lit gradient edge, a glow and a
   light that travels along the border. Tabs are a cut-corner glass rail with a
   lit active tab. Status and criticality pills use the same lit-tab look (cut
-  corners, gradient fill, bright bottom line, capitals); Operating is lit blue,
-  other statuses are dimmer, criticality A is red and B is amber. Buttons use mono capitals,
-  and the page sits on `NeonStage` (grid, rings and two slow glows).
+  corners, gradient fill, bright bottom line, capitals) with a colour taken
+  from the data: Operating is blue, maintenance amber, other statuses grey;
+  criticality A is red, B amber and C green. The register's Criticality column
+  uses the same pill. Buttons use mono capitals, and the page sits on
+  `NeonStage` (grid, rings and two slow glows).
 - Every notice (load errors, the connection error, the mock-mode banner) uses
   one app-owned alert, `AppAlert`: a tinted, bordered row with an icon, an
   optional title, a message and an optional action. Variants are error,

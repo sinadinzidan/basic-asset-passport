@@ -70,20 +70,46 @@ describe('ASSET_COLUMNS', () => {
     expect(screen.getByText('No description')).toBeInTheDocument();
   });
 
-  it('shows an Operating status with the success style', () => {
+  it('shows an Operating status as active', () => {
     renderCell(4, makeAssetListItem({ flocStatus: 'Operating' }));
 
     expect(
       screen.getByText('Operating').closest('[data-tone]'),
-    ).toHaveAttribute('data-tone', 'success');
+    ).toHaveAttribute('data-tone', 'active');
   });
 
-  it('shows any other status without the success style', () => {
+  it('shows any other status as neutral', () => {
     renderCell(4, makeAssetListItem({ flocStatus: 'IN SERVICE' }));
 
     expect(
       screen.getByText('IN SERVICE').closest('[data-tone]'),
     ).toHaveAttribute('data-tone', 'neutral');
+  });
+
+  it('shows a maintenance status as a warning', () => {
+    renderCell(4, makeAssetListItem({ flocStatus: 'Under maintenance' }));
+
+    expect(
+      screen.getByText('Under maintenance').closest('[data-tone]'),
+    ).toHaveAttribute('data-tone', 'warning');
+  });
+
+  it.each([
+    ['A - High criticality', 'error'],
+    ['B - Medium criticality', 'warning'],
+    ['C - Low criticality', 'success'],
+  ] as const)('shows %s as a %s pill', (criticality, tone) => {
+    renderCell(5, makeAssetListItem({ abcIndicatorName: criticality }));
+
+    expect(
+      screen.getByText(criticality).closest('[data-tone]'),
+    ).toHaveAttribute('data-tone', tone);
+  });
+
+  it('says the criticality is not provided when it is missing', () => {
+    renderCell(5, makeAssetListItem({ abcIndicatorName: null }));
+
+    expect(screen.getByText('Not provided')).toBeInTheDocument();
   });
 
   it('says the status is not provided when it is missing', () => {

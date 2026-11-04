@@ -16,7 +16,7 @@ import {
 import type { AssetEquipmentTab } from '../../enums/assetEquipmentTab';
 import { useAssetEquipmentDetails } from '../../hooks/assets/useAssetEquipmentDetails';
 import { getPropertyValue } from '../../lib/assetProperties';
-import { isOperatingStatus } from '../../lib/assetStatus';
+import { getStatusTone } from '../../lib/assetStatus';
 import type { AssetIdentifier } from '../../types/asset';
 
 type AssetEquipmentRegisterProps = {
@@ -92,7 +92,7 @@ export function AssetEquipmentRegister({
             {assetStatus ? (
               <StatusPill
                 status={assetStatus}
-                tone={isOperatingStatus(assetStatus) ? 'success' : 'neutral'}
+                tone={getStatusTone(assetStatus)}
               />
             ) : null}
             {assetCriticality ? (

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { isOperatingStatus } from '../assetStatus';
+import { getStatusTone, isOperatingStatus } from '../assetStatus';
 
 describe(isOperatingStatus.name, () => {
   it.each(['Operating', 'operating', '  OPERATING  '])(
@@ -16,4 +16,21 @@ describe(isOperatingStatus.name, () => {
       expect(isOperatingStatus(status)).toBe(false);
     },
   );
+});
+
+describe(getStatusTone.name, () => {
+  it('lights an operating status', () => {
+    expect(getStatusTone(' Operating ')).toBe('active');
+  });
+
+  it.each(['Under maintenance', 'MAINTENANCE', 'In maintenance'])(
+    'warns for %j',
+    (status) => {
+      expect(getStatusTone(status)).toBe('warning');
+    },
+  );
+
+  it.each(['Decommissioned', 'IN SERVICE', '', null])('mutes %j', (status) => {
+    expect(getStatusTone(status)).toBe('neutral');
+  });
 });

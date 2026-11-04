@@ -5,8 +5,9 @@ import {
   NOT_PROVIDED_LABEL,
   UNNAMED_ASSET_LABEL,
 } from '../../constants/labels';
-import { isOperatingStatus } from '../../lib/assetStatus';
+import { getStatusTone } from '../../lib/assetStatus';
 import type { AssetListItem } from '../../types/asset';
+import { CriticalityPill } from '../general/CriticalityPill';
 import { StatusPill } from '../general/StatusPill';
 
 export const ASSET_COLUMNS: ColumnDef<AssetListItem>[] = [
@@ -48,10 +49,7 @@ export const ASSET_COLUMNS: ColumnDef<AssetListItem>[] = [
 
       return (
         <div className="flex w-full justify-center">
-          <StatusPill
-            status={status}
-            tone={isOperatingStatus(status) ? 'success' : 'neutral'}
-          />
+          <StatusPill status={status} tone={getStatusTone(status)} />
         </div>
       );
     },
@@ -59,6 +57,14 @@ export const ASSET_COLUMNS: ColumnDef<AssetListItem>[] = [
   {
     accessorKey: 'abcIndicatorName',
     header: 'Criticality',
-    cell: ({ row }) => row.original.abcIndicatorName ?? NOT_PROVIDED_LABEL,
+    cell: ({ row }) => {
+      const criticality = row.original.abcIndicatorName;
+
+      return criticality ? (
+        <CriticalityPill criticality={criticality} />
+      ) : (
+        NOT_PROVIDED_LABEL
+      );
+    },
   },
 ];

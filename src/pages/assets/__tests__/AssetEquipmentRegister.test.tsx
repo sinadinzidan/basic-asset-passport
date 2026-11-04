@@ -101,7 +101,7 @@ describe(AssetEquipmentRegister.name, () => {
     ).toBeInTheDocument();
   });
 
-  it('shows a status other than Operating without the success style', async () => {
+  it('shows a status other than Operating as neutral', async () => {
     const details = makeDetails();
     vi.mocked(mockContext.getAssetEquipmentDetails).mockResolvedValue({
       ...details,
@@ -119,7 +119,7 @@ describe(AssetEquipmentRegister.name, () => {
     const pill = await screen.findByText('IN SERVICE', {
       selector: '[data-slot="badge"]',
     });
-    expect(pill).not.toHaveClass('bg-success-foreground-strong');
+    expect(pill).toHaveAttribute('data-tone', 'neutral');
   });
 
   it('falls back to the external id and omits missing badges', async () => {

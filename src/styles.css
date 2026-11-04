@@ -1019,34 +1019,39 @@ button.hud-body:focus-visible {
   );
 }
 
-/* Neutral: the same shape, dimmer, so an active status stands out. */
-.neon-stage [data-slot='badge'][class*='bg-secondary-background'] {
-  --pill: var(--blue-600);
-  --pill-line: var(--blue-500);
-  --pill-text: var(--blue-100);
-}
-
-.neon-stage [data-slot='badge'][class*='bg-critical-background'] {
-  --pill: var(--neon-red);
-  --pill-line: var(--red-400);
-  --pill-text: var(--red-50);
-}
-
-.neon-stage [data-slot='badge'][class*='bg-warning-background'] {
-  --pill: var(--neon-amber);
-  --pill-line: var(--amber-300);
-  --pill-text: var(--amber-50);
-}
-
-.neon-stage [data-slot='badge'][class*='bg-success-background'] {
+/*
+ * The colour follows the data: active (an operating status) is the lit blue of
+ * the active tab, warning is amber, error is red, success is green and neutral
+ * is a muted grey. The default above is the lit blue.
+ */
+.neon-stage [data-slot='badge'][data-tone='active'] {
   --pill: var(--neon-cyan);
   --pill-line: var(--blue-300);
   --pill-text: var(--blue-50);
 }
 
-.neon-stage [data-slot='badge'][class*='bg-info-background'] {
-  --pill: var(--neon-sky);
-  --pill-line: var(--blue-300);
+.neon-stage [data-slot='badge'][data-tone='warning'] {
+  --pill: var(--neon-amber);
+  --pill-line: var(--amber-300);
+  --pill-text: var(--amber-50);
+}
+
+.neon-stage [data-slot='badge'][data-tone='error'] {
+  --pill: var(--neon-red);
+  --pill-line: var(--red-400);
+  --pill-text: var(--red-50);
+}
+
+.neon-stage [data-slot='badge'][data-tone='success'] {
+  --pill: var(--green-450);
+  --pill-line: var(--green-300);
+  --pill-text: var(--green-50);
+}
+
+.neon-stage [data-slot='badge'][data-tone='neutral'] {
+  --pill: var(--mountain-500);
+  --pill-line: var(--mountain-400);
+  --pill-text: var(--mountain-100);
 }
 
 /* Status dot badges keep their dot-sized shape. */

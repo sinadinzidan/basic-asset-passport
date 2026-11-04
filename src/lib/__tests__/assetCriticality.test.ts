@@ -6,7 +6,7 @@ describe(getCriticalityTone.name, () => {
   it.each([
     ['A - High criticality', 'error'],
     ['B - Medium criticality', 'warning'],
-    ['C - Low criticality', 'info'],
+    ['C - Low criticality', 'success'],
   ] as const)('maps "%s" to the %s tone', (criticality, tone) => {
     expect(getCriticalityTone(criticality)).toBe(tone);
   });
