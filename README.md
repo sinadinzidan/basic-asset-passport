@@ -1,67 +1,37 @@
 # Asset Passport
 
-A Cognite Flows starter using React, TypeScript, Vite, Aura, the CDF SDK,
-and TanStack Query. It offers a read-only CDF data-model asset listing with
-an equipment passport for each asset.
+A read-only Cognite Flows app. It lists assets from a CDF data model and opens
+a details page for each asset with its properties and the equipment linked to
+it. Built with React, TypeScript, Vite, Aura, the CDF SDK and TanStack Query.
 
-Live assets use Data Modeling cursor pagination with First page, Previous,
-and Next controls, a "Showing 11–20" summary and a Results per page choice
-(10, 25 or 50; 10 by default and kept in shared links). The current page is saved through the
-Fusion host; a new session replays preceding query pages to obtain fresh
-cursors rather than storing opaque cursors in links.
-Use **Search** (or Enter) to search asset names and descriptions across CDF,
-not just the visible page. Results are ranked by CDF, capped at 1000 with a
-limit notice, and paginated 10 at a time. **Clear search** restores the full
-listing. Search resets the page and is preserved in shared links and when
-returning from an equipment passport.
-Select an asset to open its equipment page, which lists up to 25
-`energy_dm.EnergyEquipment/v1` nodes whose `asset` relation points to the
-selected `EnergyAsset` in the asset passport layout using only live CDF
-fields: identity, specifications and documents. Documents are
-real `energy_dm.EnergyFile/v1` files linked to the equipment (`files`) or the
-asset (`assets`). If no equipment is linked, the page shows a clear
-no-equipment-data state; request failures remain visible and retryable.
-Live asset details use the full page. Back to assets
-stays above the passport, with compact equipment controls only when needed.
+`SPEC.md` is the product spec and describes the behaviour in detail.
 
-Live detail is organized into **Overview** and **Documents** tabs. The selected
-tab is restored in shared links; the equipment identity and selector remain
-visible. Links saved with the removed Signals tab open on Overview.
-The UI is built only from Aura components and tokens (no custom theme layer),
-with a single Aura Topbar (breadcrumb, read-only note and light/dark switcher).
-The brand colour is set only in `src/styles.css` through Aura token aliases (teal
-ramp, light and dark). Assets show as a table or a card grid, and "/" focuses
-the search field.
+## What it does
 
-The app does not show signals: it does not query time series or datapoints, so
-only instance and file read access is needed.
+- **Asset register:** pages of 10 assets from the `Asset` view in the
+  `sp-dm-idi-asset` space, with First/Previous/Next cursor paging and sortable
+  columns. Loading, error (with Retry) and empty states are shown.
+- **Asset details:** the asset's properties and its linked equipment on two
+  tabs (`PROPERTIES`, `EQUIPMENTS`), with status and criticality pills.
+- **Shared state:** the open asset and tab are saved through the Fusion host
+  (`syncInternalState`), so reloads and shared links restore the same view.
+- **Theme:** light and dark, following the system until the user chooses.
+- **Resilience:** an error boundary around the app, and queries that fail with
+  429, 502, 503 or 504 are retried up to 3 times with jittered backoff.
 
-Select **Preview** on a real document or asset file to view its content in
-the app. P&ID PDFs support page navigation, zoom, pan and diagram annotation
-overlays when available. Images and text files are also supported. The viewer
-uses the authenticated SDK and the file's instance identity; the open file
-is restored from Fusion shared links. File content requires CDF file-read
-access in addition to data-model access. Missing uploads or access failures
-show an error rather than simulated content.
+Not included: search, documents or file viewing, signals, and any CDF writes.
 
 ## Requirements and installation
 
-This project was scaffolded from the current Flows template and is developed on
-Node 26.13.0 (the latest LTS when it was created) with npm 12.2.1. The template's
-`engines` field in `package.json` lists every supported Node and npm version.
+The `engines` field in `package.json` lists the supported Node and npm
+versions.
 
 ```sh
-nvm install 26.13.0
-nvm use 26.13.0
 npm ci
 ```
 
-Commit and retain `package-lock.json` for reproducible installs. The template
-requires npm >=11.10.0. `.npmrc` intentionally retains its dependency release-age
-protection. During the initial install, a newly published transitive dependency
-was blocked. Prefer waiting for the protection window; only after reviewing
-the affected package, use `npm install --min-release-age=0` as a one-off
-override. Do not permanently disable the protection.
+Keep `package-lock.json` committed. `.npmrc` keeps the dependency release-age
+protection; do not disable it permanently.
 
 ## Run
 
@@ -70,105 +40,65 @@ npm run dev
 ```
 
 Open the Fusion URL printed by Vite and sign in through Fusion. The provider
-obtains the project, base URL, and renewable access token from the host.
-Opening localhost alone does not provide a Fusion host connection.
-The signed-in user must have instance-read access to the relevant spaces
-and access to the `energy_dm.EnergyAsset/v1` view schema. The service uses
-`client.instances.query()` (`/models/instances/query`) with a `hasData`
-filter, selects `name` and `description`, and returns up to 10 nodes.
-Use **Next** and **Previous** to navigate pages; **First page** returns to the
-start. Page navigation follows the `assets` cursor from each query response
-and persists the page index in the Fusion host for shared links.
+gets the project, base URL and access token from the host; opening localhost
+alone has no host connection. The signed-in user needs read access to the
+instances and to the `Asset` and `Equipment` view schemas.
 
-The configured target in `app.json` is organization/project `flows-builder`
-on `https://westeurope-1.cognitedata.com`. For another environment, update
-the deployment configuration, never hardcode credentials in source.
-Vite selects another port when its preferred port is occupied.
+For local certificates, run `npm run setup-https` and follow Cognite's
+[local HTTPS guide](https://docs.cognite.com/cdf/flows/guides/local-https).
 
-For local certificate setup:
+### Mock mode
 
-```sh
-npm run setup-https
-```
-
-Follow Cognite's [local HTTPS guide](https://docs.cognite.com/cdf/flows/guides/local-https).
-Use the supported certificate setup rather than bypassing browser warnings.
+To work outside Fusion, set `VITE_MOCK_MODE=true` in a local `.env` (see
+`.env.example`). The app then serves dummy data shaped like the CDF responses
+and shows a banner saying so. The default is `false`. Make sure `.env` does
+not set it to `true` before building for deployment.
 
 ## Validation
 
 ```sh
 npm run lint
 npx tsc --noEmit
-npm run build
 npm test
+npm run build
+npm audit --audit-level=high
 ```
 
-Tests use mocked CDF SDK responses and do not need live CDF access. They live in
-`__tests__/` folders beside the code they cover (for example
-`src/components/assets/__tests__/AssetList.test.tsx`).
+Tests use mocked CDF responses and never call live services. They sit in
+`__tests__/` folders beside the code.
 
-## Structure and conventions
+## Structure
 
-- `src/pages/dashboard/Dashboard.tsx`: home-page composition.
-- `src/components/passport/`: the equipment passport (hero, specifications, documents, key facts and equipment list).
-- `src/types/passport.ts`: passport data contracts.
-- `src/components/general/`: custom components built from Aura primitives
-  (`AppTopbar`, `DataTable`, `TablePanel`, `StateMessage`, `PageHeader`, `ErrorBoundary`).
-- `src/components/assets/AssetList.tsx`: live asset list (search, table, pagination).
-- `src/hooks/assets/useAssetList.ts`: query and authenticated client access.
-- `src/hooks/navigation/useAppNavigation.ts` and `src/lib/navigation.ts`: where the user is in the app. The moves
-  (open an asset, change tab, search, page, preview a file) are pure functions that hold the rules for what each one
-  keeps and leaves out of the shared link; the hook applies them to the latest state and saves it through the host.
-- `src/lib/appState.ts`: reads and writes the Fusion shared link. The link is outside input, so it is parsed with a
-  Zod schema and an invalid field is dropped without discarding the rest.
-- `src/services/assets/assetService.ts`: injected CDF instances query and mapping. CDF returns data model properties as
-  untyped JSON, so each one is parsed with a Zod schema before it is used.
-- `src/enums/`: shared fixed values as enums (`PassportTab`, `AssetView`, `ThemeMode`, `FileViewerType`); members and string values are UPPER_SNAKE_CASE. What is written to Fusion shared links and browser storage keeps its original lowercase values (`src/constants/persistence.ts`), so saved links and choices still work.
-- `src/constants/`: named limits, sizes, durations and display labels (`labels.ts` maps each enum member to its text).
+- `src/pages/assets/`: the register and the asset details pages.
+- `src/components/assets/`: table, columns, tabs, topbar and logo.
+- `src/components/general/`: shared pieces such as `ErrorBoundary`, `RetryAlert`,
+  `StatusPill` and `CriticalityPill`.
+- `src/hooks/`: query hooks with dependencies injected through React context.
+- `src/services/assets/`: CDF `instances.query` calls.
+- `src/lib/`, `src/enums/`, `src/types/`, `src/constants/`: helpers, shared
+  enums, data contracts and named limits.
+- `src/mocks/`: dummy data and test factories.
+- `public/`: the ADNOC Gas logos for the light and dark themes.
 
 Read `AGENTS.md` and `PROJECT_CONVENTIONS.md` before changing code.
-Cursor also loads `.cursor/rules/project-conventions.mdc` automatically.
-These are instructions, not a substitute for linting or review.
 
 ## Deployment
+
+Check before deploying:
+
+1. `VITE_MOCK_MODE` is not `true` in `.env`.
+2. The validation commands above pass.
+3. `app.json` targets the right organization and project, and `manifest.json`
+   keeps `permissions.network` empty (every call goes to a `cognitedata.com`
+   host, which the baseline Content Security Policy already allows).
 
 ```sh
 npm run deploy
 ```
 
-Deployment is not needed for local development. Configure the target and
-required app-hosting permissions/signatures before publishing. Never commit
-tokens, deployment secrets, or certificates.
-
-Before deploying, run the validation commands above and `npm audit
---audit-level=high`. Every CDF call goes through `cdfTaskRunner` (15 concurrent
-tasks, 429 retries with jittered exponential backoff) and the dashboard is
-wrapped in an `ErrorBoundary`. A deploy uploads a `DRAFT`; publishing needs a
-developer signature, and production projects also need application
-certification (or Dev status on a non-production project).
-
-### Content Security Policy and network access
-
-Production apps run under Cognite's baseline Content Security Policy (`connect-src` allows the app and
-`https://*.cognitedata.com`; images may be `blob:`; workers may be `blob:`; Google Fonts are allowed). This app needs
-nothing beyond it: every CDF call, including the file downloads for the viewer, goes to a `cognitedata.com` host, the
-PDF worker is bundled with the app, and files are shown from `blob:` URLs. `manifest.json` therefore keeps an empty
-`permissions.network` list. This was checked by opening a real P&ID PDF in Fusion against the dev server, which sends
-the same policy. If a future change adds another origin, add it to `manifest.json` instead of loosening anything.
-
-### Dependency upgrade plan
-
-The app follows the Flows template as scaffolded: `@cognite/aura` 1.x,
-`@cognite/app-sdk` 0.9, React 18 and Vitest 4.1.10 as the template pins them. The
-only additions are `motion` and `react-pdf` (the PDF viewer) and two test-only
-shims in `vitest.setup.ts` (Happy DOM animations, and `localStorage` on current
-Node versions). `react-pdf` is on 10.x, one major behind (11). Version 11 requires
-React 19, and `@cognite/aura` and the Flows template pin React 18, so it stays on
-10 until the template moves to React 19; then upgrade React, `react-pdf` and
-`pdfjs-dist` together and retest the file viewer with a real PDF. The Cognite CLI
-is always run as `npx @cognite/cli@latest`, so it needs no separate upgrade. To
-update the template files, scaffold a fresh app in a scratch folder with
-`apps create`, compare its configuration files with this project's, and copy the
-`src/` folder across; do not edit the template configuration by hand.
+A deploy uploads a `DRAFT`. Publishing needs a developer signature, and
+production projects also need application certification (or Dev status on a
+non-production project). Never commit tokens, deployment secrets or
+certificates.
 
 See the [Flows getting-started guide](https://docs.cognite.com/cdf/flows/guides/getting-started).

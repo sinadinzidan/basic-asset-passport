@@ -4,7 +4,8 @@
 
 A read-only Cognite Flows app that lists assets from CDF and shows the
 properties of an asset and of the equipment linked to it. It shows only data
-read from CDF: there is no mock mode, dummy data, or simulated content.
+read from CDF. Dummy data appears only in the opt-in mock mode below, which is
+off by default and labelled on screen.
 
 ## Asset register
 
