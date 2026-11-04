@@ -1333,7 +1333,6 @@ button.hud-body:focus-visible {
   position: relative;
   background: color-mix(in srgb, var(--neon-surface-deep) 55%, transparent);
   border: 1px solid color-mix(in srgb, var(--neon-cyan) 22%, transparent);
-  border-left: 3px solid var(--blue-400);
 }
 
 .data-card__header {
