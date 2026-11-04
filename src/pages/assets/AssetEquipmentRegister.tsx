@@ -45,7 +45,7 @@ export function AssetEquipmentRegister({
     <Button
       aria-label="Back to assets"
       onClick={onBack}
-      size="icon-sm"
+      size="icon-lg"
       variant="outline"
     >
       <IconArrowLeft aria-hidden />
