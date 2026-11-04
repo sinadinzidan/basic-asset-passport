@@ -1316,7 +1316,7 @@ button.hud-body:focus-visible {
 /* Tab bar inside a flush panel: a full-width header strip, not a box floating in the panel. */
 .neon-stage [data-slot='tabs-list'].hud-tabbar {
   width: 100%;
-  padding: 0.5rem 1rem 0;
+  padding: 0.5rem 1rem;
   margin: 0;
   background: color-mix(in srgb, var(--neon-surface-deep) 70%, transparent);
   border: 0;
