@@ -16,10 +16,13 @@ import { NAME_PROPERTY_IDENTIFIER } from '../../constants/assets';
 import {
   APP_LOGO_ALT_TEXT,
   APP_LOGO_SOURCE_BY_THEME,
+  APP_NAME,
 } from '../../constants/branding';
 import { useAssetEquipmentDetails } from '../../hooks/assets/useAssetEquipmentDetails';
 import { getPropertyValue } from '../../lib/assetProperties';
 import type { AssetIdentifier } from '../../types/asset';
+
+import { AppLogo } from './AppLogo';
 
 type AssetTopbarProps = {
   selectedAsset?: AssetIdentifier;
@@ -62,10 +65,11 @@ export function AssetTopbar({
   return (
     <Topbar className="app-topbar sticky top-0 z-20 h-14 gap-4 rounded-none px-4 sm:px-6 lg:px-8">
       <TopbarLeft className="flex-1 gap-4 sm:gap-6">
-        <img
+        <AppLogo
+          key={theme}
           alt={APP_LOGO_ALT_TEXT}
-          className="h-6 w-24 shrink-0 object-contain object-left sm:h-7 sm:w-28"
-          src={APP_LOGO_SOURCE_BY_THEME[theme]}
+          fallbackText={APP_NAME}
+          source={APP_LOGO_SOURCE_BY_THEME[theme]}
         />
         {selectedAsset ? (
           <TopbarBreadcrumbs

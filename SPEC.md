@@ -50,7 +50,8 @@ read from CDF: there is no mock mode, dummy data, or simulated content.
   `PROPERTIES` and `EQUIPMENTS`; unknown or malformed state falls back to the
   register on the Properties tab. A failed sync is logged and does not block
   navigation.
-- The topbar shows the ADNOC Gas logo (light or dark variant), a breadcrumb
+- The topbar shows the ADNOC Gas logo (light or dark variant; the app name
+  "Asset Passport" is shown instead if the image cannot load), a breadcrumb
   with the selected asset name when one is open, and a light/dark theme
   switcher. The theme follows the system preference until the user picks one;
   the choice is remembered in local storage when it is available.
@@ -83,6 +84,11 @@ read from CDF: there is no mock mode, dummy data, or simulated content.
   (latest version, inherited properties included) and query through
   `client.instances.query()` with TanStack Query. Query keys include the
   project, view and cursor or asset identity.
+- Throttled (429) and temporary gateway (502, 503, 504) responses are retried
+  up to 3 times with exponential backoff and jitter, capped at 15 seconds;
+  other errors are shown at once.
+- An unexpected rendering error shows "Something went wrong" with a Retry
+  action instead of a blank page.
 - Read only: do not create views, spaces or instances. The signed-in user
   needs read access to the instances and the view schema.
 
