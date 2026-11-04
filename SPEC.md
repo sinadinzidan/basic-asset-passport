@@ -33,7 +33,8 @@ off by default and labelled on screen.
   icon, a maintenance status is amber and any other status is grey.
   Criticality is shown as its own value (for example "A - High criticality")
   with a colour by class: A red, B amber, C green, anything else grey.
-- Two tabs: Properties (the asset's properties) and Equipments (the
+- Two tabs: Properties (the asset's properties, in the same grid of label and
+  value cells as each equipment) and Equipments (the
   `Equipment` nodes whose `asset` relation points to the asset, up to 1000,
   with a count badge on the tab). Each equipment is a card with its name,
   "Equipment ID: <external ID>" and its properties as a grid of label and value

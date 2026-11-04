@@ -57,7 +57,9 @@ export function AssetDetailsTabs({
           </TabsTrigger>
         </TabsList>
         <TabsPanel value={AssetEquipmentTab.PROPERTIES} className="p-5 sm:p-6">
-          <AssetProperties properties={details.asset.properties} />
+          <div className="data-card">
+            <AssetProperties properties={details.asset.properties} />
+          </div>
         </TabsPanel>
         <TabsPanel value={AssetEquipmentTab.EQUIPMENTS} className="p-5 sm:p-6">
           {details.equipment.length === 0 ? (

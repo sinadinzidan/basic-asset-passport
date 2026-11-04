@@ -1328,15 +1328,15 @@ button.hud-body:focus-visible {
   height: calc(var(--tab-height) + 4px);
 }
 
-/* Equipment card: header band over a grid of label/value cells. */
-.equipment-card {
+/* Data card: optional header band over a property grid of label/value cells. */
+.data-card {
   position: relative;
   background: color-mix(in srgb, var(--neon-surface-deep) 55%, transparent);
   border: 1px solid color-mix(in srgb, var(--neon-cyan) 22%, transparent);
   border-left: 3px solid var(--blue-400);
 }
 
-.equipment-card__header {
+.data-card__header {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -1351,7 +1351,7 @@ button.hud-body:focus-visible {
   border-bottom: 1px solid color-mix(in srgb, var(--neon-cyan) 22%, transparent);
 }
 
-.equipment-card__id {
+.data-card__id {
   padding: 0.2rem 0.65rem;
   font-family: var(--font-source-code-pro);
   font-size: 0.75rem;
@@ -1368,13 +1368,13 @@ button.hud-body:focus-visible {
   );
 }
 
-.equipment-card__grid {
+.property-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
   background: color-mix(in srgb, var(--neon-surface) 92%, transparent);
 }
 
-.equipment-card__cell {
+.property-cell {
   min-width: 0;
   padding: 0.7rem 1.1rem 0.8rem;
   box-shadow: inset -1px -1px 0
@@ -1382,11 +1382,11 @@ button.hud-body:focus-visible {
   transition: background 160ms ease;
 }
 
-.equipment-card__cell:hover {
+.property-cell:hover {
   background: color-mix(in srgb, var(--neon-cyan) 9%, var(--neon-surface));
 }
 
-.equipment-card__label {
+.property-label {
   font-family: var(--font-display);
   font-size: 0.6875rem;
   font-weight: 600;
