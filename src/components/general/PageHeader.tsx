@@ -20,7 +20,11 @@ export function PageHeader({
         <h1 className="font-display min-w-0 break-words text-2xl font-semibold sm:text-3xl">
           {title}
         </h1>
-        {badges}
+        {badges ? (
+          <div className="ml-auto flex flex-wrap items-center gap-2">
+            {badges}
+          </div>
+        ) : null}
       </div>
       {description ? (
         <p className="max-w-3xl text-sm text-muted-foreground">{description}</p>

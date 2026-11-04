@@ -34,4 +34,18 @@ describe(PageHeader.name, () => {
     expect(heading.previousElementSibling).toHaveTextContent('Back');
     expect(heading.nextElementSibling).toHaveTextContent('Badge');
   });
+
+  it('pushes the badges to the right edge of the header', () => {
+    render(<PageHeader title="Title" badges={<span>Badge</span>} />);
+
+    expect(screen.getByText('Badge').parentElement).toHaveClass('ml-auto');
+  });
+
+  it('renders no badge area when there are no badges', () => {
+    render(<PageHeader title="Title" />);
+
+    expect(
+      screen.getByRole('heading', { name: 'Title' }).nextElementSibling,
+    ).toBeNull();
+  });
 });
