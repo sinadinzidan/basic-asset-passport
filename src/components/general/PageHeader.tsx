@@ -1,21 +1,30 @@
 import type { ReactNode } from 'react';
 
 type PageHeaderProps = {
-  icon?: ReactNode;
   title: string;
-  description?: ReactNode;
-  children?: ReactNode;
+  description?: string;
+  leading?: ReactNode;
+  badges?: ReactNode;
 };
 
-export function PageHeader({ icon, title, description, children }: PageHeaderProps) {
+export function PageHeader({
+  title,
+  description,
+  leading,
+  badges,
+}: PageHeaderProps) {
   return (
-    <div className="flex flex-wrap items-start justify-between gap-4">
-      {icon && <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl p-3.5 text-foreground [background-image:var(--gradient-aurora)] [&_svg]:size-7" aria-hidden>{icon}</div>}
-      <div className="min-w-0 flex-1 space-y-1">
-        <h1 className="text-3xl font-semibold wrap-anywhere">{title}</h1>
-        {description && <p className="max-w-150 text-sm text-muted-foreground">{description}</p>}
+    <div className="page-enter flex flex-col gap-2">
+      <div className="flex min-w-0 flex-wrap items-center gap-3">
+        {leading}
+        <h1 className="font-display min-w-0 break-words text-2xl font-semibold sm:text-3xl">
+          {title}
+        </h1>
+        {badges}
       </div>
-      {children}
+      {description ? (
+        <p className="max-w-3xl text-sm text-muted-foreground">{description}</p>
+      ) : null}
     </div>
   );
 }

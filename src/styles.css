@@ -2,31 +2,130 @@
 
 @source '../node_modules/@cognite/aura/dist/components';
 
-:root {
-  --font-inter: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-source-code-pro: "Source Code Pro", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-    "Liberation Mono", "Courier New", monospace;
+@layer components {
+  .app-backdrop {
+    background-color: var(--muted-background);
+    background-image: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--muted-background) 72%, var(--nordic-200)),
+      var(--muted-background) 55%,
+      color-mix(in srgb, var(--muted-background) 82%, var(--nordic-300))
+    );
+  }
 
-  /*
-   * Brand: the Aura "nordic" (teal) ramp on the primary, link and focus-ring tokens. This is the only place the
-   * look is customised, so every Aura component picks it up. Each token is an alias to a ramp step, never a raw
-   * value, and every override is paired with a dark-mode value below. To rebrand, point these at another ramp.
-   */
-  --primary-background: var(--nordic-650);
-  --primary-background-hover: var(--nordic-700);
-  --foreground-on-primary: var(--mountain-50);
-  --link-foreground: var(--nordic-600);
-  --ring: var(--nordic-500);
+  .glass-card {
+    position: relative;
+    border: 1px solid var(--default);
+    border-radius: 0.5rem;
+    background-color: var(--base-background);
+    box-shadow: 0 8px 24px -16px
+      color-mix(in srgb, var(--mountain-950) 20%, transparent);
+  }
 
-  /* Accessibility: Aura's light muted text (mountain-550) measures 4.45:1 on the page background, just under WCAG AA. */
-  --muted-foreground: var(--mountain-600);
+  .font-display {
+    font-family: var(--font-space-grotesk);
+  }
 }
 
-.dark {
-  --primary-background: var(--nordic-400);
-  --primary-background-hover: var(--nordic-300);
-  --foreground-on-primary: var(--mountain-950);
-  --link-foreground: var(--nordic-300);
-  --ring: var(--nordic-400);
-  --muted-foreground: var(--mountain-400);
+:root {
+  --font-space-grotesk: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+  --font-inter: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-source-code-pro:
+    'Source Code Pro', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    'Liberation Mono', 'Courier New', monospace;
+  --brand: var(--nordic-600);
+  --brand-strong: var(--nordic-700);
+  --primary-background: var(--mountain-950);
+  --primary-background-hover: var(--mountain-800);
+  --primary-foreground: var(--mountain-white);
+  --ring-default: var(--nordic-600);
+}
+
+:root.dark {
+  --brand: var(--nordic-400);
+  --brand-strong: var(--nordic-200);
+  --primary-background: var(--nordic-700);
+  --primary-background-hover: var(--nordic-600);
+}
+
+@theme inline {
+  --color-brand: var(--brand);
+  --color-brand-strong: var(--brand-strong);
+}
+
+/* Aura components accent with its purple "dusk" scale; remap it to teal. */
+:root {
+  --dusk-50: var(--nordic-50);
+  --dusk-100: var(--nordic-100);
+  --dusk-200: var(--nordic-200);
+  --dusk-300: var(--nordic-700);
+  --dusk-400: var(--nordic-600);
+  --dusk-450: var(--nordic-450);
+  --dusk-500: var(--nordic-500);
+  --dusk-600: var(--nordic-600);
+  --dusk-650: var(--nordic-650);
+  --dusk-700: var(--nordic-700);
+  --dusk-800: var(--nordic-800);
+  --dusk-900: var(--nordic-900);
+  --dusk-950: var(--nordic-950);
+}
+
+:root.dark {
+  --dusk-300: var(--nordic-200);
+  --dusk-400: var(--nordic-400);
+}
+
+.app-topbar {
+  background-image: linear-gradient(
+    115deg,
+    var(--base-background),
+    color-mix(in srgb, var(--base-background) 85%, var(--nordic-100)) 60%,
+    color-mix(in srgb, var(--base-background) 75%, var(--nordic-200))
+  );
+  box-shadow: 0 2px 8px -6px
+    color-mix(in srgb, var(--mountain-950) 25%, transparent);
+}
+
+.icon-chip {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  background-color: color-mix(
+    in srgb,
+    var(--nordic-200) 60%,
+    var(--base-background)
+  );
+  color: var(--nordic-700);
+}
+
+:root.dark .icon-chip {
+  background-color: color-mix(
+    in srgb,
+    var(--nordic-700) 45%,
+    var(--base-background)
+  );
+  color: var(--nordic-200);
+}
+
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.page-enter {
+  animation: page-enter 240ms ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-enter {
+    animation: none;
+  }
 }

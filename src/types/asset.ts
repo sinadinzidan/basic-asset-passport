@@ -1,44 +1,40 @@
-export interface InstanceReference {
+import type { AssetEquipmentTab } from '../enums/assetEquipmentTab';
+
+export type AssetListItem = {
   space: string;
   externalId: string;
-}
+  name: string | null;
+  description: string | null;
+  plantName: string | null;
+  flocStatus: string | null;
+  abcIndicatorName: string | null;
+};
 
-export interface NamedInstanceReference extends InstanceReference {
-  name: string;
-}
+export type AssetIdentifier = Pick<AssetListItem, 'space' | 'externalId'>;
 
-export type AssetSelection = NamedInstanceReference;
-export type FileSelection = NamedInstanceReference;
+export type AssetNavigationState = {
+  selectedAsset: AssetIdentifier | null;
+  activeEquipmentTab: AssetEquipmentTab;
+};
 
-export interface LabeledValue {
+export type AssetPropertyDisplay = {
+  identifier: string;
   label: string;
   value: string;
-}
+};
 
-export type EquipmentDetail = LabeledValue;
+export type AssetInstanceDetails = {
+  space: string;
+  externalId: string;
+  properties: AssetPropertyDisplay[];
+};
 
-export interface FileRecord extends NamedInstanceReference {
-  id: string;
-  description?: string;
-  mimeType?: string;
-  revision?: string;
-  date?: string;
-}
+export type AssetEquipmentDetails = {
+  asset: AssetInstanceDetails;
+  equipment: AssetInstanceDetails[];
+};
 
-export interface EquipmentRecord extends NamedInstanceReference {
-  id: string;
-  description?: string;
-  area?: string;
-  facility?: string;
-  details: EquipmentDetail[];
-  fileRefs?: InstanceReference[];
-}
-
-export interface AssetRecord {
-  id: number | string;
-  space?: string;
-  name: string;
-  externalId?: string;
-  description?: string;
-  area?: string;
-}
+export type AssetPage = {
+  items: AssetListItem[];
+  nextCursor: string | null;
+};

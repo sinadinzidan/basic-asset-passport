@@ -1,54 +1,84 @@
-import { connectToHostApp } from '@cognite/app-sdk';
+import {
+  connectToHostApp as connectToHostAppImpl,
+  type HostAppAPI,
+} from '@cognite/app-sdk';
 import { CogniteSdkProvider } from '@cognite/app-sdk/react';
+import { Alert, AlertDescription } from '@cognite/aura/components/alert';
 import { CogniteClient } from '@cognite/sdk';
-import { LazyMotion } from 'motion/react';
 import type { ComponentProps } from 'react';
-import { useMemo, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
-import { ErrorBoundary } from './components/general/ErrorBoundary';
 import { LoadingNotice } from './components/general/LoadingNotice';
-import { RetryAlert } from './components/general/RetryAlert';
-import { Dashboard } from './pages/dashboard/Dashboard';
+import { AssetRegister } from './pages/assets/AssetRegister';
+import type { StateSyncApi } from './types/host';
 
-const loadMotionFeatures = () => import('./lib/motionFeatures').then((module) => module.default);
-
+type AppDependencies = NonNullable<
+  ComponentProps<typeof CogniteSdkProvider>['deps']
+>;
+type HostConnection = Awaited<ReturnType<AppDependencies['connectToHostApp']>>;
+type AppHostState = {
+  api: HostAppAPI;
+  initialState?: string;
+};
 type AppProps = {
-  deps?: ComponentProps<typeof CogniteSdkProvider>['deps'];
+  deps?: AppDependencies;
 };
 
-function App({ deps }: AppProps) {
-  const [connection, setConnection] = useState<Awaited<ReturnType<typeof connectToHostApp>>>();
+const defaultCreateClient: AppDependencies['createClient'] = (config) =>
+  new CogniteClient(config);
 
-  const providerDeps = useMemo(() => ({
-    connectToHostApp: async () => {
-      const result = await (deps?.connectToHostApp ?? connectToHostApp)();
-      setConnection(result);
-      return result;
-    },
-    createClient: deps?.createClient ?? ((config: ConstructorParameters<typeof CogniteClient>[0]) => new CogniteClient(config)),
-  }), [deps]);
+const loadingFallback = (
+  <main className="flex min-h-screen items-center justify-center px-6 text-base-foreground">
+    <LoadingNotice className="px-8 py-6" message="Connecting to Cognite..." />
+  </main>
+);
+
+const errorFallback = (
+  <main className="flex min-h-screen w-full items-center px-6 text-base-foreground">
+    <Alert variant="error">
+      <AlertDescription>
+        Could not connect to Cognite. Refresh the app to try again.
+      </AlertDescription>
+    </Alert>
+  </main>
+);
+
+function App({ deps }: AppProps) {
+  const [hostState, setHostState] = useState<AppHostState | null>(null);
+  const hostConnectionRef = useRef<Promise<HostConnection> | null>(null);
+
+  const connectToHostApp = deps?.connectToHostApp ?? connectToHostAppImpl;
+  const createClient = deps?.createClient ?? defaultCreateClient;
+  const stateSyncApi: StateSyncApi | null = hostState?.api ?? null;
+
+  // The provider and the app share one host connection, which also keeps
+  // React StrictMode's double effect run from connecting twice.
+  const getHostConnection = useCallback(() => {
+    if (hostConnectionRef.current === null) {
+      hostConnectionRef.current = connectToHostApp().then((connection) => {
+        setHostState({
+          api: connection.api,
+          initialState: connection.initialState,
+        });
+        return connection;
+      });
+    }
+
+    return hostConnectionRef.current;
+  }, [connectToHostApp]);
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-        <CogniteSdkProvider
-          deps={providerDeps}
-          loadingFallback={
-            <LoadingNotice label="Connecting to CDF" className="p-6" />
-          }
-          errorFallback={
-            <div className="p-6">
-              <RetryAlert message="Failed to connect to Fusion host. Open this app inside Cognite Fusion." />
-            </div>
-          }
-        >
-          {connection && (
-            <ErrorBoundary>
-              <LazyMotion features={loadMotionFeatures} strict>
-                <Dashboard api={connection.api} initialState={connection.initialState} />
-              </LazyMotion>
-            </ErrorBoundary>
-          )}
-        </CogniteSdkProvider>
+    <div className="app-backdrop min-h-screen text-base-foreground">
+      <CogniteSdkProvider
+        loadingFallback={loadingFallback}
+        errorFallback={errorFallback}
+        deps={{ connectToHostApp: getHostConnection, createClient }}
+      >
+        <AssetRegister
+          api={stateSyncApi}
+          initialState={hostState?.initialState}
+        />
+      </CogniteSdkProvider>
     </div>
   );
 }
