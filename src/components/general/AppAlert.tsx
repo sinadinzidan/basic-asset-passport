@@ -71,19 +71,19 @@ export function AppAlert({
       role={ROLE_BY_VARIANT[variant]}
       data-variant={variant}
       className={cn(
-        'flex w-full items-start gap-3 rounded-lg border px-4 py-3 text-sm',
+        'flex w-full items-center gap-3 rounded-lg border px-4 py-3 text-sm',
         container,
         className,
       )}
     >
-      <Icon aria-hidden className={cn('mt-0.5 size-5 shrink-0', icon)} />
+      <Icon aria-hidden className={cn('size-5 shrink-0', icon)} />
       <div className="min-w-0 flex-1">
         {title ? (
           <p className="font-semibold text-base-foreground">{title}</p>
         ) : null}
         <div className="text-base-foreground">{children}</div>
       </div>
-      {action ? <div className="shrink-0 self-center">{action}</div> : null}
+      {action ? <div className="shrink-0">{action}</div> : null}
     </div>
   );
 }
