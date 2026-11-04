@@ -56,12 +56,12 @@ export function AssetDetailsTabs({
             {ASSET_EQUIPMENT_TAB_LABELS[AssetEquipmentTab.EQUIPMENTS]}
           </TabsTrigger>
         </TabsList>
-        <TabsPanel value={AssetEquipmentTab.PROPERTIES} className="p-5 sm:p-6">
+        <TabsPanel value={AssetEquipmentTab.PROPERTIES} className="p-4">
           <div className="data-card">
             <AssetProperties properties={details.asset.properties} />
           </div>
         </TabsPanel>
-        <TabsPanel value={AssetEquipmentTab.EQUIPMENTS} className="p-5 sm:p-6">
+        <TabsPanel value={AssetEquipmentTab.EQUIPMENTS} className="p-4">
           {details.equipment.length === 0 ? (
             <EmptyStateMessage
               title="No equipment linked"
