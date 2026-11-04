@@ -43,7 +43,7 @@ export function AssetDetailsTabs({
       >
         <TabsList
           aria-label="Asset details"
-          className="m-5 mb-0 sm:mx-6"
+          className="hud-tabbar"
           size="default"
         >
           <TabsTrigger value={AssetEquipmentTab.PROPERTIES}>
@@ -66,7 +66,7 @@ export function AssetDetailsTabs({
               description="There are no Equipment instances linked to this asset."
             />
           ) : (
-            <div className="flex flex-col divide-y divide-default">
+            <div className="flex flex-col gap-5">
               {details.equipment.map((equipment) => (
                 <EquipmentDetails
                   key={`${equipment.space}:${equipment.externalId}`}

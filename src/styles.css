@@ -19,7 +19,7 @@
   --font-source-code-pro:
     'Source Code Pro', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
     'Liberation Mono', 'Courier New', monospace;
-  --font-display: 'Space Grotesk', var(--font-inter);
+  --font-display: 'Chakra Petch', var(--font-inter);
 
   /*
    * HUD palette. Aura has no sci-fi role, so these map an electric-blue scheme onto Aura colour
@@ -191,13 +191,14 @@
 /* The title of every page: one size, 24 px on a phone growing to 32 px, so no page shouts louder than another. */
 .page-title {
   margin: 0;
+  font-family: var(--font-display);
   font-size: clamp(1.5rem, 1.15rem + 1.1vw, 2rem);
   font-weight: 600;
   line-height: 1.15;
 }
 
 .hud-kicker {
-  font-family: var(--font-source-code-pro);
+  font-family: var(--font-display);
   font-size: 0.6875rem;
   font-weight: 600;
   letter-spacing: 0.26em;
@@ -634,7 +635,7 @@ button.hud-body:focus-visible {
   position: sticky;
   top: 0;
   z-index: 2;
-  font-family: var(--font-source-code-pro);
+  font-family: var(--font-display);
   font-size: 0.6875rem;
   font-weight: 600;
   letter-spacing: 0.16em;
@@ -1069,7 +1070,7 @@ button.hud-body:focus-visible {
 .neon-stage [data-slot='button'] {
   --btn-edge: color-mix(in srgb, var(--neon-cyan) 55%, transparent);
   border-radius: 3px;
-  font-family: var(--font-source-code-pro);
+  font-family: var(--font-display);
   font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.08em;
@@ -1280,6 +1281,8 @@ button.hud-body:focus-visible {
 /* Layout helpers for panel bodies. Unlayered on purpose, like .hud-fill: .hud-body sets padding and display. */
 .hud-body.hud-flush {
   padding: 0;
+  /* Less tint at the top edge: a tall panel with a tab bar should not carry a bright band. */
+  --hud-tint: 6%;
 }
 
 .hud-body.hud-row {
@@ -1308,4 +1311,86 @@ button.hud-body:focus-visible {
   background: color-mix(in srgb, var(--neon-cyan) 30%, transparent);
   box-shadow: inset 0 0 0 1px
     color-mix(in srgb, var(--neon-cyan) 45%, transparent);
+}
+
+/* Tab bar inside a flush panel: a full-width header strip, not a box floating in the panel. */
+.neon-stage [data-slot='tabs-list'].hud-tabbar {
+  width: 100%;
+  padding: 0.5rem 1rem 0;
+  margin: 0;
+  background: color-mix(in srgb, var(--neon-surface-deep) 70%, transparent);
+  border: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--neon-cyan) 28%, transparent);
+  clip-path: none;
+}
+
+.neon-stage [data-slot='tabs-list'].hud-tabbar [data-slot='tabs-trigger'] {
+  height: calc(var(--tab-height) + 4px);
+}
+
+/* Equipment card: header band over a grid of label/value cells. */
+.equipment-card {
+  position: relative;
+  background: color-mix(in srgb, var(--neon-surface-deep) 55%, transparent);
+  border: 1px solid color-mix(in srgb, var(--neon-cyan) 22%, transparent);
+  border-left: 3px solid var(--blue-400);
+}
+
+.equipment-card__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.85rem 1.1rem;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--neon-cyan) 16%, transparent),
+    transparent 80%
+  );
+  border-bottom: 1px solid color-mix(in srgb, var(--neon-cyan) 22%, transparent);
+}
+
+.equipment-card__id {
+  padding: 0.2rem 0.65rem;
+  font-family: var(--font-source-code-pro);
+  font-size: 0.75rem;
+  color: var(--blue-100);
+  background: color-mix(in srgb, var(--neon-cyan) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--neon-cyan) 38%, transparent);
+  clip-path: polygon(
+    6px 0,
+    100% 0,
+    100% calc(100% - 6px),
+    calc(100% - 6px) 100%,
+    0 100%,
+    0 6px
+  );
+}
+
+.equipment-card__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  background: color-mix(in srgb, var(--neon-surface) 92%, transparent);
+}
+
+.equipment-card__cell {
+  min-width: 0;
+  padding: 0.7rem 1.1rem 0.8rem;
+  box-shadow: inset -1px -1px 0
+    color-mix(in srgb, var(--neon-cyan) 14%, transparent);
+  transition: background 160ms ease;
+}
+
+.equipment-card__cell:hover {
+  background: color-mix(in srgb, var(--neon-cyan) 9%, var(--neon-surface));
+}
+
+.equipment-card__label {
+  font-family: var(--font-display);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--blue-300);
 }

@@ -35,8 +35,9 @@ off by default and labelled on screen.
   with a colour by class: A red, B amber, C green, anything else grey.
 - Two tabs: Properties (the asset's properties) and Equipments (the
   `Equipment` nodes whose `asset` relation points to the asset, up to 1000,
-  with a count badge on the tab). Each equipment shows its name, "Equipment ID:
-  <external ID>" and its properties. With no linked equipment the tab shows
+  with a count badge on the tab). Each equipment is a card with its name,
+  "Equipment ID: <external ID>" and its properties as a grid of label and value
+  cells. With no linked equipment the tab shows
   "No equipment linked".
 - Properties are every non-relation, non-JSON property the view defines and
   that has a value, labelled with the view property name. System and
@@ -80,8 +81,9 @@ off by default and labelled on screen.
   mountain); no raw hex. The HUD theme lives in `src/styles.css`, and custom
   components live in `src/components/general/`.
 - Panels (`HudPanel`) have cut corners, a lit gradient edge, a glow and a
-  light that travels along the border. Tabs are a cut-corner glass rail with a
-  lit active tab. Status and criticality pills use the same lit-tab look (cut
+  light that travels along the border. Tabs in a panel sit on a full-width
+  header strip with a lit active tab. Type is Chakra Petch for titles, labels,
+  tabs, pills and buttons, Inter for body text and Source Code Pro for IDs. Status and criticality pills use the same lit-tab look (cut
   corners, gradient fill, bright bottom line, capitals) with a colour taken
   from the data: Operating is blue, maintenance amber, other statuses grey;
   criticality A is red, B amber and C green. The register's Criticality column

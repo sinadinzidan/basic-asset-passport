@@ -19,6 +19,34 @@ describe(EquipmentDetails.name, () => {
     expect(screen.getByText('Plant ID')).toBeInTheDocument();
   });
 
+  it('pairs every property label with its value', () => {
+    render(
+      <EquipmentDetails
+        equipment={makeInstanceDetails({
+          properties: [
+            {
+              identifier: 'manufacturer',
+              label: 'Manufacturer',
+              value: 'Northwind',
+            },
+            {
+              identifier: 'ratedPower',
+              label: 'Rated power (kW)',
+              value: '75',
+            },
+          ],
+        })}
+      />,
+    );
+
+    expect(
+      screen.getByText('Manufacturer').nextElementSibling,
+    ).toHaveTextContent('Northwind');
+    expect(
+      screen.getByText('Rated power (kW)').nextElementSibling,
+    ).toHaveTextContent('75');
+  });
+
   it('falls back to the external id when the equipment has no name', () => {
     render(
       <EquipmentDetails
