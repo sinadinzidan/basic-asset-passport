@@ -38,7 +38,7 @@ read from CDF: there is no mock mode, dummy data, or simulated content.
   that has a value, labelled with the view property name. System and
   source-tracking properties (for example `source`, `sourceId`, `uid`,
   `createdByUser`) are hidden.
-- Loading shows a status message with the back button available. A failed
+- Loading shows only a status message, with no back button. A failed
   load shows "Asset details could not be loaded" with Retry and the back
   button; the page is never shown with partial or fabricated data.
 

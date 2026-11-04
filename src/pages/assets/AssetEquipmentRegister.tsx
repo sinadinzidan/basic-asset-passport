@@ -59,7 +59,6 @@ export function AssetEquipmentRegister({
   if (isPending) {
     return (
       <PageShell>
-        {backButton}
         <LoadingNotice
           className="p-10"
           message="Loading asset and equipment properties..."

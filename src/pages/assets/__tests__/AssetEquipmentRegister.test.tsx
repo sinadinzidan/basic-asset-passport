@@ -69,7 +69,7 @@ describe(AssetEquipmentRegister.name, () => {
     );
   }
 
-  it('shows a loading status with a way back while details load', () => {
+  it('shows only a loading status, without the back button, while details load', () => {
     vi.mocked(mockContext.getAssetEquipmentDetails).mockReturnValue(
       new Promise(() => {}),
     );
@@ -80,8 +80,8 @@ describe(AssetEquipmentRegister.name, () => {
       'Loading asset and equipment properties...',
     );
     expect(
-      screen.getByRole('button', { name: 'Back to assets' }),
-    ).toBeEnabled();
+      screen.queryByRole('button', { name: 'Back to assets' }),
+    ).not.toBeInTheDocument();
   });
 
   it('shows the asset name, status and criticality', async () => {
