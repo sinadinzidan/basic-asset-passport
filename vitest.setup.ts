@@ -1,7 +1,7 @@
 import { Window } from 'happy-dom';
 import '@testing-library/jest-dom/vitest';
 
-// Happy DOM rejects canceled Web Animations during cleanup; use Motion's JS fallback.
+// Happy DOM rejects canceled Web Animations during cleanup; use the animation library's JS fallback.
 Object.defineProperty(Element.prototype, 'animate', { value: undefined, configurable: true });
 
 // Newer Node versions define their own `localStorage` global that is undefined unless started with
