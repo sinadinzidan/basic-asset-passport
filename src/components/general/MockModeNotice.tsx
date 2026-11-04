@@ -1,11 +1,9 @@
-import { Alert, AlertDescription } from '@cognite/aura/components/alert';
+import { AppAlert } from './AppAlert';
 
 export function MockModeNotice() {
   return (
-    <Alert variant="info">
-      <AlertDescription>
-        Mock mode: showing dummy data, not data from Cognite Data Fusion.
-      </AlertDescription>
-    </Alert>
+    <AppAlert variant="info">
+      Mock mode: showing dummy data, not data from Cognite Data Fusion.
+    </AppAlert>
   );
 }

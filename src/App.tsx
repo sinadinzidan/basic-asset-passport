@@ -3,12 +3,12 @@ import {
   type HostAppAPI,
 } from '@cognite/app-sdk';
 import { CogniteSdkProvider } from '@cognite/app-sdk/react';
-import { Alert, AlertDescription } from '@cognite/aura/components/alert';
 import { CogniteClient } from '@cognite/sdk';
 import type { ComponentProps } from 'react';
 import { useCallback, useRef, useState } from 'react';
 
 import { LiveAssetDataClientProvider } from './components/assets/LiveAssetDataClientProvider';
+import { AppAlert } from './components/general/AppAlert';
 import { LoadingNotice } from './components/general/LoadingNotice';
 import { MockModeNotice } from './components/general/MockModeNotice';
 import { AssetDataClientContext } from './hooks/assets/useAssetDataClient';
@@ -41,11 +41,9 @@ const loadingFallback = (
 
 const errorFallback = (
   <main className="flex min-h-screen w-full items-center px-6 text-base-foreground">
-    <Alert variant="error">
-      <AlertDescription>
-        Could not connect to Cognite. Refresh the app to try again.
-      </AlertDescription>
-    </Alert>
+    <AppAlert variant="error" title="Could not connect to Cognite">
+      Refresh the app to try again.
+    </AppAlert>
   </main>
 );
 

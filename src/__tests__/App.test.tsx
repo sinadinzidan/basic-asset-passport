@@ -65,10 +65,11 @@ describe(App.name, () => {
     renderApp(deps);
 
     expect(
-      await screen.findByText(
-        'Could not connect to Cognite. Refresh the app to try again.',
-      ),
+      await screen.findByText('Could not connect to Cognite'),
     ).toBeInTheDocument();
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'Refresh the app to try again.',
+    );
   });
 
   it('shows the selected asset name in the header without breadcrumb actions', async () => {

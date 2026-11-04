@@ -77,6 +77,11 @@ off by default and labelled on screen.
 - Build the UI from Aura components and semantic tokens; the teal brand colour
   is applied once in `src/styles.css` by aliasing Aura's tokens. Custom
   components live in `src/components/general/`.
+- Every notice (load errors, the connection error, the mock-mode banner) uses
+  one app-owned alert, `AppAlert`: a tinted, bordered row with an icon, an
+  optional title, a message and an optional action. Variants are error,
+  warning, info and success, taken from Aura's semantic colour tokens. Errors
+  and warnings are announced as alerts; info and success as status.
 - Stack panels on small screens without page overflow.
 
 ## CDF data and host

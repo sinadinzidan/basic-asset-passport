@@ -1,10 +1,6 @@
-import {
-  Alert,
-  AlertActions,
-  AlertDescription,
-  AlertTitle,
-} from '@cognite/aura/components/alert';
 import { Button } from '@cognite/aura/components/button';
+
+import { AppAlert } from './AppAlert';
 
 type RetryAlertProps = {
   title: string;
@@ -20,14 +16,16 @@ export function RetryAlert({
   onRetry,
 }: RetryAlertProps) {
   return (
-    <Alert variant="error">
-      <AlertTitle>{title}</AlertTitle>
-      <AlertDescription>{description}</AlertDescription>
-      <AlertActions>
+    <AppAlert
+      variant="error"
+      title={title}
+      action={
         <Button disabled={isRetrying} onClick={onRetry} variant="secondary">
           Retry
         </Button>
-      </AlertActions>
-    </Alert>
+      }
+    >
+      {description}
+    </AppAlert>
   );
 }
