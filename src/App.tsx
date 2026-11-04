@@ -11,6 +11,7 @@ import { LiveAssetDataClientProvider } from './components/assets/LiveAssetDataCl
 import { AppAlert } from './components/general/AppAlert';
 import { LoadingNotice } from './components/general/LoadingNotice';
 import { MockModeNotice } from './components/general/MockModeNotice';
+import { NeonStage } from './components/general/NeonStage';
 import { AssetDataClientContext } from './hooks/assets/useAssetDataClient';
 import { AssetRegister } from './pages/assets/AssetRegister';
 import type { AssetDataClient } from './types/assetDataClient';
@@ -73,17 +74,17 @@ function App({ deps, mockDataClient }: AppProps) {
 
   if (mockDataClient) {
     return (
-      <div className="app-backdrop min-h-screen text-base-foreground">
+      <NeonStage>
         <MockModeNotice />
         <AssetDataClientContext.Provider value={mockDataClient}>
           <AssetRegister api={null} />
         </AssetDataClientContext.Provider>
-      </div>
+      </NeonStage>
     );
   }
 
   return (
-    <div className="app-backdrop min-h-screen text-base-foreground">
+    <NeonStage>
       <CogniteSdkProvider
         loadingFallback={loadingFallback}
         errorFallback={errorFallback}
@@ -96,7 +97,7 @@ function App({ deps, mockDataClient }: AppProps) {
           />
         </LiveAssetDataClientProvider>
       </CogniteSdkProvider>
-    </div>
+    </NeonStage>
   );
 }
 

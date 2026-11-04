@@ -12,7 +12,7 @@ import {
 } from '../../enums/assetEquipmentTab';
 import type { AssetEquipmentDetails } from '../../types/asset';
 import { EmptyStateMessage } from '../general/EmptyStateMessage';
-import { GlassCard } from '../general/GlassCard';
+import { HudPanel } from '../general/HudPanel';
 
 import { AssetProperties } from './AssetProperties';
 import { EquipmentDetails } from './EquipmentDetails';
@@ -22,18 +22,6 @@ type AssetDetailsTabsProps = {
   activeTab: AssetEquipmentTab;
   onTabChange: (tab: AssetEquipmentTab) => void;
 };
-
-const EQUIPMENT_TAB_BADGE_CLASS_NAME = [
-  '[&_[data-slot=badge]]:h-5',
-  '[&_[data-slot=badge]]:min-w-5',
-  '[&_[data-slot=badge]]:rounded-full',
-  '[&_[data-slot=badge]]:border',
-  '[&_[data-slot=badge]]:border-primary-background',
-  '[&_[data-slot=badge]]:bg-primary-background',
-  '[&_[data-slot=badge]]:px-1.5',
-  '[&_[data-slot=badge]]:font-mono',
-  '[&_[data-slot=badge]]:text-foreground-on-primary!',
-].join(' ');
 
 export function AssetDetailsTabs({
   details,
@@ -47,25 +35,21 @@ export function AssetDetailsTabs({
   }
 
   return (
-    <GlassCard className="page-enter overflow-hidden">
+    <HudPanel bodyClassName="hud-flush">
       <Tabs
-        className="w-full [&_[data-slot='tabs-indicator']]:bg-brand"
+        className="w-full"
         value={activeTab}
         onValueChange={handleTabValueChange}
       >
         <TabsList
           aria-label="Asset details"
-          className="w-full max-w-full gap-6 border-b border-default bg-muted-background/50 px-5 pt-3 sm:px-6"
+          className="m-5 mb-0 sm:mx-6"
           size="default"
         >
-          <TabsTrigger
-            className="data-active:text-brand-strong"
-            value={AssetEquipmentTab.PROPERTIES}
-          >
+          <TabsTrigger value={AssetEquipmentTab.PROPERTIES}>
             {ASSET_EQUIPMENT_TAB_LABELS[AssetEquipmentTab.PROPERTIES]}
           </TabsTrigger>
           <TabsTrigger
-            className={`data-active:text-brand-strong ${EQUIPMENT_TAB_BADGE_CLASS_NAME}`}
             value={AssetEquipmentTab.EQUIPMENTS}
             badge={details.equipment.length}
           >
@@ -93,6 +77,6 @@ export function AssetDetailsTabs({
           )}
         </TabsPanel>
       </Tabs>
-    </GlassCard>
+    </HudPanel>
   );
 }

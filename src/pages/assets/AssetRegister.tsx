@@ -1,7 +1,6 @@
 import { AssetTable } from '../../components/assets/AssetTable';
 import { AssetTopbar } from '../../components/assets/AssetTopbar';
 import { useAssetNavigation } from '../../hooks/assets/useAssetNavigation';
-import { useThemePreference } from '../../hooks/theme/useThemePreference';
 import type { StateSyncApi } from '../../types/host';
 
 import { AssetEquipmentRegister } from './AssetEquipmentRegister';
@@ -18,16 +17,11 @@ export function AssetRegister({ api, initialState }: AssetRegisterProps) {
     clearSelectedAsset,
     changeEquipmentTab,
   } = useAssetNavigation(api, initialState);
-  const { theme, setTheme } = useThemePreference();
 
   if (navigationState.selectedAsset) {
     return (
       <>
-        <AssetTopbar
-          selectedAsset={navigationState.selectedAsset}
-          theme={theme}
-          onThemeChange={setTheme}
-        />
+        <AssetTopbar selectedAsset={navigationState.selectedAsset} />
         <AssetEquipmentRegister
           assetIdentifier={navigationState.selectedAsset}
           activeTab={navigationState.activeEquipmentTab}
@@ -40,7 +34,7 @@ export function AssetRegister({ api, initialState }: AssetRegisterProps) {
 
   return (
     <>
-      <AssetTopbar theme={theme} onThemeChange={setTheme} />
+      <AssetTopbar />
       <AssetTable onAssetSelect={selectAsset} />
     </>
   );

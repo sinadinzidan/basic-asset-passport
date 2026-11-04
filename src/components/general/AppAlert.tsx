@@ -71,7 +71,7 @@ export function AppAlert({
       role={ROLE_BY_VARIANT[variant]}
       data-variant={variant}
       className={cn(
-        'flex w-full items-center gap-3 rounded-lg border px-4 py-3 text-sm',
+        'app-alert flex w-full items-center gap-3 rounded-lg border px-4 py-3 text-sm',
         container,
         className,
       )}

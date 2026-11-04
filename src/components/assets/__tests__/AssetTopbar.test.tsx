@@ -1,5 +1,4 @@
 import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import type { ComponentType, ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -33,49 +32,25 @@ describe(AssetTopbar.name, () => {
     );
   });
 
-  it.each([
-    ['light', '/adnoc-horizontal-blue-logo.svg'],
-    ['dark', '/adnoc-horizontal-white-logo.svg'],
-  ] as const)('shows the %s theme logo', (theme, source) => {
-    render(<AssetTopbar theme={theme} onThemeChange={vi.fn()} />, { wrapper });
+  it('shows the ADNOC Gas logo', () => {
+    render(<AssetTopbar />, { wrapper });
 
     expect(screen.getByRole('img', { name: 'ADNOC Gas logo' })).toHaveAttribute(
       'src',
-      source,
+      '/adnoc-horizontal-white-logo.svg',
     );
   });
 
   it('has no breadcrumb until an asset is selected', () => {
-    render(<AssetTopbar theme="light" onThemeChange={vi.fn()} />, { wrapper });
+    render(<AssetTopbar />, { wrapper });
 
     expect(screen.queryByLabelText('Breadcrumb')).not.toBeInTheDocument();
   });
 
   it('shows the external id while the asset name loads, then the name', async () => {
-    render(
-      <AssetTopbar
-        selectedAsset={selectedAsset}
-        theme="light"
-        onThemeChange={vi.fn()}
-      />,
-      { wrapper },
-    );
+    render(<AssetTopbar selectedAsset={selectedAsset} />, { wrapper });
 
     expect(screen.getByText('FLOC-100')).toBeInTheDocument();
     expect(await screen.findByText('Cooling Water Pump')).toBeInTheDocument();
-  });
-
-  it('reports a theme chosen from the switcher', async () => {
-    const onThemeChange = vi.fn();
-    render(<AssetTopbar theme="light" onThemeChange={onThemeChange} />, {
-      wrapper,
-    });
-
-    await userEvent.click(screen.getByRole('button', { name: 'Toggle theme' }));
-    await userEvent.click(
-      await screen.findByRole('menuitemradio', { name: 'Dark mode' }),
-    );
-
-    expect(onThemeChange).toHaveBeenCalledWith('dark');
   });
 });

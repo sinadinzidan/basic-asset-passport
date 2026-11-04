@@ -2,130 +2,1284 @@
 
 @source '../node_modules/@cognite/aura/dist/components';
 
-@layer components {
-  .app-backdrop {
-    background-color: var(--muted-background);
-    background-image: linear-gradient(
-      135deg,
-      color-mix(in srgb, var(--muted-background) 72%, var(--nordic-200)),
-      var(--muted-background) 55%,
-      color-mix(in srgb, var(--muted-background) 82%, var(--nordic-300))
-    );
-  }
+/*
+ * Theme ported from the control-room HUD reference: electric blue on deep navy,
+ * dark only. Colours come from Aura's blue, amber, red and mountain ramps.
+ */
 
-  .glass-card {
-    position: relative;
-    border: 1px solid var(--default);
-    border-radius: 0.5rem;
-    background-color: var(--base-background);
-    box-shadow: 0 8px 24px -16px
-      color-mix(in srgb, var(--mountain-950) 20%, transparent);
-  }
-
-  .font-display {
-    font-family: var(--font-space-grotesk);
-  }
+/* Registered so the border light can animate its angle. */
+@property --hud-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
 }
 
 :root {
-  --font-space-grotesk: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
   --font-inter: 'Inter', ui-sans-serif, system-ui, sans-serif;
   --font-source-code-pro:
     'Source Code Pro', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
     'Liberation Mono', 'Courier New', monospace;
-  --brand: var(--nordic-600);
-  --brand-strong: var(--nordic-700);
-  --primary-background: var(--mountain-950);
-  --primary-background-hover: var(--mountain-800);
-  --primary-foreground: var(--mountain-white);
-  --ring-default: var(--nordic-600);
-}
+  --font-display: 'Space Grotesk', var(--font-inter);
 
-:root.dark {
-  --brand: var(--nordic-400);
-  --brand-strong: var(--nordic-200);
-  --primary-background: var(--nordic-700);
-  --primary-background-hover: var(--nordic-600);
-}
-
-@theme inline {
-  --color-brand: var(--brand);
-  --color-brand-strong: var(--brand-strong);
-}
-
-/* Aura components accent with its purple "dusk" scale; remap it to teal. */
-:root {
-  --dusk-50: var(--nordic-50);
-  --dusk-100: var(--nordic-100);
-  --dusk-200: var(--nordic-200);
-  --dusk-300: var(--nordic-700);
-  --dusk-400: var(--nordic-600);
-  --dusk-450: var(--nordic-450);
-  --dusk-500: var(--nordic-500);
-  --dusk-600: var(--nordic-600);
-  --dusk-650: var(--nordic-650);
-  --dusk-700: var(--nordic-700);
-  --dusk-800: var(--nordic-800);
-  --dusk-900: var(--nordic-900);
-  --dusk-950: var(--nordic-950);
-}
-
-:root.dark {
-  --dusk-300: var(--nordic-200);
-  --dusk-400: var(--nordic-400);
-}
-
-.app-topbar {
-  background-image: linear-gradient(
-    115deg,
-    var(--base-background),
-    color-mix(in srgb, var(--base-background) 85%, var(--nordic-100)) 60%,
-    color-mix(in srgb, var(--base-background) 75%, var(--nordic-200))
+  /*
+   * HUD palette. Aura has no sci-fi role, so these map an electric-blue scheme onto Aura colour
+   * ramps (no raw hex). Blue carries the interface; only warnings (gold) and critical states
+   * (red) bring other colour, so alerts always stand out.
+   */
+  --neon-cyan: var(--blue-450);
+  --neon-green: var(--blue-300);
+  --neon-sky: var(--blue-400);
+  --neon-amber: var(--amber-400);
+  --neon-red: var(--red-500);
+  --neon-surface: color-mix(in oklab, var(--blue-700) 36%, var(--mountain-950));
+  --neon-surface-deep: color-mix(
+    in oklab,
+    var(--blue-800) 24%,
+    var(--mountain-950)
   );
-  box-shadow: 0 2px 8px -6px
-    color-mix(in srgb, var(--mountain-950) 25%, transparent);
+  --neon-boost: saturate(1.45) brightness(1.06);
+
+  --hud-cut: 12px;
 }
 
-.icon-chip {
+/* ---------- Stage ---------- */
+
+.neon-stage {
+  position: relative;
+  min-height: 100vh;
+  overflow-x: clip;
+  color: var(--base-foreground);
+  background:
+    radial-gradient(
+      60rem 34rem at 12% -14%,
+      color-mix(in srgb, var(--blue-500) 34%, transparent),
+      transparent 70%
+    ),
+    radial-gradient(
+      46rem 30rem at 100% 2%,
+      color-mix(in srgb, var(--blue-450) 20%, transparent),
+      transparent 70%
+    ),
+    radial-gradient(
+      60rem 30rem at 50% 118%,
+      color-mix(in srgb, var(--blue-500) 16%, transparent),
+      transparent 70%
+    ),
+    var(--neon-surface-deep);
+}
+
+/* Engineering grid: minor and major lines, brightest near the top. */
+.neon-stage::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(
+      color-mix(in srgb, var(--blue-400) 12%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--blue-400) 12%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      color-mix(in srgb, var(--blue-400) 5%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--blue-400) 5%, transparent) 1px,
+      transparent 1px
+    );
+  background-size:
+    176px 176px,
+    176px 176px,
+    44px 44px,
+    44px 44px;
+  mask-image: radial-gradient(ellipse at 50% 12%, black 12%, transparent 76%);
+}
+
+/* Concentric sensor rings in the corner, plus a vignette for depth. */
+.neon-stage::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    repeating-radial-gradient(
+      circle at 92% 4%,
+      transparent 0 78px,
+      color-mix(in srgb, var(--blue-400) 11%, transparent) 79px 80px
+    ),
+    radial-gradient(
+      ellipse at 50% 38%,
+      transparent 52%,
+      color-mix(in srgb, var(--neon-surface-deep) 88%, transparent) 100%
+    );
+}
+
+.neon-orb {
+  position: fixed;
+  width: 26rem;
+  height: 26rem;
+  border-radius: 9999px;
+  pointer-events: none;
+  filter: blur(100px);
+  opacity: 0.22;
+  animation: orb-float 22s ease-in-out infinite;
+}
+
+.neon-orb--cyan {
+  top: 6%;
+  left: -9rem;
+  background: var(--blue-500);
+}
+
+.neon-orb--sky {
+  right: -11rem;
+  bottom: 2%;
+  background: var(--blue-450);
+  opacity: 0.16;
+  animation-delay: -11s;
+}
+
+/* ---------- Typography ---------- */
+
+.hud-display {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.hud-mono {
+  font-family: var(--font-source-code-pro);
+}
+
+.neon-text {
+  color: color-mix(
+    in srgb,
+    var(--hud-accent, var(--neon-cyan)) 62%,
+    var(--blue-50)
+  );
+  text-shadow:
+    0 0 8px
+      color-mix(in srgb, var(--hud-accent, var(--neon-cyan)) 60%, transparent),
+    0 0 26px
+      color-mix(in srgb, var(--hud-accent, var(--neon-cyan)) 34%, transparent);
+}
+
+/* Big gradient headline: white-hot to electric blue. */
+.hud-headline {
+  background: linear-gradient(
+    100deg,
+    var(--blue-50) 5%,
+    var(--blue-200) 40%,
+    var(--blue-450) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(
+    0 0 14px color-mix(in srgb, var(--blue-450) 55%, transparent)
+  );
+}
+
+/* The title of every page: one size, 24 px on a phone growing to 32 px, so no page shouts louder than another. */
+.page-title {
+  margin: 0;
+  font-size: clamp(1.5rem, 1.15rem + 1.1vw, 2rem);
+  font-weight: 600;
+  line-height: 1.15;
+}
+
+.hud-kicker {
+  font-family: var(--font-source-code-pro);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--hud-accent, var(--neon-cyan));
+}
+
+/* ---------- Tones ---------- */
+
+.tone-cyan {
+  --hud-accent: var(--neon-cyan);
+}
+.tone-green {
+  --hud-accent: var(--neon-green);
+}
+.tone-sky {
+  --hud-accent: var(--neon-sky);
+}
+.tone-amber {
+  --hud-accent: var(--neon-amber);
+}
+.tone-red {
+  --hud-accent: var(--neon-red);
+}
+
+.tone-cyan,
+.tone-green,
+.tone-sky,
+.tone-amber,
+.tone-red {
+  --hud-accent-light: color-mix(in srgb, var(--hud-accent) 45%, var(--blue-50));
+  /* How strongly the accent tints the card, and how far its glow reaches. */
+  --hud-tint: 14%;
+  --hud-glow: 20%;
+}
+
+/* Warning and critical cards stay dark and crisp: a heavy red or gold tint over navy turns muddy and pink. */
+.tone-amber,
+.tone-red {
+  --hud-tint: 6%;
+  --hud-glow: 13%;
+  --neon-boost: saturate(1.15) brightness(1.05);
+}
+
+.text-accent {
+  color: var(--hud-accent, var(--neon-cyan));
+}
+
+/* ---------- HUD panel: glass card, bright edge, light that chases the border ---------- */
+
+.hud-glow {
+  position: relative;
+  height: 100%;
+  filter: var(--neon-boost)
+    drop-shadow(
+      0 8px 22px
+        color-mix(in srgb, var(--hud-accent) var(--hud-glow), transparent)
+    );
+  transition:
+    filter 220ms ease,
+    transform 220ms ease;
+}
+
+.hud-frame {
+  height: 100%;
+  padding: 1px;
+  background: linear-gradient(
+    140deg,
+    var(--hud-accent),
+    color-mix(in srgb, var(--hud-accent) 22%, transparent) 34%,
+    color-mix(in srgb, var(--hud-accent) 22%, transparent) 66%,
+    var(--hud-accent)
+  );
+  clip-path: polygon(
+    0 var(--hud-cut),
+    var(--hud-cut) 0,
+    calc(100% - var(--hud-cut)) 0,
+    100% var(--hud-cut),
+    100% calc(100% - var(--hud-cut)),
+    calc(100% - var(--hud-cut)) 100%,
+    var(--hud-cut) 100%,
+    0 calc(100% - var(--hud-cut))
+  );
+}
+
+/* The rotating light along the border: always on for hero panels, on hover for cards. */
+.hud-animated .hud-frame,
+.hud-glow.is-interactive:hover .hud-frame,
+.hud-glow.is-selected .hud-frame {
+  background: conic-gradient(
+    from var(--hud-angle),
+    var(--hud-accent-light) 0%,
+    color-mix(in srgb, var(--hud-accent) 18%, transparent) 16%,
+    color-mix(in srgb, var(--hud-accent) 18%, transparent) 48%,
+    var(--hud-accent) 66%,
+    color-mix(in srgb, var(--hud-accent) 18%, transparent) 84%,
+    var(--hud-accent-light) 100%
+  );
+  animation: border-spin 5s linear infinite;
+}
+
+.hud-animated .hud-frame {
+  animation-duration: 9s;
+}
+
+.hud-body {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 1.2rem 1.4rem 1.35rem;
+  text-align: left;
+  color: inherit;
+  background:
+    radial-gradient(
+      260px circle at var(--mx, -400px) var(--my, -400px),
+      color-mix(in srgb, var(--hud-accent) 22%, transparent),
+      transparent 70%
+    ),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--hud-accent) var(--hud-tint), transparent),
+      transparent 38%
+    ),
+    repeating-linear-gradient(
+      0deg,
+      color-mix(in srgb, var(--hud-accent) 3%, transparent) 0 1px,
+      transparent 1px 4px
+    ),
+    linear-gradient(
+      160deg,
+      color-mix(
+        in srgb,
+        var(--hud-accent) var(--hud-tint),
+        var(--neon-surface)
+      ),
+      var(--neon-surface) 58%,
+      color-mix(in srgb, var(--hud-accent) 4%, var(--neon-surface-deep))
+    );
+  clip-path: polygon(
+    0 calc(var(--hud-cut) - 1px),
+    calc(var(--hud-cut) - 1px) 0,
+    calc(100% - var(--hud-cut) + 1px) 0,
+    100% calc(var(--hud-cut) - 1px),
+    100% calc(100% - var(--hud-cut) + 1px),
+    calc(100% - var(--hud-cut) + 1px) 100%,
+    calc(var(--hud-cut) - 1px) 100%,
+    0 calc(100% - var(--hud-cut) + 1px)
+  );
+}
+
+/*
+ * A panel stretched by its grid row (to match a taller neighbour) can lay its content out in a column and
+ * let one child grow. This is unlayered on purpose: `.hud-body` sets display, which would beat Tailwind's
+ * layered `flex flex-col` utilities.
+ */
+.hud-body.hud-fill {
   display: flex;
-  flex-shrink: 0;
+  flex-direction: column;
+}
+
+/* A bright accent bar along the top edge: the "lit" side of the glass. */
+.hud-body::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 18%;
+  right: 18%;
+  height: 2px;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--hud-accent-light),
+    transparent
+  );
+  box-shadow: 0 0 14px var(--hud-accent);
+}
+
+button.hud-body {
+  cursor: pointer;
+  border: 0;
+}
+
+.hud-glow.is-interactive:hover,
+.hud-glow.is-selected {
+  filter: var(--neon-boost)
+    drop-shadow(
+      0 10px 30px color-mix(in srgb, var(--hud-accent) 48%, transparent)
+    );
+}
+
+.hud-glow.is-interactive:hover {
+  transform: translateY(-3px);
+}
+
+.hud-glow:has(button.hud-body:focus-visible) {
+  filter: var(--neon-boost) drop-shadow(0 0 18px var(--hud-accent));
+}
+
+button.hud-body:focus-visible {
+  outline: 2px solid var(--hud-accent-light);
+  outline-offset: -4px;
+}
+
+.hud-body::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    color-mix(in srgb, var(--hud-accent) 9%, transparent) 50%,
+    transparent 100%
+  );
+  height: 38%;
+  transform: translateY(-120%);
+  animation: hud-scan 9s ease-in-out infinite;
+}
+
+.hud-glow.is-interactive:hover .hud-body::after {
+  animation-duration: 3s;
+}
+
+.hud-tag {
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  border-radius: 0.5rem;
-  background-color: color-mix(
-    in srgb,
-    var(--nordic-200) 60%,
-    var(--base-background)
-  );
-  color: var(--nordic-700);
+  gap: 0.5rem;
 }
 
-:root.dark .icon-chip {
-  background-color: color-mix(
-    in srgb,
-    var(--nordic-700) 45%,
-    var(--base-background)
-  );
-  color: var(--nordic-200);
+.hud-dot {
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 0;
+  transform: rotate(45deg);
+  background: var(--hud-accent-light);
+  box-shadow: 0 0 8px var(--hud-accent);
 }
 
-@keyframes page-enter {
+.hud-dot--live {
+  animation: pulse-dot 1.8s ease-in-out infinite;
+}
+
+.hud-title-chip {
+  display: inline-block;
+  max-width: 100%;
+  padding: 0.3rem 0.7rem;
+  border: 1px solid color-mix(in srgb, var(--hud-accent) 40%, transparent);
+  border-left: 3px solid var(--hud-accent);
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--hud-accent) 14%, transparent),
+    color-mix(in srgb, var(--neon-surface-deep) 80%, transparent)
+  );
+  border-radius: 0;
+  overflow-wrap: anywhere;
+}
+
+.hud-stat {
+  padding-top: 0.6rem;
+  border-top: 1px solid color-mix(in srgb, var(--hud-accent) 26%, transparent);
+}
+
+.hud-bar {
+  height: 3px;
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--hud-accent) 16%, transparent);
+  overflow: hidden;
+}
+
+.hud-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: 9999px;
+  background: linear-gradient(
+    90deg,
+    var(--hud-accent),
+    var(--hud-accent-light)
+  );
+  box-shadow: 0 0 8px var(--hud-accent);
+}
+
+/* ---------- Brand ---------- */
+
+.brand-mark {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  color: var(--neon-cyan);
+  border: 1px solid color-mix(in srgb, var(--neon-cyan) 55%, transparent);
+  background: color-mix(in srgb, var(--neon-cyan) 10%, transparent);
+  clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%);
+  filter: drop-shadow(0 0 8px var(--neon-cyan));
+}
+
+.neon-divider {
+  height: 1px;
+  border: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--neon-cyan),
+    transparent
+  );
+  opacity: 0.55;
+}
+
+/* ---------- Motion ---------- */
+
+@keyframes grid-drift {
+  to {
+    background-position:
+      44px 44px,
+      44px 44px;
+  }
+}
+
+@keyframes orb-float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(5rem, -3rem, 0) scale(1.15);
+  }
+}
+
+@keyframes border-spin {
+  to {
+    --hud-angle: 360deg;
+  }
+}
+
+@keyframes hud-scan {
+  0% {
+    transform: translateY(-120%);
+  }
+  55%,
+  100% {
+    transform: translateY(300%);
+  }
+}
+
+@keyframes pulse-dot {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.45;
+    transform: scale(0.8);
+  }
+}
+
+@keyframes ring-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes rise-in {
   from {
     opacity: 0;
-    transform: translateY(6px);
+    transform: translateY(14px);
   }
   to {
     opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.rise-in {
+  animation: rise-in 520ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation-delay: var(--rise-delay, 0ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .neon-stage::before,
+  .neon-orb,
+  .hud-body::after,
+  .hud-animated .hud-frame,
+  .hud-glow.is-interactive:hover .hud-frame,
+  .hud-glow.is-selected .hud-frame,
+  .hud-dot--live,
+  .trend-live,
+  .ring-spin,
+  .rise-in {
+    animation: none;
+  }
+
+  .hud-glow,
+  .ring-value {
+    transition: none;
+  }
+
+  .hud-glow.is-interactive:hover {
     transform: none;
   }
 }
 
-.page-enter {
-  animation: page-enter 240ms ease-out both;
+/* ---------- Data table ---------- */
+
+.hud-table-wrap {
+  overflow-x: auto;
+  max-height: 32rem;
+  outline: none;
+}
+
+.hud-table-wrap:focus-visible {
+  outline: 2px solid var(--hud-accent-light);
+  outline-offset: -2px;
+}
+
+.hud-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.8125rem;
+  white-space: nowrap;
+}
+
+.hud-table th,
+.hud-table td {
+  padding: 0.65rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid
+    color-mix(in srgb, var(--hud-accent) 14%, transparent);
+}
+
+.hud-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  font-family: var(--font-source-code-pro);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--hud-accent);
+  background: color-mix(in srgb, var(--neon-surface-deep) 94%, transparent);
+  border-bottom: 1px solid
+    color-mix(in srgb, var(--hud-accent) 45%, transparent);
+}
+
+.hud-table .is-sticky {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: color-mix(in srgb, var(--neon-surface) 96%, transparent);
+  border-right: 1px solid color-mix(in srgb, var(--hud-accent) 22%, transparent);
+}
+
+.hud-table thead .is-sticky {
+  z-index: 3;
+}
+
+.hud-table tbody tr:hover td,
+.hud-table tbody tr:hover th {
+  background: color-mix(in srgb, var(--hud-accent) 9%, var(--neon-surface));
+}
+
+.tab-count {
+  /* A true circle: equal width and height, no padding, the digit centred in both directions. */
+  box-sizing: border-box;
+  display: inline-grid;
+  place-items: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  padding: 0;
+  margin-left: 0.3rem;
+  font-family: var(--font-source-code-pro);
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+  /* The tabs space their letters out; inherited here it adds trailing space after the digit and pulls it off centre. */
+  letter-spacing: 0;
+  line-height: 1;
+  text-align: center;
+  font-weight: 600;
+  color: var(--blue-100);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--neon-cyan) 30%, transparent),
+    color-mix(in srgb, var(--neon-cyan) 10%, transparent)
+  );
+  border: 1px solid color-mix(in srgb, var(--neon-cyan) 45%, transparent);
+  border-radius: 50%;
+}
+
+/* Counts of 100 or more no longer fit a circle, so they become a pill. */
+.tab-count.is-wide {
+  width: auto;
+  min-width: 1.25rem;
+  padding: 0 0.4rem;
+  border-radius: 9999px;
+}
+
+.tab-count.is-alert {
+  color: color-mix(in srgb, var(--neon-red) 55%, var(--blue-50));
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--neon-red) 32%, transparent),
+    color-mix(in srgb, var(--neon-red) 10%, transparent)
+  );
+  border-color: color-mix(in srgb, var(--neon-red) 55%, transparent);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--neon-red) 35%, transparent);
+}
+
+.collapse-trigger {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.55rem 0.75rem;
+  color: var(--hud-accent);
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--hud-accent) 14%, transparent),
+    transparent
+  );
+  border: 0;
+  border-left: 3px solid var(--hud-accent);
+  cursor: pointer;
+}
+
+.collapse-trigger:focus-visible {
+  outline: 2px solid var(--hud-accent-light);
+  outline-offset: 2px;
+}
+
+.collapse-trigger[data-panel-open] .collapse-chevron {
+  transform: rotate(180deg);
+}
+
+.collapse-chevron {
+  transition: transform 200ms ease;
+}
+
+/* =====================================================================
+ * Control restyle: Aura controls, themed to match the HUD panels.
+ * Aura's own classes live in a cascade layer, so these unlayered rules win.
+ * ===================================================================== */
+
+.neon-stage {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--neon-cyan) 45%, transparent)
+    transparent;
+}
+
+.neon-stage ::selection {
+  background: color-mix(in srgb, var(--neon-cyan) 40%, transparent);
+}
+
+/* ---------- Tabs: a chamfered glass rail with lit, gradient-filled active tab ---------- */
+
+/* The one height of every tab-like control. The rail around it adds 4 + 4 padding and 1 + 1 border. */
+.neon-stage {
+  --tab-height: 2.125rem;
+}
+
+.neon-stage [data-slot='tabs-list'],
+.neon-stage [data-slot='segmented-control-list'] {
+  gap: 4px;
+  width: fit-content;
+  max-width: 100%;
+  padding: 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--neon-cyan) 9%, var(--neon-surface-deep)),
+    var(--neon-surface-deep)
+  );
+  border: 1px solid color-mix(in srgb, var(--neon-cyan) 32%, transparent);
+  clip-path: polygon(
+    10px 0,
+    100% 0,
+    100% calc(100% - 10px),
+    calc(100% - 10px) 100%,
+    0 100%,
+    0 10px
+  );
+}
+
+.neon-stage [data-slot='tabs-list']::-webkit-scrollbar,
+.neon-stage [data-slot='segmented-control-list']::-webkit-scrollbar {
+  display: none;
+}
+
+.neon-stage [data-slot='tabs-indicator'],
+.neon-stage [data-slot='tabs-list-separator'] {
+  display: none;
+}
+
+.neon-stage [data-slot='tabs-trigger'],
+.neon-stage [data-slot='segmented-control-trigger'] {
+  height: var(--tab-height);
+  padding: 0 1rem;
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  clip-path: polygon(
+    7px 0,
+    100% 0,
+    100% calc(100% - 7px),
+    calc(100% - 7px) 100%,
+    0 100%,
+    0 7px
+  );
+  transition:
+    color 160ms ease,
+    background 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.neon-stage [data-slot='tabs-trigger']:hover,
+.neon-stage [data-slot='segmented-control-trigger']:hover {
+  color: var(--base-foreground);
+  background: color-mix(in srgb, var(--neon-cyan) 12%, transparent);
+}
+
+.neon-stage [data-slot='tabs-trigger'][aria-selected='true'] {
+  color: var(--blue-50);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--neon-cyan) 40%, transparent),
+    color-mix(in srgb, var(--neon-cyan) 12%, transparent)
+  );
+  box-shadow:
+    inset 0 -2px 0 var(--blue-300),
+    inset 0 1px 0 color-mix(in srgb, var(--blue-100) 30%, transparent);
+}
+
+.neon-stage [data-slot='tabs-trigger']:focus-visible,
+.neon-stage [data-slot='segmented-control-trigger']:focus-visible {
+  outline: 2px solid var(--blue-200);
+  outline-offset: -2px;
+}
+
+/* The header search: the same glass rail as the tabs, so the two read as one control group. */
+.nav-search {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  /* Matches the tab rail: border 1 + padding 4 + tab + padding 4 + border 1. */
+  height: calc(var(--tab-height) + 10px);
+  min-width: 14rem;
+  padding: 0 1rem;
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--neon-cyan) 9%, var(--neon-surface-deep)),
+    var(--neon-surface-deep)
+  );
+  border: 1px solid color-mix(in srgb, var(--neon-cyan) 32%, transparent);
+  clip-path: polygon(
+    10px 0,
+    100% 0,
+    100% calc(100% - 10px),
+    calc(100% - 10px) 100%,
+    0 100%,
+    0 10px
+  );
+  transition:
+    color 160ms ease,
+    background 160ms ease,
+    border-color 160ms ease;
+}
+
+.nav-search:hover {
+  color: var(--base-foreground);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--neon-cyan) 20%, var(--neon-surface-deep)),
+    color-mix(in srgb, var(--neon-cyan) 8%, var(--neon-surface-deep))
+  );
+  border-color: color-mix(in srgb, var(--neon-cyan) 55%, transparent);
+}
+
+.nav-search:focus-visible {
+  outline: 2px solid var(--blue-200);
+  outline-offset: -2px;
+}
+
+/* On a phone the search and the tabs stack, each spanning the full width so their edges line up. */
+@media (max-width: 639.98px) {
+  .nav-search,
+  .neon-stage [data-header-actions] > [data-slot='tabs'] {
+    flex: 1 1 100%;
+  }
+
+  .neon-stage [data-header-actions] [data-slot='tabs-list'] {
+    width: 100%;
+  }
+
+  .neon-stage [data-header-actions] [data-slot='tabs-trigger'] {
+    flex: 1 1 auto;
+    padding: 0 0.5rem;
+  }
+}
+
+/* ---------- Segmented controls (filters, view switches) ---------- */
+
+/*
+ * They share the rail, the trigger size, the type, hover and focus with the tabs above, so every tab-like control
+ * looks the same as the asset page tabs. The only difference is mechanical: a segmented control draws its active state
+ * on a sliding indicator behind the buttons, so the lit gradient, bottom line and chamfer go on the indicator.
+ */
+/* Aura gives the list a fixed height; it must grow with its triggers, like the tab rail. */
+.neon-stage [data-slot='segmented-control-list'] {
+  height: auto;
+}
+
+.neon-stage [data-slot='segmented-control-indicator'] {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--neon-cyan) 40%, transparent),
+    color-mix(in srgb, var(--neon-cyan) 12%, transparent)
+  );
+  border-radius: 0;
+  box-shadow:
+    inset 0 -2px 0 var(--blue-300),
+    inset 0 1px 0 color-mix(in srgb, var(--blue-100) 30%, transparent);
+  clip-path: polygon(
+    7px 0,
+    100% 0,
+    100% calc(100% - 7px),
+    calc(100% - 7px) 100%,
+    0 100%,
+    0 7px
+  );
+}
+
+.neon-stage [data-slot='segmented-control-trigger'][aria-selected='true'] {
+  color: var(--blue-50);
+  background: transparent;
+}
+
+/* ---------- Search and inputs ---------- */
+
+.neon-stage [data-slot='input-group'] {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--neon-cyan) 10%, var(--neon-surface-deep)),
+    var(--neon-surface-deep)
+  );
+  border: 1px solid color-mix(in srgb, var(--neon-cyan) 30%, transparent);
+  border-radius: 3px;
+}
+
+.neon-stage [data-slot='input-group']:hover {
+  border-color: color-mix(in srgb, var(--neon-cyan) 60%, transparent);
+}
+
+.neon-stage [data-slot='input-group']:focus-within {
+  border-color: var(--neon-cyan);
+  box-shadow:
+    0 0 0 1px var(--neon-cyan),
+    0 0 22px color-mix(in srgb, var(--neon-cyan) 35%, transparent);
+}
+
+.neon-stage [data-slot='input-group-control'] {
+  font-family: var(--font-source-code-pro);
+  font-size: 0.8125rem;
+  letter-spacing: 0.02em;
+}
+
+/* ---------- Pills: Aura badges as glowing, fully rounded status pills ---------- */
+
+.neon-stage [data-slot='badge'] {
+  --pill: var(--neon-cyan);
+  height: 1.375rem;
+  padding: 0 0.65rem;
+  font-family: var(--font-source-code-pro);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  color: color-mix(in srgb, var(--pill) 45%, var(--blue-50));
+  border-radius: 9999px;
+  border: 1px solid color-mix(in srgb, var(--pill) 42%, transparent);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--pill) 24%, transparent),
+    color-mix(in srgb, var(--pill) 8%, transparent)
+  );
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--blue-100) 14%, transparent);
+}
+
+.neon-stage [data-slot='badge'][class*='bg-critical-background'] {
+  --pill: var(--neon-red);
+  color: color-mix(in srgb, var(--neon-red) 55%, var(--blue-50));
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--blue-100) 12%, transparent),
+    0 0 12px color-mix(in srgb, var(--neon-red) 32%, transparent);
+}
+
+.neon-stage [data-slot='badge'][class*='bg-warning-background'] {
+  --pill: var(--neon-amber);
+  color: color-mix(in srgb, var(--neon-amber) 60%, var(--blue-50));
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--blue-100) 12%, transparent),
+    0 0 12px color-mix(in srgb, var(--neon-amber) 26%, transparent);
+}
+
+.neon-stage [data-slot='badge'][class*='bg-secondary-background'] {
+  --pill: var(--neon-cyan);
+}
+
+.neon-stage [data-slot='badge'][class*='bg-success-background'] {
+  --pill: var(--neon-green);
+  color: color-mix(in srgb, var(--neon-green) 55%, var(--blue-50));
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--blue-100) 12%, transparent),
+    0 0 12px color-mix(in srgb, var(--neon-green) 30%, transparent);
+}
+
+.neon-stage [data-slot='badge'][class*='bg-info-background'] {
+  --pill: var(--neon-sky);
+}
+
+/* Status dot badges keep their dot-sized shape. */
+.neon-stage [data-slot='badge'][class*='min-w-5'] {
+  padding: 0 0.45rem;
+}
+
+/* ---------- Buttons ---------- */
+
+/*
+ * One button language, matching the tabs and pills: mono caps, a cyan edge, a glow on hover.
+ * Aura does not expose the variant as an attribute, so the three looks are picked by the classes it generates:
+ * filled (default variant), outlined (outline and secondary variants) and ghost (everything else).
+ */
+.neon-stage [data-slot='button'] {
+  --btn-edge: color-mix(in srgb, var(--neon-cyan) 55%, transparent);
+  border-radius: 3px;
+  font-family: var(--font-source-code-pro);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition:
+    box-shadow 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease,
+    color 160ms ease;
+}
+
+.neon-stage [data-slot='button'][class*='h-9'] {
+  min-height: 2.25rem;
+}
+
+/* Filled: the one primary action of a view. */
+.neon-stage [data-slot='button'][class*='bg-primary-background'] {
+  color: var(--mountain-950);
+  background: linear-gradient(135deg, var(--blue-300), var(--neon-cyan));
+  border: 1px solid var(--blue-200);
+  box-shadow: 0 0 16px color-mix(in srgb, var(--neon-cyan) 35%, transparent);
+}
+
+.neon-stage [data-slot='button'][class*='bg-primary-background']:hover {
+  color: var(--mountain-950);
+  background: linear-gradient(135deg, var(--blue-200), var(--blue-300));
+  box-shadow: 0 0 24px color-mix(in srgb, var(--neon-cyan) 60%, transparent);
+}
+
+/* Outlined: every other action. */
+.neon-stage [data-slot='button'][class*='border-border-emphasized'],
+.neon-stage [data-slot='button'][class*='bg-secondary-background'] {
+  color: var(--blue-100);
+  background: color-mix(in srgb, var(--neon-cyan) 8%, transparent);
+  border: 1px solid var(--btn-edge);
+}
+
+.neon-stage [data-slot='button'][class*='border-border-emphasized']:hover,
+.neon-stage [data-slot='button'][class*='bg-secondary-background']:hover {
+  color: var(--blue-50);
+  background: color-mix(in srgb, var(--neon-cyan) 20%, transparent);
+  border-color: var(--neon-cyan);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--neon-cyan) 40%, transparent);
+}
+
+/* Ghost: low emphasis, same shape and type so it still reads as a button. */
+.neon-stage
+  [data-slot='button'][class*='text-medium-foreground']:not(
+    [class*='border-border-emphasized']
+  ):not([class*='bg-primary-background']) {
+  color: var(--blue-200);
+  border: 1px solid transparent;
+}
+
+.neon-stage
+  [data-slot='button'][class*='text-medium-foreground']:not(
+    [class*='border-border-emphasized']
+  ):not([class*='bg-primary-background']):hover {
+  color: var(--blue-50);
+  background: color-mix(in srgb, var(--neon-cyan) 14%, transparent);
+  border-color: var(--btn-edge);
+}
+
+.neon-stage [data-slot='button']:disabled {
+  box-shadow: none;
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.neon-stage [data-slot='button']:focus-visible {
+  outline: 2px solid var(--blue-200);
+  outline-offset: 2px;
+}
+
+/* ---------- Breadcrumb ---------- */
+
+.neon-stage [data-slot='breadcrumb-list'] {
+  font-family: var(--font-source-code-pro);
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.neon-stage [data-slot='breadcrumb-page'] {
+  color: var(--neon-cyan);
+  text-shadow: 0 0 10px color-mix(in srgb, var(--neon-cyan) 50%, transparent);
+}
+
+.neon-stage [data-slot='breadcrumb-page-button'] {
+  color: var(--muted-foreground);
+  transition: color 150ms ease;
+}
+
+.neon-stage [data-slot='breadcrumb-page-button']:hover {
+  color: var(--blue-100);
+}
+
+/* ---------- Empty states, alerts, loading skeletons ---------- */
+
+.neon-stage [data-slot='empty-state'] {
+  padding: 2rem 1.5rem;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--neon-cyan) 7%, transparent),
+    transparent
+  );
+  border: 1px dashed color-mix(in srgb, var(--neon-cyan) 32%, transparent);
+  border-radius: 0;
+}
+
+.neon-stage [data-slot='empty-state-title'] {
+  font-family: var(--font-display);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.neon-stage [data-slot='alert'] {
+  border-radius: 0;
+  border: 1px solid color-mix(in srgb, currentColor 30%, transparent);
+  border-left: 3px solid currentColor;
+  background: color-mix(in srgb, currentColor 8%, var(--neon-surface-deep));
+}
+
+.neon-stage [data-slot='skeleton'] {
+  border-radius: 0;
+  border: 1px solid color-mix(in srgb, var(--neon-cyan) 18%, transparent);
+  background: linear-gradient(
+    100deg,
+    color-mix(in srgb, var(--neon-cyan) 5%, var(--neon-surface-deep)) 30%,
+    color-mix(in srgb, var(--neon-cyan) 16%, var(--neon-surface-deep)) 50%,
+    color-mix(in srgb, var(--neon-cyan) 5%, var(--neon-surface-deep)) 70%
+  );
+  background-size: 220% 100%;
+  animation: skeleton-sweep 1.6s linear infinite;
+}
+
+@keyframes skeleton-sweep {
+  from {
+    background-position: 120% 0;
+  }
+  to {
+    background-position: -120% 0;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .page-enter {
+  .neon-stage [data-slot='skeleton'] {
     animation: none;
   }
+}
+
+/* ---------- App additions ---------- */
+
+:root {
+  --brand: var(--blue-450);
+  --brand-strong: var(--blue-200);
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+.page-enter {
+  animation: rise-in 520ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+/* Icon tile beside a figure: a cut-corner tinted chip. */
+.icon-chip {
+  --chip-cut: 8px;
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  color: var(--blue-100);
+  background-color: color-mix(in srgb, var(--neon-cyan) 24%, transparent);
+  clip-path: polygon(
+    0 var(--chip-cut),
+    var(--chip-cut) 0,
+    calc(100% - var(--chip-cut)) 0,
+    100% var(--chip-cut),
+    100% calc(100% - var(--chip-cut)),
+    calc(100% - var(--chip-cut)) 100%,
+    var(--chip-cut) 100%,
+    0 calc(100% - var(--chip-cut))
+  );
+}
+
+/* Header bar: translucent glass with a lit lower edge. */
+.app-topbar {
+  background-image: none;
+  background-color: color-mix(
+    in srgb,
+    var(--neon-surface-deep) 82%,
+    transparent
+  );
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid color-mix(in srgb, var(--neon-cyan) 35%, transparent);
+  box-shadow: 0 8px 24px -14px
+    color-mix(in srgb, var(--neon-cyan) 55%, transparent);
+}
+
+/* Notices: square edge with a coloured bar on the left. */
+.neon-stage .app-alert {
+  border-radius: 0;
+  border-left-width: 3px;
+}
+
+/* Layout helpers for panel bodies. Unlayered on purpose, like .hud-fill: .hud-body sets padding and display. */
+.hud-body.hud-flush {
+  padding: 0;
+}
+
+.hud-body.hud-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* The count beside a tab label: a true circle with the digit centred. */
+.neon-stage [data-slot='tabs-trigger'] [data-slot='badge'] {
+  box-sizing: border-box;
+  display: inline-grid;
+  place-items: center;
+  width: 1.25rem;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  padding: 0;
+  margin-left: 0.3rem;
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+  line-height: 1;
+  color: var(--blue-100);
+  border-radius: 50%;
 }

@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-import { GlassCard } from './GlassCard';
+import { HudPanel } from './HudPanel';
 
 type StatTileProps = {
   label: string;
@@ -10,7 +10,7 @@ type StatTileProps = {
 
 export function StatTile({ label, value, icon }: StatTileProps) {
   return (
-    <GlassCard className="page-enter flex items-center gap-4 p-5">
+    <HudPanel bodyClassName="hud-row">
       <span aria-hidden className="icon-chip size-12">
         {icon}
       </span>
@@ -20,6 +20,6 @@ export function StatTile({ label, value, icon }: StatTileProps) {
           {value}
         </p>
       </div>
-    </GlassCard>
+    </HudPanel>
   );
 }

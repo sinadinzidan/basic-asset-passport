@@ -73,17 +73,17 @@ describe('ASSET_COLUMNS', () => {
   it('shows an Operating status with the success style', () => {
     renderCell(4, makeAssetListItem({ flocStatus: 'Operating' }));
 
-    expect(screen.getByText('Operating')).toHaveClass(
-      'bg-success-foreground-strong',
-    );
+    expect(
+      screen.getByText('Operating').closest('[data-tone]'),
+    ).toHaveAttribute('data-tone', 'success');
   });
 
   it('shows any other status without the success style', () => {
     renderCell(4, makeAssetListItem({ flocStatus: 'IN SERVICE' }));
 
-    expect(screen.getByText('IN SERVICE')).not.toHaveClass(
-      'bg-success-foreground-strong',
-    );
+    expect(
+      screen.getByText('IN SERVICE').closest('[data-tone]'),
+    ).toHaveAttribute('data-tone', 'neutral');
   });
 
   it('says the status is not provided when it is missing', () => {

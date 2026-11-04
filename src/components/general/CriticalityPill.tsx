@@ -28,7 +28,7 @@ export function CriticalityPill({ criticality }: CriticalityPillProps) {
 
   return (
     <Badge
-      className="h-7 gap-2 rounded-full px-3"
+      className="gap-2"
       data-tone={tone}
       variant={BADGE_VARIANT_BY_TONE[tone]}
     >

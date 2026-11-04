@@ -10,7 +10,7 @@ import { isOperatingStatus } from '../../lib/assetStatus';
 import type { AssetIdentifier, AssetListItem } from '../../types/asset';
 import { CursorPagination } from '../general/CursorPagination';
 import { EmptyStateMessage } from '../general/EmptyStateMessage';
-import { GlassCard } from '../general/GlassCard';
+import { HudPanel } from '../general/HudPanel';
 import { PageHeader } from '../general/PageHeader';
 import { PageShell } from '../general/PageShell';
 import { RetryAlert } from '../general/RetryAlert';
@@ -82,6 +82,7 @@ export function AssetTable({ onAssetSelect }: AssetTableProps) {
   return (
     <PageShell>
       <PageHeader
+        kicker="Asset intelligence"
         title="Asset register"
         description="Browse functional locations and open an asset to review its properties and linked equipment."
       />
@@ -102,7 +103,7 @@ export function AssetTable({ onAssetSelect }: AssetTableProps) {
         />
       </section>
 
-      <GlassCard className="page-enter overflow-hidden">
+      <HudPanel bodyClassName="hud-flush">
         <div className="border-b border-default px-5 py-4">
           <h2 className="text-base font-semibold">Assets</h2>
           <p className="text-sm text-muted-foreground">
@@ -139,7 +140,7 @@ export function AssetTable({ onAssetSelect }: AssetTableProps) {
           onPreviousPage={pagination.goToPreviousPage}
           onNextPage={handleNextPage}
         />
-      </GlassCard>
+      </HudPanel>
     </PageShell>
   );
 }

@@ -15,7 +15,7 @@ it. Built with React, TypeScript, Vite, Aura, the CDF SDK and TanStack Query.
   tabs (`PROPERTIES`, `EQUIPMENTS`), with status and criticality pills.
 - **Shared state:** the open asset and tab are saved through the Fusion host
   (`syncInternalState`), so reloads and shared links restore the same view.
-- **Theme:** light and dark, following the system until the user chooses.
+- **Look:** a dark-only control-room HUD theme (electric blue on navy, cut-corner glass panels, glowing pills).
 - **Resilience:** an error boundary around the app, and queries that fail with
   429, 502, 503 or 504 are retried up to 3 times with jittered backoff.
 
@@ -72,7 +72,7 @@ Tests use mocked CDF responses and never call live services. They sit in
 - `src/pages/assets/`: the register and the asset details pages.
 - `src/components/assets/`: table, columns, tabs, topbar and logo.
 - `src/components/general/`: shared pieces such as `ErrorBoundary`, `RetryAlert`,
-  `StatusPill` and `CriticalityPill`.
+  `StatusPill`, `CriticalityPill`, `HudPanel` and `NeonStage`.
 - `src/hooks/`: query hooks with dependencies injected through React context.
 - `src/services/assets/`: CDF `instances.query` calls.
 - `src/lib/`, `src/enums/`, `src/types/`, `src/constants/`: helpers, shared

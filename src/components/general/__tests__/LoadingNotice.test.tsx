@@ -10,9 +10,9 @@ describe(LoadingNotice.name, () => {
     expect(screen.getByRole('status')).toHaveTextContent('Loading things...');
   });
 
-  it('applies the given class name to the card', () => {
+  it('applies the given class name to the status row', () => {
     render(<LoadingNotice className="p-10" message="Loading things..." />);
 
-    expect(screen.getByRole('status').parentElement).toHaveClass('p-10');
+    expect(screen.getByRole('status')).toHaveClass('p-10');
   });
 });

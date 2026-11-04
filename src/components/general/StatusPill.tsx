@@ -2,7 +2,6 @@ import { Badge } from '@cognite/aura/components/badge';
 import { IconCircleCheck } from '@tabler/icons-react';
 
 import { NOT_PROVIDED_LABEL } from '../../constants/labels';
-import { cn } from '../../lib/utils';
 
 type StatusPillTone = 'neutral' | 'success';
 
@@ -22,10 +21,9 @@ export function StatusPill({ status, tone = 'neutral' }: StatusPillProps) {
 
   return (
     <Badge
-      className={cn(
-        'h-7 gap-2 rounded-full px-3',
-        isSuccess && 'bg-success-foreground-strong text-foreground-on-primary',
-      )}
+      className="gap-2"
+      data-tone={tone}
+
       variant={isSuccess ? 'success' : 'secondary'}
     >
       {isSuccess ? (

@@ -48,4 +48,27 @@ describe(PageHeader.name, () => {
       screen.getByRole('heading', { name: 'Title' }).nextElementSibling,
     ).toBeNull();
   });
+
+  it('shows a kicker above the title only when given', () => {
+    const { rerender } = render(<PageHeader title="Title" />);
+    expect(screen.queryByText('Asset intelligence')).not.toBeInTheDocument();
+
+    rerender(<PageHeader title="Title" kicker="Asset intelligence" />);
+
+    const kicker = screen.getByText('Asset intelligence');
+    expect(kicker).toBeInTheDocument();
+    expect(
+      kicker.compareDocumentPosition(
+        screen.getByRole('heading', { name: 'Title' }),
+      ) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
+  it('gives the heading the shared page title style', () => {
+    render(<PageHeader title="Title" />);
+
+    expect(screen.getByRole('heading', { name: 'Title' })).toHaveClass(
+      'page-title',
+    );
+  });
 });

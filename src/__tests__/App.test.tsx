@@ -41,7 +41,7 @@ describe(App.name, () => {
     expect(header).not.toHaveTextContent('Asset Passport');
     expect(screen.getByRole('img', { name: 'ADNOC Gas logo' })).toHaveAttribute(
       'src',
-      '/adnoc-horizontal-blue-logo.svg',
+      '/adnoc-horizontal-white-logo.svg',
     );
     expect(screen.queryByLabelText('Signed-in user')).not.toBeInTheDocument();
   });
@@ -92,23 +92,6 @@ describe(App.name, () => {
       }),
     ).not.toBeInTheDocument();
     expect(within(header).queryByText('Copy Asset ID')).not.toBeInTheDocument();
-  });
-
-  it('allows the user to change the Aura theme from the header', async () => {
-    const { deps } = makeDeps();
-    renderApp(deps);
-
-    await screen.findByRole('banner');
-    await userEvent.click(screen.getByRole('button', { name: 'Toggle theme' }));
-    await userEvent.click(
-      await screen.findByRole('menuitemradio', { name: 'Dark mode' }),
-    );
-
-    await waitFor(() => expect(document.documentElement).toHaveClass('dark'));
-    expect(screen.getByRole('img', { name: 'ADNOC Gas logo' })).toHaveAttribute(
-      'src',
-      '/adnoc-horizontal-white-logo.svg',
-    );
   });
 
   it('renders the asset grid and queries ten instances from the Asset view', async () => {

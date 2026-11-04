@@ -84,6 +84,7 @@ export function AssetEquipmentRegister({
   return (
     <PageShell>
       <PageHeader
+        kicker="Asset passport"
         title={assetName ?? data.asset.externalId}
         leading={backButton}
         badges={

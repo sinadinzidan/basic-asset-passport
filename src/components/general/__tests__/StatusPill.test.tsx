@@ -22,9 +22,9 @@ describe(StatusPill.name, () => {
     );
 
     expect(container.querySelector('svg')).toBeInTheDocument();
-    expect(screen.getByText('Operating')).toHaveClass(
-      'bg-success-foreground-strong',
-    );
+    expect(
+      screen.getByText('Operating').closest('[data-tone]'),
+    ).toHaveAttribute('data-tone', 'success');
   });
 
   it('marks a neutral status with a dot instead of an icon', () => {

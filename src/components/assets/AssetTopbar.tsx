@@ -7,15 +7,12 @@ import {
   Topbar,
   TopbarBreadcrumbs,
   TopbarLeft,
-  TopbarRight,
-  TopbarThemeSwitcher,
-  type TopbarTheme,
 } from '@cognite/aura/components/topbar';
 
 import { NAME_PROPERTY_IDENTIFIER } from '../../constants/assets';
 import {
   APP_LOGO_ALT_TEXT,
-  APP_LOGO_SOURCE_BY_THEME,
+  APP_LOGO_SOURCE,
   APP_NAME,
 } from '../../constants/branding';
 import { useAssetEquipmentDetails } from '../../hooks/assets/useAssetEquipmentDetails';
@@ -26,8 +23,6 @@ import { AppLogo } from './AppLogo';
 
 type AssetTopbarProps = {
   selectedAsset?: AssetIdentifier;
-  theme: TopbarTheme;
-  onThemeChange: (theme: TopbarTheme) => void;
 };
 
 type SelectedAssetBreadcrumbProps = {
@@ -57,19 +52,14 @@ function SelectedAssetBreadcrumb({
   );
 }
 
-export function AssetTopbar({
-  selectedAsset,
-  theme,
-  onThemeChange,
-}: AssetTopbarProps) {
+export function AssetTopbar({ selectedAsset }: AssetTopbarProps) {
   return (
     <Topbar className="app-topbar sticky top-0 z-20 h-14 gap-4 rounded-none px-4 sm:px-6 lg:px-8">
       <TopbarLeft className="flex-1 gap-4 sm:gap-6">
         <AppLogo
-          key={theme}
           alt={APP_LOGO_ALT_TEXT}
           fallbackText={APP_NAME}
-          source={APP_LOGO_SOURCE_BY_THEME[theme]}
+          source={APP_LOGO_SOURCE}
         />
         {selectedAsset ? (
           <TopbarBreadcrumbs
@@ -80,9 +70,6 @@ export function AssetTopbar({
           </TopbarBreadcrumbs>
         ) : null}
       </TopbarLeft>
-      <TopbarRight className="flex-none">
-        <TopbarThemeSwitcher theme={theme} onThemeChange={onThemeChange} />
-      </TopbarRight>
     </Topbar>
   );
 }

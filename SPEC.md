@@ -45,7 +45,7 @@ off by default and labelled on screen.
   load shows "Asset details could not be loaded" with Retry and the back
   button; the page is never shown with partial or fabricated data.
 
-## Shared state and theme
+## Shared state and look
 
 - The selected asset and the active tab are host-synced: they are restored
   from the Fusion `initialState` and pushed with `syncInternalState` on every
@@ -53,11 +53,12 @@ off by default and labelled on screen.
   `PROPERTIES` and `EQUIPMENTS`; unknown or malformed state falls back to the
   register on the Properties tab. A failed sync is logged and does not block
   navigation.
-- The topbar shows the ADNOC Gas logo (light or dark variant; the app name
-  "Asset Passport" is shown instead if the image cannot load), a breadcrumb
-  with the selected asset name when one is open, and a light/dark theme
-  switcher. The theme follows the system preference until the user picks one;
-  the choice is remembered in local storage when it is available.
+- The topbar shows the white ADNOC Gas logo (the app name "Asset Passport" is
+  shown instead if the image cannot load) and a breadcrumb with the selected
+  asset name when one is open.
+- The app is dark only, with the control-room HUD look: electric blue on deep
+  navy, an engineering grid and soft glows behind the page, and a mono kicker
+  line above each page title. There is no light mode or theme switcher.
 
 ## Mock mode
 
@@ -74,9 +75,13 @@ off by default and labelled on screen.
 
 ## Design
 
-- Build the UI from Aura components and semantic tokens; the teal brand colour
-  is applied once in `src/styles.css` by aliasing Aura's tokens. Custom
+- Build the UI from Aura components and Aura colour ramps (blue, amber, red,
+  mountain); no raw hex. The HUD theme lives in `src/styles.css`, and custom
   components live in `src/components/general/`.
+- Panels (`HudPanel`) have cut corners, a lit gradient edge, a glow and a
+  light that travels along the border. Tabs are a cut-corner glass rail with a
+  lit active tab. Pills glow in their status colour, buttons use mono capitals,
+  and the page sits on `NeonStage` (grid, rings and two slow glows).
 - Every notice (load errors, the connection error, the mock-mode banner) uses
   one app-owned alert, `AppAlert`: a tinted, bordered row with an icon, an
   optional title, a message and an optional action. Variants are error,
