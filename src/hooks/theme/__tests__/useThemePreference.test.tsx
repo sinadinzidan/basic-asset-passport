@@ -115,20 +115,26 @@ describe('defaultThemePreferenceDeps', () => {
   });
 
   it('treats unavailable storage as nothing stored', () => {
-    vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
-      throw new Error('storage blocked');
-    });
+    const getItem = vi
+      .spyOn(window.localStorage, 'getItem')
+      .mockImplementation(() => {
+        throw new Error('storage blocked');
+      });
 
     expect(defaultThemePreferenceDeps.readStoredTheme()).toBeNull();
+    expect(getItem).toHaveBeenCalled();
   });
 
   it('does not fail when storage rejects a write', () => {
-    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
-      throw new Error('storage blocked');
-    });
+    const setItem = vi
+      .spyOn(window.localStorage, 'setItem')
+      .mockImplementation(() => {
+        throw new Error('storage blocked');
+      });
 
     expect(() =>
       defaultThemePreferenceDeps.writeStoredTheme('dark'),
     ).not.toThrow();
+    expect(setItem).toHaveBeenCalled();
   });
 });

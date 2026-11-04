@@ -101,6 +101,22 @@ describe(useAssetNavigation.name, () => {
     expect(result.current.navigationState.selectedAsset).toEqual(selectedAsset);
   });
 
+  it('logs a failed sync to the console by default', async () => {
+    const error = new Error('sync failed');
+    const consoleError = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
+    vi.mocked(api.syncInternalState).mockRejectedValue(error);
+    const { result } = renderHook(() => useAssetNavigation(api));
+
+    await act(async () => result.current.selectAsset(selectedAsset));
+
+    expect(consoleError).toHaveBeenCalledWith(
+      'Failed to sync asset register state.',
+      error,
+    );
+  });
+
   it('logs a failed sync without losing the navigation', async () => {
     const error = new Error('sync failed');
     vi.mocked(api.syncInternalState).mockRejectedValue(error);

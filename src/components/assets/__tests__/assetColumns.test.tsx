@@ -70,9 +70,25 @@ describe('ASSET_COLUMNS', () => {
     expect(screen.getByText('No description')).toBeInTheDocument();
   });
 
-  it('shows the status as a pill', () => {
+  it('shows an Operating status with the success style', () => {
+    renderCell(4, makeAssetListItem({ flocStatus: 'Operating' }));
+
+    expect(screen.getByText('Operating')).toHaveClass(
+      'bg-success-foreground-strong',
+    );
+  });
+
+  it('shows any other status without the success style', () => {
     renderCell(4, makeAssetListItem({ flocStatus: 'IN SERVICE' }));
 
-    expect(screen.getByText('IN SERVICE')).toBeInTheDocument();
+    expect(screen.getByText('IN SERVICE')).not.toHaveClass(
+      'bg-success-foreground-strong',
+    );
+  });
+
+  it('says the status is not provided when it is missing', () => {
+    renderCell(4, makeAssetListItem({ flocStatus: null }));
+
+    expect(screen.getByText('Not provided')).toBeInTheDocument();
   });
 });

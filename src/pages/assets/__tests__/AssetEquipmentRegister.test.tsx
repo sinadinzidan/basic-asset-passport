@@ -101,6 +101,27 @@ describe(AssetEquipmentRegister.name, () => {
     ).toBeInTheDocument();
   });
 
+  it('shows a status other than Operating without the success style', async () => {
+    const details = makeDetails();
+    vi.mocked(mockContext.getAssetEquipmentDetails).mockResolvedValue({
+      ...details,
+      asset: makeInstanceDetails({
+        properties: details.asset.properties.map((property) =>
+          property.identifier === 'flocStatus'
+            ? { ...property, value: 'IN SERVICE' }
+            : property,
+        ),
+      }),
+    });
+
+    renderRegister();
+
+    const pill = await screen.findByText('IN SERVICE', {
+      selector: '[data-slot="badge"]',
+    });
+    expect(pill).not.toHaveClass('bg-success-foreground-strong');
+  });
+
   it('falls back to the external id and omits missing badges', async () => {
     vi.mocked(mockContext.getAssetEquipmentDetails).mockResolvedValue({
       asset: makeInstanceDetails({ externalId: 'FLOC-100', properties: [] }),
