@@ -8,8 +8,12 @@ import { CogniteClient } from '@cognite/sdk';
 import type { ComponentProps } from 'react';
 import { useCallback, useRef, useState } from 'react';
 
+import { LiveAssetDataClientProvider } from './components/assets/LiveAssetDataClientProvider';
 import { LoadingNotice } from './components/general/LoadingNotice';
+import { MockModeNotice } from './components/general/MockModeNotice';
+import { AssetDataClientContext } from './hooks/assets/useAssetDataClient';
 import { AssetRegister } from './pages/assets/AssetRegister';
+import type { AssetDataClient } from './types/assetDataClient';
 import type { StateSyncApi } from './types/host';
 
 type AppDependencies = NonNullable<
@@ -22,6 +26,8 @@ type AppHostState = {
 };
 type AppProps = {
   deps?: AppDependencies;
+  /** Dummy-data client for mock mode; skips the Fusion host connection. */
+  mockDataClient?: AssetDataClient;
 };
 
 const defaultCreateClient: AppDependencies['createClient'] = (config) =>
@@ -43,7 +49,7 @@ const errorFallback = (
   </main>
 );
 
-function App({ deps }: AppProps) {
+function App({ deps, mockDataClient }: AppProps) {
   const [hostState, setHostState] = useState<AppHostState | null>(null);
   const hostConnectionRef = useRef<Promise<HostConnection> | null>(null);
 
@@ -67,6 +73,17 @@ function App({ deps }: AppProps) {
     return hostConnectionRef.current;
   }, [connectToHostApp]);
 
+  if (mockDataClient) {
+    return (
+      <div className="app-backdrop min-h-screen text-base-foreground">
+        <MockModeNotice />
+        <AssetDataClientContext.Provider value={mockDataClient}>
+          <AssetRegister api={null} />
+        </AssetDataClientContext.Provider>
+      </div>
+    );
+  }
+
   return (
     <div className="app-backdrop min-h-screen text-base-foreground">
       <CogniteSdkProvider
@@ -74,10 +91,12 @@ function App({ deps }: AppProps) {
         errorFallback={errorFallback}
         deps={{ connectToHostApp: getHostConnection, createClient }}
       >
-        <AssetRegister
-          api={stateSyncApi}
-          initialState={hostState?.initialState}
-        />
+        <LiveAssetDataClientProvider>
+          <AssetRegister
+            api={stateSyncApi}
+            initialState={hostState?.initialState}
+          />
+        </LiveAssetDataClientProvider>
       </CogniteSdkProvider>
     </div>
   );

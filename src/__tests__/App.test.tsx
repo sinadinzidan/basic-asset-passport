@@ -12,6 +12,7 @@ import {
   makeViewDefinition,
 } from '../mocks/cdf';
 import { makeOfflineSdkClient, stubViewList } from '../mocks/cogniteClient';
+import { makeMockAssetDataClient } from '../mocks/mockAssetDataClient';
 import { makeQueryClientWrapper } from '../mocks/queryClientWrapper';
 
 type AppDeps = NonNullable<ComponentProps<typeof App>['deps']>;
@@ -173,6 +174,32 @@ describe(App.name, () => {
         cursors: { assets: 'next-page-cursor' },
       }),
     );
+  });
+
+  it('serves dummy data without connecting to the host in mock mode', async () => {
+    const { deps } = makeDeps();
+    const QueryWrapper = makeQueryClientWrapper();
+
+    render(
+      <QueryWrapper>
+        <App deps={deps} mockDataClient={makeMockAssetDataClient(0)} />
+      </QueryWrapper>,
+    );
+
+    expect(await screen.findByText(/showing dummy data/i)).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { name: 'Asset register' }),
+    ).toBeInTheDocument();
+    expect(deps.connectToHostApp).not.toHaveBeenCalled();
+  });
+
+  it('does not show the mock notice when talking to CDF', async () => {
+    const { deps } = makeDeps();
+
+    renderApp(deps);
+
+    await screen.findByRole('heading', { name: 'Asset register' });
+    expect(screen.queryByText(/showing dummy data/i)).not.toBeInTheDocument();
   });
 
   it('restores and syncs the selected Equipment tab', async () => {

@@ -20,7 +20,7 @@ describe(AssetTopbar.name, () => {
 
   beforeEach(() => {
     mockContext = {
-      useCogniteSdk: vi.fn(() => makeMockClient()),
+      useAssetDataClient: vi.fn(() => makeMockClient()),
       getAssetEquipmentDetails: vi.fn(() =>
         Promise.resolve({ asset: makeInstanceDetails(), equipment: [] }),
       ),

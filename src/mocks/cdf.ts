@@ -19,11 +19,12 @@ type TestPropertySpec = {
 export function makeViewDefinition(
   externalId: string,
   properties: Record<string, TestPropertySpec> = {},
+  version: string = TEST_VIEW_VERSION,
 ): ViewDefinition {
   return {
     externalId,
     space: ASSET_VIEW_SPACE,
-    version: TEST_VIEW_VERSION,
+    version,
     properties: Object.fromEntries(
       Object.entries(properties).map(([identifier, spec]) => [
         identifier,

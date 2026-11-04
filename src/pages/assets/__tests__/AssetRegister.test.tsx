@@ -27,11 +27,11 @@ describe(AssetRegister.name, () => {
   beforeEach(() => {
     const client = makeMockClient();
     const assetsContext: UseAssetsContextType = {
-      useCogniteSdk: vi.fn(() => client),
+      useAssetDataClient: vi.fn(() => client),
       listAssets: vi.fn(() => Promise.resolve(makeAssetPage())),
     };
     const detailsContext: UseAssetEquipmentDetailsContextType = {
-      useCogniteSdk: vi.fn(() => client),
+      useAssetDataClient: vi.fn(() => client),
       getAssetEquipmentDetails: vi.fn(() =>
         Promise.resolve({ asset: makeInstanceDetails(), equipment: [] }),
       ),

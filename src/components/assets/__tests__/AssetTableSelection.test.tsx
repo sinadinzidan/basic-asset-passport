@@ -49,7 +49,7 @@ describe('AssetTable row selection', () => {
 
   beforeEach(() => {
     mockContext = {
-      useCogniteSdk: vi.fn(() => makeMockClient()),
+      useAssetDataClient: vi.fn(() => makeMockClient()),
       listAssets: vi.fn(() =>
         Promise.resolve(
           makeAssetPage([

@@ -1,19 +1,15 @@
-import type {
-  CogniteClient,
-  NodeOrEdge,
-  ViewDefinition,
-  ViewReference,
-} from '@cognite/sdk';
+import type { NodeOrEdge, ViewDefinition, ViewReference } from '@cognite/sdk';
 
 import {
   ASSET_VIEW_LOOKUP_LIMIT,
   ASSET_VIEW_SPACE,
 } from '../../constants/assets';
+import type { AssetDataClient } from '../../types/assetDataClient';
 
 export type NodeInstance = Extract<NodeOrEdge, { instanceType: 'node' }>;
 
 export async function listAssetSpaceViews(
-  client: CogniteClient,
+  client: AssetDataClient,
 ): Promise<ViewDefinition[]> {
   return client.views
     .list({

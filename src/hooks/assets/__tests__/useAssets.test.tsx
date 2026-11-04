@@ -18,7 +18,7 @@ describe(useAssets.name, () => {
 
   beforeEach(() => {
     mockContext = {
-      useCogniteSdk: vi.fn(() => client),
+      useAssetDataClient: vi.fn(() => client),
       listAssets: vi.fn(() => Promise.resolve(makeAssetPage())),
     };
     const QueryWrapper = makeQueryClientWrapper();

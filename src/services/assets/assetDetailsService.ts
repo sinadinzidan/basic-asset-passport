@@ -1,4 +1,4 @@
-import type { CogniteClient, ViewDefinition } from '@cognite/sdk';
+import type { ViewDefinition } from '@cognite/sdk';
 
 import {
   ASSET_EQUIPMENT_QUERY_LIMIT,
@@ -12,6 +12,7 @@ import type {
   AssetIdentifier,
   AssetInstanceDetails,
 } from '../../types/asset';
+import type { AssetDataClient } from '../../types/assetDataClient';
 
 import {
   getNodeViewProperties,
@@ -24,7 +25,7 @@ import {
 type MappedProperty = { identifier: string; label: string };
 
 export async function getAssetEquipmentDetails(
-  client: CogniteClient,
+  client: AssetDataClient,
   assetIdentifier: AssetIdentifier,
 ): Promise<AssetEquipmentDetails> {
   const views = await listAssetSpaceViews(client);

@@ -55,6 +55,19 @@ read from CDF: there is no mock mode, dummy data, or simulated content.
   switcher. The theme follows the system preference until the user picks one;
   the choice is remembered in local storage when it is available.
 
+## Mock mode
+
+- `VITE_MOCK_MODE=true` (default `false`; see `.env.example`) serves dummy data
+  instead of calling CDF, for local development outside Fusion. It skips the
+  Fusion host connection, so no authentication is needed and the selected
+  asset and tab are not synced to the URL.
+- The dummy data lives in `src/mocks/` and answers the same requests the app
+  sends (view lookup, the paged `assets` query, and the `asset` plus
+  `equipment` details query) with CDF-shaped responses, so the real services
+  and UI run unchanged. With the flag off the app behaves exactly as before.
+- A banner states that the data is dummy data. The dummy data is loaded on
+  demand and is not part of a build made without the flag.
+
 ## Design
 
 - Build the UI from Aura components and semantic tokens; the teal brand colour

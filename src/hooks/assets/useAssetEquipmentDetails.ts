@@ -1,4 +1,3 @@
-import { useCogniteSdk } from '@cognite/app-sdk/react';
 import { useQuery } from '@tanstack/react-query';
 import { createContext, useContext } from 'react';
 
@@ -11,15 +10,19 @@ import {
 import { getAssetEquipmentDetails } from '../../services/assets/assetDetailsService';
 import type { AssetIdentifier } from '../../types/asset';
 
-const defaultDeps = { useCogniteSdk, getAssetEquipmentDetails };
+import { useAssetDataClient } from './useAssetDataClient';
+
+const defaultDeps = { useAssetDataClient, getAssetEquipmentDetails };
 
 export type UseAssetEquipmentDetailsContextType = typeof defaultDeps;
 export const UseAssetEquipmentDetailsContext =
   createContext<UseAssetEquipmentDetailsContextType>(defaultDeps);
 
 export function useAssetEquipmentDetails(assetIdentifier: AssetIdentifier) {
-  const { useCogniteSdk: useClient, getAssetEquipmentDetails: loadDetails } =
-    useContext(UseAssetEquipmentDetailsContext);
+  const {
+    useAssetDataClient: useClient,
+    getAssetEquipmentDetails: loadDetails,
+  } = useContext(UseAssetEquipmentDetailsContext);
   const client = useClient();
 
   return useQuery({

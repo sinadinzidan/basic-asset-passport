@@ -1,5 +1,3 @@
-import type { CogniteClient } from '@cognite/sdk';
-
 import {
   ASSET_LIST_PROPERTIES,
   ASSET_QUERY_LIMIT,
@@ -7,6 +5,7 @@ import {
   ASSET_VIEW_SPACE,
 } from '../../constants/assets';
 import type { AssetListItem, AssetPage } from '../../types/asset';
+import type { AssetDataClient } from '../../types/assetDataClient';
 
 import {
   getNodeViewProperties,
@@ -16,7 +15,7 @@ import {
 } from './viewHelpers';
 
 export async function listAssets(
-  client: CogniteClient,
+  client: AssetDataClient,
   cursor?: string,
 ): Promise<AssetPage> {
   const views = await listAssetSpaceViews(client);

@@ -44,7 +44,7 @@ describe(AssetEquipmentRegister.name, () => {
 
   beforeEach(() => {
     mockContext = {
-      useCogniteSdk: vi.fn(() => makeMockClient()),
+      useAssetDataClient: vi.fn(() => makeMockClient()),
       getAssetEquipmentDetails: vi.fn(() => Promise.resolve(makeDetails())),
     };
     onBack = vi.fn();
