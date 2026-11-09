@@ -996,11 +996,11 @@ button.hud-body:focus-visible {
   --pill: var(--neon-cyan);
   --pill-line: var(--blue-300);
   --pill-text: var(--blue-50);
-  --pill-cut: 6px;
-  height: 1.625rem;
-  padding: 0 0.8rem;
+  --pill-cut: 5px;
+  height: 1.375rem;
+  padding: 0 0.6rem;
   font-family: var(--font-display);
-  font-size: 0.6875rem;
+  font-size: 0.625rem;
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -1148,6 +1148,63 @@ button.hud-body:focus-visible {
 .neon-stage [data-slot='button']:focus-visible {
   outline: 2px solid var(--blue-200);
   outline-offset: 2px;
+}
+
+/*
+ * Text buttons (class hud-button) take the pill look at their normal size: cut corners, gradient and a bright
+ * bottom line, so a button reads as a pill that can be pressed. The icon-only back button keeps its own
+ * square shape. Hover and focus change the fill and an inset ring, because the cut corners clip any outer
+ * glow or outline.
+ */
+.neon-stage button.hud-button[data-slot='button'] {
+  --pill: var(--neon-cyan);
+  --pill-line: var(--blue-300);
+  --pill-cut: 6px;
+  color: var(--blue-50);
+  border: 0;
+  border-radius: 0;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--pill) 40%, transparent),
+    color-mix(in srgb, var(--pill) 12%, transparent)
+  );
+  box-shadow:
+    inset 0 -2px 0 var(--pill-line),
+    inset 0 1px 0 color-mix(in srgb, var(--blue-100) 30%, transparent);
+  clip-path: polygon(
+    var(--pill-cut) 0,
+    100% 0,
+    100% calc(100% - var(--pill-cut)),
+    calc(100% - var(--pill-cut)) 100%,
+    0 100%,
+    0 var(--pill-cut)
+  );
+}
+
+/* The primary action is the brighter pill. */
+.neon-stage
+  button.hud-button[data-slot='button'][class*='bg-primary-background'] {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--pill) 65%, transparent),
+    color-mix(in srgb, var(--pill) 28%, transparent)
+  );
+}
+
+.neon-stage button.hud-button[data-slot='button']:hover:not(:disabled) {
+  color: var(--blue-50);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--pill) 75%, transparent),
+    color-mix(in srgb, var(--pill) 32%, transparent)
+  );
+}
+
+.neon-stage button.hud-button[data-slot='button']:focus-visible {
+  outline: none;
+  box-shadow:
+    inset 0 -2px 0 var(--pill-line),
+    inset 0 0 0 2px var(--blue-200);
 }
 
 /* ---------- Breadcrumb ---------- */
@@ -1353,6 +1410,22 @@ button.hud-body:focus-visible {
     transparent 80%
   );
   border-bottom: 1px solid color-mix(in srgb, var(--neon-cyan) 22%, transparent);
+}
+
+/* Outlined form fields: a lit cyan outline on the dark panel, brighter on hover and focus. */
+.neon-stage .hud-field {
+  background: color-mix(in srgb, var(--neon-surface-deep) 70%, transparent);
+  border: 1px solid color-mix(in srgb, var(--neon-cyan) 55%, transparent);
+}
+
+.neon-stage .hud-field:hover {
+  border-color: color-mix(in srgb, var(--neon-cyan) 85%, transparent);
+}
+
+.neon-stage .hud-field:focus-visible {
+  border-color: var(--neon-cyan);
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--neon-cyan) 35%, transparent);
 }
 
 .data-card__id {

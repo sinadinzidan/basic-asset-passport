@@ -20,7 +20,12 @@ export function RetryAlert({
       variant="error"
       title={title}
       action={
-        <Button disabled={isRetrying} onClick={onRetry} variant="secondary">
+        <Button
+          className="hud-button"
+          disabled={isRetrying}
+          onClick={onRetry}
+          variant="secondary"
+        >
           Retry
         </Button>
       }

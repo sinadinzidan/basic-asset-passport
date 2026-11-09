@@ -36,6 +36,7 @@ export function CursorPagination({
           aria-label="Previous page"
           disabled={!hasPreviousPage || isFetching}
           onClick={onPreviousPage}
+          className="hud-button"
           size="sm"
           variant="outline"
         >
@@ -46,6 +47,7 @@ export function CursorPagination({
           aria-label="Next page"
           disabled={!hasNextPage || isFetching}
           onClick={onNextPage}
+          className="hud-button"
           size="sm"
           variant="outline"
         >
