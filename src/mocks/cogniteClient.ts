@@ -1,4 +1,8 @@
-import { CogniteClient, type ViewDefinition } from '@cognite/sdk';
+import {
+  CogniteClient,
+  type DataModel,
+  type ViewDefinition,
+} from '@cognite/sdk';
 
 export function makeMockClient(project = 'asset-passport-test'): CogniteClient {
   return { project } as Partial<CogniteClient> as CogniteClient;
@@ -15,12 +19,11 @@ export function makeOfflineSdkClient(
   });
 }
 
-export function stubViewList(client: CogniteClient, views: ViewDefinition[]) {
-  const viewList = {
-    autoPagingToArray: vi.fn(() => Promise.resolve(views)),
-  } as Partial<ReturnType<typeof client.views.list>> as ReturnType<
-    typeof client.views.list
-  >;
+/** Makes the data model lookup return a model that contains the given views. */
+export function stubModelViews(client: CogniteClient, views: ViewDefinition[]) {
+  const model = { views } as Partial<DataModel> as DataModel;
 
-  return vi.spyOn(client.views, 'list').mockReturnValue(viewList);
+  return vi
+    .spyOn(client.dataModels, 'retrieve')
+    .mockResolvedValue({ items: [model] });
 }

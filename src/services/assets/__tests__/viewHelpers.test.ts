@@ -1,50 +1,81 @@
+import type { DataModel } from '@cognite/sdk';
 import { describe, expect, it, vi } from 'vitest';
 
 import {
-  ASSET_VIEW_LOOKUP_LIMIT,
-  ASSET_VIEW_SPACE,
+  ASSET_PASSPORT_MODEL_EXTERNAL_ID,
+  ASSET_PASSPORT_MODEL_SPACE,
+  ASSET_PASSPORT_MODEL_VERSION,
 } from '../../../constants/assets';
 import { makeNodeInstance, makeViewDefinition } from '../../../mocks/cdf';
 import {
   makeOfflineSdkClient,
-  stubViewList,
+  stubModelViews,
 } from '../../../mocks/cogniteClient';
 import {
   getNodeViewProperties,
   isNodeInstance,
-  listAssetSpaceViews,
+  listAssetPassportViews,
   toViewReference,
 } from '../viewHelpers';
 
-describe(listAssetSpaceViews.name, () => {
-  it('lists the latest views of the asset space with inherited properties', async () => {
+describe(listAssetPassportViews.name, () => {
+  it('retrieves the Asset_Passport data model with its views inlined', async () => {
     // Arrange
     const client = makeOfflineSdkClient();
     const views = [makeViewDefinition('Asset')];
-    const list = stubViewList(client, views);
+    const retrieve = stubModelViews(client, views);
 
     // Act
-    const result = await listAssetSpaceViews(client);
+    const result = await listAssetPassportViews(client);
 
     // Assert
     expect(result).toEqual(views);
-    expect(list).toHaveBeenCalledWith({
-      space: ASSET_VIEW_SPACE,
-      allVersions: false,
-      includeInheritedProperties: true,
-      limit: ASSET_VIEW_LOOKUP_LIMIT,
+    expect(retrieve).toHaveBeenCalledWith(
+      [
+        {
+          space: ASSET_PASSPORT_MODEL_SPACE,
+          externalId: ASSET_PASSPORT_MODEL_EXTERNAL_ID,
+          version: ASSET_PASSPORT_MODEL_VERSION,
+        },
+      ],
+      { inlineViews: true },
+    );
+  });
+
+  it('skips views that are only references', async () => {
+    const client = makeOfflineSdkClient();
+    const view = makeViewDefinition('Asset');
+    vi.spyOn(client.dataModels, 'retrieve').mockResolvedValue({
+      items: [
+        {
+          views: [
+            { type: 'view', space: 's', externalId: 'Other', version: 'v1' },
+            view,
+          ],
+        } as Partial<DataModel> as DataModel,
+      ],
     });
+
+    await expect(listAssetPassportViews(client)).resolves.toEqual([view]);
+  });
+
+  it('fails when the data model does not exist', async () => {
+    const client = makeOfflineSdkClient();
+    vi.spyOn(client.dataModels, 'retrieve').mockResolvedValue({ items: [] });
+
+    await expect(listAssetPassportViews(client)).rejects.toThrow(
+      `The ${ASSET_PASSPORT_MODEL_EXTERNAL_ID} data model was not found in ${ASSET_PASSPORT_MODEL_SPACE}.`,
+    );
   });
 
   it('propagates a failed lookup', async () => {
     const client = makeOfflineSdkClient();
-    const list = stubViewList(client, []);
-    vi.mocked(list).mockImplementation(() => {
-      throw new Error('views unavailable');
-    });
+    vi.spyOn(client.dataModels, 'retrieve').mockRejectedValue(
+      new Error('model unavailable'),
+    );
 
-    await expect(listAssetSpaceViews(client)).rejects.toThrow(
-      'views unavailable',
+    await expect(listAssetPassportViews(client)).rejects.toThrow(
+      'model unavailable',
     );
   });
 });

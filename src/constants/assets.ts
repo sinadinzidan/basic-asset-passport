@@ -1,8 +1,9 @@
-export const ASSET_VIEW_SPACE = 'sp-dm-idi-asset';
+export const ASSET_PASSPORT_MODEL_SPACE = 'sp-asset-passport';
+export const ASSET_PASSPORT_MODEL_EXTERNAL_ID = 'Asset_Passport';
+export const ASSET_PASSPORT_MODEL_VERSION = '1';
 export const ASSET_VIEW_EXTERNAL_ID = 'Asset';
 export const EQUIPMENT_VIEW_EXTERNAL_ID = 'Equipment';
 export const ASSET_QUERY_LIMIT = 10;
-export const ASSET_VIEW_LOOKUP_LIMIT = 1000;
 export const ASSET_QUERY_STALE_TIME_MS = 30_000;
 export const ASSET_EQUIPMENT_QUERY_LIMIT = 1000;
 export const OPERATING_ASSET_STATUS = 'operating';

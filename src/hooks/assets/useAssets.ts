@@ -4,7 +4,9 @@ import { createContext, useContext } from 'react';
 import {
   ASSET_QUERY_STALE_TIME_MS,
   ASSET_VIEW_EXTERNAL_ID,
-  ASSET_VIEW_SPACE,
+  ASSET_PASSPORT_MODEL_EXTERNAL_ID,
+  ASSET_PASSPORT_MODEL_SPACE,
+  ASSET_PASSPORT_MODEL_VERSION,
 } from '../../constants/assets';
 import { listAssets } from '../../services/assets/assetService';
 
@@ -25,7 +27,9 @@ export function useAssets(cursor?: string) {
     queryKey: [
       'assets',
       client.project,
-      ASSET_VIEW_SPACE,
+      ASSET_PASSPORT_MODEL_EXTERNAL_ID,
+  ASSET_PASSPORT_MODEL_SPACE,
+  ASSET_PASSPORT_MODEL_VERSION,
       ASSET_VIEW_EXTERNAL_ID,
       cursor,
     ],

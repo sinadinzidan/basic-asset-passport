@@ -2,7 +2,7 @@ import {
   ASSET_LIST_PROPERTIES,
   ASSET_QUERY_LIMIT,
   ASSET_VIEW_EXTERNAL_ID,
-  ASSET_VIEW_SPACE,
+  ASSET_PASSPORT_MODEL_EXTERNAL_ID,
 } from '../../constants/assets';
 import type { AssetListItem, AssetPage } from '../../types/asset';
 import type { AssetDataClient } from '../../types/assetDataClient';
@@ -10,7 +10,7 @@ import type { AssetDataClient } from '../../types/assetDataClient';
 import {
   getNodeViewProperties,
   isNodeInstance,
-  listAssetSpaceViews,
+  listAssetPassportViews,
   toViewReference,
 } from './viewHelpers';
 
@@ -18,14 +18,14 @@ export async function listAssets(
   client: AssetDataClient,
   cursor?: string,
 ): Promise<AssetPage> {
-  const views = await listAssetSpaceViews(client);
+  const views = await listAssetPassportViews(client);
   const assetView = views.find(
     (view) => view.externalId === ASSET_VIEW_EXTERNAL_ID,
   );
 
   if (!assetView) {
     throw new Error(
-      `The ${ASSET_VIEW_EXTERNAL_ID} view was not found in ${ASSET_VIEW_SPACE}.`,
+      `The ${ASSET_VIEW_EXTERNAL_ID} view was not found in the ${ASSET_PASSPORT_MODEL_EXTERNAL_ID} data model.`,
     );
   }
 

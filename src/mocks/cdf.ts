@@ -4,10 +4,10 @@ import type {
   ViewDefinition,
 } from '@cognite/sdk';
 
-import { ASSET_VIEW_SPACE } from '../constants/assets';
 import type { NodeInstance } from '../services/assets/viewHelpers';
 
 export const TEST_VIEW_VERSION = 'test-version';
+export const TEST_VIEW_SPACE = 'test-view-space';
 
 type TestPropertyType = 'text' | 'direct' | 'json';
 
@@ -20,10 +20,11 @@ export function makeViewDefinition(
   externalId: string,
   properties: Record<string, TestPropertySpec> = {},
   version: string = TEST_VIEW_VERSION,
+  space: string = TEST_VIEW_SPACE,
 ): ViewDefinition {
   return {
     externalId,
-    space: ASSET_VIEW_SPACE,
+    space,
     version,
     properties: Object.fromEntries(
       Object.entries(properties).map(([identifier, spec]) => [
@@ -32,7 +33,7 @@ export function makeViewDefinition(
           name: spec.label,
           container: {
             type: 'container',
-            space: ASSET_VIEW_SPACE,
+            space,
             externalId,
           },
           containerPropertyIdentifier: identifier,

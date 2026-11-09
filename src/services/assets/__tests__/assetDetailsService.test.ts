@@ -9,7 +9,7 @@ import {
 } from '../../../mocks/cdf';
 import {
   makeOfflineSdkClient,
-  stubViewList,
+  stubModelViews,
 } from '../../../mocks/cogniteClient';
 import { getAssetEquipmentDetails } from '../assetDetailsService';
 
@@ -31,7 +31,7 @@ describe(getAssetEquipmentDetails.name, () => {
 
   beforeEach(() => {
     client = makeOfflineSdkClient();
-    stubViewList(client, [assetView, equipmentView]);
+    stubModelViews(client, [assetView, equipmentView]);
   });
 
   it('queries the asset and its inbound equipment, skipping internal and relation properties', async () => {
@@ -125,7 +125,7 @@ describe(getAssetEquipmentDetails.name, () => {
       nested: { label: 'Nested' },
       missing: { label: 'Missing' },
     });
-    stubViewList(client, [richView, equipmentView]);
+    stubModelViews(client, [richView, equipmentView]);
     const node = makeNodeInstance(richView, assetIdentifier, {
       count: 12.5,
       isActive: false,
@@ -157,7 +157,7 @@ describe(getAssetEquipmentDetails.name, () => {
       plantCode: {},
       blankLabel: { label: '   ' },
     });
-    stubViewList(client, [unnamedView, equipmentView]);
+    stubModelViews(client, [unnamedView, equipmentView]);
     const node = makeNodeInstance(unnamedView, assetIdentifier, {
       plantCode: 'G307',
       blankLabel: 'x',
@@ -252,7 +252,7 @@ describe(getAssetEquipmentDetails.name, () => {
         },
       },
     };
-    stubViewList(client, [viewWithReverseRelation, equipmentView]);
+    stubModelViews(client, [viewWithReverseRelation, equipmentView]);
     const query = vi
       .spyOn(client.instances, 'query')
       .mockResolvedValue(makeQueryResponse({ asset: [] }));
@@ -276,12 +276,12 @@ describe(getAssetEquipmentDetails.name, () => {
   });
 
   it('throws when the Equipment view does not exist', async () => {
-    stubViewList(client, [assetView]);
+    stubModelViews(client, [assetView]);
 
     await expect(
       getAssetEquipmentDetails(client, assetIdentifier),
     ).rejects.toThrow(
-      'The Asset and Equipment views must exist in sp-dm-idi-asset.',
+      'The Asset and Equipment views must exist in the Asset_Passport data model.',
     );
   });
 

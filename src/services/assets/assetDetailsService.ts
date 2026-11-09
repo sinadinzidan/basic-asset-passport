@@ -3,7 +3,7 @@ import type { ViewDefinition } from '@cognite/sdk';
 import {
   ASSET_EQUIPMENT_QUERY_LIMIT,
   ASSET_VIEW_EXTERNAL_ID,
-  ASSET_VIEW_SPACE,
+  ASSET_PASSPORT_MODEL_EXTERNAL_ID,
   EQUIPMENT_VIEW_EXTERNAL_ID,
   INTERNAL_DETAIL_PROPERTY_IDENTIFIERS,
 } from '../../constants/assets';
@@ -17,7 +17,7 @@ import type { AssetDataClient } from '../../types/assetDataClient';
 import {
   getNodeViewProperties,
   isNodeInstance,
-  listAssetSpaceViews,
+  listAssetPassportViews,
   toViewReference,
   type NodeInstance,
 } from './viewHelpers';
@@ -28,7 +28,7 @@ export async function getAssetEquipmentDetails(
   client: AssetDataClient,
   assetIdentifier: AssetIdentifier,
 ): Promise<AssetEquipmentDetails> {
-  const views = await listAssetSpaceViews(client);
+  const views = await listAssetPassportViews(client);
   const assetView = views.find(
     (view) => view.externalId === ASSET_VIEW_EXTERNAL_ID,
   );
@@ -38,7 +38,7 @@ export async function getAssetEquipmentDetails(
 
   if (!assetView || !equipmentView) {
     throw new Error(
-      `The ${ASSET_VIEW_EXTERNAL_ID} and ${EQUIPMENT_VIEW_EXTERNAL_ID} views must exist in ${ASSET_VIEW_SPACE}.`,
+      `The ${ASSET_VIEW_EXTERNAL_ID} and ${EQUIPMENT_VIEW_EXTERNAL_ID} views must exist in the ${ASSET_PASSPORT_MODEL_EXTERNAL_ID} data model.`,
     );
   }
 

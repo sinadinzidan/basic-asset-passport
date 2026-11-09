@@ -10,8 +10,9 @@ import {
   makeNodeInstance,
   makeQueryResponse,
   makeViewDefinition,
+  TEST_VIEW_SPACE,
 } from '../mocks/cdf';
-import { makeOfflineSdkClient, stubViewList } from '../mocks/cogniteClient';
+import { makeOfflineSdkClient, stubModelViews } from '../mocks/cogniteClient';
 import { makeMockAssetDataClient } from '../mocks/mockAssetDataClient';
 import { makeQueryClientWrapper } from '../mocks/queryClientWrapper';
 
@@ -124,7 +125,7 @@ describe(App.name, () => {
                 hasData: [
                   {
                     type: 'view',
-                    space: 'sp-dm-idi-asset',
+                    space: TEST_VIEW_SPACE,
                     externalId: 'Asset',
                     version: 'test-version',
                   },
@@ -261,7 +262,7 @@ function makeDeps(initialState?: string) {
     { name: 'Cooling Water Pump', equipmentId: 'P-100' },
   );
 
-  stubViewList(client, [assetView, equipmentView]);
+  stubModelViews(client, [assetView, equipmentView]);
   const query = vi
     .spyOn(client.instances, 'query')
     .mockResolvedValue(

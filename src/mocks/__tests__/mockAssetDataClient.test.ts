@@ -4,11 +4,15 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ASSET_QUERY_LIMIT } from '../../constants/assets';
 import { getAssetEquipmentDetails } from '../../services/assets/assetDetailsService';
 import { listAssets } from '../../services/assets/assetService';
-import { MOCK_ASSETS } from '../mockAssetData';
+import { listAssetPassportViews } from '../../services/assets/viewHelpers';
+import { createAssetNote, listAssetNotes } from '../../services/notes/assetNoteService';
+import { MOCK_ASSETS, MOCK_ASSET_INSTANCE_SPACE } from '../mockAssetData';
 import {
   makeMockAssetDataClient,
   MOCK_LATENCY_MS,
   MOCK_PROJECT,
+  MOCK_USER_IDENTIFIER,
+  MOCK_USER_NAME,
 } from '../mockAssetDataClient';
 
 // The real services run against the mock, so these tests show the dummy data
@@ -143,7 +147,10 @@ describe('mock client requests', () => {
   });
 
   it('returns only the selected properties', async () => {
-    const [view] = await client.views.list().autoPagingToArray({});
+    const view = (await listAssetPassportViews(client)).find(
+      ({ externalId }) => externalId === 'Asset',
+    );
+    if (!view) throw new Error('The mock Asset view is missing.');
     const request: QueryRequest = {
       with: { assets: { nodes: {}, limit: 1 } },
       select: {
@@ -271,5 +278,89 @@ describe('mock client requests', () => {
 
     await vi.advanceTimersByTimeAsync(MOCK_LATENCY_MS);
     expect(onSettled).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe(`${makeMockAssetDataClient.name} notes`, () => {
+  const firstAsset = {
+    space: MOCK_ASSET_INSTANCE_SPACE,
+    externalId: 'FLOC-1001',
+  };
+
+  it('serves the Asset, Equipment and Note views from the data model', async () => {
+    const client = makeMockAssetDataClient(0);
+
+    const views = await listAssetPassportViews(client);
+
+    expect(views.map((view) => view.externalId)).toEqual([
+      'Asset',
+      'Equipment',
+      'Note',
+    ]);
+  });
+
+  it('lists the seeded notes of an asset, newest first', async () => {
+    const client = makeMockAssetDataClient(0);
+
+    const notes = await listAssetNotes(client, firstAsset);
+
+    expect(notes.map((note) => note.title)).toEqual([
+      'Vibration above normal',
+      'Seal inspection',
+    ]);
+  });
+
+  it('lists no notes for an asset that has none', async () => {
+    const client = makeMockAssetDataClient(0);
+
+    await expect(
+      listAssetNotes(client, { ...firstAsset, externalId: 'FLOC-1010' }),
+    ).resolves.toEqual([]);
+  });
+
+  it('keeps a created note and shows it first for that asset only', async () => {
+    const client = makeMockAssetDataClient(0);
+
+    await createAssetNote(client, firstAsset, {
+      title: 'New finding',
+      body: 'Checked on site',
+    });
+
+    const [newest] = await listAssetNotes(client, firstAsset);
+    expect(newest).toEqual(
+      expect.objectContaining({
+        title: 'New finding',
+        body: 'Checked on site',
+        author: MOCK_USER_NAME,
+      }),
+    );
+    const otherNotes = await listAssetNotes(client, {
+      ...firstAsset,
+      externalId: 'FLOC-1002',
+    });
+    expect(otherNotes.map((note) => note.title)).toEqual([
+      'Valve actuator replaced',
+    ]);
+  });
+
+  it('does not share created notes between clients', async () => {
+    const first = makeMockAssetDataClient(0);
+    const second = makeMockAssetDataClient(0);
+
+    await createAssetNote(first, firstAsset, { title: 'Only here', body: '' });
+
+    const notes = await listAssetNotes(second, firstAsset);
+    expect(notes.map((note) => note.title)).not.toContain('Only here');
+  });
+
+  it('identifies the mock user for note authors', async () => {
+    const client = makeMockAssetDataClient(0);
+
+    await expect(client.profiles.me()).resolves.toEqual(
+      expect.objectContaining({
+        userIdentifier: MOCK_USER_IDENTIFIER,
+        displayName: MOCK_USER_NAME,
+      }),
+    );
   });
 });
