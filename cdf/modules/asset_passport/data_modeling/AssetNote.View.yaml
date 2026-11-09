@@ -1,0 +1,48 @@
+space: sp-asset-passport
+externalId: AssetNote
+version: v1
+name: Asset note
+description: A note written against an asset in the domain model.
+properties:
+  asset:
+    container:
+      space: sp-asset-passport
+      externalId: AssetNote
+      type: container
+    containerPropertyIdentifier: asset
+    # The domain view the relation points at. Set asset_view_version to the version your domain model publishes.
+    source:
+      space: sp-dm-idi-asset
+      externalId: Asset
+      version: '{{ asset_view_version }}'
+      type: view
+  title:
+    container:
+      space: sp-asset-passport
+      externalId: AssetNote
+      type: container
+    containerPropertyIdentifier: title
+  body:
+    container:
+      space: sp-asset-passport
+      externalId: AssetNote
+      type: container
+    containerPropertyIdentifier: body
+  category:
+    container:
+      space: sp-asset-passport
+      externalId: AssetNote
+      type: container
+    containerPropertyIdentifier: category
+  author:
+    container:
+      space: sp-asset-passport
+      externalId: AssetNote
+      type: container
+    containerPropertyIdentifier: author
+  authorId:
+    container:
+      space: sp-asset-passport
+      externalId: AssetNote
+      type: container
+    containerPropertyIdentifier: authorId

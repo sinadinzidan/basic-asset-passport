@@ -1,0 +1,10 @@
+space: sp-asset-passport
+externalId: Asset_Passport
+version: '1'
+name: Asset Passport
+description: Solution model for the Asset Passport app. It references the domain Asset and adds what the app writes.
+views:
+  - space: sp-asset-passport
+    externalId: AssetNote
+    version: v1
+    type: view

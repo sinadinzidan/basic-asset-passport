@@ -1,0 +1,7 @@
+# Two spaces: the schema (who can change the model) and the data (who can write notes).
+- space: sp-asset-passport
+  name: Asset Passport
+  description: Solution data model for the Asset Passport app. Holds the containers, views and data model only.
+- space: sp-asset-passport-data
+  name: Asset Passport data
+  description: Instances written by the Asset Passport app (notes and documents). Users get write access to this space only.

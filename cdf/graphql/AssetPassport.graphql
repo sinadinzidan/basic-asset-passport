@@ -1,0 +1,85 @@
+# Asset Passport solution model
+# Publish in a data model: space sp-asset-passport, external ID Asset_Passport.
+# Notes are written to the instance space sp-asset-passport-data by the app.
+
+"""
+Free-text note written in Asset Passport against a record in the domain model.
+@name Note
+"""
+type Note @view(version: "v1") {
+  """
+  Short title of the note.
+  @name Title
+  """
+  title: String!
+  """
+  The note text.
+  @name Note
+  """
+  body: String
+  """
+  Kind of note, for example inspection or handover.
+  @name Category
+  """
+  category: String
+  """
+  Display name of the user who wrote the note.
+  @name Author
+  """
+  author: String
+  """
+  CDF user identifier of the author.
+  @name Author ID
+  """
+  authorId: String
+  """
+  The asset this note is about. Exactly one target is set; the app enforces it.
+  @name Asset
+  """
+  asset: Asset
+  # Add when the TFN row item type exists:
+  # tfnRowItem: TFNRowItem
+}
+
+# Reference to RMDM's Asset view. RMDM is only referenced, never edited. Every field listed here must exist in
+# the published RMDM view, so list only what is needed. Notes need just the node identity.
+type Asset
+  @import(
+    dataModel: {
+      space: "sp-dm-idi-rmdm"
+      externalId: "dm_idi_rmdm"
+      version: "v1"
+    }
+  ) {
+  name: String @mapping(space: "cdf_cdm", container: "CogniteDescribable")
+  description: String @mapping(space: "cdf_cdm", container: "CogniteDescribable")
+}
+
+# CogniteDescribable from the core data model. RMDM's Equipment implements it, and an import must implement
+# the same types as the source view. The interface's four fields are required on every implementing type.
+interface CogniteDescribable
+  @import(
+    dataModel: { space: "cdf_cdm", externalId: "CogniteCore", version: "v1" }
+  ) {
+  name: String
+  description: String
+  tags: [String]
+  aliases: [String]
+}
+
+# Reference to RMDM's Equipment view. Only the interface fields and the link to Asset are listed.
+type Equipment
+  implements CogniteDescribable
+  @import(
+    dataModel: {
+      space: "sp-dm-idi-rmdm"
+      externalId: "dm_idi_rmdm"
+      version: "v1"
+    }
+  ) {
+  name: String @mapping(space: "cdf_cdm", container: "CogniteDescribable")
+  description: String @mapping(space: "cdf_cdm", container: "CogniteDescribable")
+  tags: [String] @mapping(space: "cdf_cdm", container: "CogniteDescribable")
+  aliases: [String] @mapping(space: "cdf_cdm", container: "CogniteDescribable")
+  asset: Asset @mapping(space: "cdf_cdm", container: "CogniteEquipment")
+}
