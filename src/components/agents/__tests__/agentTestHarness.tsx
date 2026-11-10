@@ -3,6 +3,10 @@ import type { ComponentType, ReactNode } from 'react';
 import { INITIAL_AGENT_CHAT_STATE } from '../../../hooks/agents/agentChatReducer';
 import { UseAgentContext } from '../../../hooks/agents/useAgent';
 import { UseAgentChatViewModelContext } from '../../../hooks/agents/useAgentChatViewModel';
+import {
+  UseAgentGreetingContext,
+  type UseAgentGreetingContextType,
+} from '../../../hooks/agents/useAgentGreeting';
 import { UseAgentPickerViewModelContext } from '../../../hooks/agents/useAgentPickerViewModel';
 import { UseCopyToClipboardContext } from '../../../hooks/agents/useCopyToClipboard';
 import { UseSpeechDictationContext } from '../../../hooks/agents/useSpeechDictation';
@@ -19,6 +23,8 @@ type HarnessOptions = {
   dictationEngine?: DictationEngine | null;
   /** What copying does; by default it succeeds and the confirmation never goes away. */
   copyText?: (text: string) => Promise<void>;
+  /** The waits of the mascot's greeting; by default they never end, so it never greets by itself. */
+  startGreetingTimeout?: UseAgentGreetingContextType['startTimeout'];
 };
 
 /** Wraps agent components with a fake agent client and the shared chat state. */
@@ -27,6 +33,7 @@ export function makeAgentWrapper({
   selectedAgent = null,
   dictationEngine = null,
   copyText = () => Promise.resolve(),
+  startGreetingTimeout = () => () => {},
 }: HarnessOptions): ComponentType<{ children: ReactNode }> {
   const QueryWrapper = makeQueryClientWrapper();
   let idCount = 0;
@@ -51,7 +58,11 @@ export function makeAgentWrapper({
                 <UseCopyToClipboardContext.Provider
                   value={{ writeText: copyText, startTimeout: () => () => {} }}
                 >
-                  <QueryWrapper>{children}</QueryWrapper>
+                  <UseAgentGreetingContext.Provider
+                    value={{ startTimeout: startGreetingTimeout }}
+                  >
+                    <QueryWrapper>{children}</QueryWrapper>
+                  </UseAgentGreetingContext.Provider>
                 </UseCopyToClipboardContext.Provider>
               </UseSpeechDictationContext.Provider>
             </AgentChatStateProvider>

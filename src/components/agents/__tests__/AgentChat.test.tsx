@@ -41,13 +41,13 @@ describe(AgentChat.name, () => {
     });
   }
 
-  it('is titled with the agent and invites a first question', () => {
+  it('is titled with the assistant\'s name and invites a first question', () => {
     renderChat();
 
     expect(
-      screen.getByRole('heading', { name: 'Cooling expert' }),
+      screen.getByRole('heading', { name: 'Dalil' }),
     ).toBeVisible();
-    expect(screen.getByText('Ask Cooling expert something.')).toBeVisible();
+    expect(screen.getByText('Ask Dalil something.')).toBeVisible();
   });
 
   it('suggests sample questions in an empty chat', () => {
@@ -170,7 +170,7 @@ describe(AgentChat.name, () => {
         screen.queryByText('The strainer is fouled.'),
       ).not.toBeInTheDocument(),
     );
-    expect(screen.getByText('Ask Cooling expert something.')).toBeVisible();
+    expect(screen.getByText('Ask Dalil something.')).toBeVisible();
   });
 
   it('closes the panel', async () => {

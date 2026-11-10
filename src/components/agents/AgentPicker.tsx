@@ -1,3 +1,4 @@
+import { ASSISTANT_NAME } from '../../constants/agents';
 import { useAgentPickerViewModel } from '../../hooks/agents/useAgentPickerViewModel';
 import { LoadingNotice } from '../general/LoadingNotice';
 import { RetryAlert } from '../general/RetryAlert';
@@ -20,7 +21,7 @@ export function AgentPicker({ onClose }: AgentPickerProps) {
     <>
       <header className="agent-panel__header">
         <h2 className="agent-panel__title agent-panel__title--grow">
-          AI assistant
+          {ASSISTANT_NAME}
         </h2>
         <AgentPanelClose onClose={onClose} />
       </header>

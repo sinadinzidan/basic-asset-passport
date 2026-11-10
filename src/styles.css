@@ -1868,22 +1868,46 @@ button.hud-body:focus-visible {
 }
 
 /*
- * A quiet greeting while hovered or focused by keyboard: the arm fades up, the hand tilts from side to side
- * at the wrist, a little less each time, and stays up until the pointer or the focus leaves.
+ * A quiet greeting while hovered or focused by keyboard, and while the mascot says who it is (data-greeting,
+ * which also covers the one greeting it gives by itself): the arm fades up, the hand tilts from side to side
+ * at the wrist, a little less each time, and stays up until the greeting is over.
  */
 @media (prefers-reduced-motion: no-preference) {
-  .agent-helper__trigger:is(:hover, :focus-visible) .agent-mascot__body--rest {
+  :is(.agent-helper__trigger:is(:hover, :focus-visible), .agent-helper[data-greeting='true'] .agent-helper__trigger)
+    .agent-mascot__body--rest {
     opacity: 0;
   }
 
-  .agent-helper__trigger:is(:hover, :focus-visible)
+  :is(.agent-helper__trigger:is(:hover, :focus-visible), .agent-helper[data-greeting='true'] .agent-helper__trigger)
     :is(.agent-mascot__body--wave, .agent-mascot__hand) {
     opacity: 1;
   }
 
-  .agent-helper__trigger:is(:hover, :focus-visible) .agent-mascot__hand {
+  :is(.agent-helper__trigger:is(:hover, :focus-visible), .agent-helper[data-greeting='true'] .agent-helper__trigger)
+    .agent-mascot__hand {
     animation: agent-wave 1.8s ease-in-out 140ms both;
   }
+}
+
+/*
+ * What the mascot says: the theme's tooltip as a speech bubble beside its head. The tail is the tooltip's own
+ * arrow, brought back for this bubble only. It can follow the edge here because it sits on a straight side:
+ * it takes the bubble's glass and draws the lit edge on its two outer sides.
+ */
+.agent-greeting {
+  --agent-greeting-glass: color-mix(in srgb, var(--neon-cyan) 14%, var(--neon-surface));
+  --agent-greeting-edge: color-mix(in srgb, var(--neon-cyan) 45%, transparent);
+
+  font-size: 0.8125rem;
+  letter-spacing: 0.04em;
+}
+
+[data-slot='tooltip-content'].agent-greeting [class*='rotate-45'] {
+  display: block;
+  background: var(--agent-greeting-glass);
+  border-bottom: 1px solid var(--agent-greeting-edge);
+  border-left: 1px solid var(--agent-greeting-edge);
+  border-radius: 0;
 }
 
 /* Only the eyes of the current mood show; the other pair stays loaded so the swap never flickers. */
@@ -2544,6 +2568,11 @@ button.hud-body:focus-visible {
     transition: none;
   }
 
+  /* The bubble still appears, without its fade and slide. */
+  .agent-greeting {
+    animation: none;
+  }
+
   .neon-stage
     .agent-chat__form
     button.agent-chat__mic.hud-button[data-slot][data-listening='true'] {
@@ -2581,9 +2610,10 @@ button.hud-body:focus-visible {
   }
 }
 
-/* The helper would cover content on a phone. */
+/* The helper would cover content on a phone. Its bubble is drawn outside it, so it is hidden as well. */
 @media (max-width: 40rem) {
-  .agent-helper {
+  .agent-helper,
+  .agent-greeting {
     display: none;
   }
 }

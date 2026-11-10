@@ -20,6 +20,14 @@ describe(AgentPicker.name, () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
+  it('is titled with the assistant\'s name', () => {
+    render(<AgentPicker onClose={vi.fn()} />, {
+      wrapper: makeAgentWrapper({ client: makeAgentClient() }),
+    });
+
+    expect(screen.getByRole('heading', { name: 'Dalil' })).toBeVisible();
+  });
+
   it('shows a loading status while the assistant is looked up', () => {
     const client = makeAgentClient({ getAgent: () => new Promise(() => {}) });
     render(<AgentPicker onClose={vi.fn()} />, {

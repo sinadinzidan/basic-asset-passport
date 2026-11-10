@@ -14,6 +14,7 @@ import {
 } from 'react';
 
 import {
+  ASSISTANT_NAME,
   DICTATION_FAILURE_MESSAGES,
   SAMPLE_QUESTIONS,
 } from '../../constants/agents';
@@ -89,7 +90,7 @@ export function AgentChat({ onClose }: AgentChatProps) {
     <>
       <header className="agent-panel__header">
         <h2 className="agent-panel__title agent-panel__title--grow">
-          {agent.name}
+          {ASSISTANT_NAME}
         </h2>
         <GeneralButton
           disabled={messages.length === 0 || isSending}
@@ -110,7 +111,7 @@ export function AgentChat({ onClose }: AgentChatProps) {
         >
           {messages.length === 0 ? (
             <div className="agent-chat__welcome">
-              <p className="agent-panel__empty">Ask {agent.name} something.</p>
+              <p className="agent-panel__empty">Ask {ASSISTANT_NAME} something.</p>
               <ul className="agent-chat__samples" aria-label="Sample questions">
                 {SAMPLE_QUESTIONS.map((question) => (
                   <li key={question}>

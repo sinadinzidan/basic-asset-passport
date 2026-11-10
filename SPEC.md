@@ -223,7 +223,20 @@ the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines
   holds the hand up until the pointer or focus leaves and lowers it just as
   softly; with reduced motion the arm stays down. While an agent is answering its eyes turn round and look from
   side to side. It is decoration for assistive technology; the button around it
-  is named "AI assistant".
+  is named "Dalil, AI assistant".
+- The assistant is called Dalil (`ASSISTANT_NAME` in `src/constants/agents.ts`).
+  The helper uses that name everywhere: the button and the panel are named
+  "Dalil, AI assistant", the panel's header reads "Dalil" (not the name the
+  agent has in CDF) and an empty chat says "Ask Dalil something.".
+- The mascot introduces itself in a small speech bubble beside it, with a tail
+  pointing at it: "Hi, I'm Dalil, your assistant". The bubble shows while the
+  mascot is hovered or has keyboard focus, together with the wave, and goes when
+  the pointer or focus leaves. It also shows once by itself, with the wave, about
+  a second after the app opens, for about five seconds (longer if the pointer is
+  on the mascot by then); it does not come back by itself afterwards. Opening
+  the panel hides it, and it is never shown while the panel is open or on
+  phone-width screens. With reduced motion it appears without the fade and the
+  arm stays down.
 - Choosing the button opens a panel that grows out of the corner, up to the
   full height of the corner (22rem while loading, 34rem for the chat, never taller
   than the window). The mascot flies up into the panel's header corner, small,

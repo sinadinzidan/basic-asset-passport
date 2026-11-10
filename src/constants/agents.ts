@@ -37,3 +37,14 @@ export const DICTATION_FAILURE_MESSAGES: Record<DictationFailure, string> = {
 
 /** How long a copy button keeps saying "Copied" before it offers to copy again. */
 export const COPY_CONFIRMATION_MS = 1800;
+
+/** The assistant's own name. The helper shows it instead of the name the agent has in CDF. */
+export const ASSISTANT_NAME = 'Dalil';
+export const ASSISTANT_LABEL = `${ASSISTANT_NAME}, AI assistant`;
+export const ASSISTANT_GREETING = `Hi, I'm ${ASSISTANT_NAME}, your assistant`;
+
+/** The mascot greets by itself once: this long after the app opens, and for this long. */
+export const GREETING_INTRO_DELAY_MS = 1200;
+export const GREETING_INTRO_DURATION_MS = 5000;
+/** How long the pointer rests on the mascot before it greets, so a pointer passing by does not set it off. */
+export const GREETING_HOVER_DELAY_MS = 150;
