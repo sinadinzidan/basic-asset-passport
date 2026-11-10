@@ -24,7 +24,9 @@ describe('ASSET_EQUIPMENT_TAB_LABELS', () => {
     expect(ASSET_EQUIPMENT_TAB_LABELS).toEqual({
       [AssetEquipmentTab.PROPERTIES]: 'Properties',
       [AssetEquipmentTab.EQUIPMENTS]: 'Equipments',
+      [AssetEquipmentTab.TIMESERIES]: 'Timeseries',
       [AssetEquipmentTab.NOTES]: 'Notes',
+      [AssetEquipmentTab.DOCUMENTS]: 'Documents',
     });
   });
 });

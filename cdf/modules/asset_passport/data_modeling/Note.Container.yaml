@@ -1,0 +1,43 @@
+space: sp-asset-passport
+externalId: Note
+name: Note
+description: A free-text note written by a user against one asset.
+usedFor: node
+properties:
+  asset:
+    type:
+      type: direct
+    nullable: true
+    name: Asset
+  title:
+    type:
+      type: text
+    nullable: false
+    name: Title
+  body:
+    type:
+      type: text
+    nullable: true
+    name: Note
+  category:
+    type:
+      type: text
+    nullable: true
+    name: Category
+  author:
+    type:
+      type: text
+    nullable: true
+    name: Author
+  authorId:
+    type:
+      type: text
+    nullable: true
+    name: Author ID
+indexes:
+  # Notes are always listed by asset.
+  assetIndex:
+    properties:
+      - asset
+    indexType: btree
+    cursorable: true

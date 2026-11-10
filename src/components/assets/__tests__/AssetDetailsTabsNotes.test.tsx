@@ -7,11 +7,19 @@ import { AssetEquipmentTab } from '../../../enums/assetEquipmentTab';
 import {
   UseAddAssetNoteContext,
   type UseAddAssetNoteContextType,
-} from '../../../hooks/notes/useAddAssetNote';
+} from '../../../hooks/assets/notes/useAddAssetNote';
 import {
   UseAssetNotesContext,
   type UseAssetNotesContextType,
-} from '../../../hooks/notes/useAssetNotes';
+} from '../../../hooks/assets/notes/useAssetNotes';
+import {
+  UseDeleteAssetNoteContext,
+  type UseDeleteAssetNoteContextType,
+} from '../../../hooks/assets/notes/useDeleteAssetNote';
+import {
+  UseUpdateAssetNoteContext,
+  type UseUpdateAssetNoteContextType,
+} from '../../../hooks/assets/notes/useUpdateAssetNote';
 import { makeInstanceDetails } from '../../../mocks/assets';
 import { makeMockClient } from '../../../mocks/cogniteClient';
 import { makeAssetNote } from '../../../mocks/notes';
@@ -37,11 +45,23 @@ describe(`${AssetDetailsTabs.name} notes`, () => {
       useAssetDataClient: vi.fn(() => client),
       createAssetNote: vi.fn(() => Promise.resolve()),
     };
+    const updateContext: UseUpdateAssetNoteContextType = {
+      useAssetDataClient: vi.fn(() => client),
+      updateAssetNote: vi.fn(() => Promise.resolve()),
+    };
+    const deleteContext: UseDeleteAssetNoteContextType = {
+      useAssetDataClient: vi.fn(() => client),
+      deleteAssetNote: vi.fn(() => Promise.resolve()),
+    };
     const QueryWrapper = makeQueryClientWrapper();
     wrapper = ({ children }) => (
       <UseAssetNotesContext.Provider value={listContext}>
         <UseAddAssetNoteContext.Provider value={addContext}>
-          <QueryWrapper>{children}</QueryWrapper>
+          <UseUpdateAssetNoteContext.Provider value={updateContext}>
+            <UseDeleteAssetNoteContext.Provider value={deleteContext}>
+              <QueryWrapper>{children}</QueryWrapper>
+            </UseDeleteAssetNoteContext.Provider>
+          </UseUpdateAssetNoteContext.Provider>
         </UseAddAssetNoteContext.Provider>
       </UseAssetNotesContext.Provider>
     );
@@ -58,10 +78,10 @@ describe(`${AssetDetailsTabs.name} notes`, () => {
     );
 
     expect(await screen.findByText('Seal inspection')).toBeInTheDocument();
-    expect(listContext.listAssetNotes).toHaveBeenCalledWith(
-      expect.anything(),
-      { space: 'asset-space', externalId: 'FLOC-7' },
-    );
+    expect(listContext.listAssetNotes).toHaveBeenCalledWith(expect.anything(), {
+      space: 'asset-space',
+      externalId: 'FLOC-7',
+    });
   });
 
   it('reports the notes tab when it is selected', async () => {

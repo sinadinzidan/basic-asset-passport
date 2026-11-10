@@ -22,6 +22,10 @@ export default defineConfig({
   server: {
     port: 3001,
   },
+  // Pre-bundling pdfjs-dist breaks its worker.
+  optimizeDeps: {
+    exclude: ['pdfjs-dist'],
+  },
   worker: {
     format: 'es',
   },

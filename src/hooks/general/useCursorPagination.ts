@@ -16,11 +16,16 @@ export function useCursorPagination() {
     setCursors((previous) => previous.slice(0, -1));
   }
 
+  function reset(): void {
+    setCursors([]);
+  }
+
   return {
     cursor,
     pageNumber,
     hasPreviousPage,
     goToNextPage,
     goToPreviousPage,
+    reset,
   };
 }

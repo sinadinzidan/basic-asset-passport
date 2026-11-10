@@ -1,0 +1,233 @@
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import type { ComponentType, ReactNode } from 'react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import {
+  UseAssetTimeseriesContext,
+  type UseAssetTimeseriesContextType,
+} from '../../../../hooks/assets/timeseries/useAssetTimeseries';
+import {
+  UseTimeseriesChartViewModelContext,
+  type UseTimeseriesChartViewModelContextType,
+} from '../../../../hooks/assets/timeseries/useTimeseriesChartViewModel';
+import { UseTimeseriesTrendsContext } from '../../../../hooks/timeseries/useTimeseriesTrends';
+import { makeInstanceDetails } from '../../../../mocks/assets';
+import { makeMockClient } from '../../../../mocks/cogniteClient';
+import { makeQueryClientWrapper } from '../../../../mocks/queryClientWrapper';
+import type {
+  TimeseriesDatapointsClient,
+  TimeseriesIdentifier,
+} from '../../../../types/timeseries';
+import { AssetTimeseries } from '../AssetTimeseries';
+
+const assetIdentifier = { space: 'asset-space', externalId: 'FLOC-1' };
+
+describe(AssetTimeseries.name, () => {
+  let mockContext: UseAssetTimeseriesContextType;
+  let datapoints: TimeseriesDatapointsClient;
+  let chartContext: UseTimeseriesChartViewModelContextType;
+  let onChartChange: ReturnType<typeof vi.fn<(options: Record<string, string> | null) => void>>;
+  let wrapper: ComponentType<{ children: ReactNode }>;
+
+  beforeEach(() => {
+    const client = makeMockClient();
+    mockContext = {
+      useAssetDataClient: vi.fn(() => client),
+      listAssetTimeseries: vi.fn(() =>
+        Promise.resolve([
+          makeInstanceDetails({
+            externalId: 'PI.PT-101',
+            properties: [
+              { identifier: 'name', label: 'Name', value: 'Discharge pressure' },
+              { identifier: 'engunits', label: 'Unit', value: 'bar' },
+            ],
+          }),
+        ]),
+      ),
+    };
+    datapoints = {
+      project: 'asset-passport-test',
+      getTrends: vi.fn((identifiers: TimeseriesIdentifier[]) =>
+        Promise.resolve(
+          identifiers.map((identifier) => ({
+            ...identifier,
+            points: [
+              { timestamp: 1000, value: 2 },
+              { timestamp: 2000, value: 8 },
+            ],
+          })),
+        ),
+      ),
+    };
+    onChartChange = vi.fn();
+    chartContext = {
+      useTimeseriesChartState: vi.fn(() => ({
+        options: null,
+        onChange: onChartChange,
+      })),
+      useTimeseriesDatapointsClient: () => datapoints,
+      now: () => 10_000,
+    };
+    const QueryWrapper = makeQueryClientWrapper();
+    wrapper = ({ children }) => (
+      <UseAssetTimeseriesContext.Provider value={mockContext}>
+        <UseTimeseriesChartViewModelContext.Provider value={chartContext}>
+          <UseTimeseriesTrendsContext.Provider
+            value={{
+              useTimeseriesDatapointsClient: () => datapoints,
+              now: () => 10_000,
+            }}
+          >
+            <QueryWrapper>{children}</QueryWrapper>
+          </UseTimeseriesTrendsContext.Provider>
+        </UseTimeseriesChartViewModelContext.Provider>
+      </UseAssetTimeseriesContext.Provider>
+    );
+  });
+
+  function renderList() {
+    return render(<AssetTimeseries assetIdentifier={assetIdentifier} />, {
+      wrapper,
+    });
+  }
+
+  it('shows a loading status while the series load', () => {
+    vi.mocked(mockContext.listAssetTimeseries).mockReturnValue(
+      new Promise(() => {}),
+    );
+
+    renderList();
+
+    expect(screen.getByRole('status')).toHaveTextContent(
+      'Loading timeseries...',
+    );
+  });
+
+  it('shows each series with its name and properties, without a separate ID line', async () => {
+    renderList();
+
+    expect(
+      await screen.findByRole('heading', { name: 'Discharge pressure' }),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/Timeseries ID/)).not.toBeInTheDocument();
+    expect(screen.getByText('Unit')).toBeInTheDocument();
+    expect(screen.getByText('bar')).toBeInTheDocument();
+  });
+
+  it('previews the last 6 months of a series with its readings', async () => {
+    renderList();
+
+    expect(
+      await screen.findByRole('img', {
+        name: 'Last 6 months: latest 8 bar, from 2 to 8 bar',
+      }),
+    ).toBeInTheDocument();
+    expect(screen.getByText('Latest').nextSibling).toHaveTextContent('8bar');
+    expect(datapoints.getTrends).toHaveBeenCalledWith(
+      [{ space: 'asset-instance-space', externalId: 'PI.PT-101' }],
+      expect.objectContaining({ to: 10_000 }),
+    );
+  });
+
+  it('shows a busy preview while the readings load', async () => {
+    vi.mocked(datapoints.getTrends).mockReturnValue(new Promise(() => {}));
+
+    renderList();
+
+    expect(await screen.findByLabelText('Loading preview')).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: 'Discharge pressure' }),
+    ).toBeInTheDocument();
+  });
+
+  it('keeps the series visible when its readings cannot be loaded', async () => {
+    vi.mocked(datapoints.getTrends).mockRejectedValue(new Error('no access'));
+
+    renderList();
+
+    expect(
+      await screen.findByText('The preview could not be loaded.'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: 'Discharge pressure' }),
+    ).toBeInTheDocument();
+  });
+
+  it('lays the series out two to a row', async () => {
+    vi.mocked(mockContext.listAssetTimeseries).mockResolvedValue([
+      makeInstanceDetails({ externalId: 'PI.A' }),
+      makeInstanceDetails({ externalId: 'PI.B' }),
+    ]);
+
+    renderList();
+
+    const cards = await screen.findAllByRole('region');
+    expect(cards).toHaveLength(2);
+    expect(cards[0].parentElement).toHaveClass('md:grid-cols-2');
+  });
+
+  it('opens a series in the chart when its preview is clicked', async () => {
+    const user = userEvent.setup();
+    renderList();
+
+    await user.click(
+      await screen.findByRole('button', {
+        name: 'Open Discharge pressure in the chart',
+      }),
+    );
+
+    expect(onChartChange).toHaveBeenCalledTimes(1);
+    expect(onChartChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        sig: 'asset-instance-space:PI.PT-101',
+        title: 'Discharge pressure',
+      }),
+    );
+  });
+
+  it('shows the chart while it is open', async () => {
+    vi.mocked(chartContext.useTimeseriesChartState).mockReturnValue({
+      options: { sig: 'asset-instance-space:PI.PT-101' },
+      onChange: onChartChange,
+    });
+
+    renderList();
+
+    expect(
+      await screen.findByRole('dialog', { name: /chart/i }),
+    ).toBeInTheDocument();
+  });
+
+  it('does not show the chart while it is closed', async () => {
+    renderList();
+
+    await screen.findByRole('heading', { name: 'Discharge pressure' });
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('shows an empty state when no series are linked', async () => {
+    vi.mocked(mockContext.listAssetTimeseries).mockResolvedValue([]);
+
+    renderList();
+
+    expect(await screen.findByText('No timeseries linked')).toBeInTheDocument();
+  });
+
+  it('shows a readable error and retries the load', async () => {
+    const user = userEvent.setup();
+    vi.mocked(mockContext.listAssetTimeseries).mockRejectedValueOnce(
+      new Error('no access'),
+    );
+    renderList();
+
+    expect(
+      await screen.findByText('Timeseries could not be loaded'),
+    ).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Retry' }));
+
+    expect(
+      await screen.findByRole('heading', { name: 'Discharge pressure' }),
+    ).toBeInTheDocument();
+  });
+});

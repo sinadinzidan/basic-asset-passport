@@ -15,4 +15,13 @@ describe(LoadingNotice.name, () => {
 
     expect(screen.getByRole('status')).toHaveClass('p-10');
   });
+
+  it('is a plain data card, not a glowing panel, in the card variant', () => {
+    const { container } = render(
+      <LoadingNotice message="Loading things..." variant="CARD" />,
+    );
+
+    expect(screen.getByRole('status')).toHaveClass('data-card');
+    expect(container.querySelector('.hud-glow')).toBeNull();
+  });
 });

@@ -1,6 +1,6 @@
-import { Button } from '@cognite/aura/components/button';
-
 import { AppAlert } from './AppAlert';
+import { GeneralButton } from './GeneralButton';
+
 
 type RetryAlertProps = {
   title: string;
@@ -20,14 +20,13 @@ export function RetryAlert({
       variant="error"
       title={title}
       action={
-        <Button
-          className="hud-button"
+        <GeneralButton
           disabled={isRetrying}
           onClick={onRetry}
           variant="secondary"
         >
           Retry
-        </Button>
+        </GeneralButton>
       }
     >
       {description}

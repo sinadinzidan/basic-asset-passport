@@ -1,4 +1,5 @@
 import type {
+  ByIdsResponse,
   NodeOrEdge,
   QueryRequest,
   QueryResponse,
@@ -6,14 +7,21 @@ import type {
   SlimNodeAndEdgeCollectionResponse,
 } from '@cognite/sdk';
 
+import { DOCUMENT_VIEW_EXTERNAL_ID } from '../constants/documents';
 import type { NodeInstance } from '../services/assets/viewHelpers';
 import type { AssetDataClient } from '../types/assetDataClient';
+import type { DocumentFileClient } from '../types/documentFileClient';
 
 import {
   MOCK_ASSETS,
   MOCK_DATA_MODEL,
+  MOCK_DOCUMENT_VIEW,
+  MOCK_DOCUMENTS,
+  MOCK_FILES,
   MOCK_EQUIPMENT_BY_ASSET_ID,
   MOCK_NOTES,
+  MOCK_TIMESERIES,
+  MOCK_VIEW_VERSION,
 } from './mockAssetData';
 
 export const MOCK_PROJECT = 'mock-project';
@@ -22,20 +30,28 @@ export const MOCK_USER_IDENTIFIER = 'mock-user';
 export const MOCK_USER_NAME = 'Mock User';
 
 const DEFAULT_PAGE_SIZE = 10;
+const DEFAULT_SEARCH_LIMIT = 1000;
+const MOCK_UPLOAD_ORIGIN = 'https://mock-upload.test';
 
 type UnknownRecord = Record<string, unknown>;
+
+type StoredInstances = { notes: NodeInstance[]; documents: NodeInstance[] };
 
 /**
  * Answers the exact requests the asset and note services send (data model
  * lookup, the paged `assets` query, the `asset` + `equipment` details query,
- * the `notes` query, note creation and the user profile) with responses
- * shaped like the CDF API's, so the real services run unchanged. Notes added
- * through it are kept in memory for the life of the client.
+ * the `notes` and `documents` queries, note and document creation, deletion
+ * and the user profile) with responses shaped like the CDF API's, so the real
+ * services run unchanged. Notes and documents added through it are kept in
+ * memory for the life of the client.
  */
 export function makeMockAssetDataClient(
   latencyMs: number = MOCK_LATENCY_MS,
 ): AssetDataClient {
-  const notes: NodeInstance[] = [...MOCK_NOTES];
+  const stored: StoredInstances = {
+    notes: [...MOCK_NOTES],
+    documents: [...MOCK_DOCUMENTS],
+  };
 
   return {
     project: MOCK_PROJECT,
@@ -45,9 +61,13 @@ export function makeMockAssetDataClient(
     },
     instances: {
       query: (request) =>
-        delay(latencyMs).then(() => answerQuery(request, notes)),
+        delay(latencyMs).then(() => answerQuery(request, stored)),
+      search: (request) =>
+        delay(latencyMs).then(() => answerAssetSearch(request)),
       upsert: (request) =>
-        delay(latencyMs).then(() => storeNotes(request, notes)),
+        delay(latencyMs).then(() => storeInstances(request, stored)),
+      delete: (items) =>
+        delay(latencyMs).then(() => removeInstances(items, stored)),
     },
     profiles: {
       me: () =>
@@ -62,39 +82,131 @@ export function makeMockAssetDataClient(
 
 function answerQuery(
   request: QueryRequest,
-  notes: readonly NodeInstance[],
+  stored: StoredInstances,
 ): QueryResponse {
   if ('assets' in request.with) return answerAssetPage(request);
   if ('asset' in request.with) return answerAssetDetails(request);
-  if ('notes' in request.with) return answerNotes(request, notes);
+  if ('notes' in request.with) {
+    return answerAssetInstances(request, 'notes', stored.notes);
+  }
+  if ('documents' in request.with) {
+    return answerAssetInstances(request, 'documents', stored.documents);
+  }
+
+  if ('timeseries' in request.with) {
+    return answerNodesListingAsset(request, 'timeseries', MOCK_TIMESERIES);
+  }
+  if ('files' in request.with) {
+    return answerNodesListingAsset(request, 'files', MOCK_FILES);
+  }
 
   return { items: {}, nextCursor: {} };
 }
 
-function answerNotes(
+/** Answers the nodes, such as time series or files, whose `assets` list holds the requested asset. */
+function answerNodesListingAsset(
   request: QueryRequest,
-  notes: readonly NodeInstance[],
+  resultSetName: string,
+  nodes: readonly NodeInstance[],
 ): QueryResponse {
-  const requested = readRequestedAssetReference(request.with.notes);
-  const limit = readLimit(request.with.notes) ?? DEFAULT_PAGE_SIZE;
-  const matching = notes.filter((note) =>
-    isNoteForAsset(note, requested),
+  const requested = readRequestedAssetsContains(request.with[resultSetName]);
+  const limit = readLimit(request.with[resultSetName]) ?? DEFAULT_PAGE_SIZE;
+  const matching = nodes.filter((node) =>
+    Object.values(node.properties ?? {})
+      .flatMap(Object.values)
+      .some((values) => {
+        const assets: unknown = values.assets;
+
+        return (
+          Array.isArray(assets) &&
+          assets.some(
+            (asset: unknown) =>
+              isRecord(asset) &&
+              asset.space === requested.space &&
+              asset.externalId === requested.externalId,
+          )
+        );
+      }),
   );
 
   return {
     items: {
-      notes: matching
+      [resultSetName]: matching
         .slice(0, limit)
-        .map((node) => selectProperties(node, request, 'notes')),
+        .map((node) => selectProperties(node, request, resultSetName)),
     },
     nextCursor: {},
   };
 }
 
-/** Stores the note nodes of an upsert, as the API would create them. */
-function storeNotes(
+/** Finds `{ containsAny: { property: [..., 'assets'], values: [{ space, externalId }] } }` inside an `and` filter. */
+function readRequestedAssetsContains(expression: unknown): {
+  space?: string;
+  externalId?: string;
+} {
+  const filter =
+    isRecord(expression) && isRecord(expression.nodes)
+      ? expression.nodes.filter
+      : undefined;
+  const value = findContainsAnyValue(filter);
+
+  return {
+    space: typeof value?.space === 'string' ? value.space : undefined,
+    externalId:
+      typeof value?.externalId === 'string' ? value.externalId : undefined,
+  };
+}
+
+function findContainsAnyValue(filter: unknown): UnknownRecord | undefined {
+  if (!isRecord(filter)) return undefined;
+
+  if (Array.isArray(filter.and)) {
+    for (const part of filter.and) {
+      const found = findContainsAnyValue(part);
+      if (found !== undefined) return found;
+    }
+    return undefined;
+  }
+
+  const containsAny = filter.containsAny;
+  if (isRecord(containsAny) && Array.isArray(containsAny.values)) {
+    const [value]: unknown[] = containsAny.values;
+    return isRecord(value) ? value : undefined;
+  }
+
+  return undefined;
+}
+
+/** Answers a query for the nodes linked to one asset, such as its notes or documents. */
+function answerAssetInstances(
+  request: QueryRequest,
+  resultSetName: string,
+  instances: readonly NodeInstance[],
+): QueryResponse {
+  const requested = readRequestedAssetReference(request.with[resultSetName]);
+  const limit = readLimit(request.with[resultSetName]) ?? DEFAULT_PAGE_SIZE;
+  const matching = instances.filter((instance) =>
+    isInstanceForAsset(instance, requested),
+  );
+
+  return {
+    items: {
+      [resultSetName]: matching
+        .slice(0, limit)
+        .map((node) => selectProperties(node, request, resultSetName)),
+    },
+    nextCursor: {},
+  };
+}
+
+/**
+ * Stores the note and document nodes of an upsert, as the API would. Writing
+ * to an existing node merges the new properties into it, which is how the
+ * upload marks a document as uploaded.
+ */
+function storeInstances(
   request: Parameters<AssetDataClient['instances']['upsert']>[0],
-  notes: NodeInstance[],
+  stored: StoredInstances,
 ): SlimNodeAndEdgeCollectionResponse {
   const now = Date.now();
   const items: SlimNodeAndEdgeCollectionResponse['items'] = [];
@@ -102,30 +214,56 @@ function storeNotes(
   for (const item of request.items) {
     if (item.instanceType !== 'node') continue;
 
-    const properties: NodeInstance['properties'] = {};
-    for (const { source, properties: values } of item.sources ?? []) {
-      if (source.type !== 'view') continue;
-      properties[source.space] = {
-        ...properties[source.space],
-        [`${source.externalId}/${source.version}`]: { ...values },
+    const sources = (item.sources ?? []).flatMap(
+      ({ source, properties: values }) =>
+        source.type === 'view'
+          ? [
+              {
+                space: source.space,
+                group: `${source.externalId}/${source.version}`,
+                isDocumentView: source.externalId === DOCUMENT_VIEW_EXTERNAL_ID,
+                values,
+              },
+            ]
+          : [],
+    );
+    const isDocument = sources.some(({ isDocumentView }) => isDocumentView);
+    const target = isDocument ? stored.documents : stored.notes;
+    const existing = target.find(
+      (node) =>
+        node.space === item.space && node.externalId === item.externalId,
+    );
+    const properties: NodeInstance['properties'] = {
+      ...existing?.properties,
+    };
+    for (const { space, group, values } of sources) {
+      properties[space] = {
+        ...properties[space],
+        [group]: { ...properties[space]?.[group], ...values },
       };
     }
-    notes.push({
-      instanceType: 'node',
-      space: item.space,
-      externalId: item.externalId,
-      version: 1,
-      createdTime: now,
-      lastUpdatedTime: now,
-      properties,
-    });
+
+    if (existing) {
+      existing.properties = properties;
+      existing.lastUpdatedTime = now;
+    } else {
+      target.push({
+        instanceType: 'node',
+        space: item.space,
+        externalId: item.externalId,
+        version: 1,
+        createdTime: now,
+        lastUpdatedTime: now,
+        properties,
+      });
+    }
     items.push({
       instanceType: 'node',
       space: item.space,
       externalId: item.externalId,
       version: 1,
       wasModified: true,
-      createdTime: now,
+      createdTime: existing?.createdTime ?? now,
       lastUpdatedTime: now,
     });
   }
@@ -133,7 +271,71 @@ function storeNotes(
   return { items };
 }
 
-function isNoteForAsset(
+/** Removes the deleted nodes, as the API would. */
+function removeInstances(
+  items: Parameters<AssetDataClient['instances']['delete']>[0],
+  stored: StoredInstances,
+): UnknownRecord {
+  for (const list of [stored.notes, stored.documents]) {
+    for (const { space, externalId } of items) {
+      const index = list.findIndex(
+        (node) => node.space === space && node.externalId === externalId,
+      );
+      if (index >= 0) list.splice(index, 1);
+    }
+  }
+
+  return {};
+}
+
+/**
+ * Answers the file operations of the documents: upload links point at a dummy
+ * host, uploading marks the document as uploaded in the data client's store,
+ * and downloads are a small text file made in the browser.
+ */
+export function makeMockDocumentFileClient(
+  dataClient: AssetDataClient,
+  latencyMs: number = MOCK_LATENCY_MS,
+): DocumentFileClient {
+  return {
+    requestUploadUrl: (document) =>
+      delay(latencyMs).then(
+        () => `${MOCK_UPLOAD_ORIGIN}/${document.space}/${document.externalId}`,
+      ),
+    uploadContent: async (uploadUrl) => {
+      await delay(latencyMs);
+      const [space, externalId] = uploadUrl
+        .slice(MOCK_UPLOAD_ORIGIN.length + 1)
+        .split('/');
+
+      await dataClient.instances.upsert({
+        items: [
+          {
+            instanceType: 'node',
+            space,
+            externalId,
+            sources: [
+              {
+                source: {
+                  type: 'view',
+                  space: MOCK_DOCUMENT_VIEW.space,
+                  externalId: MOCK_DOCUMENT_VIEW.externalId,
+                  version: MOCK_VIEW_VERSION,
+                },
+                properties: {
+                  isUploaded: true,
+                  uploadedTime: new Date().toISOString(),
+                },
+              },
+            ],
+          },
+        ],
+      });
+    },
+  };
+}
+
+function isInstanceForAsset(
   note: NodeInstance,
   requested: { space?: string; externalId?: string },
 ): boolean {
@@ -163,6 +365,35 @@ function answerAssetPage(request: QueryRequest): QueryResponse {
     nextCursor:
       nextOffset < MOCK_ASSETS.length ? { assets: String(nextOffset) } : {},
   };
+}
+
+/** Answers a search by keeping the assets whose searched properties hold every word of the text. */
+function answerAssetSearch(
+  request: Parameters<AssetDataClient['instances']['search']>[0],
+): ByIdsResponse {
+  const words = (request.query ?? '')
+    .toLowerCase()
+    .split(/\s+/)
+    .filter(Boolean);
+  const searched = request.properties;
+  const limit = request.limit ?? DEFAULT_SEARCH_LIMIT;
+
+  const matching = MOCK_ASSETS.filter((node) => {
+    const text = Object.values(node.properties ?? {})
+      .flatMap(Object.values)
+      .flatMap((values) =>
+        Object.entries(values)
+          .filter(([name]) => searched === undefined || searched.includes(name))
+          .map(([, value]) => value),
+      )
+      .filter((value): value is string => typeof value === 'string')
+      .join(' ')
+      .toLowerCase();
+
+    return words.every((word) => text.includes(word));
+  });
+
+  return { items: matching.slice(0, limit) };
 }
 
 function answerAssetDetails(request: QueryRequest): QueryResponse {

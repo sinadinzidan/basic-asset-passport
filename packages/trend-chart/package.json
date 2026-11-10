@@ -1,0 +1,23 @@
+{
+  "name": "@flows/trend-chart",
+  "version": "0.1.0",
+  "description": "A time-series chart for Cognite Flows apps. Shared as source, not published.",
+  "private": true,
+  "type": "module",
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "exports": {
+    ".": "./src/index.ts",
+    "./chart.css": "./src/chart.css"
+  },
+  "peerDependencies": {
+    "@cognite/aura": ">=1.48651.0",
+    "@tabler/icons-react": "^3.35.0",
+    "@tanstack/react-query": "^5.90.10",
+    "clsx": "^2.1.1",
+    "dayjs": "^1.11.13",
+    "react": "^18.3.1",
+    "tailwind-merge": "^3.4.0"
+  }
+}

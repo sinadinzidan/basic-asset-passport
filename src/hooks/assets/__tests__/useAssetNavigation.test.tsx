@@ -76,6 +76,112 @@ describe(useAssetNavigation.name, () => {
     });
   });
 
+  it('opens a chart and syncs its setup to the host', () => {
+    const initialState = JSON.stringify({ selectedAsset });
+    const { result } = renderHook(() => useAssetNavigation(api, initialState), {
+      wrapper,
+    });
+
+    act(() => result.current.changeTimeseriesChart({ sig: 'ts:PI.1' }));
+
+    expect(result.current.navigationState.timeseriesChart).toEqual({
+      sig: 'ts:PI.1',
+    });
+    expect(api.syncInternalState).toHaveBeenCalledWith(
+      JSON.stringify({
+        selectedAsset,
+        activeEquipmentTab: AssetEquipmentTab.PROPERTIES,
+        timeseriesChart: { sig: 'ts:PI.1' },
+      }),
+    );
+  });
+
+  it('closes the chart when given no setup', () => {
+    const initialState = JSON.stringify({
+      selectedAsset,
+      timeseriesChart: { sig: 'ts:PI.1' },
+    });
+    const { result } = renderHook(() => useAssetNavigation(api, initialState), {
+      wrapper,
+    });
+
+    act(() => result.current.changeTimeseriesChart(null));
+
+    expect(result.current.navigationState).not.toHaveProperty(
+      'timeseriesChart',
+    );
+  });
+
+  it('closes the chart when the tab or the asset changes', () => {
+    const initialState = JSON.stringify({
+      selectedAsset,
+      timeseriesChart: { sig: 'ts:PI.1' },
+    });
+    const { result } = renderHook(() => useAssetNavigation(api, initialState), {
+      wrapper,
+    });
+
+    act(() => result.current.changeEquipmentTab(AssetEquipmentTab.NOTES));
+    expect(result.current.navigationState).not.toHaveProperty(
+      'timeseriesChart',
+    );
+
+    act(() => result.current.changeTimeseriesChart({ sig: 'ts:PI.1' }));
+    act(() => result.current.clearSelectedAsset());
+    expect(result.current.navigationState).not.toHaveProperty(
+      'timeseriesChart',
+    );
+  });
+
+  it('changes the search text and syncs it to the host', () => {
+    const { result } = renderHook(() => useAssetNavigation(api), { wrapper });
+
+    act(() => result.current.changeSearchQuery('pump'));
+
+    expect(result.current.navigationState.searchQuery).toBe('pump');
+    expect(api.syncInternalState).toHaveBeenCalledWith(
+      JSON.stringify({
+        selectedAsset: null,
+        activeEquipmentTab: AssetEquipmentTab.PROPERTIES,
+        searchQuery: 'pump',
+      }),
+    );
+  });
+
+  it('leaves a cleared search out of the state', () => {
+    const initialState = JSON.stringify({ searchQuery: 'pump' });
+    const { result } = renderHook(() => useAssetNavigation(api, initialState), {
+      wrapper,
+    });
+
+    act(() => result.current.changeSearchQuery(''));
+
+    expect(result.current.navigationState).not.toHaveProperty('searchQuery');
+  });
+
+  it('does not sync a search that did not change', () => {
+    const initialState = JSON.stringify({ searchQuery: 'pump' });
+    const { result } = renderHook(() => useAssetNavigation(api, initialState), {
+      wrapper,
+    });
+
+    act(() => result.current.changeSearchQuery('pump'));
+
+    expect(api.syncInternalState).not.toHaveBeenCalled();
+  });
+
+  it('keeps the search when an asset is opened and closed', () => {
+    const initialState = JSON.stringify({ searchQuery: 'pump' });
+    const { result } = renderHook(() => useAssetNavigation(api, initialState), {
+      wrapper,
+    });
+
+    act(() => result.current.selectAsset(selectedAsset));
+    act(() => result.current.clearSelectedAsset());
+
+    expect(result.current.navigationState.searchQuery).toBe('pump');
+  });
+
   it('clears the selection and syncs it to the host', () => {
     const initialState = JSON.stringify({ selectedAsset });
     const { result } = renderHook(() => useAssetNavigation(api, initialState), {

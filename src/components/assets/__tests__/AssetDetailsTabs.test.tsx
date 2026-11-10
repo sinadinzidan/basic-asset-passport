@@ -35,6 +35,26 @@ describe(AssetDetailsTabs.name, () => {
     expect(screen.getByText('Plant ID')).toBeInTheDocument();
   });
 
+  it('shows the asset external ID exactly as stored on the properties tab', () => {
+    // Arrange
+    const details = makeDetails(0);
+    details.asset.externalId = 'A-GF-G307-FFS2-RSHT2-FIREFIGHT';
+
+    // Act
+    render(
+      <AssetDetailsTabs
+        details={details}
+        activeTab={AssetEquipmentTab.PROPERTIES}
+        onTabChange={vi.fn()}
+      />,
+    );
+
+    // Assert
+    expect(
+      screen.getByText('Asset ID: A-GF-G307-FFS2-RSHT2-FIREFIGHT'),
+    ).toBeInTheDocument();
+  });
+
   it('lists every linked equipment on the equipments tab', () => {
     render(
       <AssetDetailsTabs

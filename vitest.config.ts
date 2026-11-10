@@ -18,7 +18,7 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html', 'lcov'],
-      exclude: ['node_modules/', 'dist/', '.claude/', '.agents/', 'vitest.setup.ts', '**/*.config.ts', '**/*.d.ts'],
+      exclude: ['node_modules/', 'dist/', '.claude/', '.agents/', 'src/cognite-file-viewer/', 'vitest.setup.ts', '**/*.config.ts', '**/*.d.ts'],
     },
   },
 });

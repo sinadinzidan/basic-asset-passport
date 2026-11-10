@@ -34,7 +34,8 @@ const noUnusedVarsOptions = {
 
 export default tseslint.config(
   {
-    ignores: ['dist', 'build', '.next', 'coverage', '*.min.js', '.agents', '.cursor', '.claude'],
+    // src/cognite-file-viewer is Cognite's file viewer, copied in as distributed and not held to the app's style rules.
+    ignores: ['dist', 'build', 'packages', '.next', 'coverage', '*.min.js', '.agents', '.cursor', '.claude', 'src/cognite-file-viewer'],
   },
   {
     files: ['**/*.{js,mjs,cjs,ts,tsx}'],

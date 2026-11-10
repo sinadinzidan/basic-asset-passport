@@ -16,7 +16,7 @@ export function PageHeader({
   badges,
 }: PageHeaderProps) {
   return (
-    <div className="page-enter flex flex-col gap-2">
+    <div className="flex flex-col gap-2">
       {kicker ? <span className="hud-kicker">{kicker}</span> : null}
       <div className="flex min-w-0 flex-wrap items-center gap-3">
         {leading}

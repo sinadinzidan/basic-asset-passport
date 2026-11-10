@@ -2,9 +2,26 @@ space: sp-asset-passport
 externalId: Asset_Passport
 version: '1'
 name: Asset Passport
-description: Solution model for the Asset Passport app. It references the domain Asset and adds what the app writes.
+description: Solution model for the Asset Passport app. It references the domain Asset, Equipment and PI_Timeseries and adds what the app writes.
 views:
+  # The domain views are only referenced, never edited.
+  - space: sp-dm-idi-rmdm
+    externalId: Asset
+    version: v1
+    type: view
+  - space: sp-dm-idi-rmdm
+    externalId: Equipment
+    version: v1
+    type: view
+  - space: sp-dm-idi-rmdm
+    externalId: PI_Timeseries
+    version: v1
+    type: view
   - space: sp-asset-passport
-    externalId: AssetNote
+    externalId: Note
+    version: v1
+    type: view
+  - space: sp-asset-passport
+    externalId: Document
     version: v1
     type: view

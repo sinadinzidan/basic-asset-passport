@@ -1,0 +1,183 @@
+space: sp-asset-passport
+externalId: Document
+version: v1
+name: Document
+description: A document uploaded in Asset Passport against an asset.
+# A file managed by data modeling is a node of a view that implements CogniteFile, which is what lets the Files
+# API upload and download its content.
+implements:
+  - space: cdf_cdm
+    externalId: CogniteFile
+    version: v1
+    type: view
+  - space: cdf_cdm
+    externalId: CogniteDescribable
+    version: v1
+    type: view
+  - space: cdf_cdm
+    externalId: CogniteSourceable
+    version: v1
+    type: view
+properties:
+  name:
+    container:
+      space: cdf_cdm
+      externalId: CogniteDescribable
+      type: container
+    containerPropertyIdentifier: name
+    name: Name
+  description:
+    container:
+      space: cdf_cdm
+      externalId: CogniteDescribable
+      type: container
+    containerPropertyIdentifier: description
+    name: Description
+  tags:
+    container:
+      space: cdf_cdm
+      externalId: CogniteDescribable
+      type: container
+    containerPropertyIdentifier: tags
+    name: Tags
+  aliases:
+    container:
+      space: cdf_cdm
+      externalId: CogniteDescribable
+      type: container
+    containerPropertyIdentifier: aliases
+    name: Aliases
+  sourceId:
+    container:
+      space: cdf_cdm
+      externalId: CogniteSourceable
+      type: container
+    containerPropertyIdentifier: sourceId
+    name: Source ID
+  sourceContext:
+    container:
+      space: cdf_cdm
+      externalId: CogniteSourceable
+      type: container
+    containerPropertyIdentifier: sourceContext
+    name: Source context
+  source:
+    container:
+      space: cdf_cdm
+      externalId: CogniteSourceable
+      type: container
+    containerPropertyIdentifier: source
+    name: Source
+    source:
+      space: cdf_cdm
+      externalId: CogniteSourceSystem
+      version: v1
+      type: view
+  sourceCreatedTime:
+    container:
+      space: cdf_cdm
+      externalId: CogniteSourceable
+      type: container
+    containerPropertyIdentifier: sourceCreatedTime
+    name: Source created
+  sourceUpdatedTime:
+    container:
+      space: cdf_cdm
+      externalId: CogniteSourceable
+      type: container
+    containerPropertyIdentifier: sourceUpdatedTime
+    name: Source last updated
+  sourceCreatedUser:
+    container:
+      space: cdf_cdm
+      externalId: CogniteSourceable
+      type: container
+    containerPropertyIdentifier: sourceCreatedUser
+    name: Source created by
+  sourceUpdatedUser:
+    container:
+      space: cdf_cdm
+      externalId: CogniteSourceable
+      type: container
+    containerPropertyIdentifier: sourceUpdatedUser
+    name: Source last updated by
+  assets:
+    container:
+      space: cdf_cdm
+      externalId: CogniteFile
+      type: container
+    containerPropertyIdentifier: assets
+    name: Assets
+    source:
+      space: cdf_cdm
+      externalId: CogniteAsset
+      version: v1
+      type: view
+  mimeType:
+    container:
+      space: cdf_cdm
+      externalId: CogniteFile
+      type: container
+    containerPropertyIdentifier: mimeType
+    name: MIME type
+  isUploaded:
+    container:
+      space: cdf_cdm
+      externalId: CogniteFile
+      type: container
+    containerPropertyIdentifier: isUploaded
+    name: Is uploaded
+  uploadedTime:
+    container:
+      space: cdf_cdm
+      externalId: CogniteFile
+      type: container
+    containerPropertyIdentifier: uploadedTime
+    name: Uploaded time
+  category:
+    container:
+      space: cdf_cdm
+      externalId: CogniteFile
+      type: container
+    containerPropertyIdentifier: category
+    name: Category
+    source:
+      space: cdf_cdm
+      externalId: CogniteFileCategory
+      version: v1
+      type: view
+  directory:
+    container:
+      space: cdf_cdm
+      externalId: CogniteFile
+      type: container
+    containerPropertyIdentifier: directory
+    name: Directory
+  # Equipment that lists this file in its own `files` relation; filled in automatically.
+  equipment:
+    name: Equipment
+    connectionType: multi_reverse_direct_relation
+    source:
+      space: cdf_cdm
+      externalId: CogniteEquipment
+      version: v1
+      type: view
+    through:
+      source:
+        space: cdf_cdm
+        externalId: CogniteEquipment
+        version: v1
+        type: view
+      identifier: files
+  asset:
+    container:
+      space: sp-asset-passport
+      externalId: Document
+      type: container
+    containerPropertyIdentifier: asset
+    name: Asset
+    source:
+      space: sp-dm-idi-rmdm
+      externalId: Asset
+      version: v1
+      type: view

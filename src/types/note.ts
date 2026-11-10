@@ -7,6 +7,8 @@ export type AssetNote = {
   createdTime: number;
 };
 
+export type NoteIdentifier = Pick<AssetNote, 'space' | 'externalId'>;
+
 export type NewAssetNote = {
   title: string;
   body: string;

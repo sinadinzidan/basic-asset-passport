@@ -12,9 +12,16 @@ export type AssetListItem = {
 
 export type AssetIdentifier = Pick<AssetListItem, 'space' | 'externalId'>;
 
+/** The chart's setup as the flat string record the trend chart serialises it to. */
+export type TimeseriesChartOptions = Record<string, string>;
+
 export type AssetNavigationState = {
   selectedAsset: AssetIdentifier | null;
   activeEquipmentTab: AssetEquipmentTab;
+  /** The text the asset register is searched for; absent while there is no search. */
+  searchQuery?: string;
+  /** The open timeseries chart; absent while the chart is closed. */
+  timeseriesChart?: TimeseriesChartOptions;
 };
 
 export type AssetPropertyDisplay = {

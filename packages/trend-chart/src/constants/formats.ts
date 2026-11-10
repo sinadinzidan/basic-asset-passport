@@ -1,0 +1,3 @@
+export const MILLISECONDS_PER_HOUR = 3_600_000;
+export const MILLISECONDS_PER_DAY = 86_400_000;
+export const SEARCH_DEBOUNCE_MS = 300;

@@ -1,0 +1,54 @@
+space: sp-asset-passport
+externalId: Note
+version: v1
+name: Note
+description: Free-text note written in Asset Passport against a record in the domain model.
+properties:
+  asset:
+    container:
+      space: sp-asset-passport
+      externalId: Note
+      type: container
+    containerPropertyIdentifier: asset
+    name: Asset
+    # The domain view the relation points at: RMDM's Asset.
+    source:
+      space: sp-dm-idi-rmdm
+      externalId: Asset
+      version: v1
+      type: view
+  title:
+    container:
+      space: sp-asset-passport
+      externalId: Note
+      type: container
+    containerPropertyIdentifier: title
+    name: Title
+  body:
+    container:
+      space: sp-asset-passport
+      externalId: Note
+      type: container
+    containerPropertyIdentifier: body
+    name: Note
+  category:
+    container:
+      space: sp-asset-passport
+      externalId: Note
+      type: container
+    containerPropertyIdentifier: category
+    name: Category
+  author:
+    container:
+      space: sp-asset-passport
+      externalId: Note
+      type: container
+    containerPropertyIdentifier: author
+    name: Author
+  authorId:
+    container:
+      space: sp-asset-passport
+      externalId: Note
+      type: container
+    containerPropertyIdentifier: authorId
+    name: Author ID

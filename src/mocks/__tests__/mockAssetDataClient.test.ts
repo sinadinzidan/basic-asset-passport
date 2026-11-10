@@ -2,13 +2,27 @@ import type { QueryRequest } from '@cognite/sdk';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { ASSET_QUERY_LIMIT } from '../../constants/assets';
+import { DocumentOrigin } from '../../enums/documentOrigin';
 import { getAssetEquipmentDetails } from '../../services/assets/assetDetailsService';
-import { listAssets } from '../../services/assets/assetService';
+import { listAssets, searchAssets } from '../../services/assets/assetService';
+import {
+  deleteAssetDocument,
+  listAssetDocuments,
+  listAssetLinkedFiles,
+  uploadAssetDocument,
+} from '../../services/assets/documents/assetDocumentService';
+import {
+  createAssetNote,
+  deleteAssetNote,
+  listAssetNotes,
+  updateAssetNote,
+} from '../../services/assets/notes/assetNoteService';
+import { listAssetTimeseries } from '../../services/assets/timeseries/assetTimeseriesService';
 import { listAssetPassportViews } from '../../services/assets/viewHelpers';
-import { createAssetNote, listAssetNotes } from '../../services/notes/assetNoteService';
 import { MOCK_ASSETS, MOCK_ASSET_INSTANCE_SPACE } from '../mockAssetData';
 import {
   makeMockAssetDataClient,
+  makeMockDocumentFileClient,
   MOCK_LATENCY_MS,
   MOCK_PROJECT,
   MOCK_USER_IDENTIFIER,
@@ -37,6 +51,28 @@ describe(makeMockAssetDataClient.name, () => {
         flocStatus: 'Operating',
       }),
     );
+  });
+
+  it('finds assets whose name, description or plant holds the search text', async () => {
+    const page = await searchAssets(client, 'cooling water');
+
+    expect(page.nextCursor).toBeNull();
+    expect(page.items.length).toBeGreaterThan(0);
+    expect(
+      page.items.every((item) =>
+        [item.name, item.description, item.plantName]
+          .join(' ')
+          .toLowerCase()
+          .includes('cooling water'),
+      ),
+    ).toBe(true);
+  });
+
+  it('finds nothing for text no asset holds', async () => {
+    await expect(searchAssets(client, 'no-such-thing-xyz')).resolves.toEqual({
+      items: [],
+      nextCursor: null,
+    });
   });
 
   it('pages through every asset exactly once and ends without a cursor', async () => {
@@ -287,7 +323,7 @@ describe(`${makeMockAssetDataClient.name} notes`, () => {
     externalId: 'FLOC-1001',
   };
 
-  it('serves the Asset, Equipment and Note views from the data model', async () => {
+  it('serves the Asset, Equipment, Timeseries, Note and Document views from the data model', async () => {
     const client = makeMockAssetDataClient(0);
 
     const views = await listAssetPassportViews(client);
@@ -295,7 +331,9 @@ describe(`${makeMockAssetDataClient.name} notes`, () => {
     expect(views.map((view) => view.externalId)).toEqual([
       'Asset',
       'Equipment',
+      'PI_Timeseries',
       'Note',
+      'Document',
     ]);
   });
 
@@ -343,6 +381,44 @@ describe(`${makeMockAssetDataClient.name} notes`, () => {
     ]);
   });
 
+  it('keeps an edited note where it was, with its author and date', async () => {
+    const client = makeMockAssetDataClient(0);
+    const [original] = await listAssetNotes(client, firstAsset);
+
+    await updateAssetNote(client, original, {
+      title: 'Edited title',
+      body: 'Edited text',
+    });
+
+    const [edited] = await listAssetNotes(client, firstAsset);
+    expect(edited).toEqual({
+      ...original,
+      title: 'Edited title',
+      body: 'Edited text',
+    });
+  });
+
+  it('shows an emptied note text as no text', async () => {
+    const client = makeMockAssetDataClient(0);
+    const [original] = await listAssetNotes(client, firstAsset);
+
+    await updateAssetNote(client, original, { title: 'Title', body: '' });
+
+    const [edited] = await listAssetNotes(client, firstAsset);
+    expect(edited?.body).toBeNull();
+  });
+
+  it('removes a deleted note for that client only', async () => {
+    const client = makeMockAssetDataClient(0);
+    const other = makeMockAssetDataClient(0);
+    const [doomed] = await listAssetNotes(client, firstAsset);
+
+    await deleteAssetNote(client, doomed);
+
+    expect(await listAssetNotes(client, firstAsset)).not.toContainEqual(doomed);
+    expect(await listAssetNotes(other, firstAsset)).toContainEqual(doomed);
+  });
+
   it('does not share created notes between clients', async () => {
     const first = makeMockAssetDataClient(0);
     const second = makeMockAssetDataClient(0);
@@ -362,5 +438,171 @@ describe(`${makeMockAssetDataClient.name} notes`, () => {
         displayName: MOCK_USER_NAME,
       }),
     );
+  });
+});
+
+describe(`${makeMockAssetDataClient.name} documents`, () => {
+  const firstAsset = {
+    space: MOCK_ASSET_INSTANCE_SPACE,
+    externalId: 'FLOC-1001',
+  };
+
+  it('lists the seeded documents of an asset, newest first', async () => {
+    const client = makeMockAssetDataClient(0);
+
+    const documents = await listAssetDocuments(client, firstAsset);
+
+    expect(documents.map((document) => document.name)).toEqual([
+      'Maintenance schedule.xlsx',
+      'Inspection photo.png',
+      'Pump datasheet.pdf',
+    ]);
+    expect(documents.map((document) => document.isUploaded)).toEqual([
+      false,
+      true,
+      true,
+    ]);
+  });
+
+  it('lists no documents for an asset that has none', async () => {
+    const client = makeMockAssetDataClient(0);
+
+    await expect(
+      listAssetDocuments(client, { ...firstAsset, externalId: 'FLOC-1010' }),
+    ).resolves.toEqual([]);
+  });
+
+  it('does not mix notes and documents', async () => {
+    const client = makeMockAssetDataClient(0);
+
+    const notes = await listAssetNotes(client, firstAsset);
+
+    expect(notes.map((note) => note.title)).not.toContain('Pump datasheet.pdf');
+  });
+
+  it('keeps an uploaded document and marks it uploaded once its content is sent', async () => {
+    // Arrange
+    const client = makeMockAssetDataClient(0);
+    const files = makeMockDocumentFileClient(client, 0);
+    const file = new File(['content'], 'new report.pdf', {
+      type: 'application/pdf',
+    });
+
+    // Act
+    await uploadAssetDocument(client, files, firstAsset, file);
+
+    // Assert
+    const [newest] = await listAssetDocuments(client, firstAsset);
+    expect(newest).toEqual(
+      expect.objectContaining({
+        name: 'new report.pdf',
+        mimeType: 'application/pdf',
+        isUploaded: true,
+      }),
+    );
+    expect(newest.uploadedTime).not.toBeNull();
+  });
+
+  it('removes a deleted document', async () => {
+    const client = makeMockAssetDataClient(0);
+    const [first] = await listAssetDocuments(client, firstAsset);
+
+    await deleteAssetDocument(client, first);
+
+    const remaining = await listAssetDocuments(client, firstAsset);
+    expect(remaining.map((document) => document.externalId)).not.toContain(
+      first.externalId,
+    );
+    expect(remaining).toHaveLength(2);
+  });
+
+  it('serves a temporary link for uploading', async () => {
+    const files = makeMockDocumentFileClient(makeMockAssetDataClient(0), 0);
+    const document = { space: 'data', externalId: 'doc-1' };
+
+    await expect(files.requestUploadUrl(document)).resolves.toBe(
+      'https://mock-upload.test/data/doc-1',
+    );
+  });
+});
+
+describe(`${makeMockAssetDataClient.name} existing files`, () => {
+  const [firstAsset, secondAsset, thirdAsset] = MOCK_ASSETS.map((asset) => ({
+    space: asset.space,
+    externalId: asset.externalId,
+  }));
+
+  it('lists the files linked to an asset as read-only documents', async () => {
+    const client = makeMockAssetDataClient(0);
+
+    const files = await listAssetLinkedFiles(client, firstAsset);
+
+    expect(files.map((file) => file.name).sort()).toEqual([
+      'P&ID 1001.pdf',
+      'Pump data sheet.pdf',
+    ]);
+    expect(files.every((file) => file.origin === DocumentOrigin.RMDM)).toBe(
+      true,
+    );
+  });
+
+  it('lists a file for every asset it is linked to', async () => {
+    const client = makeMockAssetDataClient(0);
+
+    const files = await listAssetLinkedFiles(client, secondAsset);
+
+    expect(files.map((file) => file.name)).toEqual(['Pump data sheet.pdf']);
+  });
+
+  it('has no existing files for an asset without any', async () => {
+    const client = makeMockAssetDataClient(0);
+
+    expect(await listAssetLinkedFiles(client, thirdAsset)).toEqual([]);
+  });
+
+  it('keeps them apart from the documents uploaded in the app', async () => {
+    const client = makeMockAssetDataClient(0);
+
+    const documents = await listAssetDocuments(client, firstAsset);
+
+    expect(documents.map((document) => document.name)).not.toContain(
+      'P&ID 1001.pdf',
+    );
+  });
+});
+
+describe(`${makeMockAssetDataClient.name} timeseries`, () => {
+  const [firstAsset, secondAsset, thirdAsset] = MOCK_ASSETS.map((asset) => ({
+    space: asset.space,
+    externalId: asset.externalId,
+  }));
+
+  it('lists the series linked to an asset, sorted by name', async () => {
+    const client = makeMockAssetDataClient(0);
+
+    const timeseries = await listAssetTimeseries(client, firstAsset);
+
+    expect(timeseries.map((series) => series.properties[0]?.value)).toEqual([
+      'Discharge pressure',
+      'Motor temperature',
+      'Running status',
+    ]);
+  });
+
+  it('lists a series for every asset it is linked to', async () => {
+    const client = makeMockAssetDataClient(0);
+
+    const timeseries = await listAssetTimeseries(client, secondAsset);
+
+    expect(timeseries.map((series) => series.properties[0]?.value)).toEqual([
+      'Bearing vibration',
+      'Motor temperature',
+    ]);
+  });
+
+  it('has no series for an asset without any', async () => {
+    const client = makeMockAssetDataClient(0);
+
+    expect(await listAssetTimeseries(client, thirdAsset)).toEqual([]);
   });
 });

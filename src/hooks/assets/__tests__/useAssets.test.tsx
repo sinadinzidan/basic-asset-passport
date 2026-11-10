@@ -2,7 +2,7 @@ import { renderHook, waitFor } from '@testing-library/react';
 import type { ComponentType, ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { makeAssetPage } from '../../../mocks/assets';
+import { makeAssetListItem, makeAssetPage } from '../../../mocks/assets';
 import { makeMockClient } from '../../../mocks/cogniteClient';
 import { makeQueryClientWrapper } from '../../../mocks/queryClientWrapper';
 import {
@@ -20,6 +20,7 @@ describe(useAssets.name, () => {
     mockContext = {
       useAssetDataClient: vi.fn(() => client),
       listAssets: vi.fn(() => Promise.resolve(makeAssetPage())),
+      searchAssets: vi.fn(() => Promise.resolve(makeAssetPage())),
     };
     const QueryWrapper = makeQueryClientWrapper();
     wrapper = ({ children }) => (
@@ -70,6 +71,44 @@ describe(useAssets.name, () => {
 
     await waitFor(() =>
       expect(mockContext.listAssets).toHaveBeenCalledTimes(2),
+    );
+  });
+
+  it('searches instead of listing when there is search text', async () => {
+    const page = makeAssetPage([makeAssetListItem({ externalId: 'FOUND' })]);
+    vi.mocked(mockContext.searchAssets).mockResolvedValue(page);
+
+    const { result } = renderHook(() => useAssets(undefined, 'pump'), {
+      wrapper,
+    });
+
+    await waitFor(() => expect(result.current.data).toEqual(page));
+    expect(mockContext.searchAssets).toHaveBeenCalledWith(client, 'pump');
+    expect(mockContext.listAssets).not.toHaveBeenCalled();
+  });
+
+  it('lists when the search text is blank', async () => {
+    const { result } = renderHook(() => useAssets(undefined, '   '), {
+      wrapper,
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(mockContext.listAssets).toHaveBeenCalledWith(client, undefined);
+    expect(mockContext.searchAssets).not.toHaveBeenCalled();
+  });
+
+  it('caches each search text separately', async () => {
+    const { result, rerender } = renderHook(
+      ({ searchText }: { searchText: string }) =>
+        useAssets(undefined, searchText),
+      { wrapper, initialProps: { searchText: 'pump' } },
+    );
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    rerender({ searchText: 'valve' });
+
+    await waitFor(() =>
+      expect(mockContext.searchAssets).toHaveBeenCalledWith(client, 'valve'),
     );
   });
 });

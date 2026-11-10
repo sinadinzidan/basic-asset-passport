@@ -57,6 +57,7 @@ describe('AssetTable row selection', () => {
           ]),
         ),
       ),
+      searchAssets: vi.fn(() => Promise.resolve(makeAssetPage())),
     };
     const QueryWrapper = makeQueryClientWrapper();
     wrapper = ({ children }) => (
@@ -68,7 +69,14 @@ describe('AssetTable row selection', () => {
 
   it('reports the identifier of the clicked asset', async () => {
     const onAssetSelect = vi.fn();
-    render(<AssetTable onAssetSelect={onAssetSelect} />, { wrapper });
+    render(
+      <AssetTable
+        onAssetSelect={onAssetSelect}
+        searchQuery=""
+        onSearchChange={vi.fn()}
+      />,
+      { wrapper },
+    );
 
     await userEvent.click(
       await screen.findByRole('button', { name: 'FLOC-7' }),

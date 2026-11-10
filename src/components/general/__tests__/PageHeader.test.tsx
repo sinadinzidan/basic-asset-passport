@@ -12,6 +12,12 @@ describe(PageHeader.name, () => {
     ).toBeInTheDocument();
   });
 
+  it('appears at once, without an entrance animation', () => {
+    const { container } = render(<PageHeader title="Title" />);
+
+    expect(container.firstElementChild).not.toHaveClass('page-enter');
+  });
+
   it('shows the description only when given', () => {
     const { rerender } = render(<PageHeader title="Title" />);
     expect(screen.queryByText('About this page')).not.toBeInTheDocument();

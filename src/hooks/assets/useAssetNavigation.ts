@@ -2,7 +2,11 @@ import { createContext, useContext, useState } from 'react';
 
 import { AssetEquipmentTab } from '../../enums/assetEquipmentTab';
 import { parseNavigationState } from '../../lib/navigationState';
-import type { AssetIdentifier, AssetNavigationState } from '../../types/asset';
+import type {
+  AssetIdentifier,
+  AssetNavigationState,
+  TimeseriesChartOptions,
+} from '../../types/asset';
 import type { StateSyncApi } from '../../types/host';
 
 export type AssetNavigationDeps = {
@@ -27,7 +31,16 @@ export function useAssetNavigation(
   );
 
   function updateNavigationState(patch: Partial<AssetNavigationState>): void {
-    const nextState = { ...navigationState, ...patch };
+    const { timeseriesChart, searchQuery, ...rest } = {
+      ...navigationState,
+      ...patch,
+    };
+    // A closed chart and an empty search are left out of the state rather than stored as undefined.
+    const nextState: AssetNavigationState = {
+      ...rest,
+      ...(searchQuery ? { searchQuery } : {}),
+      ...(timeseriesChart ? { timeseriesChart } : {}),
+    };
     setNavigationState(nextState);
 
     if (!api) return;
@@ -39,25 +52,41 @@ export function useAssetNavigation(
       });
   }
 
+  /** Searches the register for this text, or lists every asset when it is empty. */
+  function changeSearchQuery(searchQuery: string): void {
+    if (searchQuery === (navigationState.searchQuery ?? '')) return;
+    updateNavigationState({ searchQuery });
+  }
+
   function selectAsset(assetIdentifier: AssetIdentifier): void {
     updateNavigationState({
       selectedAsset: assetIdentifier,
       activeEquipmentTab: AssetEquipmentTab.PROPERTIES,
+      timeseriesChart: undefined,
     });
   }
 
   function clearSelectedAsset(): void {
-    updateNavigationState({ selectedAsset: null });
+    updateNavigationState({ selectedAsset: null, timeseriesChart: undefined });
   }
 
   function changeEquipmentTab(activeEquipmentTab: AssetEquipmentTab): void {
-    updateNavigationState({ activeEquipmentTab });
+    updateNavigationState({ activeEquipmentTab, timeseriesChart: undefined });
+  }
+
+  /** Opens the chart with this setup, or closes it when given none. */
+  function changeTimeseriesChart(
+    timeseriesChart: TimeseriesChartOptions | null,
+  ): void {
+    updateNavigationState({ timeseriesChart: timeseriesChart ?? undefined });
   }
 
   return {
     navigationState,
+    changeSearchQuery,
     selectAsset,
     clearSelectedAsset,
     changeEquipmentTab,
+    changeTimeseriesChart,
   };
 }

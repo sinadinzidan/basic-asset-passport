@@ -14,7 +14,7 @@ import type { AssetDataClient } from '../../types/assetDataClient';
 
 export type NodeInstance = Extract<NodeOrEdge, { instanceType: 'node' }>;
 
-/** The views of the Asset_Passport data model: Asset, Equipment and Note. */
+/** The views of the Asset_Passport data model: Asset, Equipment, Note and Document. */
 export async function listAssetPassportViews(
   client: AssetDataClient,
 ): Promise<ViewDefinition[]> {
@@ -43,7 +43,10 @@ function isViewDefinition(view: DataModelProperty): view is ViewDefinition {
   return 'properties' in view;
 }
 
-export function toViewReference(view: ViewDefinition): ViewReference {
+/** What identifies a view: a full definition or just its reference. */
+export type ViewIdentity = Pick<ViewDefinition, 'space' | 'externalId' | 'version'>;
+
+export function toViewReference(view: ViewIdentity): ViewReference {
   return {
     type: 'view',
     space: view.space,
@@ -58,7 +61,7 @@ export function isNodeInstance(item: NodeOrEdge): item is NodeInstance {
 
 export function getNodeViewProperties(
   node: NodeInstance,
-  view: ViewDefinition,
+  view: ViewIdentity,
 ): Record<string, unknown> | undefined {
   return node.properties?.[view.space]?.[`${view.externalId}/${view.version}`];
 }

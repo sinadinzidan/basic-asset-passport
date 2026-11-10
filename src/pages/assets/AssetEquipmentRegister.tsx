@@ -1,9 +1,9 @@
-import { Button } from '@cognite/aura/components/button';
 import { IconArrowLeft } from '@tabler/icons-react';
 
 import { AssetDetailsTabs } from '../../components/assets/AssetDetailsTabs';
+import { AssetEquipmentRegisterSkeleton } from '../../components/assets/AssetEquipmentRegisterSkeleton';
 import { CriticalityPill } from '../../components/general/CriticalityPill';
-import { LoadingNotice } from '../../components/general/LoadingNotice';
+import { GeneralButton } from '../../components/general/GeneralButton';
 import { PageHeader } from '../../components/general/PageHeader';
 import { PageShell } from '../../components/general/PageShell';
 import { RetryAlert } from '../../components/general/RetryAlert';
@@ -42,14 +42,14 @@ export function AssetEquipmentRegister({
     CRITICALITY_PROPERTY_IDENTIFIER,
   );
   const backButton = (
-    <Button
+    <GeneralButton
       aria-label="Back to assets"
       onClick={onBack}
       size="icon-lg"
       variant="outline"
     >
       <IconArrowLeft aria-hidden />
-    </Button>
+    </GeneralButton>
   );
 
   function handleRetry(): void {
@@ -59,10 +59,7 @@ export function AssetEquipmentRegister({
   if (isPending) {
     return (
       <PageShell>
-        <LoadingNotice
-          className="p-10"
-          message="Loading asset and equipment properties..."
-        />
+        <AssetEquipmentRegisterSkeleton />
       </PageShell>
     );
   }

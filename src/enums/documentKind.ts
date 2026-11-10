@@ -1,0 +1,9 @@
+export enum DocumentKind {
+  PDF = 'PDF',
+  IMAGE = 'IMAGE',
+  SPREADSHEET = 'SPREADSHEET',
+  DOCUMENT = 'DOCUMENT',
+  PRESENTATION = 'PRESENTATION',
+  DATA = 'DATA',
+  FILE = 'FILE',
+}

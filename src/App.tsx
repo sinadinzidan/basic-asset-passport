@@ -7,15 +7,24 @@ import { CogniteClient } from '@cognite/sdk';
 import type { ComponentProps } from 'react';
 import { useCallback, useRef, useState } from 'react';
 
+import { AgentChatStateProvider } from './components/agents/AgentChatStateProvider';
+import { AgentHelper } from './components/agents/AgentHelper';
+import { LiveAgentClientProvider } from './components/agents/LiveAgentClientProvider';
 import { LiveAssetDataClientProvider } from './components/assets/LiveAssetDataClientProvider';
 import { AppAlert } from './components/general/AppAlert';
 import { LoadingNotice } from './components/general/LoadingNotice';
 import { MockModeNotice } from './components/general/MockModeNotice';
 import { NeonStage } from './components/general/NeonStage';
+import { AgentClientContext } from './hooks/agents/useAgentClient';
+import { DocumentFileClientContext } from './hooks/assets/documents/useDocumentFileClient';
 import { AssetDataClientContext } from './hooks/assets/useAssetDataClient';
+import { TimeseriesDatapointsClientContext } from './hooks/timeseries/useTimeseriesDatapointsClient';
 import { AssetRegister } from './pages/assets/AssetRegister';
+import type { AgentClient } from './types/agent';
 import type { AssetDataClient } from './types/assetDataClient';
+import type { DocumentFileClient } from './types/documentFileClient';
 import type { StateSyncApi } from './types/host';
+import type { TimeseriesDatapointsClient } from './types/timeseries';
 
 type AppDependencies = NonNullable<
   ComponentProps<typeof CogniteSdkProvider>['deps']
@@ -29,6 +38,12 @@ type AppProps = {
   deps?: AppDependencies;
   /** Dummy-data client for mock mode; skips the Fusion host connection. */
   mockDataClient?: AssetDataClient;
+  /** Dummy file operations for the documents in mock mode. */
+  mockDocumentFileClient?: DocumentFileClient;
+  /** Dummy readings for the timeseries previews in mock mode. */
+  mockTimeseriesDatapointsClient?: TimeseriesDatapointsClient;
+  /** Dummy agents for the agent helper in mock mode. */
+  mockAgentClient?: AgentClient;
 };
 
 const defaultCreateClient: AppDependencies['createClient'] = (config) =>
@@ -48,7 +63,13 @@ const errorFallback = (
   </main>
 );
 
-function App({ deps, mockDataClient }: AppProps) {
+function App({
+  deps,
+  mockDataClient,
+  mockDocumentFileClient,
+  mockTimeseriesDatapointsClient,
+  mockAgentClient,
+}: AppProps) {
   const [hostState, setHostState] = useState<AppHostState | null>(null);
   const hostConnectionRef = useRef<Promise<HostConnection> | null>(null);
 
@@ -77,8 +98,23 @@ function App({ deps, mockDataClient }: AppProps) {
       <NeonStage>
         <MockModeNotice />
         <AssetDataClientContext.Provider value={mockDataClient}>
-          <AssetRegister api={null} />
+          <DocumentFileClientContext.Provider
+            value={mockDocumentFileClient ?? null}
+          >
+            <TimeseriesDatapointsClientContext.Provider
+              value={mockTimeseriesDatapointsClient ?? null}
+            >
+              <AssetRegister api={null} />
+            </TimeseriesDatapointsClientContext.Provider>
+          </DocumentFileClientContext.Provider>
         </AssetDataClientContext.Provider>
+        {mockAgentClient ? (
+          <AgentClientContext.Provider value={mockAgentClient}>
+            <AgentChatStateProvider>
+              <AgentHelper />
+            </AgentChatStateProvider>
+          </AgentClientContext.Provider>
+        ) : null}
       </NeonStage>
     );
   }
@@ -96,6 +132,11 @@ function App({ deps, mockDataClient }: AppProps) {
             initialState={hostState?.initialState}
           />
         </LiveAssetDataClientProvider>
+        <LiveAgentClientProvider>
+          <AgentChatStateProvider>
+            <AgentHelper />
+          </AgentChatStateProvider>
+        </LiveAgentClientProvider>
       </CogniteSdkProvider>
     </NeonStage>
   );

@@ -46,9 +46,9 @@ describe(isNewAssetNoteValid.name, () => {
 
 describe(normalizeNewAssetNote.name, () => {
   it('trims the title and the body', () => {
-    expect(normalizeNewAssetNote({ title: '  Title ', body: ' Text\n' })).toEqual(
-      { title: 'Title', body: 'Text' },
-    );
+    expect(
+      normalizeNewAssetNote({ title: '  Title ', body: ' Text\n' }),
+    ).toEqual({ title: 'Title', body: 'Text' });
   });
 
   it('throws for an invalid note', () => {

@@ -1,7 +1,10 @@
 import type { CogniteClient } from '@cognite/sdk';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { ASSET_QUERY_LIMIT } from '../../../constants/assets';
+import {
+  ASSET_QUERY_LIMIT,
+  ASSET_SEARCH_LIMIT,
+} from '../../../constants/assets';
 import {
   makeNodeInstance,
   makeQueryResponse,
@@ -11,7 +14,7 @@ import {
   makeOfflineSdkClient,
   stubModelViews,
 } from '../../../mocks/cogniteClient';
-import { listAssets } from '../assetService';
+import { listAssets, searchAssets } from '../assetService';
 
 const assetView = makeViewDefinition('Asset', { name: {} });
 const assetReference = {
@@ -143,5 +146,86 @@ describe(listAssets.name, () => {
     );
 
     await expect(listAssets(client)).rejects.toThrow('query failed');
+  });
+});
+
+describe(searchAssets.name, () => {
+  let client: CogniteClient;
+
+  beforeEach(() => {
+    client = makeOfflineSdkClient();
+  });
+
+  it('searches the Asset view for the text in name, description and plant', async () => {
+    // Arrange
+    stubModelViews(client, [assetView]);
+    const search = vi
+      .spyOn(client.instances, 'search')
+      .mockResolvedValue({ items: [] });
+
+    // Act
+    await searchAssets(client, 'pump');
+
+    // Assert
+    expect(search).toHaveBeenCalledWith({
+      view: assetReference,
+      query: 'pump',
+      instanceType: 'node',
+      properties: ['name', 'description', 'plantName'],
+      limit: ASSET_SEARCH_LIMIT,
+    });
+  });
+
+  it('maps the matches to list items and has no further page', async () => {
+    // Arrange
+    stubModelViews(client, [assetView]);
+    const node = makeNodeInstance(
+      assetView,
+      { space: 'instances', externalId: 'FLOC-2' },
+      {
+        name: 'Feed Pump',
+        description: 'Feeds the boiler',
+        plantName: 'South Plant',
+        flocStatus: 'Operating',
+        abcIndicatorName: 'B',
+      },
+    );
+    vi.spyOn(client.instances, 'search').mockResolvedValue({ items: [node] });
+
+    // Act
+    const page = await searchAssets(client, 'pump');
+
+    // Assert
+    expect(page).toEqual({
+      items: [
+        {
+          space: 'instances',
+          externalId: 'FLOC-2',
+          name: 'Feed Pump',
+          description: 'Feeds the boiler',
+          plantName: 'South Plant',
+          flocStatus: 'Operating',
+          abcIndicatorName: 'B',
+        },
+      ],
+      nextCursor: null,
+    });
+  });
+
+  it('throws when the Asset view does not exist', async () => {
+    stubModelViews(client, [makeViewDefinition('Equipment')]);
+
+    await expect(searchAssets(client, 'pump')).rejects.toThrow(
+      'The Asset view was not found in the Asset_Passport data model.',
+    );
+  });
+
+  it('propagates search failures', async () => {
+    stubModelViews(client, [assetView]);
+    vi.spyOn(client.instances, 'search').mockRejectedValue(
+      new Error('search failed'),
+    );
+
+    await expect(searchAssets(client, 'pump')).rejects.toThrow('search failed');
   });
 });

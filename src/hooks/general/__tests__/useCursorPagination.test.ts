@@ -41,4 +41,15 @@ describe(useCursorPagination.name, () => {
     expect(result.current.cursor).toBeUndefined();
     expect(result.current.pageNumber).toBe(1);
   });
+
+  it('returns to the first page on reset', () => {
+    const { result } = renderHook(() => useCursorPagination());
+    act(() => result.current.goToNextPage('cursor-2'));
+    act(() => result.current.goToNextPage('cursor-3'));
+
+    act(() => result.current.reset());
+
+    expect(result.current.cursor).toBeUndefined();
+    expect(result.current.pageNumber).toBe(1);
+  });
 });

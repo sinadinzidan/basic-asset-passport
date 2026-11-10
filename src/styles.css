@@ -1,6 +1,7 @@
 @import '@cognite/aura/styles.source.css';
 
 @source '../node_modules/@cognite/aura/dist/components';
+@source '../packages/trend-chart/src';
 
 /*
  * Theme ported from the control-room HUD reference: electric blue on deep navy,
@@ -47,6 +48,8 @@
 /* ---------- Stage ---------- */
 
 .neon-stage {
+  --grid-cell: 176px;
+
   position: relative;
   min-height: 100vh;
   /* clip, not hidden: it stops entrance animations adding scroll height without making a scroll container. */
@@ -97,10 +100,10 @@
       transparent 1px
     );
   background-size:
-    176px 176px,
-    176px 176px,
-    44px 44px,
-    44px 44px;
+    var(--grid-cell) var(--grid-cell),
+    var(--grid-cell) var(--grid-cell),
+    calc(var(--grid-cell) / 4) calc(var(--grid-cell) / 4),
+    calc(var(--grid-cell) / 4) calc(var(--grid-cell) / 4);
   mask-image: radial-gradient(ellipse at 50% 12%, black 12%, transparent 76%);
 }
 
@@ -124,29 +127,56 @@
     );
 }
 
-.neon-orb {
+/*
+ * Short lights that run along the engineering grid, from one crossing to another, in place of the soft blurred glows
+ * this stage used to have. They share the grid's cell size and its fade towards the bottom of the page.
+ */
+.neon-traces {
   position: fixed;
-  width: 26rem;
-  height: 26rem;
-  border-radius: 9999px;
+  inset: 0;
+  overflow: hidden;
   pointer-events: none;
-  filter: blur(100px);
-  opacity: 0.22;
-  animation: orb-float 22s ease-in-out infinite;
+  mask-image: radial-gradient(ellipse at 50% 12%, black 12%, transparent 76%);
 }
 
-.neon-orb--cyan {
-  top: 6%;
-  left: -9rem;
-  background: var(--blue-500);
+.neon-trace {
+  --trace-length: 9rem;
+  --trace-color: var(--neon-cyan);
+
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  animation: 8s ease-in-out infinite backwards;
 }
 
-.neon-orb--sky {
-  right: -11rem;
-  bottom: 2%;
-  background: var(--blue-450);
-  opacity: 0.16;
-  animation-delay: -11s;
+/* The light's head is its leading end: it is brightest there and fades into a tail. */
+.neon-trace[data-axis='ROW'] {
+  top: calc(var(--trace-line) * var(--grid-cell));
+  width: var(--trace-length);
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--trace-color) 70%, transparent) 78%,
+    var(--blue-50)
+  );
+  box-shadow: 0 0 6px color-mix(in srgb, var(--trace-color) 60%, transparent);
+  animation-name: trace-run-row;
+}
+
+.neon-trace[data-axis='COLUMN'] {
+  left: calc(var(--trace-line) * var(--grid-cell));
+  width: 1px;
+  height: var(--trace-length);
+  background: linear-gradient(
+    180deg,
+    transparent,
+    color-mix(in srgb, var(--trace-color) 70%, transparent) 78%,
+    var(--blue-50)
+  );
+  box-shadow: 0 0 6px color-mix(in srgb, var(--trace-color) 60%, transparent);
+  animation-name: trace-run-column;
 }
 
 /* ---------- Typography ---------- */
@@ -260,9 +290,7 @@
       0 8px 22px
         color-mix(in srgb, var(--hud-accent) var(--hud-glow), transparent)
     );
-  transition:
-    filter 220ms ease,
-    transform 220ms ease;
+  transition: filter 220ms ease;
 }
 
 .hud-frame {
@@ -287,30 +315,10 @@
   );
 }
 
-/* The rotating light along the border: always on for hero panels, on hover for cards. */
-.hud-animated .hud-frame,
-.hud-glow.is-interactive:hover .hud-frame,
-.hud-glow.is-selected .hud-frame {
-  background: conic-gradient(
-    from var(--hud-angle),
-    var(--hud-accent-light) 0%,
-    color-mix(in srgb, var(--hud-accent) 18%, transparent) 16%,
-    color-mix(in srgb, var(--hud-accent) 18%, transparent) 48%,
-    var(--hud-accent) 66%,
-    color-mix(in srgb, var(--hud-accent) 18%, transparent) 84%,
-    var(--hud-accent-light) 100%
-  );
-  animation: border-spin 5s linear infinite;
-}
-
-.hud-animated .hud-frame {
-  animation-duration: 9s;
-}
-
 .hud-body {
   position: relative;
   display: block;
-  /* The scan line travels past the panel. clip-path hides it but still counts as scrollable overflow. */
+  /* Keeps the content inside the panel's cut corners. */
   overflow: clip;
   width: 100%;
   height: 100%;
@@ -396,10 +404,6 @@ button.hud-body {
     );
 }
 
-.hud-glow.is-interactive:hover {
-  transform: translateY(-3px);
-}
-
 .hud-glow:has(button.hud-body:focus-visible) {
   filter: var(--neon-boost) drop-shadow(0 0 18px var(--hud-accent));
 }
@@ -407,26 +411,6 @@ button.hud-body {
 button.hud-body:focus-visible {
   outline: 2px solid var(--hud-accent-light);
   outline-offset: -4px;
-}
-
-.hud-body::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: linear-gradient(
-    180deg,
-    transparent 0%,
-    color-mix(in srgb, var(--hud-accent) 9%, transparent) 50%,
-    transparent 100%
-  );
-  height: 38%;
-  transform: translateY(-120%);
-  animation: hud-scan 9s ease-in-out infinite;
-}
-
-.hud-glow.is-interactive:hover .hud-body::after {
-  animation-duration: 3s;
 }
 
 .hud-tag {
@@ -442,10 +426,6 @@ button.hud-body:focus-visible {
   transform: rotate(45deg);
   background: var(--hud-accent-light);
   box-shadow: 0 0 8px var(--hud-accent);
-}
-
-.hud-dot--live {
-  animation: pulse-dot 1.8s ease-in-out infinite;
 }
 
 .hud-title-chip {
@@ -523,13 +503,40 @@ button.hud-body:focus-visible {
   }
 }
 
-@keyframes orb-float {
-  0%,
-  100% {
-    transform: translate3d(0, 0, 0) scale(1);
+/* One run takes the first part of the cycle; the rest is the pause before the next one. */
+@keyframes trace-run-row {
+  0% {
+    opacity: 0;
+    transform: translateX(
+      calc(var(--trace-from) * var(--grid-cell) - var(--trace-length))
+    );
   }
-  50% {
-    transform: translate3d(5rem, -3rem, 0) scale(1.15);
+  8%,
+  54% {
+    opacity: 0.9;
+  }
+  62%,
+  100% {
+    opacity: 0;
+    transform: translateX(calc(var(--trace-to) * var(--grid-cell)));
+  }
+}
+
+@keyframes trace-run-column {
+  0% {
+    opacity: 0;
+    transform: translateY(
+      calc(var(--trace-from) * var(--grid-cell) - var(--trace-length))
+    );
+  }
+  8%,
+  54% {
+    opacity: 0.9;
+  }
+  62%,
+  100% {
+    opacity: 0;
+    transform: translateY(calc(var(--trace-to) * var(--grid-cell)));
   }
 }
 
@@ -539,71 +546,26 @@ button.hud-body:focus-visible {
   }
 }
 
-@keyframes hud-scan {
-  0% {
-    transform: translateY(-120%);
-  }
-  55%,
-  100% {
-    transform: translateY(300%);
-  }
-}
-
-@keyframes pulse-dot {
-  0%,
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.45;
-    transform: scale(0.8);
-  }
-}
-
 @keyframes ring-rotate {
   to {
     transform: rotate(360deg);
   }
 }
 
-@keyframes rise-in {
-  from {
-    opacity: 0;
-    transform: translateY(14px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.rise-in {
-  animation: rise-in 520ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
-  animation-delay: var(--rise-delay, 0ms);
-}
-
 @media (prefers-reduced-motion: reduce) {
   .neon-stage::before,
-  .neon-orb,
-  .hud-body::after,
-  .hud-animated .hud-frame,
-  .hud-glow.is-interactive:hover .hud-frame,
-  .hud-glow.is-selected .hud-frame,
-  .hud-dot--live,
   .trend-live,
-  .ring-spin,
-  .rise-in {
+  .ring-spin {
     animation: none;
+  }
+
+  .neon-traces {
+    display: none;
   }
 
   .hud-glow,
   .ring-value {
     transition: none;
-  }
-
-  .hud-glow.is-interactive:hover {
-    transform: none;
   }
 }
 
@@ -666,6 +628,19 @@ button.hud-body:focus-visible {
 .hud-table tbody tr:hover td,
 .hud-table tbody tr:hover th {
   background: color-mix(in srgb, var(--hud-accent) 9%, var(--neon-surface));
+}
+
+/*
+ * The asset register's grid (Aura DataGrid) draws each row's bottom line with a default border colour that is nearly
+ * the panel colour here, so the rows ran together. They take the line colour of the other tables, and the header row
+ * the stronger one, which also marks where the rows start.
+ */
+.neon-stage :is([data-slot='data-grid-row'], [data-slot='data-grid-row-loading']) {
+  border-color: color-mix(in srgb, var(--neon-cyan) 22%, transparent);
+}
+
+.neon-stage [data-slot='data-grid-header-row'] {
+  border-color: color-mix(in srgb, var(--neon-cyan) 45%, transparent);
 }
 
 .tab-count {
@@ -956,43 +931,106 @@ button.hud-body:focus-visible {
   background: transparent;
 }
 
-/* ---------- Search and inputs ---------- */
+/* ---------- Search ---------- */
 
-.neon-stage [data-slot='input-group'] {
-  background: linear-gradient(
-    90deg,
-    color-mix(in srgb, var(--neon-cyan) 10%, var(--neon-surface-deep)),
-    var(--neon-surface-deep)
+/*
+ * The search box takes the app's field look, the same as the message box, the notes fields and the chart dialog's
+ * fields: cut corners, a thin cyan outline, a gradient fill and a lit bottom line. The outline is the box's own
+ * background showing around the fill, because clip-path would cut a real border at the corners. Aura's search is a
+ * frame (data-slot='search') around an input group that brings a rounded frame, a fill and a focus ring of its own;
+ * those are taken off so the one box is the field. It is not scoped to .neon-stage because the chart dialog is
+ * portaled outside it.
+ */
+[data-slot='search'] {
+  --field-cut: 8px;
+  --field-edge: color-mix(in srgb, var(--neon-cyan) 55%, transparent);
+  --field-line: var(--blue-300);
+  border: 1px solid transparent;
+  background:
+    linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--neon-cyan) 16%, var(--neon-surface-deep)),
+        var(--neon-surface-deep)
+      )
+      padding-box,
+    var(--field-edge) border-box;
+  box-shadow: inset 0 -2px 0 var(--field-line);
+  clip-path: polygon(
+    var(--field-cut) 0,
+    100% 0,
+    100% calc(100% - var(--field-cut)),
+    calc(100% - var(--field-cut)) 100%,
+    0 100%,
+    0 var(--field-cut)
   );
-  border: 1px solid color-mix(in srgb, var(--neon-cyan) 30%, transparent);
-  border-radius: 3px;
+  transition: background 160ms ease;
 }
 
-.neon-stage [data-slot='input-group']:hover {
-  border-color: color-mix(in srgb, var(--neon-cyan) 60%, transparent);
+[data-slot='search']:hover {
+  --field-edge: color-mix(in srgb, var(--neon-cyan) 85%, transparent);
 }
 
-.neon-stage [data-slot='input-group']:focus-within {
-  border-color: var(--neon-cyan);
-  box-shadow:
-    0 0 0 1px var(--neon-cyan),
-    0 0 22px color-mix(in srgb, var(--neon-cyan) 35%, transparent);
+[data-slot='search']:focus-within {
+  --field-edge: var(--neon-cyan);
+  --field-line: var(--blue-100);
 }
 
-.neon-stage [data-slot='input-group-control'] {
-  font-family: var(--font-source-code-pro);
-  font-size: 0.8125rem;
-  letter-spacing: 0.02em;
+[data-slot='search'] :is([data-slot='input-group'], [data-slot='input-group-addon'], [data-slot='input-group-control']) {
+  background: transparent !important;
+  border-color: transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  outline: none;
+}
+
+[data-slot='search'] [data-slot='input-group-control'] {
+  color: var(--base-foreground, var(--blue-50));
+}
+
+[data-slot='search'] [data-slot='input-group-control']::placeholder {
+  color: var(--blue-300);
+}
+
+/*
+ * The popover that points at an annotation box on a file preview: the same cut corners, thin cyan outline and glass
+ * fill as the dialogs, so it reads as part of the same panel family. The outline is the popover's own background
+ * showing around the fill, because clip-path would cut a real border at the corners.
+ */
+.hud-popover {
+  --hud-popover-cut: 8px;
+  color: var(--base-foreground);
+  border: 1px solid transparent;
+  border-radius: 0;
+  box-shadow: none;
+  background:
+    linear-gradient(
+        160deg,
+        color-mix(in srgb, var(--neon-cyan) 14%, var(--neon-surface)),
+        var(--neon-surface) 58%,
+        color-mix(in srgb, var(--neon-cyan) 4%, var(--neon-surface-deep))
+      )
+      padding-box,
+    color-mix(in srgb, var(--neon-cyan) 70%, transparent) border-box;
+  clip-path: polygon(
+    var(--hud-popover-cut) 0,
+    100% 0,
+    100% calc(100% - var(--hud-popover-cut)),
+    calc(100% - var(--hud-popover-cut)) 100%,
+    0 100%,
+    0 var(--hud-popover-cut)
+  );
 }
 
 /* ---------- Pills: the lit tab look, for status and criticality ---------- */
+
+/* Dialogs and popovers are portaled outside the stage, so a pill inside one is matched through it. */
 
 /*
  * A pill is a small active tab: cut corners, a gradient fill, a bright
  * line along the bottom and the same capitals. The colour variables are set
  * per tone below; --pill-line is the bottom line and --pill-text the label.
  */
-.neon-stage [data-slot='badge'] {
+:is(.neon-stage, .hud-dialog, .hud-popover) [data-slot='badge'] {
   --pill: var(--neon-cyan);
   --pill-line: var(--blue-300);
   --pill-text: var(--blue-50);
@@ -1030,38 +1068,38 @@ button.hud-body:focus-visible {
  * the active tab, warning is amber, error is red, success is green and neutral
  * is a muted grey. The default above is the lit blue.
  */
-.neon-stage [data-slot='badge'][data-tone='active'] {
+:is(.neon-stage, .hud-dialog, .hud-popover) [data-slot='badge'][data-tone='active'] {
   --pill: var(--neon-cyan);
   --pill-line: var(--blue-300);
   --pill-text: var(--blue-50);
 }
 
-.neon-stage [data-slot='badge'][data-tone='warning'] {
+:is(.neon-stage, .hud-dialog, .hud-popover) [data-slot='badge'][data-tone='warning'] {
   --pill: var(--neon-amber);
   --pill-line: var(--amber-300);
   --pill-text: var(--amber-50);
 }
 
-.neon-stage [data-slot='badge'][data-tone='error'] {
+:is(.neon-stage, .hud-dialog, .hud-popover) [data-slot='badge'][data-tone='error'] {
   --pill: var(--neon-red);
   --pill-line: var(--red-400);
   --pill-text: var(--red-50);
 }
 
-.neon-stage [data-slot='badge'][data-tone='success'] {
+:is(.neon-stage, .hud-dialog, .hud-popover) [data-slot='badge'][data-tone='success'] {
   --pill: var(--green-450);
   --pill-line: var(--green-300);
   --pill-text: var(--green-50);
 }
 
-.neon-stage [data-slot='badge'][data-tone='neutral'] {
+:is(.neon-stage, .hud-dialog, .hud-popover) [data-slot='badge'][data-tone='neutral'] {
   --pill: var(--mountain-500);
   --pill-line: var(--mountain-400);
   --pill-text: var(--mountain-100);
 }
 
 /* Status dot badges keep their dot-sized shape. */
-.neon-stage [data-slot='badge'][class*='min-w-5'] {
+:is(.neon-stage, .hud-dialog, .hud-popover) [data-slot='badge'][class*='min-w-5'] {
   padding: 0 0.45rem;
 }
 
@@ -1069,8 +1107,8 @@ button.hud-body:focus-visible {
 
 /*
  * One button language, matching the tabs and pills: mono caps, a cyan edge, a glow on hover.
- * Aura does not expose the variant as an attribute, so the three looks are picked by the classes it generates:
- * filled (default variant), outlined (outline and secondary variants) and ghost (everything else).
+ * Aura does not expose the variant as an attribute, so GeneralButton sets data-variant and data-size itself and the
+ * three looks are picked from those: filled (default), outlined (outline and secondary) and ghost.
  */
 .neon-stage [data-slot='button'] {
   --btn-edge: color-mix(in srgb, var(--neon-cyan) 55%, transparent);
@@ -1087,34 +1125,52 @@ button.hud-body:focus-visible {
     color 160ms ease;
 }
 
-.neon-stage [data-slot='button'][class*='h-9'] {
+.neon-stage [data-slot='button'][data-size='default'] {
   min-height: 2.25rem;
 }
 
+/*
+ * Aura colours a button's icon separately from its text (grey on outlined buttons, near-black on filled ones).
+ * Icons always take the text colour, so the two never disagree, on hover and when disabled too.
+ */
+:is(.neon-stage, [data-slot='dialog-content'], .hud-popover)
+  :is([data-slot='button'], [data-slot='dialog-close'], [data-slot='tooltip-trigger'], [data-slot='popover-close'])
+  svg {
+  color: inherit;
+}
+
 /* Filled: the one primary action of a view. */
-.neon-stage [data-slot='button'][class*='bg-primary-background'] {
+.neon-stage [data-slot='button']:is([data-variant='default'], [data-variant='defaultOnDark']) {
   color: var(--mountain-950);
   background: linear-gradient(135deg, var(--blue-300), var(--neon-cyan));
   border: 1px solid var(--blue-200);
   box-shadow: 0 0 16px color-mix(in srgb, var(--neon-cyan) 35%, transparent);
 }
 
-.neon-stage [data-slot='button'][class*='bg-primary-background']:hover {
+.neon-stage [data-slot='button']:is([data-variant='default'], [data-variant='defaultOnDark']):hover {
   color: var(--mountain-950);
   background: linear-gradient(135deg, var(--blue-200), var(--blue-300));
   box-shadow: 0 0 24px color-mix(in srgb, var(--neon-cyan) 60%, transparent);
 }
 
 /* Outlined: every other action. */
-.neon-stage [data-slot='button'][class*='border-border-emphasized'],
-.neon-stage [data-slot='button'][class*='bg-secondary-background'] {
+.neon-stage
+  [data-slot='button']:is(
+    [data-variant='outline'],
+    [data-variant='secondary'],
+    [data-variant='secondaryOnDark']
+  ) {
   color: var(--blue-100);
   background: color-mix(in srgb, var(--neon-cyan) 8%, transparent);
   border: 1px solid var(--btn-edge);
 }
 
-.neon-stage [data-slot='button'][class*='border-border-emphasized']:hover,
-.neon-stage [data-slot='button'][class*='bg-secondary-background']:hover {
+.neon-stage
+  [data-slot='button']:is(
+    [data-variant='outline'],
+    [data-variant='secondary'],
+    [data-variant='secondaryOnDark']
+  ):hover {
   color: var(--blue-50);
   background: color-mix(in srgb, var(--neon-cyan) 20%, transparent);
   border-color: var(--neon-cyan);
@@ -1122,47 +1178,52 @@ button.hud-body:focus-visible {
 }
 
 /* Ghost: low emphasis, same shape and type so it still reads as a button. */
-.neon-stage
-  [data-slot='button'][class*='text-medium-foreground']:not(
-    [class*='border-border-emphasized']
-  ):not([class*='bg-primary-background']) {
+.neon-stage [data-slot='button']:is([data-variant='ghost'], [data-variant='ghostOnDark']) {
   color: var(--blue-200);
   border: 1px solid transparent;
 }
 
-.neon-stage
-  [data-slot='button'][class*='text-medium-foreground']:not(
-    [class*='border-border-emphasized']
-  ):not([class*='bg-primary-background']):hover {
+.neon-stage [data-slot='button']:is([data-variant='ghost'], [data-variant='ghostOnDark']):hover {
   color: var(--blue-50);
   background: color-mix(in srgb, var(--neon-cyan) 14%, transparent);
   border-color: var(--btn-edge);
 }
 
-.neon-stage [data-slot='button']:disabled {
+:is(.neon-stage, [data-slot='dialog-content'])
+  :is([data-slot='button'], button[data-slot='tooltip-trigger']):disabled {
   box-shadow: none;
   cursor: not-allowed;
   opacity: 0.45;
 }
 
-.neon-stage [data-slot='button']:focus-visible {
+.neon-stage :is([data-slot='button'], button[data-slot='tooltip-trigger']):focus-visible {
   outline: 2px solid var(--blue-200);
   outline-offset: 2px;
 }
 
 /*
- * Text buttons (class hud-button) take the pill look at their normal size: cut corners, gradient and a bright
- * bottom line, so a button reads as a pill that can be pressed. The icon-only back button keeps its own
- * square shape. Hover and focus change the fill and an inset ring, because the cut corners clip any outer
+ * Buttons made with GeneralButton (class hud-button) take the pill look at their normal size: cut corners, gradient
+ * and a bright bottom line, so a button reads as a pill that can be pressed. The icon-only buttons take the same
+ * shape at a square size. Hover and focus change the fill and an inset ring, because the cut corners clip any outer
  * glow or outline.
+ *
+ * The selector is written once and everything below is nested under it, so it cannot drift apart between states.
+ * Aura rewrites data-slot on dialog close and tooltip triggers, so all three values are listed, and the attribute
+ * part must stay: it keeps the specificity above Aura's generic outlined rules. Dialogs and tooltips are portaled
+ * outside the stage, so their buttons need the type styles here too.
  */
-.neon-stage button.hud-button[data-slot='button'] {
+:is(.neon-stage, [data-slot='dialog-content'], .hud-popover) button.hud-button:is([data-slot='button'], [data-slot='dialog-close'], [data-slot='popover-close'], [data-slot='tooltip-trigger']) {
   --pill: var(--neon-cyan);
   --pill-line: var(--blue-300);
   --pill-cut: 6px;
   color: var(--blue-50);
   border: 0;
   border-radius: 0;
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   background: linear-gradient(
     180deg,
     color-mix(in srgb, var(--pill) 40%, transparent),
@@ -1179,32 +1240,57 @@ button.hud-body:focus-visible {
     0 100%,
     0 var(--pill-cut)
   );
-}
 
-/* The primary action is the brighter pill. */
-.neon-stage
-  button.hud-button[data-slot='button'][class*='bg-primary-background'] {
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--pill) 65%, transparent),
-    color-mix(in srgb, var(--pill) 28%, transparent)
-  );
-}
+  &:is([data-variant='default'], [data-variant='defaultOnDark']) {
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--pill) 65%, transparent),
+      color-mix(in srgb, var(--pill) 28%, transparent)
+    );
+  }
 
-.neon-stage button.hud-button[data-slot='button']:hover:not(:disabled) {
-  color: var(--blue-50);
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--pill) 75%, transparent),
-    color-mix(in srgb, var(--pill) 32%, transparent)
-  );
-}
+  transition:
+    filter 160ms ease,
+    box-shadow 160ms ease;
 
-.neon-stage button.hud-button[data-slot='button']:focus-visible {
-  outline: none;
-  box-shadow:
-    inset 0 -2px 0 var(--pill-line),
-    inset 0 0 0 2px var(--blue-200);
+  &:hover:not(:disabled) {
+    color: var(--blue-50);
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--pill) 75%, transparent),
+      color-mix(in srgb, var(--pill) 32%, transparent)
+    );
+    /* Restated, so the generic outlined hover glow cannot replace the bottom line. */
+    box-shadow:
+      inset 0 -2px 0 var(--pill-line),
+      inset 0 1px 0 color-mix(in srgb, var(--blue-100) 30%, transparent);
+  }
+
+  /*
+   * Primary buttons are one look at one size everywhere. Hover brightens the whole pill and lights its bottom line;
+   * pressing dims it back a little.
+   */
+  &:is([data-variant='default'], [data-variant='defaultOnDark']):hover:not(:disabled) {
+    --pill-line: var(--blue-100);
+    filter: brightness(1.2);
+  }
+
+  &:is([data-variant='default'], [data-variant='defaultOnDark']):active:not(:disabled) {
+    filter: brightness(0.95);
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow:
+      inset 0 -2px 0 var(--pill-line),
+      inset 0 0 0 2px var(--blue-200);
+  }
+
+  &[data-variant='destructive'] {
+    --pill: var(--neon-red);
+    --pill-line: var(--red-400);
+    color: var(--red-50);
+  }
 }
 
 /* ---------- Breadcrumb ---------- */
@@ -1249,7 +1335,7 @@ button.hud-body:focus-visible {
   text-transform: uppercase;
 }
 
-.neon-stage [data-slot='alert'] {
+:is(.neon-stage, .hud-popover) [data-slot='alert'] {
   border-radius: 0;
   border: 1px solid color-mix(in srgb, currentColor 30%, transparent);
   border-left: 3px solid currentColor;
@@ -1295,10 +1381,6 @@ button.hud-body:focus-visible {
   font-family: var(--font-display);
 }
 
-.page-enter {
-  animation: rise-in 520ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
-}
-
 /* Icon tile beside a figure: a cut-corner tinted chip. */
 .icon-chip {
   --chip-cut: 8px;
@@ -1334,10 +1416,80 @@ button.hud-body:focus-visible {
     color-mix(in srgb, var(--neon-cyan) 55%, transparent);
 }
 
-/* Notices: square edge with a coloured bar on the left. */
-.neon-stage .app-alert {
+/*
+ * Notices: a cut-corner glass strip with a glowing bar on the left. Each
+ * variant sets --alert-color; the tint, border, bar, icon chip and glow follow.
+ */
+.app-alert {
+  --alert-color: var(--neon-cyan);
+  --alert-cut: 10px;
+  position: relative;
+  padding: 0.75rem 1rem 0.75rem 1.25rem;
+  color: var(--blue-50);
+  background:
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--alert-color) 20%, transparent),
+      color-mix(in srgb, var(--alert-color) 4%, transparent) 70%
+    ),
+    color-mix(in srgb, var(--neon-surface-deep) 88%, transparent);
+  border: 1px solid color-mix(in srgb, var(--alert-color) 38%, transparent);
   border-radius: 0;
-  border-left-width: 3px;
+  box-shadow: 0 0 18px -8px color-mix(in srgb, var(--alert-color) 70%, transparent);
+  clip-path: polygon(
+    0 0,
+    calc(100% - var(--alert-cut)) 0,
+    100% var(--alert-cut),
+    100% 100%,
+    0 100%
+  );
+}
+
+.app-alert[data-variant='error'] {
+  --alert-color: var(--neon-red);
+}
+
+.app-alert[data-variant='warning'] {
+  --alert-color: var(--neon-amber);
+}
+
+.app-alert[data-variant='success'] {
+  --alert-color: var(--success-foreground-strong);
+}
+
+/* The lit bar on the left edge. */
+.app-alert::before {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  content: '';
+  background: var(--alert-color);
+  box-shadow: 0 0 10px var(--alert-color);
+}
+
+.app-alert__icon {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  color: var(--alert-color);
+  background: color-mix(in srgb, var(--alert-color) 18%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--alert-color) 45%, transparent);
+  border-radius: 50%;
+}
+
+.app-alert__title {
+  font-family: var(--font-display);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--alert-color);
+}
+
+.app-alert__body {
+  color: var(--blue-50);
 }
 
 /* Layout helpers for panel bodies. Unlayered on purpose, like .hud-fill: .hud-body sets padding and display. */
@@ -1412,20 +1564,127 @@ button.hud-body:focus-visible {
   border-bottom: 1px solid color-mix(in srgb, var(--neon-cyan) 22%, transparent);
 }
 
-/* Outlined form fields: a lit cyan outline on the dark panel, brighter on hover and focus. */
-.neon-stage .hud-field {
-  background: color-mix(in srgb, var(--neon-surface-deep) 70%, transparent);
-  border: 1px solid color-mix(in srgb, var(--neon-cyan) 55%, transparent);
+/*
+ * Dialog panel: the HUD frame without the stage. Dialogs are portaled outside the stage, so they carry their
+ * own chamfered shape, lit edge (the 1px padding shows the gradient) and glass body.
+ */
+.hud-dialog {
+  padding: 1px;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: linear-gradient(
+    140deg,
+    var(--neon-cyan),
+    color-mix(in srgb, var(--neon-cyan) 22%, transparent) 34%,
+    color-mix(in srgb, var(--neon-cyan) 22%, transparent) 66%,
+    var(--neon-cyan)
+  );
+  clip-path: polygon(
+    0 var(--hud-cut),
+    var(--hud-cut) 0,
+    calc(100% - var(--hud-cut)) 0,
+    100% var(--hud-cut),
+    100% calc(100% - var(--hud-cut)),
+    calc(100% - var(--hud-cut)) 100%,
+    var(--hud-cut) 100%,
+    0 calc(100% - var(--hud-cut))
+  );
 }
 
-.neon-stage .hud-field:hover {
-  border-color: color-mix(in srgb, var(--neon-cyan) 85%, transparent);
+/* For content that needs room, such as a file preview. */
+.hud-dialog--large {
+  width: min(64rem, calc(100vw - 2rem));
+  max-width: none;
 }
 
-.neon-stage .hud-field:focus-visible {
-  border-color: var(--neon-cyan);
-  outline: none;
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--neon-cyan) 35%, transparent);
+/*
+ * The body is a grid item, whose automatic minimum width is its content's. Content that sizes itself to its container,
+ * such as the zoomed file preview, would then stretch the dialog and be sized to the stretch, again and again.
+ */
+.hud-dialog__body {
+  min-width: 0;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      color-mix(in srgb, var(--neon-cyan) 3%, transparent) 0 1px,
+      transparent 1px 4px
+    ),
+    linear-gradient(
+      160deg,
+      color-mix(in srgb, var(--neon-cyan) 14%, var(--neon-surface)),
+      var(--neon-surface) 58%,
+      color-mix(in srgb, var(--neon-cyan) 4%, var(--neon-surface-deep))
+    );
+  clip-path: polygon(
+    0 calc(var(--hud-cut) - 1px),
+    calc(var(--hud-cut) - 1px) 0,
+    calc(100% - var(--hud-cut) + 1px) 0,
+    100% calc(var(--hud-cut) - 1px),
+    100% calc(100% - var(--hud-cut) + 1px),
+    calc(100% - var(--hud-cut) + 1px) 100%,
+    calc(var(--hud-cut) - 1px) 100%,
+    0 calc(100% - var(--hud-cut) + 1px)
+  );
+}
+
+.hud-dialog__body [data-slot='dialog-header'] {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--neon-cyan) 16%, transparent),
+    transparent 80%
+  );
+}
+
+.hud-dialog__body [data-slot='dialog-header'],
+.hud-dialog__body [data-slot='dialog-body'] {
+  border-color: color-mix(in srgb, var(--neon-cyan) 22%, transparent);
+}
+
+/* Toasts: the glass panel with a chamfered corner pair and a lit bottom line, like the pills. */
+[data-sonner-toaster] [data-sonner-toast] {
+  --toast-cut: 8px;
+  font-family: var(--font-display);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--blue-50);
+  border: 0;
+  border-radius: 0;
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--neon-cyan) 22%, var(--neon-surface)),
+    var(--neon-surface)
+  );
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--neon-cyan) 45%, transparent),
+    inset 0 -2px 0 var(--blue-300);
+  clip-path: polygon(
+    var(--toast-cut) 0,
+    100% 0,
+    100% calc(100% - var(--toast-cut)),
+    calc(100% - var(--toast-cut)) 100%,
+    0 100%,
+    0 var(--toast-cut)
+  );
+}
+
+/* Tooltips: the same glass and lit edge as the toasts; the arrow is dropped because it cannot follow the edge. */
+[data-slot='tooltip-content'] {
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--blue-50);
+  border-radius: 0;
+  background: color-mix(in srgb, var(--neon-cyan) 14%, var(--neon-surface));
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--neon-cyan) 45%, transparent),
+    inset 0 -2px 0 var(--blue-300);
+}
+
+[data-slot='tooltip-content'] [class*='rotate-45'] {
+  display: none;
 }
 
 .data-card__id {
@@ -1480,4 +1739,1589 @@ button.hud-body:focus-visible {
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
+}
+
+/* ---------- Agent helper ---------- */
+
+/*
+ * One fixed box in the bottom-left corner (clear of the toasts at the bottom-right). Closed, it is just the
+ * mascot. Open, it grows into the panel and the mascot flies to the panel's top-left corner, small, so the
+ * panel takes the room the mascot used. The mascot is placed with a transform from the bottom-left corner,
+ * which is why the panel height is a known variable.
+ */
+.agent-helper {
+  /* The mascot grows with the window: 6.5rem up to a 1280px window, 8rem from about 2240px. */
+  --agent-mascot-size: clamp(6.5rem, 4.5rem + 2.5vw, 8rem);
+  --agent-mascot-mini: 2.5rem;
+  --agent-panel-width: min(26rem, calc(100vw - 2rem));
+  --agent-panel-height: min(22rem, calc(100dvh - 2rem));
+  --agent-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  position: fixed;
+  bottom: 1rem;
+  left: 1rem;
+  z-index: 40;
+  width: var(--agent-mascot-size);
+  height: var(--agent-mascot-size);
+  transition:
+    width 360ms var(--agent-ease),
+    height 360ms var(--agent-ease);
+}
+
+.agent-helper[data-view='CHAT'] {
+  --agent-panel-height: min(34rem, calc(100dvh - 2rem));
+}
+
+.agent-helper[data-phase='OPEN'] {
+  width: var(--agent-panel-width);
+  height: var(--agent-panel-height);
+}
+
+.agent-helper__trigger {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  z-index: 1;
+  display: block;
+  width: var(--agent-mascot-size);
+  height: var(--agent-mascot-size);
+  padding: 0;
+  cursor: pointer;
+  background: none;
+  border: 0;
+  border-radius: 9999px;
+  transform-origin: 0 0;
+  transition:
+    transform 420ms var(--agent-ease),
+    filter 300ms ease;
+  filter: drop-shadow(
+    0 6px 14px color-mix(in srgb, var(--neon-cyan) 40%, transparent)
+  );
+}
+
+/* Flying up: the top-left corner goes to 0.75rem from the left and 0.5rem from the top of the panel. */
+.agent-helper[data-phase='OPEN'] .agent-helper__trigger {
+  transform: translate(
+      0.75rem,
+      calc(var(--agent-mascot-size) - var(--agent-panel-height) + 0.5rem)
+    )
+    scale(calc(var(--agent-mascot-mini) / var(--agent-mascot-size)));
+  filter: none;
+}
+
+.agent-helper__trigger:focus-visible {
+  outline: 2px solid var(--neon-cyan);
+  outline-offset: 2px;
+}
+
+.agent-helper[data-phase='CLOSED'] .agent-helper__trigger:is(:hover, :focus-visible) {
+  transform: translateY(-3px);
+}
+
+/*
+ * The mascot is three pictures on one canvas: the robot, its smiling eyes and its round "thinking" eyes.
+ * Where the eyes sit and how far the head leans are printed by design/mascot/cut_sprites.py.
+ */
+.agent-mascot {
+  --agent-eyes-origin: 44.3% 34%;
+  --agent-eyes-lean: -8deg;
+
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform-origin: 50% 100%;
+  animation: agent-float 4s ease-in-out infinite;
+}
+
+/* A short greeting on hover and keyboard focus: the robot rocks on its waist, twice. */
+.agent-helper__trigger:is(:hover, :focus-visible) .agent-mascot {
+  animation:
+    agent-greet 700ms ease-in-out 2,
+    agent-float 4s ease-in-out infinite;
+}
+
+.agent-mascot__layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Only the eyes of the current mood show; the other pair stays loaded so the swap never flickers. */
+.agent-mascot__eyes {
+  opacity: 0;
+  transform-origin: var(--agent-eyes-origin);
+  transition: opacity 160ms ease;
+}
+
+.agent-mascot[data-mood='idle'] .agent-mascot__eyes--idle,
+.agent-mascot[data-mood='think'] .agent-mascot__eyes--think {
+  opacity: 1;
+}
+
+.agent-mascot__eyes--idle {
+  animation: agent-blink 5.6s ease-in-out infinite;
+}
+
+.agent-mascot__eyes--think {
+  animation: agent-ponder 2.6s ease-in-out infinite;
+}
+
+@keyframes agent-float {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -4px;
+  }
+}
+
+@keyframes agent-greet {
+  0%,
+  100% {
+    rotate: 0deg;
+  }
+  30% {
+    rotate: -5deg;
+  }
+  70% {
+    rotate: 4deg;
+  }
+}
+
+/* The eyes close along the lean of the head: one blink, then a quick double blink. */
+@keyframes agent-blink {
+  0%,
+  41%,
+  47%,
+  84%,
+  89%,
+  94%,
+  100% {
+    transform: rotate(var(--agent-eyes-lean)) scaleY(1)
+      rotate(calc(-1 * var(--agent-eyes-lean)));
+  }
+  44%,
+  86.5%,
+  91.5% {
+    transform: rotate(var(--agent-eyes-lean)) scaleY(0.08)
+      rotate(calc(-1 * var(--agent-eyes-lean)));
+  }
+}
+
+/* Thinking: the round eyes look from one side to the other, with a blink on the way back. */
+@keyframes agent-ponder {
+  0%,
+  100% {
+    transform: translate(0, 0) scaleY(1);
+  }
+  35%,
+  55% {
+    transform: translate(-4.5%, 0.6%) scaleY(1);
+  }
+  78% {
+    transform: translate(-1%, 0.1%) scaleY(0.1);
+  }
+  88% {
+    transform: translate(0, 0) scaleY(1);
+  }
+}
+
+/* The panel: the glass look of the tooltips and toasts, growing out of the corner. */
+.agent-panel {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-family: var(--font-display);
+  color: var(--blue-50);
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--neon-cyan) 14%, var(--neon-surface)),
+    var(--neon-surface-deep)
+  );
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--neon-cyan) 45%, transparent),
+    inset 0 -2px 0 var(--blue-300),
+    0 12px 40px color-mix(in srgb, var(--neon-cyan) 18%, transparent);
+  clip-path: polygon(
+    12px 0,
+    100% 0,
+    100% calc(100% - 12px),
+    calc(100% - 12px) 100%,
+    0 100%,
+    0 12px
+  );
+  transform-origin: 0 100%;
+  animation: agent-panel-in 380ms var(--agent-ease) both;
+}
+
+.agent-panel[data-phase='CLOSING'] {
+  animation: agent-panel-out 260ms ease-in both;
+}
+
+@keyframes agent-panel-in {
+  from {
+    opacity: 0;
+    transform: scale(0.82);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes agent-panel-out {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.82);
+  }
+}
+
+/* The content appears just after the panel starts to grow. */
+.agent-panel > * {
+  animation: agent-content-in 280ms ease-out 140ms both;
+}
+
+@keyframes agent-content-in {
+  from {
+    opacity: 0;
+    translate: 0 6px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+/* The left padding keeps the header clear of the small mascot. */
+.agent-panel__header {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 3.5rem;
+  padding: 0.5rem 0.75rem 0.5rem 4rem;
+}
+
+.agent-panel__title {
+  margin: 0;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.agent-panel__title--grow {
+  flex: 1;
+}
+
+.agent-panel__body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-height: 0;
+  padding: 0.75rem;
+  overflow-y: auto;
+  border-top: 1px solid color-mix(in srgb, var(--neon-cyan) 22%, transparent);
+}
+
+.agent-panel__empty {
+  margin: 0;
+  padding: 0.5rem;
+  font-size: 0.8125rem;
+  text-align: center;
+  color: var(--blue-200);
+}
+
+/* Chat: the conversation takes the free height and scrolls, the box stays at the bottom. */
+.agent-chat {
+  overflow: hidden;
+}
+
+.agent-chat__log {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-height: 0;
+  padding: 0.125rem 0.125rem 0.25rem;
+  overflow-y: auto;
+}
+
+.agent-chat__message {
+  max-width: 88%;
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  border: 1px solid color-mix(in srgb, var(--neon-cyan) 38%, transparent);
+  animation: agent-message-in 240ms var(--agent-ease) both;
+}
+
+.agent-chat__message[data-role='USER'] {
+  align-self: flex-end;
+  background: color-mix(in srgb, var(--neon-cyan) 22%, transparent);
+}
+
+.agent-chat__message[data-role='AGENT'] {
+  align-self: flex-start;
+  background: color-mix(in srgb, var(--neon-surface-deep) 80%, transparent);
+}
+
+.agent-chat__text {
+  margin: 0;
+}
+
+/* An agent reply ends with a small copy button on the right. */
+.agent-chat__message[data-role='AGENT']:has(.agent-chat__copy) {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.agent-chat__copy {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: flex-end;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  cursor: pointer;
+  color: var(--blue-200);
+  background: transparent;
+  border: 1px solid transparent;
+  transition:
+    color 160ms ease,
+    background 160ms ease,
+    border-color 160ms ease;
+}
+
+.agent-chat__copy:hover,
+.agent-chat__copy:focus-visible {
+  color: var(--blue-50);
+  background: color-mix(in srgb, var(--neon-cyan) 16%, transparent);
+  border-color: color-mix(in srgb, var(--neon-cyan) 55%, transparent);
+}
+
+.agent-chat__copy:focus-visible {
+  outline: 2px solid var(--neon-cyan);
+  outline-offset: 1px;
+}
+
+.agent-chat__copy[data-status='COPIED'] {
+  color: var(--blue-50);
+  border-color: var(--neon-cyan);
+}
+
+/* Sample questions in an empty chat: a few outlined rows that send themselves when chosen. */
+.agent-chat__welcome {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.agent-chat__samples {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.agent-chat__samples li {
+  animation: agent-message-in 320ms var(--agent-ease) both;
+}
+
+.agent-chat__samples li:nth-child(2) {
+  animation-delay: 70ms;
+}
+
+.agent-chat__samples li:nth-child(3) {
+  animation-delay: 140ms;
+}
+
+.agent-chat__samples li:nth-child(4) {
+  animation-delay: 210ms;
+}
+
+.agent-chat__sample {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8125rem;
+  text-align: left;
+  cursor: pointer;
+  color: var(--blue-100);
+  background: color-mix(in srgb, var(--neon-cyan) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--neon-cyan) 38%, transparent);
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    transform 160ms ease;
+}
+
+.agent-chat__sample::before {
+  content: '? ';
+  font-weight: 600;
+  color: var(--neon-cyan);
+}
+
+.agent-chat__sample:hover {
+  background: color-mix(in srgb, var(--neon-cyan) 20%, transparent);
+  border-color: var(--neon-cyan);
+  transform: translateX(2px);
+}
+
+.agent-chat__sample:focus-visible {
+  outline: 2px solid var(--neon-cyan);
+  outline-offset: 1px;
+}
+
+/*
+ * The thinking line: a spinning ring around a pulsing core, shimmering text, and a light that travels around
+ * the bubble's border like the panel edges. Nothing is clipped: the log keeps a little room around its content.
+ */
+.agent-chat__message.agent-chat__thinking[data-role='AGENT'] {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.5rem 0.875rem;
+  background:
+    linear-gradient(
+        color-mix(in srgb, var(--neon-surface-deep) 92%, transparent),
+        color-mix(in srgb, var(--neon-surface-deep) 92%, transparent)
+      )
+      padding-box,
+    conic-gradient(
+        from var(--hud-angle),
+        color-mix(in srgb, var(--neon-cyan) 22%, transparent) 0%,
+        color-mix(in srgb, var(--neon-cyan) 22%, transparent) 55%,
+        var(--neon-cyan) 82%,
+        var(--blue-50) 92%,
+        color-mix(in srgb, var(--neon-cyan) 22%, transparent) 100%
+      )
+      border-box;
+  border: 1px solid transparent;
+  animation:
+    agent-message-in 240ms var(--agent-ease) both,
+    border-spin 2.4s linear infinite;
+}
+
+.agent-chat__orbit {
+  position: relative;
+  flex: none;
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.agent-chat__orbit::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 2px solid color-mix(in srgb, var(--neon-cyan) 25%, transparent);
+  border-top-color: var(--neon-cyan);
+  border-radius: 9999px;
+  animation: agent-spin 0.9s linear infinite;
+}
+
+.agent-chat__orbit::after {
+  content: '';
+  position: absolute;
+  inset: 0.375rem;
+  background: var(--neon-cyan);
+  border-radius: 9999px;
+  animation: agent-pulse 1.2s ease-in-out infinite;
+}
+
+.agent-chat__shimmer {
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: transparent;
+  background: linear-gradient(
+      100deg,
+      var(--blue-400) 30%,
+      var(--blue-50) 50%,
+      var(--blue-400) 70%
+    )
+    0 0 / 250% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  animation: agent-shimmer 1.8s linear infinite;
+}
+
+/* Each new word slides up into place. */
+.agent-chat__word {
+  display: inline-block;
+  animation:
+    agent-word-in 320ms var(--agent-ease) both,
+    agent-shimmer 1.8s linear infinite;
+}
+
+@keyframes agent-word-in {
+  from {
+    opacity: 0;
+    translate: 0 0.5rem;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+@keyframes agent-shimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
+}
+
+@keyframes agent-spin {
+  to {
+    rotate: 360deg;
+  }
+}
+
+@keyframes agent-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+    scale: 0.6;
+  }
+  50% {
+    opacity: 1;
+    scale: 1;
+  }
+}
+
+@keyframes agent-message-in {
+  from {
+    opacity: 0;
+    translate: 0 8px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+/*
+ * The message box has the button shape: cut corners at the top left and bottom right, a gradient fill and a lit
+ * bottom line, with a thin outline that brightens on hover and when focused. The outline is the element's own
+ * background showing around the ::before fill, because clip-path would cut a real border at the corners. The Send
+ * button sits inside it.
+ */
+.agent-chat__form,
+.hud-field-box {
+  --field-cut: 8px;
+  --field-edge: color-mix(in srgb, var(--neon-cyan) 55%, transparent);
+  --field-line: var(--blue-300);
+
+  position: relative;
+  display: flex;
+  flex: none;
+  align-items: flex-end;
+  gap: 0.5rem;
+  padding: 0.5rem 0.5rem 0.625rem;
+  isolation: isolate;
+  background: var(--field-edge);
+  clip-path: polygon(
+    var(--field-cut) 0,
+    100% 0,
+    100% calc(100% - var(--field-cut)),
+    calc(100% - var(--field-cut)) 100%,
+    0 100%,
+    0 var(--field-cut)
+  );
+  transition: background 160ms ease;
+}
+
+.agent-chat__form::before,
+.hud-field-box::before {
+  content: '';
+  position: absolute;
+  inset: 1px;
+  z-index: -1;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--neon-cyan) 16%, var(--neon-surface-deep)),
+    var(--neon-surface-deep)
+  );
+  box-shadow: inset 0 -2px 0 var(--field-line);
+  clip-path: polygon(
+    calc(var(--field-cut) - 1px) 0,
+    100% 0,
+    100% calc(100% - var(--field-cut) + 1px),
+    calc(100% - var(--field-cut) + 1px) 100%,
+    0 100%,
+    0 calc(var(--field-cut) - 1px)
+  );
+  transition: box-shadow 160ms ease;
+}
+
+.agent-chat__form:hover,
+.hud-field-box:hover {
+  --field-edge: color-mix(in srgb, var(--neon-cyan) 85%, transparent);
+}
+
+.agent-chat__form:focus-within,
+.hud-field-box:focus-within {
+  --field-edge: var(--neon-cyan);
+  --field-line: var(--blue-100);
+}
+
+/*
+ * The form fields of the notes dialog take the same shape: a box with the message box's cut corners, gradient and lit
+ * bottom line, around a control with no frame of its own.
+ */
+.hud-field-box {
+  display: flex;
+  padding: 0.25rem 0.5rem 0.375rem;
+}
+
+.hud-field-box .hud-field-box__control {
+  box-sizing: border-box;
+  flex: 1;
+  width: auto;
+  min-width: 0;
+  padding: 0.375rem 0.5rem;
+  color: var(--base-foreground);
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  outline: none;
+  resize: none;
+}
+
+.hud-field-box .hud-field-box__control::placeholder {
+  color: var(--blue-300);
+}
+
+/* Aura styles a textarea as a field of its own; here the form is the field. */
+.agent-chat__form .agent-chat__input {
+  box-sizing: border-box;
+  flex: 1;
+  width: auto;
+  min-width: 0;
+  min-height: 2.25rem;
+  max-height: 8rem;
+  padding: 0.375rem 0.5rem;
+  color: var(--base-foreground);
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  outline: none;
+  resize: none;
+}
+
+.agent-chat__form .agent-chat__input::placeholder {
+  color: var(--blue-300);
+}
+
+/*
+ * While the microphone listens, a light runs around the button's cut-corner outline, the same travelling light the
+ * thinking bubble and the hero panels use. The button's own background becomes the moving frame and ::before is the
+ * fill inside it. The long selector is on purpose: it has to beat the pill rules, hover included.
+ */
+.neon-stage
+  .agent-chat__form
+  button.agent-chat__mic.hud-button[data-slot][data-listening='true'] {
+  position: relative;
+  isolation: isolate;
+  color: var(--blue-50);
+  background: conic-gradient(
+    from var(--hud-angle),
+    color-mix(in srgb, var(--neon-cyan) 30%, transparent) 0%,
+    color-mix(in srgb, var(--neon-cyan) 30%, transparent) 55%,
+    var(--neon-cyan) 82%,
+    var(--blue-50) 92%,
+    color-mix(in srgb, var(--neon-cyan) 30%, transparent) 100%
+  );
+  box-shadow: none;
+  animation: border-spin 2.4s linear infinite;
+}
+
+.neon-stage
+  .agent-chat__form
+  button.agent-chat__mic.hud-button[data-slot][data-listening='true']::before {
+  content: '';
+  position: absolute;
+  inset: 1px;
+  z-index: -1;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--neon-cyan) 16%, var(--neon-surface-deep)),
+    var(--neon-surface-deep)
+  );
+  box-shadow: inset 0 -2px 0 var(--blue-300);
+  clip-path: polygon(
+    calc(var(--pill-cut) - 1px) 0,
+    100% 0,
+    100% calc(100% - var(--pill-cut) + 1px),
+    calc(100% - var(--pill-cut) + 1px) 100%,
+    0 100%,
+    0 calc(var(--pill-cut) - 1px)
+  );
+}
+
+/* The loading panel fills the row instead of shrinking to its text. */
+.agent-panel__body > .hud-glow {
+  width: 100%;
+}
+
+/*
+ * Reduced motion: no bobbing, greeting, blinking or flying; the panel still "animates" for a blink so its
+ * exit still ends.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .agent-mascot,
+  .agent-helper__trigger:is(:hover, :focus-visible) .agent-mascot,
+  .agent-mascot__eyes {
+    animation: none;
+  }
+
+  .agent-helper,
+  .agent-helper__trigger {
+    transition: none;
+  }
+
+  .neon-stage
+    .agent-chat__form
+    button.agent-chat__mic.hud-button[data-slot][data-listening='true'] {
+    animation: none;
+  }
+
+  .agent-panel,
+  .agent-panel > *,
+  .agent-chat__message {
+    animation-duration: 1ms;
+    animation-delay: 0s;
+  }
+
+  .agent-chat__copy {
+    transition: none;
+  }
+
+  .agent-chat__samples li,
+  .agent-chat__sample {
+    animation: none;
+    transition: none;
+  }
+
+  .agent-chat__shimmer,
+  .agent-chat__word {
+    color: var(--blue-100);
+    background: none;
+    animation: none;
+  }
+
+  .agent-chat__thinking,
+  .agent-chat__orbit::before,
+  .agent-chat__orbit::after {
+    animation: none;
+  }
+}
+
+/* The helper would cover content on a phone. */
+@media (max-width: 40rem) {
+  .agent-helper {
+    display: none;
+  }
+}
+
+/* ---------- Timeseries preview ---------- */
+
+/* The preview sits between a card's header and its properties: the chart, its time range and four readings. */
+.timeseries-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.9rem 1.1rem 1rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--neon-cyan) 16%, transparent);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--neon-cyan) 6%, transparent),
+    transparent
+  );
+}
+
+.timeseries-preview--message {
+  font-size: 0.8125rem;
+  color: var(--muted-foreground);
+}
+
+.trend-chart {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.trend-chart__grid {
+  stroke: color-mix(in srgb, var(--neon-cyan) 14%, transparent);
+  stroke-dasharray: 3 5;
+  stroke-width: 1;
+}
+
+.trend-chart__stop-top {
+  stop-color: var(--neon-cyan);
+  stop-opacity: 0.4;
+}
+
+.trend-chart__stop-bottom {
+  stop-color: var(--neon-cyan);
+  stop-opacity: 0;
+}
+
+.trend-chart__line {
+  fill: none;
+  stroke: var(--blue-200);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 5px color-mix(in srgb, var(--neon-cyan) 70%, transparent));
+}
+
+.trend-chart__halo {
+  fill: color-mix(in srgb, var(--neon-cyan) 25%, transparent);
+}
+
+.trend-chart__dot {
+  fill: var(--blue-50);
+  stroke: var(--neon-cyan);
+  stroke-width: 1.5;
+}
+
+.timeseries-preview__range {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-source-code-pro);
+  font-size: 0.625rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--blue-300);
+}
+
+.timeseries-preview__stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.timeseries-preview__stat {
+  min-width: 0;
+  padding: 0.35rem 0.5rem;
+  background: color-mix(in srgb, var(--neon-cyan) 8%, transparent);
+  border-left: 2px solid color-mix(in srgb, var(--neon-cyan) 40%, transparent);
+}
+
+.timeseries-preview__stat[data-highlighted='true'] {
+  background: color-mix(in srgb, var(--neon-cyan) 18%, transparent);
+  border-left-color: var(--neon-cyan);
+}
+
+.timeseries-preview__stat dt {
+  font-family: var(--font-display);
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--blue-300);
+}
+
+.timeseries-preview__stat dd {
+  overflow: hidden;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--blue-50);
+}
+
+.timeseries-preview__stat[data-highlighted='true'] dd {
+  font-size: 1.0625rem;
+}
+
+.timeseries-preview__unit {
+  margin-left: 0.2rem;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--blue-200);
+}
+
+/* The preview as a button: a click opens the series in the chart. */
+.timeseries-open {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--neon-cyan) 16%, transparent);
+}
+
+.timeseries-open .timeseries-preview {
+  border-bottom: 0;
+  transition: background-color 160ms ease;
+}
+
+.timeseries-open:hover .timeseries-preview,
+.timeseries-open:focus-visible .timeseries-preview {
+  background: color-mix(in srgb, var(--neon-cyan) 12%, transparent);
+}
+
+.timeseries-open:focus-visible {
+  outline: 2px solid var(--neon-cyan);
+  outline-offset: -2px;
+}
+
+.timeseries-open__hint {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.55rem;
+  font-family: var(--font-display);
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--blue-100);
+  background: color-mix(in srgb, var(--neon-surface-deep) 85%, transparent);
+  border: 1px solid color-mix(in srgb, var(--neon-cyan) 45%, transparent);
+  opacity: 0;
+  transform: translateY(-2px);
+  transition:
+    opacity 160ms ease,
+    transform 160ms ease;
+}
+
+.timeseries-open:hover .timeseries-open__hint,
+.timeseries-open:focus-visible .timeseries-open__hint {
+  opacity: 1;
+  transform: none;
+}
+
+@media (hover: none) {
+  .timeseries-open__hint {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .timeseries-open .timeseries-preview,
+  .timeseries-open__hint {
+    transition: none;
+  }
+}
+
+/*
+ * The trend chart, on the HUD theme. Its dialog is portaled outside .neon-stage, so the
+ * chart's own colour variables are set on the dialog itself: deep navy surfaces, cyan
+ * lines and a blue top band.
+ */
+.timeseries-chart-dialog {
+  --background: var(--neon-surface-deep);
+  --card-background: color-mix(in srgb, var(--neon-surface-deep) 86%, var(--neon-cyan));
+  --muted-background: color-mix(in srgb, var(--neon-surface-deep) 78%, var(--neon-cyan));
+  --active-background: color-mix(in srgb, var(--neon-cyan) 20%, var(--neon-surface-deep));
+  --border: color-mix(in srgb, var(--neon-cyan) 30%, transparent);
+  --chart-gridlines: color-mix(in srgb, var(--neon-cyan) 34%, transparent);
+
+  /* Eight series colours that read on navy; the chart picks them in this order. */
+  --chart-nordic-color-1: var(--blue-300);
+  --chart-fjord-color-1: var(--amber-400);
+  --chart-orange-color-1: var(--red-500);
+  --chart-dusk-color-1: var(--blue-100);
+  --chart-aurora-color-1: var(--success-foreground-strong);
+  --chart-success-color-1: var(--success-foreground-strong);
+  --chart-info-color-1: var(--blue-450);
+  --chart-neutral-color-1: var(--blue-50);
+
+  --chart-band-ink: var(--blue-50);
+  --chart-band-shade: var(--neon-surface-deep);
+  --chart-band-glow-1: var(--blue-300);
+  --chart-band-glow-2: var(--blue-450);
+  --chart-band-glow-3: var(--blue-500);
+  /* A flat, dark header with no glows, so the lit pills on it stand out. */
+  --chart-band-glow-1: transparent;
+  --chart-band-glow-2: transparent;
+  --chart-band-glow-3: transparent;
+  --chart-band-gradient: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--neon-surface-deep) 92%, var(--neon-cyan)),
+    var(--neon-surface-deep)
+  );
+
+  color: var(--foreground);
+  background: var(--neon-surface-deep);
+  border: 0;
+}
+
+/*
+ * The chart's own controls on the HUD pill look: cut corners, a gradient fill and a lit bottom line, in the same
+ * type as the app's buttons. The chart styles its top bar with !important, so the top bar rules repeat it and
+ * win on specificity. The primary action (Add data) is the brighter pill, as primary buttons are elsewhere.
+ */
+.timeseries-chart-dialog {
+  --pill: var(--neon-cyan);
+  --pill-line: var(--blue-300);
+  --pill-cut: 6px;
+}
+
+.timeseries-chart-dialog
+  :is(button[data-slot='button'], button[data-slot='tooltip-trigger'], .chart-topbar button:not([aria-label^='Chart title'])),
+.timeseries-chart-dialog .chart-topbar :is([data-slot='select-trigger'], [data-slot='popover-trigger'], [data-slot='dropdown-menu-trigger']) {
+  color: var(--blue-50) !important;
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--pill) 40%, transparent),
+    color-mix(in srgb, var(--pill) 12%, transparent)
+  ) !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow:
+    inset 0 -2px 0 var(--pill-line),
+    inset 0 1px 0 color-mix(in srgb, var(--blue-100) 30%, transparent) !important;
+  clip-path: polygon(
+    var(--pill-cut) 0,
+    100% 0,
+    100% calc(100% - var(--pill-cut)),
+    calc(100% - var(--pill-cut)) 100%,
+    0 100%,
+    0 var(--pill-cut)
+  );
+  backdrop-filter: none !important;
+  transition:
+    filter 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.timeseries-chart-dialog
+  :is(button[data-slot='button'], button[data-slot='tooltip-trigger'], .chart-topbar button:not([aria-label^='Chart title'])):hover:not(:disabled) {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--pill) 75%, transparent),
+    color-mix(in srgb, var(--pill) 32%, transparent)
+  ) !important;
+}
+
+/* A pressed toggle, such as the open panel on the rail, is the lit pill. */
+.timeseries-chart-dialog :is(button[aria-pressed='true'], button[data-state='on'], button[aria-expanded='true']):not(.bg-primary-background, [data-slot='select-trigger']) {
+  --pill-line: var(--blue-50);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--pill) 85%, transparent),
+    color-mix(in srgb, var(--pill) 40%, transparent)
+  ) !important;
+}
+
+/* The primary action is the brighter pill and lights up on hover. */
+.timeseries-chart-dialog .chart-topbar .bg-primary-background:is(button) {
+  --pill-line: var(--blue-100);
+  background: linear-gradient(
+    180deg,
+    var(--blue-600),
+    color-mix(in srgb, var(--blue-600) 70%, var(--neon-surface-deep))
+  ) !important;
+  color: #fff !important;
+  font-weight: 700;
+  filter: drop-shadow(0 0 8px color-mix(in srgb, var(--neon-cyan) 55%, transparent));
+}
+
+.timeseries-chart-dialog .chart-topbar .bg-primary-background:is(button):hover:not(:disabled) {
+  --pill-line: var(--blue-100);
+  filter: brightness(1.2);
+}
+
+.timeseries-chart-dialog :is(button[data-slot='button'], button[data-slot='tooltip-trigger']):disabled {
+  filter: grayscale(0.6);
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.timeseries-chart-dialog :is(button[data-slot='button'], button[data-slot='tooltip-trigger']):focus-visible {
+  outline: none;
+  box-shadow:
+    inset 0 -2px 0 var(--pill-line),
+    inset 0 0 0 2px var(--blue-200) !important;
+}
+
+/* The chart's title in the app's display type. */
+.timeseries-chart-dialog .chart-topbar h2 {
+  font-family: var(--font-display);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* The header is a dark bar with a lit line under it, apart from the chart below. */
+.timeseries-chart-dialog .chart-topbar {
+  border-bottom: 1px solid color-mix(in srgb, var(--neon-cyan) 45%, transparent);
+  box-shadow: 0 1px 14px color-mix(in srgb, var(--neon-cyan) 22%, transparent);
+}
+
+/*
+ * Select fields, text inputs and the time range input share the app's field look, the same as the message box and the
+ * notes fields: cut corners, a thin cyan outline, a gradient fill and a lit bottom line. The outline is the control's
+ * own background showing around the fill, because clip-path would cut a real border at the corners. It brightens on
+ * hover and when focused.
+ */
+.timeseries-chart-dialog
+  :is([data-slot='select-trigger'], input[data-slot='input-field'], [data-chart-time-range] [data-slot='date-time-input']) {
+  --field-cut: 8px;
+  --field-edge: color-mix(in srgb, var(--neon-cyan) 55%, transparent);
+  --field-line: var(--blue-300);
+  color: var(--base-foreground, var(--blue-50));
+  border: 1px solid transparent !important;
+  border-radius: 0 !important;
+  background:
+    linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--neon-cyan) 16%, var(--neon-surface-deep)),
+        var(--neon-surface-deep)
+      )
+      padding-box,
+    var(--field-edge) border-box !important;
+  box-shadow: inset 0 -2px 0 var(--field-line) !important;
+  clip-path: polygon(
+    var(--field-cut) 0,
+    100% 0,
+    100% calc(100% - var(--field-cut)),
+    calc(100% - var(--field-cut)) 100%,
+    0 100%,
+    0 var(--field-cut)
+  );
+  transition: background 160ms ease;
+}
+
+.timeseries-chart-dialog
+  :is([data-slot='select-trigger'], input[data-slot='input-field'], [data-chart-time-range] [data-slot='date-time-input']):hover {
+  --field-edge: color-mix(in srgb, var(--neon-cyan) 85%, transparent);
+}
+
+.timeseries-chart-dialog
+  :is([data-slot='select-trigger'], input[data-slot='input-field'], [data-chart-time-range] [data-slot='date-time-input']):is(:focus-visible, :focus-within) {
+  --field-edge: var(--neon-cyan);
+  --field-line: var(--blue-100);
+  outline: none;
+}
+
+.timeseries-chart-dialog input[data-slot='input-field']::placeholder {
+  color: var(--blue-300);
+}
+
+.timeseries-chart-dialog input[data-slot='input-field'][aria-invalid='true'] {
+  --field-edge: var(--red-400);
+  --field-line: var(--red-400);
+}
+
+/* The Remove, Info and More columns, headings and buttons, sit in the middle of their cells. */
+.timeseries-chart-dialog table :is(th, td):nth-last-child(-n + 3) {
+  text-align: center;
+}
+
+.timeseries-chart-dialog table td:nth-last-child(-n + 3) > * {
+  margin-inline: auto;
+}
+
+/* Threshold and status labels are the app's pills: cut corners, a gradient fill, a lit bottom line. */
+.timeseries-chart-dialog .chart-pill {
+  --pill: var(--neon-cyan);
+  --pill-line: var(--blue-300);
+  --pill-text: var(--blue-50);
+  --pill-cut: 5px;
+  height: 1.375rem;
+  padding: 0 0.6rem;
+  font-family: var(--font-display);
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--pill-text);
+  border: 0;
+  border-radius: 0;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--pill) 40%, transparent),
+    color-mix(in srgb, var(--pill) 12%, transparent)
+  );
+  box-shadow:
+    inset 0 -2px 0 var(--pill-line),
+    inset 0 1px 0 color-mix(in srgb, var(--blue-100) 30%, transparent);
+  clip-path: polygon(
+    var(--pill-cut) 0,
+    100% 0,
+    100% calc(100% - var(--pill-cut)),
+    calc(100% - var(--pill-cut)) 100%,
+    0 100%,
+    0 var(--pill-cut)
+  );
+}
+
+.timeseries-chart-dialog .chart-pill[data-tone='WARNING'] {
+  --pill: var(--neon-amber);
+  --pill-line: var(--amber-300);
+  --pill-text: var(--amber-50);
+}
+
+.timeseries-chart-dialog .chart-pill[data-tone='DANGER'] {
+  --pill: var(--neon-red);
+  --pill-line: var(--red-400);
+  --pill-text: var(--red-50);
+}
+
+.timeseries-chart-dialog .chart-pill[data-tone='SUCCESS'] {
+  --pill: var(--green-450);
+  --pill-line: var(--green-300);
+  --pill-text: var(--green-50);
+}
+
+.timeseries-chart-dialog .chart-pill[data-tone='NEUTRAL'] {
+  --pill: var(--mountain-500);
+  --pill-line: var(--mountain-400);
+  --pill-text: var(--mountain-100);
+}
+
+/* Checkboxes and radios: an outlined box in the field colours; checked, they are the lit pill with a white mark. */
+.timeseries-chart-dialog :is([data-slot='checkbox-item-control'], [data-slot='radio-item-control'], [role='checkbox'], [role='radio']) {
+  border: 1px solid color-mix(in srgb, var(--neon-cyan) 65%, transparent) !important;
+  border-radius: 0 !important;
+  background: color-mix(in srgb, var(--neon-cyan) 12%, var(--neon-surface-deep)) !important;
+  color: #fff !important;
+  box-shadow: inset 0 -2px 0 color-mix(in srgb, var(--blue-300) 55%, transparent) !important;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.timeseries-chart-dialog :is([data-slot='radio-item-control'], [role='radio']) {
+  border-radius: 9999px !important;
+  box-shadow: none !important;
+}
+
+.timeseries-chart-dialog :is([data-slot='checkbox-item-control'], [data-slot='radio-item-control'], [role='checkbox'], [role='radio']):hover {
+  border-color: var(--neon-cyan) !important;
+}
+
+.timeseries-chart-dialog :is([data-checked], [data-indeterminate]):is([data-slot='checkbox-item-control'], [data-slot='radio-item-control'], [role='checkbox'], [role='radio']) {
+  border-color: var(--blue-100) !important;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--neon-cyan) 90%, transparent),
+    color-mix(in srgb, var(--neon-cyan) 45%, var(--neon-surface-deep))
+  ) !important;
+  box-shadow:
+    inset 0 -2px 0 var(--blue-100),
+    0 0 8px color-mix(in srgb, var(--neon-cyan) 50%, transparent) !important;
+}
+
+.timeseries-chart-dialog :is([data-slot='radio-item-control'], [role='radio']):is([data-checked]) {
+  box-shadow: 0 0 8px color-mix(in srgb, var(--neon-cyan) 50%, transparent) !important;
+}
+
+.timeseries-chart-dialog :is([data-slot='checkbox-item-control'], [data-slot='radio-item-control'], [role='checkbox'], [role='radio']):focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--blue-200) !important;
+}
+
+/*
+ * The chart's pop-ups (the date picker and the menus) are portaled to the body, outside the dialog and the stage, so
+ * they are picked out by what they hold. They take the HUD panel: a deep surface, a cyan edge and a glow, so they
+ * read against the header and the chart behind them.
+ */
+:is(
+    [data-slot='popover-content']:has([data-slot='date-time-range-picker-content']),
+    [data-slot='dropdown-menu-content']:has([role='menuitemradio']),
+    [data-slot='select-content']
+  ) {
+  --pill: var(--neon-cyan);
+  --pill-line: var(--blue-300);
+  --pill-cut: 6px;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--neon-cyan) 14%, var(--neon-surface-deep)),
+    var(--neon-surface-deep)
+  ) !important;
+  border: 1px solid color-mix(in srgb, var(--neon-cyan) 60%, transparent) !important;
+  border-radius: 0 !important;
+  color: var(--blue-50);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--neon-surface-deep) 80%, transparent),
+    0 12px 36px rgb(0 0 0 / 0.6),
+    0 0 22px color-mix(in srgb, var(--neon-cyan) 28%, transparent) !important;
+}
+
+[data-slot='dropdown-menu-content']:has([role='menuitemradio']) [role='menuitemradio'] {
+  border-radius: 0;
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+[data-slot='dropdown-menu-content']:has([role='menuitemradio']) [role='menuitemradio']:is(:hover, :focus) {
+  background: color-mix(in srgb, var(--neon-cyan) 28%, transparent);
+  color: #fff;
+}
+
+[data-slot='dropdown-menu-content']:has([role='menuitemradio']) [role='menuitemradio'][data-checked] svg {
+  color: var(--blue-100);
+}
+
+/* Date picker: shortcuts, month heading, days and time columns. */
+[data-slot='date-time-range-picker-content'] [data-slot='shortcuts-panel'] {
+  border-color: color-mix(in srgb, var(--neon-cyan) 35%, transparent);
+}
+
+[data-slot='date-time-range-picker-content'] [data-slot='shortcuts-panel'] [data-slot='button'] {
+  border-radius: 0;
+  color: var(--blue-100);
+  font-size: 0.75rem;
+}
+
+[data-slot='date-time-range-picker-content'] [data-slot='shortcuts-panel'] [data-slot='button']:hover {
+  background: color-mix(in srgb, var(--neon-cyan) 25%, transparent);
+  color: #fff;
+}
+
+/* The shortcut that stands for the shown window, marked by the chart's range control. */
+[data-slot='date-time-range-picker-content'] [data-slot='shortcuts-panel'] [data-slot='button'][data-active] {
+  background: color-mix(in srgb, var(--neon-cyan) 32%, transparent);
+  box-shadow: inset 2px 0 0 var(--neon-cyan);
+  color: #fff;
+}
+
+[data-slot='date-time-range-picker-content'] :is([role='gridcell'], [role='option']) {
+  border-radius: 0;
+}
+
+[data-slot='date-time-range-picker-content'] :is([role='gridcell'], [role='option']):hover:not([aria-selected='true']) {
+  background: color-mix(in srgb, var(--neon-cyan) 22%, transparent);
+  color: #fff;
+}
+
+/* A chosen day or time is the lit pill; the days between are a soft tint of it. */
+[data-slot='date-time-range-picker-content'] :is([role='gridcell'], [role='option'])[aria-selected='true'] {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--neon-cyan) 90%, transparent),
+    color-mix(in srgb, var(--neon-cyan) 45%, var(--neon-surface-deep))
+  ) !important;
+  color: #fff !important;
+  font-weight: 700;
+  box-shadow:
+    inset 0 -2px 0 var(--blue-100),
+    0 0 8px color-mix(in srgb, var(--neon-cyan) 45%, transparent);
+}
+
+/* The Cancel and Next buttons of the picker are pills; Next is the primary one. */
+[data-slot='date-time-range-picker-content'] > :last-child [data-slot='button'] {
+  color: var(--blue-50);
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border: 0;
+  border-radius: 0;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--pill, var(--neon-cyan)) 40%, transparent),
+    color-mix(in srgb, var(--pill, var(--neon-cyan)) 12%, transparent)
+  );
+  box-shadow: inset 0 -2px 0 var(--blue-300);
+  clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
+}
+
+[data-slot='date-time-range-picker-content'] > :last-child [data-slot='button'].bg-primary-background {
+  color: #fff;
+  background: linear-gradient(180deg, var(--blue-600), color-mix(in srgb, var(--blue-600) 70%, var(--neon-surface-deep)));
+  box-shadow: inset 0 -2px 0 var(--blue-100);
+}
+
+/*
+ * The chart's section cards (Series and the like) take the HUD panel shape: chamfered corners, a lit edge (the 1px of
+ * padding shows the gradient) and a glass body, with the header as a cyan band and the title in the display type.
+ */
+.timeseries-chart-dialog .chart-card {
+  --card-cut: 12px;
+  padding: 1px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: linear-gradient(
+    140deg,
+    var(--neon-cyan),
+    color-mix(in srgb, var(--neon-cyan) 22%, transparent) 34%,
+    color-mix(in srgb, var(--neon-cyan) 22%, transparent) 66%,
+    var(--neon-cyan)
+  ) !important;
+  clip-path: polygon(
+    0 var(--card-cut),
+    var(--card-cut) 0,
+    calc(100% - var(--card-cut)) 0,
+    100% var(--card-cut),
+    100% calc(100% - var(--card-cut)),
+    calc(100% - var(--card-cut)) 100%,
+    var(--card-cut) 100%,
+    0 calc(100% - var(--card-cut))
+  );
+}
+
+.timeseries-chart-dialog .chart-card > * {
+  background: color-mix(in srgb, var(--neon-surface-deep) 92%, var(--neon-cyan));
+}
+
+.timeseries-chart-dialog .chart-card > .chart-card__header {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--neon-cyan) 22%, var(--neon-surface-deep)),
+    var(--neon-surface-deep) 85%
+  );
+  border-bottom: 1px solid color-mix(in srgb, var(--neon-cyan) 35%, transparent);
+}
+
+.timeseries-chart-dialog .chart-card__title {
+  font-family: var(--font-display);
+  font-size: 0.8125rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/*
+ * The chart's empty, error and no-access boxes take the app's notice look: a cut-corner glass strip with a lit bar on
+ * the left, the icon in a tinted chip and the title in the display type. The colour follows the variant, the way the
+ * app alert does. Their action buttons are the pills above.
+ */
+.timeseries-chart-dialog .chart-state {
+  --state-color: var(--blue-300);
+  --state-cut: 10px;
+  position: relative;
+  color: var(--blue-50);
+  background:
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--state-color) 18%, transparent),
+      color-mix(in srgb, var(--state-color) 4%, transparent) 70%
+    ),
+    color-mix(in srgb, var(--neon-surface-deep) 88%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--state-color) 38%, transparent) !important;
+  border-radius: 0 !important;
+  box-shadow: 0 0 18px -8px color-mix(in srgb, var(--state-color) 70%, transparent);
+  clip-path: polygon(0 0, calc(100% - var(--state-cut)) 0, 100% var(--state-cut), 100% 100%, 0 100%);
+}
+
+.timeseries-chart-dialog .chart-state[data-variant='error'] {
+  --state-color: var(--neon-red);
+}
+
+.timeseries-chart-dialog .chart-state[data-variant='noAccess'] {
+  --state-color: var(--neon-amber);
+}
+
+.timeseries-chart-dialog .chart-state[data-variant='info'] {
+  --state-color: var(--neon-cyan);
+}
+
+.timeseries-chart-dialog .chart-state::before {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  content: '';
+  background: var(--state-color);
+  box-shadow: 0 0 10px var(--state-color);
+}
+
+.timeseries-chart-dialog .chart-state__mark {
+  color: var(--state-color) !important;
+  background: color-mix(in srgb, var(--state-color) 18%, transparent) !important;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--state-color) 45%, transparent);
+}
+
+.timeseries-chart-dialog .chart-state__title {
+  font-family: var(--font-display);
+  font-size: 0.8125rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--state-color);
+}
+
+.timeseries-chart-dialog .chart-state p:not(.chart-state__title) {
+  color: var(--blue-100);
+}
+
+/*
+ * Aura alerts inside the chart take the app's alert look (see .app-alert): a cut-corner glass strip with a lit bar on
+ * the left. The chart sets data-variant on them, which picks the colour.
+ */
+.timeseries-chart-dialog [data-slot='alert'][data-variant] {
+  --alert-color: var(--neon-cyan);
+  --alert-cut: 10px;
+  position: relative;
+  color: var(--blue-50) !important;
+  background:
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--alert-color) 20%, transparent),
+      color-mix(in srgb, var(--alert-color) 4%, transparent) 70%
+    ),
+    color-mix(in srgb, var(--neon-surface-deep) 88%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--alert-color) 38%, transparent);
+  border-radius: 0 !important;
+  padding-left: 1.25rem;
+  box-shadow: 0 0 18px -8px color-mix(in srgb, var(--alert-color) 70%, transparent);
+  clip-path: polygon(0 0, calc(100% - var(--alert-cut)) 0, 100% var(--alert-cut), 100% 100%, 0 100%);
+}
+
+.timeseries-chart-dialog [data-slot='alert'][data-variant='error'] {
+  --alert-color: var(--neon-red);
+}
+
+.timeseries-chart-dialog [data-slot='alert'][data-variant='warning'] {
+  --alert-color: var(--neon-amber);
+}
+
+.timeseries-chart-dialog [data-slot='alert'][data-variant]::before {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  content: '';
+  background: var(--alert-color);
+  box-shadow: 0 0 10px var(--alert-color);
+}
+
+.timeseries-chart-dialog [data-slot='alert'][data-variant] [data-slot='alert-icon'] {
+  color: var(--alert-color) !important;
 }

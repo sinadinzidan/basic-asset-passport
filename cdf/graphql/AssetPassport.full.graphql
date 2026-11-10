@@ -1,0 +1,482 @@
+# Variant: FULL (AssetPassport.full.graphql)
+# Fuller field lists, including the whole PI_Timeseries field set the app reads.
+#
+# Asset Passport solution model
+# Publish in a data model: space sp-asset-passport, external ID Asset_Passport.
+# Notes and documents are written to the instance space sp-asset-passport-data by the app.
+#
+# Asset, Equipment and PI_Timeseries are imported from RMDM (space sp-dm-idi-rmdm, v1). They are listed with only
+# the fields a type needs to be valid; publishing fills in the rest of each view from RMDM. RMDM is only
+# referenced, never edited.
+
+"Free-text note written in Asset Passport against a record in the domain model."
+type Note @view(version: "v1") {
+  """
+  The asset this note is about.
+  @name Asset
+  """
+  asset: Asset
+  """
+  Display name of the user who wrote the note.
+  @name Author
+  """
+  author: String
+  """
+  CDF user identifier of the author.
+  @name Author ID
+  """
+  authorId: String
+  """
+  The note text.
+  @name Note
+  """
+  body: String
+  """
+  Kind of note, for example inspection or handover.
+  @name Category
+  """
+  category: String
+  """
+  Short title of the note.
+  @name Title
+  """
+  title: String!
+}
+
+"Assets represent systems that support industrial functions or processes. Assets are often called functional locations or FLOCs."
+type Asset @view(space: "sp-dm-idi-rmdm", version: "v1") @import {
+  """
+  Short description of the technical object.
+  @name Functional Location Description
+  """
+  description: String @mapping(space: "cdf_cdm", container: "CogniteDescribable")
+  """
+  Unique FLOC tag and business key.
+  @name Functional Location
+  """
+  name: String @mapping(space: "cdf_cdm", container: "CogniteDescribable")
+}
+
+"""
+The describable core concept is used as a standard way of holding the bare minimum of information about the instance.
+
+@name Describable
+"""
+interface CogniteDescribable @view(space: "cdf_cdm", version: "v1") @nodeAndEdge @import @container(indexes: [{identifier : "name", fields : ["name"]}]) {
+  """
+  The name of the instance.
+  @name Name
+  """
+  name: String
+  """
+  The description of the instance.
+  @name Description
+  """
+  description: String
+  """
+  A list of tags for the instance. Max: 1000.
+  @name Tags
+  """
+  tags: [String]
+  """
+  Alternative names for the instance.
+  @name Aliases
+  """
+  aliases: [String]
+}
+
+"""
+The CogniteSourceable core concept is used to standardize the way source information is stored.
+
+@name Sourceable
+"""
+interface CogniteSourceable @view(space: "cdf_cdm", version: "v1") @nodeAndEdge @import @container(indexes: [{identifier : "sourceId", fields : ["sourceId"], cursorable : true}, {identifier : "source", fields : ["source"]}, {identifier : "sourceCreatedTime", fields : ["sourceCreatedTime"]}, {identifier : "sourceUpdatedTime", fields : ["sourceUpdatedTime"], cursorable : true}]) {
+  """
+  The identifier in the source system.
+  @name Source ID
+  """
+  sourceId: String
+  """
+  Context of the source id. For systems where the sourceId is globally unique, the sourceContext is expected to not be set.
+  @name Source context
+  """
+  sourceContext: String
+  """
+  A direct relation to a source system instance.
+  @name Source
+  """
+  source: CogniteSourceSystem
+  """
+  The time the instance was created in the source system (if available).
+  @name Source created
+  """
+  sourceCreatedTime: Timestamp
+  """
+  The time the instance was last updated in the source system (if available).
+  @name Source last updated
+  """
+  sourceUpdatedTime: Timestamp
+  """
+  The user identifier from the source system who created the source data. This identifier is not guaranteed to match user identifiers in Cognite Data Fusion.
+  @name Source created by
+  """
+  sourceCreatedUser: String
+  """
+  The user identifier from the source system who last updated the source data. This identifier is not guaranteed to match user identifiers in Cognite Data Fusion.
+  @name Source last updated by
+  """
+  sourceUpdatedUser: String
+}
+
+"Equipment represents installed technical objects and their SAP, SPF, maintenance, manufacturer, financial, and instrumentation attributes."
+type Equipment implements CogniteDescribable @view(space: "sp-dm-idi-rmdm", version: "v1") @import {
+  """
+  Equipment name stored as the Cognite describable name.
+  @name Name
+  """
+  name: String
+  """
+  Equipment description stored as the Cognite describable description.
+  @name Description
+  """
+  description: String
+  """
+  A list of tags for the instance. Max: 1000.
+  @name Tags
+  """
+  tags: [String]
+  """
+  Alternative names for the instance.
+  @name Aliases
+  """
+  aliases: [String]
+  """
+  The asset or functional location where this equipment is installed.
+  @name Asset
+  """
+  asset: Asset @mapping(space: "cdf_cdm", container: "CogniteEquipment")
+}
+
+"""
+# Primary view for PI time series and UCP contextualization attributes.
+# @name Timeseries
+# """
+type PI_Timeseries implements CogniteDescribable @view(space: "sp-dm-idi-rmdm", version: "v1") @import {
+  """
+  The name of the instance.
+  @name Name
+  """
+  name: String @mapping(space: "cdf_cdm", container: "CogniteDescribable")
+  """
+  The description of the instance.
+  @name Description
+  """
+  description: String @mapping(space: "cdf_cdm", container: "CogniteDescribable")
+  """
+  A list of tags for the instance. Max: 1000.
+  @name Tags
+  """
+  tags: [String] @mapping(space: "cdf_cdm", container: "CogniteDescribable")
+  """
+  Alternative names for the instance.
+  @name Aliases
+  """
+  aliases: [String] @mapping(space: "cdf_cdm", container: "CogniteDescribable")
+  """
+  Assets related to this time series.
+  @name Asset
+  """
+  assets: [Asset] @mapping(space: "cdf_cdm", container: "CogniteTimeSeries") @directRelation @limits(maxListSize: 1200)
+  """
+  Equipment related to this time series.
+  @name Equipment
+  """
+  equipment: [Equipment] @mapping(space: "cdf_cdm", container: "CogniteTimeSeries") @directRelation
+  """
+  Specifies whether the numeric time series is a step time series.
+  @name Is Step
+  """
+  isStep: Boolean! @mapping(space: "cdf_cdm", container: "CogniteTimeSeries") @default(value: "false")
+  """
+  Data point type: numeric, string, or state.
+  @name Type
+  """
+  type: CogniteTimeSeries_type @mapping(space: "cdf_cdm", container: "CogniteTimeSeries")
+  """
+  Instrument range span for the PI point.
+  @name Instrument Range
+  """
+  span: Float @mapping(space: "sp-dm-idi-pi", container: "IDI_Timeseries")
+  """
+  Unique PI point or tag name.
+  @name Tag
+  """
+  tag: String @mapping(space: "sp-dm-idi-pi", container: "IDI_Timeseries")
+  """
+  PI typical value.
+  @name Typical Value
+  """
+  typicalvalue: Float @mapping(space: "sp-dm-idi-pi", container: "IDI_Timeseries")
+  """
+  Unit name associated with the PI tag.
+  @name Unit Name
+  """
+  unitName: String @mapping(space: "sp-dm-idi-pi", container: "IDI_Timeseries")
+  """
+  Instrument low limit or zero value.
+  @name Instrument Low Limit
+  """
+  zero: Float @mapping(space: "sp-dm-idi-pi", container: "IDI_Timeseries")
+  """
+  Maximum design limit envelope value.
+  @name DLE Limit Max
+  """
+  dleLimitMax: Float @mapping(space: "sp-dm-idi-pi", container: "UCP_Timeseries")
+  """
+  Minimum design limit envelope value.
+  @name DLE Limit Min
+  """
+  dleLimitMin: Float @mapping(space: "sp-dm-idi-pi", container: "UCP_Timeseries")
+  """
+  Engineering unit of measure for the PI point value.
+  @name Engineering Units
+  """
+  engunits: String! @mapping(space: "sp-dm-idi-pi", container: "UCP_Timeseries")
+  """
+  Equipment type or classification name.
+  @name Equipment Type
+  """
+  equipmentTypeName: String @mapping(space: "sp-dm-idi-pi", container: "UCP_Timeseries")
+  """
+  Maximum operating window envelope limit.
+  @name OWE Limit Max
+  """
+  oweLimitMax: Float @mapping(space: "sp-dm-idi-pi", container: "UCP_Timeseries")
+  """
+  Minimum operating window envelope limit.
+  @name OWE Limit Min
+  """
+  oweLimitMin: Float @mapping(space: "sp-dm-idi-pi", container: "UCP_Timeseries")
+  """
+  Plant name for contextualized PI tag reporting.
+  @name Plant Name
+  """
+  plantName: String @mapping(space: "sp-dm-idi-pi", container: "UCP_Timeseries")
+  """
+  Train name for contextualized PI tag reporting.
+  @name Train Name
+  """
+  trainName: String @mapping(space: "sp-dm-idi-pi", container: "UCP_Timeseries")
+  """
+  Maximum trip operating limit.
+  @name Trip Limit Max
+  """
+  tripLimitMax: Float @mapping(space: "sp-dm-idi-pi", container: "UCP_Timeseries")
+  """
+  Minimum trip operating limit.
+  @name Trip Limit Min
+  """
+  tripLimitMin: Float @mapping(space: "sp-dm-idi-pi", container: "UCP_Timeseries")
+}
+
+"""
+Represents files.
+@name File
+"""
+interface CogniteFile implements CogniteDescribable & CogniteSourceable @view(space: "cdf_cdm", version: "v1") @import @container(constraints: [{identifier : "describablePresent", constraintType : REQUIRES, require : {space : "cdf_cdm", externalId : "CogniteDescribable"}}, {identifier : "sourceablePresent", constraintType : REQUIRES, require : {space : "cdf_cdm", externalId : "CogniteSourceable"}}]) {
+  """
+  The name of the instance.
+  @name Name
+  """
+  name: String
+  """
+  The description of the instance.
+  @name Description
+  """
+  description: String
+  """
+  A list of tags for the instance. Max: 1000.
+  @name Tags
+  """
+  tags: [String]
+  """
+  Alternative names for the instance.
+  @name Aliases
+  """
+  aliases: [String]
+  """
+  The identifier in the source system.
+  @name Source ID
+  """
+  sourceId: String
+  """
+  Context of the source id. For systems where the sourceId is globally unique, the sourceContext is expected to not be set.
+  @name Source context
+  """
+  sourceContext: String
+  """
+  A direct relation to a source system instance.
+  @name Source
+  """
+  source: CogniteSourceSystem
+  """
+  The time the instance was created in the source system (if available).
+  @name Source created
+  """
+  sourceCreatedTime: Timestamp
+  """
+  The time the instance was last updated in the source system (if available).
+  @name Source last updated
+  """
+  sourceUpdatedTime: Timestamp
+  """
+  The user identifier from the source system who created the source data. This identifier is not guaranteed to match user identifiers in Cognite Data Fusion.
+  @name Source created by
+  """
+  sourceCreatedUser: String
+  """
+  The user identifier from the source system who last updated the source data. This identifier is not guaranteed to match user identifiers in Cognite Data Fusion.
+  @name Source last updated by
+  """
+  sourceUpdatedUser: String
+  """
+  A list of assets this file is related to.
+  @name Assets
+  """
+  assets: [CogniteAsset] @directRelation @limits(maxListSize: 1200)
+  """
+  The MIME type of the file.
+  @name MIME type
+  """
+  mimeType: String
+  """
+  Specifies if the file content has been uploaded to Cognite Data Fusion or not.
+  @name Is uploaded
+  """
+  isUploaded: Boolean @default(value: "false")
+  """
+  The time the file upload completed.
+  @name Uploaded time
+  """
+  uploadedTime: Timestamp
+  """
+  Specifies the detected category the file belongs to. It's a direct relation to an instance of CogniteFileCategory.
+  @name Category
+  """
+  category: CogniteFileCategory
+  """
+  Contains the path elements from the source (if the source system has a file system hierarchy or similar).
+  @name Directory
+  """
+  directory: String
+  """
+  An automatically updated list of equipment this file is related to.
+  @name Equipment
+  """
+  equipment: [CogniteEquipment] @reverseDirectRelation(throughProperty: "files")
+}
+
+"A document uploaded in Asset Passport against an asset."
+type Document implements CogniteFile & CogniteDescribable & CogniteSourceable @view(version: "v1") {
+  """
+  The name of the instance.
+  @name Name
+  """
+  name: String
+  """
+  The description of the instance.
+  @name Description
+  """
+  description: String
+  """
+  A list of tags for the instance. Max: 1000.
+  @name Tags
+  """
+  tags: [String]
+  """
+  Alternative names for the instance.
+  @name Aliases
+  """
+  aliases: [String]
+  """
+  The identifier in the source system.
+  @name Source ID
+  """
+  sourceId: String
+  """
+  Context of the source id. For systems where the sourceId is globally unique, the sourceContext is expected to not be set.
+  @name Source context
+  """
+  sourceContext: String
+  """
+  A direct relation to a source system instance.
+  @name Source
+  """
+  source: CogniteSourceSystem
+  """
+  The time the instance was created in the source system (if available).
+  @name Source created
+  """
+  sourceCreatedTime: Timestamp
+  """
+  The time the instance was last updated in the source system (if available).
+  @name Source last updated
+  """
+  sourceUpdatedTime: Timestamp
+  """
+  The user identifier from the source system who created the source data. This identifier is not guaranteed to match user identifiers in Cognite Data Fusion.
+  @name Source created by
+  """
+  sourceCreatedUser: String
+  """
+  The user identifier from the source system who last updated the source data. This identifier is not guaranteed to match user identifiers in Cognite Data Fusion.
+  @name Source last updated by
+  """
+  sourceUpdatedUser: String
+  """
+  A list of assets this file is related to.
+  @name Assets
+  """
+  assets: [CogniteAsset]
+  """
+  The MIME type of the file.
+  @name MIME type
+  """
+  mimeType: String
+  """
+  Specifies if the file content has been uploaded to Cognite Data Fusion or not.
+  @name Is uploaded
+  """
+  isUploaded: Boolean
+  """
+  The time the file upload completed.
+  @name Uploaded time
+  """
+  uploadedTime: Timestamp
+  """
+  Specifies the detected category the file belongs to. It's a direct relation to an instance of CogniteFileCategory.
+  @name Category
+  """
+  category: CogniteFileCategory
+  """
+  Contains the path elements from the source (if the source system has a file system hierarchy or similar).
+  @name Directory
+  """
+  directory: String
+  """
+  An automatically updated list of equipment this file is related to.
+  @name Equipment
+  """
+  equipment: [CogniteEquipment]
+  """
+  The asset this document is about.
+  @name Asset
+  """
+  asset: Asset
+}
+
+enum CogniteTimeSeries_type @import {
+  string
+  numeric
+  state
+}

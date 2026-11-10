@@ -1,5 +1,6 @@
-import { Button } from '@cognite/aura/components/button';
 import { IconChevronLeft, IconChevronRight } from '@tabler/icons-react';
+
+import { GeneralButton } from './GeneralButton';
 
 type CursorPaginationProps = {
   label: string;
@@ -32,28 +33,26 @@ export function CursorPagination({
         Page {pageNumber}
       </span>
       <div className="flex items-center gap-2">
-        <Button
+        <GeneralButton
           aria-label="Previous page"
           disabled={!hasPreviousPage || isFetching}
           onClick={onPreviousPage}
-          className="hud-button"
           size="sm"
           variant="outline"
         >
           <IconChevronLeft aria-hidden />
           Previous
-        </Button>
-        <Button
+        </GeneralButton>
+        <GeneralButton
           aria-label="Next page"
           disabled={!hasNextPage || isFetching}
           onClick={onNextPage}
-          className="hud-button"
           size="sm"
           variant="outline"
         >
           Next
           <IconChevronRight aria-hidden />
-        </Button>
+        </GeneralButton>
       </div>
     </nav>
   );
