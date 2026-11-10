@@ -1819,26 +1819,24 @@ button.hud-body:focus-visible {
 }
 
 /*
- * The mascot is three pictures on one canvas: the robot, its smiling eyes and its round "thinking" eyes.
- * Where the eyes sit and how far the head leans are printed by design/mascot/cut_sprites.py.
+ * The mascot is five pictures on one canvas: the robot at rest, the same robot with its arm raised, the
+ * raised hand, its smiling eyes and its round "thinking" eyes. Where the eyes and the wrist sit and how far
+ * the head leans are printed by design/mascot/cut_sprites.py.
  */
 .agent-mascot {
   --agent-eyes-origin: 44.3% 34%;
   --agent-eyes-lean: -8deg;
+  --agent-wrist-origin: 73.6% 53.4%;
+  --agent-raise: 320ms ease;
 
   position: relative;
   display: block;
   width: 100%;
   height: 100%;
   transform-origin: 50% 100%;
+  /* The body poses add up among themselves only, never with the page behind the mascot. */
+  isolation: isolate;
   animation: agent-float 4s ease-in-out infinite;
-}
-
-/* A short greeting on hover and keyboard focus: the robot rocks on its waist, twice. */
-.agent-helper__trigger:is(:hover, :focus-visible) .agent-mascot {
-  animation:
-    agent-greet 700ms ease-in-out 2,
-    agent-float 4s ease-in-out infinite;
 }
 
 .agent-mascot__layer {
@@ -1848,6 +1846,44 @@ button.hud-body:focus-visible {
   height: 100%;
   pointer-events: none;
   user-select: none;
+}
+
+/*
+ * The two body poses fade into each other. They are added together instead of laid over each other, so the
+ * robot keeps its full opacity through the fade: what the two share never thins out.
+ */
+.agent-mascot__body {
+  mix-blend-mode: plus-lighter;
+  transition: opacity var(--agent-raise);
+}
+
+.agent-mascot__hand {
+  transform-origin: var(--agent-wrist-origin);
+  transition: opacity var(--agent-raise);
+}
+
+.agent-mascot__body--wave,
+.agent-mascot__hand {
+  opacity: 0;
+}
+
+/*
+ * A quiet greeting while hovered or focused by keyboard: the arm fades up, the hand tilts from side to side
+ * at the wrist, a little less each time, and stays up until the pointer or the focus leaves.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .agent-helper__trigger:is(:hover, :focus-visible) .agent-mascot__body--rest {
+    opacity: 0;
+  }
+
+  .agent-helper__trigger:is(:hover, :focus-visible)
+    :is(.agent-mascot__body--wave, .agent-mascot__hand) {
+    opacity: 1;
+  }
+
+  .agent-helper__trigger:is(:hover, :focus-visible) .agent-mascot__hand {
+    animation: agent-wave 1.8s ease-in-out 140ms both;
+  }
 }
 
 /* Only the eyes of the current mood show; the other pair stays loaded so the swap never flickers. */
@@ -1880,15 +1916,19 @@ button.hud-body:focus-visible {
   }
 }
 
-@keyframes agent-greet {
+/* Each swing is smaller than the one before, so the hand comes to rest by itself. */
+@keyframes agent-wave {
   0%,
   100% {
     rotate: 0deg;
   }
-  30% {
-    rotate: -5deg;
+  22% {
+    rotate: 8deg;
   }
-  70% {
+  48% {
+    rotate: -7deg;
+  }
+  74% {
     rotate: 4deg;
   }
 }
@@ -2490,12 +2530,11 @@ button.hud-body:focus-visible {
 }
 
 /*
- * Reduced motion: no bobbing, greeting, blinking or flying; the panel still "animates" for a blink so its
+ * Reduced motion: no bobbing, waving, blinking or flying; the panel still "animates" for a blink so its
  * exit still ends.
  */
 @media (prefers-reduced-motion: reduce) {
   .agent-mascot,
-  .agent-helper__trigger:is(:hover, :focus-visible) .agent-mascot,
   .agent-mascot__eyes {
     animation: none;
   }

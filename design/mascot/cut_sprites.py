@@ -1,15 +1,21 @@
 """
-Cuts the Asset Passport agent mascot out of its reference picture and writes the app's sprites.
+Cuts the Asset Passport agent mascot out of its reference pictures and writes the app's sprites.
 
 The mascot is the ADNOC robot in `adnoc-mascot-reference.png`, a picture on a white background. The sprites
 are that picture itself, not a redrawing, so they match it exactly:
 
     mascot.png             the robot without its eyes, on a transparent background, faded out at the waist
+    mascot-wave.png        the same robot with its arm raised, up to the wrist
+    mascot-hand.png        the raised hand alone, on the same canvas, for the app to turn at the wrist
     mascot-eyes.png        the glowing eyes alone, on the same canvas, for the app to blink
     mascot-eyes-think.png  round eyes in the same glow, drawn here, shown while the agent works
 
+The waving picture (`adnoc-mascot-wave-reference.webp`) is a separate picture of the robot, so the rest of
+it is not quite where it is in the reference. Only the raised arm is taken from it and joined to the robot of
+`mascot.png`; everything else is the same in both, so nothing but the arm changes between them.
+
 The script prints where the eyes sit on the canvas ("eyes-origin"), which `src/styles.css` uses as the point
-the blink squashes towards.
+the blink squashes towards, and where the wrist sits ("wrist-origin"), the point the hand turns about.
 
 Run from the project root, on macOS (the outline comes from the Vision framework, through
 `subject_mask.swift`; Blender is used only for its Python with numpy and image files):
@@ -27,6 +33,7 @@ import numpy
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REFERENCE = os.path.join(HERE, 'adnoc-mascot-reference.png')
+WAVE_REFERENCE = os.path.join(HERE, 'adnoc-mascot-wave-reference.webp')
 ARGUMENTS = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else []
 OUTPUT_DIRECTORY = os.path.abspath(ARGUMENTS[0]) if ARGUMENTS else os.path.join(HERE, 'out')
 
@@ -49,6 +56,23 @@ THINK_EYE_RADII = (27.0, 35.0)
 THINK_EYE_SHIFT = (9.0, -7.0)
 THINK_HALO_PIXELS = 13.0
 THINK_HALO_STRENGTH = 0.55
+# The part of the waving picture that is used, as the corners (x, y) of a closed outline in the reference:
+# from the top edge down between the head and the raised hand, under the head to the collar, down the chest
+# beside the shoulder panel, and out to the right below the resting arm.
+ARM_OUTLINE = ((888, 0), (888, 540), (875, 560), (835, 600), (790, 645), (740, 652), (690, 668),
+               (685, 690), (755, 800), (775, 840), (778, 930), (1312, 930), (1312, 0))
+ARM_SEAM_PIXELS = 3.0
+# Left, top, right, bottom of a patch of chest beside the arm, which lines the waving picture up with the
+# reference, and how far the search for the best fit goes.
+CHEST_BOX = (620, 760, 760, 900)
+ALIGN_REACH_PIXELS = 6
+# The wrist of the raised hand: the two ends (x, y) of the line where the glove leaves the cuff. The hand is
+# what lies past that line and right of HAND_LEFT, a column of empty picture between the head and the hand.
+WRIST = ((917, 615), (1017, 675))
+HAND_LEFT = 892
+WRIST_SEAM_PIXELS = 3.0
+# The arm keeps this much of the glove under the hand, so no gap opens at the cuff when the hand turns.
+WRIST_OVERLAP_PIXELS = 12.0
 
 
 def load(path):
@@ -74,9 +98,9 @@ def save(path, pixels):
     print(f'wrote {os.path.relpath(path)} {width}x{height}')
 
 
-def subject_mask(directory):
+def subject_mask(picture, directory):
     path = os.path.join(directory, 'mask.png')
-    subprocess.run(['xcrun', 'swift', os.path.join(HERE, 'subject_mask.swift'), REFERENCE, path], check=True)
+    subprocess.run(['xcrun', 'swift', os.path.join(HERE, 'subject_mask.swift'), picture, path], check=True)
     return load(path)[..., 0]
 
 
@@ -204,6 +228,74 @@ def draw_think_eyes(shape, centres, colors):
     return layer
 
 
+def inside_outline(shape, outline):
+    """Which pixels lie inside a closed outline, given as its corners (x, y)."""
+    rows, columns = numpy.mgrid[0:shape[0], 0:shape[1]].astype(numpy.float32)
+    inside = numpy.zeros(shape, dtype=bool)
+    for (start_x, start_y), (end_x, end_y) in zip(outline, outline[1:] + outline[:1]):
+        if start_y == end_y:
+            continue
+        crossing = start_x + (rows - start_y) * (end_x - start_x) / (end_y - start_y)
+        inside ^= (rows >= min(start_y, end_y)) & (rows < max(start_y, end_y)) & (columns < crossing)
+    return inside
+
+
+def moved(values, shift):
+    """Shifted right and down by whole pixels; the pictures have a plain margin, so the wrap is harmless."""
+    return numpy.roll(values, (shift[1], shift[0]), axis=(0, 1))
+
+
+def chest_shift(color, reference):
+    """How far to move the waving picture so that its chest lies on the reference's."""
+    left, top, right, bottom = CHEST_BOX
+    patch = reference[top:bottom, left:right]
+    reach = range(-ALIGN_REACH_PIXELS, ALIGN_REACH_PIXELS + 1)
+    return min(((x, y) for y in reach for x in reach),
+               key=lambda shift: numpy.abs(moved(color, shift)[top:bottom, left:right] - patch).mean())
+
+
+def wave_body(picture, reference, rest, directory):
+    """The robot at rest with its arm swapped for the raised one of the waving picture."""
+    color = load(picture)[..., :3]
+    if color.shape != reference.shape:
+        raise RuntimeError(f'{os.path.basename(picture)} is not the size of the reference')
+    alpha, clean = cut_out(color, subject_mask(picture, directory))
+    shift = chest_shift(color, reference)
+    print(f'{os.path.basename(picture)}: moved {shift[0]}, {shift[1]} to fit the reference')
+
+    share = blur(inside_outline(alpha.shape, ARM_OUTLINE).astype(numpy.float32), ARM_SEAM_PIXELS)
+    arm_weight = moved(alpha, shift) * share
+    rest_weight = rest[..., 3] / 255.0 * (1.0 - share)
+    opacity = arm_weight + rest_weight
+    mixed = (moved(clean, shift) * arm_weight[..., None] + rest[..., :3] * rest_weight[..., None]
+             ) / numpy.maximum(opacity, 1e-4)[..., None]
+    return numpy.concatenate([mixed, opacity[..., None] * 255.0], axis=2)
+
+
+def past_wrist(shape, lift):
+    """How much of each pixel is hand: past the wrist line by `lift` pixels towards the fingers."""
+    (start_x, start_y), (end_x, end_y) = WRIST
+    rows, columns = numpy.mgrid[0:shape[0], 0:shape[1]].astype(numpy.float32)
+    distance = ((end_y - start_y) * (columns - start_x) - (end_x - start_x) * (rows - start_y)
+                ) / numpy.hypot(end_x - start_x, end_y - start_y)
+    is_hand = (distance > lift) & (columns > HAND_LEFT)
+    return blur(is_hand.astype(numpy.float32), WRIST_SEAM_PIXELS)
+
+
+def with_opacity(layer, share):
+    """The layer with its opacity multiplied by a share between 0 and 1."""
+    faded = layer.copy()
+    faded[..., 3] *= share
+    return faded
+
+
+def is_inside_frame(layer, frame):
+    left, top, size = frame
+    rows = numpy.flatnonzero(layer[..., 3].any(axis=1))
+    columns = numpy.flatnonzero(layer[..., 3].any(axis=0))
+    return rows[0] >= top and left <= columns[0] and columns[-1] < left + size
+
+
 def to_sprite(layer, frame):
     """Places the layer on the square canvas and shrinks it, averaging colours by their opacity."""
     left, top, size = frame
@@ -233,19 +325,24 @@ def main():
     os.makedirs(OUTPUT_DIRECTORY, exist_ok=True)
     color = load(REFERENCE)[..., :3]
     with tempfile.TemporaryDirectory() as directory:
-        subject = subject_mask(directory)
-    alpha, clean = cut_out(color, subject)
-    without_eyes, eyes, centres, colors = split_eyes(clean)
+        alpha, clean = cut_out(color, subject_mask(REFERENCE, directory))
+        without_eyes, eyes, centres, colors = split_eyes(clean)
+        rest = numpy.concatenate([without_eyes, alpha[..., None] * 255.0], axis=2)
+        wave = wave_body(WAVE_REFERENCE, color, rest, directory)
 
     frame = frame_around(alpha)
     left, top, size = frame
     if left < 0:
         raise RuntimeError('The robot is too close to the left edge of the reference to centre')
-    body = numpy.concatenate([without_eyes, alpha[..., None] * 255.0], axis=2)
-    fade_rows = int(body.shape[0] * FADE_FRACTION)
-    body[-fade_rows:, :, 3] *= (numpy.linspace(1.0, 0.0, fade_rows) ** 1.5)[:, None]
-
-    save(os.path.join(OUTPUT_DIRECTORY, 'mascot.png'), to_sprite(body, frame))
+    if not is_inside_frame(wave, frame):
+        raise RuntimeError('The raised arm reaches outside the canvas of mascot.png')
+    arm = with_opacity(wave, 1.0 - past_wrist(alpha.shape, WRIST_OVERLAP_PIXELS))
+    fade_rows = int(color.shape[0] * FADE_FRACTION)
+    for name, body in (('mascot.png', rest), ('mascot-wave.png', arm)):
+        body[-fade_rows:, :, 3] *= (numpy.linspace(1.0, 0.0, fade_rows) ** 1.5)[:, None]
+        save(os.path.join(OUTPUT_DIRECTORY, name), to_sprite(body, frame))
+    save(os.path.join(OUTPUT_DIRECTORY, 'mascot-hand.png'),
+         to_sprite(with_opacity(wave, past_wrist(alpha.shape, 0.0)), frame))
     save(os.path.join(OUTPUT_DIRECTORY, 'mascot-eyes.png'), to_sprite(eyes, frame))
     save(os.path.join(OUTPUT_DIRECTORY, 'mascot-eyes-think.png'),
          to_sprite(draw_think_eyes(color.shape[:2], centres, colors), frame))
@@ -258,6 +355,9 @@ def main():
     print(f'eyes-origin: {(x - left) / size * 100:.1f}% {(y - top + offset_y) / size * 100:.1f}%')
     lean = numpy.degrees(numpy.arctan2(centres[1][1] - centres[0][1], centres[1][0] - centres[0][0]))
     print(f'eyes-lean: {lean:.1f}deg')
+    x = (WRIST[0][0] + WRIST[1][0]) / 2
+    y = (WRIST[0][1] + WRIST[1][1]) / 2
+    print(f'wrist-origin: {(x - left) / size * 100:.1f}% {(y - top + offset_y) / size * 100:.1f}%')
 
 
 main()

@@ -217,8 +217,11 @@ the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines
   hat and coverall, with a glowing face on a dark visor. Its size follows the
   window width: 6.5rem up to a 1280px window, growing to 8rem on wide screens.
   It bobs gently and its
-  smiling eyes blink every few seconds; it rocks twice in greeting when hovered
-  or focused; while an agent is answering its eyes turn round and look from
+  smiling eyes blink every few seconds; while hovered or focused it raises its
+  arm softly and tilts its hand a little from side to side at the wrist, each
+  tilt smaller than the one before (about two seconds, only the arm moves), then
+  holds the hand up until the pointer or focus leaves and lowers it just as
+  softly; with reduced motion the arm stays down. While an agent is answering its eyes turn round and look from
   side to side. It is decoration for assistive technology; the button around it
   is named "AI assistant".
 - Choosing the button opens a panel that grows out of the corner, up to the
@@ -263,10 +266,13 @@ the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines
 - The agent is looked up and asked through the Agents API (`POST /ai/agents/byids`
   and `POST /ai/agents/chat`, beta) with the SDK client, following the conversation
   by the reply's cursor. The signed-in user needs access to the agents in the
-  project. The mascot is cut from its reference picture
-  (`design/mascot/adnoc-mascot-reference.png`) by `design/mascot/cut_sprites.py`
-  into three PNG layers in `src/assets/agent` (the robot, its smiling eyes and
-  its round thinking eyes), bundled with the app and served from the app itself,
+  project. The mascot is cut from its reference pictures
+  (`design/mascot/adnoc-mascot-reference.png`, and
+  `adnoc-mascot-wave-reference.webp` for the raised arm) by
+  `design/mascot/cut_sprites.py` into five PNG layers in `src/assets/agent`
+  (the robot at rest, the same robot with its arm raised up to the wrist, the
+  raised hand by itself so it can turn at the wrist, its smiling
+  eyes and its round thinking eyes), bundled with the app and served from the app itself,
   so `manifest.json` keeps `permissions.network` empty. Mock mode has a dummy
   agent with that ID that gives a fixed dummy reply.
 
