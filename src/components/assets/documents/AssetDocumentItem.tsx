@@ -14,6 +14,14 @@ import {
 } from '@tabler/icons-react';
 import { useState } from 'react';
 
+import {
+  DOCUMENT_DELETE_DIALOG_TITLE,
+  DOCUMENT_DELETE_WARNING,
+  DOCUMENT_PROCESSING_LABEL,
+  DOCUMENT_UPLOAD_INCOMPLETE_LABEL,
+  DOCUMENT_UPLOADED_PREFIX,
+  EXISTING_FILE_LABEL,
+} from '../../../constants/documents';
 import { DocumentKind } from '../../../enums/documentKind';
 import { DocumentOrigin } from '../../../enums/documentOrigin';
 import { DocumentUploadStatus } from '../../../enums/documentUploadStatus';
@@ -41,7 +49,6 @@ const DOCUMENT_KIND_ICONS: Record<DocumentKind, Icon> = {
 type AssetDocumentItemProps = {
   document: AssetDocument;
   isDeleting: boolean;
-
   onDelete: (document: AssetDocument) => Promise<void>;
 };
 
@@ -54,7 +61,7 @@ export function AssetDocumentItem({ document, isDeleting, onDelete }: AssetDocum
   const KindIcon = DOCUMENT_KIND_ICONS[getDocumentKind(document.mimeType)];
   const uploadedLabel =
     document.uploadStatus === DocumentUploadStatus.UPLOADED && document.uploadedTime !== null
-      ? `Uploaded ${formatNoteDate(document.uploadedTime)}`
+      ? `${DOCUMENT_UPLOADED_PREFIX} ${formatNoteDate(document.uploadedTime)}`
       : null;
 
   function handleViewClick(): void {
@@ -88,11 +95,11 @@ export function AssetDocumentItem({ document, isDeleting, onDelete }: AssetDocum
               <Badge data-tone="neutral" variant="secondary">
                 {typeLabel}
               </Badge>
-              {canDelete ? null : <StatusPill status="Existing file" />}
+              {canDelete ? null : <StatusPill status={EXISTING_FILE_LABEL} />}
               {document.uploadStatus === DocumentUploadStatus.PROCESSING ? (
-                <StatusPill status="Processing..." />
+                <StatusPill status={DOCUMENT_PROCESSING_LABEL} />
               ) : uploadedLabel === null ? (
-                <StatusPill status="Upload incomplete" tone={StatusTone.WARNING} />
+                <StatusPill status={DOCUMENT_UPLOAD_INCOMPLETE_LABEL} tone={StatusTone.WARNING} />
               ) : (
                 <span className="text-muted-foreground inline-flex items-center gap-1.5 text-sm">
                   <IconClockHour4 aria-hidden className="size-4" />
@@ -127,12 +134,12 @@ export function AssetDocumentItem({ document, isDeleting, onDelete }: AssetDocum
       />
       <ConfirmDeleteDialog
         isOpen={isConfirmingDelete}
-        title="Delete document?"
+        title={DOCUMENT_DELETE_DIALOG_TITLE}
         confirmLabel="Delete document"
         onConfirm={handleDeleteConfirm}
         onClose={handleDeleteClose}
       >
-        {document.name} and its file will be deleted permanently. This cannot be undone.
+        {document.name} {DOCUMENT_DELETE_WARNING}
       </ConfirmDeleteDialog>
     </article>
   );

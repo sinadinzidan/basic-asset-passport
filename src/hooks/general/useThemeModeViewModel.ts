@@ -15,7 +15,6 @@ export const UseThemeModeViewModelContext =
 
 export type ThemeModeViewModel = {
   themeMode: ThemeMode;
-
   toggleLabel: string;
   toggleThemeMode: () => void;
 };

@@ -10,6 +10,11 @@ export const DOCUMENT_QUERY_LIMIT = 100;
 export const FILES_VIEW_SPACE = 'sp-dm-idi-rmdm';
 export const FILES_VIEW_EXTERNAL_ID = 'Files';
 export const FILES_VIEW_VERSION = 'v1';
+export const FILES_VIEW = {
+  space: FILES_VIEW_SPACE,
+  externalId: FILES_VIEW_EXTERNAL_ID,
+  version: FILES_VIEW_VERSION,
+};
 export const FILES_ASSETS_PROPERTY = 'assets';
 export const DOCUMENT_QUERY_STALE_TIME_MS = 30_000;
 export const DOCUMENT_MAX_FILE_SIZE_MB = 50;
@@ -46,3 +51,17 @@ export const LINKED_ASSET_LOADING_MESSAGE = 'Loading asset...';
 export const LINKED_ASSET_ERROR_TITLE = 'Asset could not be loaded';
 export const LINKED_ASSET_ERROR_DESCRIPTION =
   'Check that the linked item is an asset in the register and that you can read it, then try again.';
+export const LINKED_ASSET_PENDING_TITLE = 'Linked asset';
+export const DOCUMENT_UPLOAD_HINT = `Choose one or more files, up to ${DOCUMENT_MAX_FILE_SIZE_LABEL} each.`;
+export const DOCUMENT_EMPTY_FILE_MESSAGE = 'The file is empty.';
+export const DOCUMENT_TOO_LARGE_MESSAGE = `The file is larger than ${DOCUMENT_MAX_FILE_SIZE_LABEL}.`;
+export const EXISTING_FILE_LABEL = 'Existing file';
+export const DOCUMENT_UPLOADING_LABEL = 'Uploading...';
+export const DOCUMENT_PROCESSING_LABEL = 'Processing...';
+export const DOCUMENT_UPLOAD_INCOMPLETE_LABEL = 'Upload incomplete';
+export const DOCUMENT_UPLOADED_PREFIX = 'Uploaded';
+export const DOCUMENT_DELETE_DIALOG_TITLE = 'Delete document?';
+export const DOCUMENT_DELETE_WARNING =
+  'and its file will be deleted permanently. This cannot be undone.';
+export const DOCUMENT_PREVIEW_LOADING_MESSAGE = 'Loading preview...';
+export const DOCUMENT_PREVIEW_UNAVAILABLE_MESSAGE = 'Preview is not available here.';

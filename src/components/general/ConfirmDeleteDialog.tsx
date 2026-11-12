@@ -6,11 +6,8 @@ import { GeneralDialog } from './GeneralDialog';
 type ConfirmDeleteDialogProps = {
   isOpen: boolean;
   title: string;
-
   confirmLabel: string;
-
   children: ReactNode;
-
   onConfirm: () => Promise<void>;
   onClose: () => void;
 };

@@ -16,7 +16,6 @@ type TimeseriesChartDialogProps = {
   source: ChartDataSource;
   configuration: ChartConfiguration | null;
   nowMs: number;
-
   exportName: string;
   onConfigurationChange: (configuration: ChartConfiguration) => void;
   onClose: () => void;

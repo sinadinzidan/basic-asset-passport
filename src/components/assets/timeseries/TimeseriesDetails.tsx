@@ -14,7 +14,6 @@ import { TimeseriesPreview } from './TimeseriesPreview';
 
 type TimeseriesDetailsProps = {
   item: AssetTimeseriesItem;
-
   onOpenChart?: (timeseries: AssetTimeseriesItem['timeseries']) => void;
 };
 

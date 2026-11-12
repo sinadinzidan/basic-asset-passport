@@ -1,5 +1,6 @@
 import { IconEyeOff } from '@tabler/icons-react';
 
+import { DOCUMENT_PREVIEW_UNAVAILABLE_MESSAGE } from '../../../constants/documents';
 import { DialogSize } from '../../../enums/dialogSize';
 import { useDocumentPreview } from '../../../hooks/assets/documents/useDocumentPreview';
 import type { AssetDocument } from '../../../types/document';
@@ -35,7 +36,7 @@ export function DocumentPreviewDialog({
           <span aria-hidden className="icon-chip size-12">
             <IconEyeOff aria-hidden className="size-5" />
           </span>
-          <p className="text-base-foreground">Preview is not available here.</p>
+          <p className="text-base-foreground">{DOCUMENT_PREVIEW_UNAVAILABLE_MESSAGE}</p>
         </div>
       )}
     </GeneralDialog>

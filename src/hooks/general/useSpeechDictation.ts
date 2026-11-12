@@ -24,9 +24,7 @@ export type SpeechDictation = {
   isSupported: boolean;
   isListening: boolean;
   failure: DictationFailure | null;
-
   toggle: (onTranscript: (spoken: string) => void) => void;
-
   cancel: () => void;
 };
 

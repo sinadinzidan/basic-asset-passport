@@ -1,5 +1,6 @@
 import { Skeleton } from '@cognite/aura/components/skeleton';
 
+import { ASSET_DETAILS_LOADING_MESSAGE } from '../../constants/assets';
 import { HudShape } from '../../enums/hudShape';
 import { HudPanel } from '../general/HudPanel';
 
@@ -9,7 +10,7 @@ const PROPERTY_CELL_COUNT = 6;
 export function AssetDetailsSkeleton() {
   return (
     <div role="status" aria-busy="true" className="flex flex-col gap-5">
-      <span className="sr-only">Loading asset and equipment properties...</span>
+      <span className="sr-only">{ASSET_DETAILS_LOADING_MESSAGE}</span>
       <div aria-hidden className="flex flex-col gap-5">
         <div className="flex flex-col gap-3">
           <Skeleton className="h-3 w-28" />

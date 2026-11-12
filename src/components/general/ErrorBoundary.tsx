@@ -1,5 +1,7 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
 
+import { RENDER_ERROR_DESCRIPTION, RENDER_ERROR_TITLE } from '../../constants/labels';
+
 import { NeonStage } from './NeonStage';
 import { RetryAlert } from './RetryAlert';
 
@@ -39,8 +41,8 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
         <NeonStage>
           <div className="p-4 sm:p-6 lg:p-8">
             <RetryAlert
-              title="Something went wrong"
-              description="The page could not be displayed. Try again, or reload the page if it keeps failing."
+              title={RENDER_ERROR_TITLE}
+              description={RENDER_ERROR_DESCRIPTION}
               isRetrying={false}
               onRetry={this.handleRetry}
             />

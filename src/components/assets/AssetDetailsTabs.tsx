@@ -17,7 +17,6 @@ import { AssetTimeseries } from './timeseries/AssetTimeseries';
 
 type AssetDetailsTabsProps = {
   asset: AssetInstanceDetails;
-
   tabCounts: AssetDetailsTabCounts;
 };
 

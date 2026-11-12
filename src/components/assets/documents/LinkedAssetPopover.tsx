@@ -13,11 +13,14 @@ import {
   PLANT_PROPERTY_IDENTIFIER,
   STATUS_PROPERTY_IDENTIFIER,
 } from '../../../constants/assets';
+import { NODE_EXTERNAL_ID_PROPERTY } from '../../../constants/cdfApi';
 import {
   LINKED_ASSET_ERROR_DESCRIPTION,
   LINKED_ASSET_ERROR_TITLE,
   LINKED_ASSET_LOADING_MESSAGE,
+  LINKED_ASSET_PENDING_TITLE,
 } from '../../../constants/documents';
+import { FUNCTIONAL_LOCATION_LABEL } from '../../../constants/labels';
 import { LoadingNoticeVariant } from '../../../enums/loadingNoticeVariant';
 import { useAssetDetails } from '../../../hooks/assets/useAssetDetails';
 import { getPropertyValue } from '../../../lib/assetProperties';
@@ -39,8 +42,7 @@ export type LinkedAssetTarget = {
 type LinkedAssetPopoverProps = {
   target: LinkedAssetTarget | null;
   onClose: () => void;
-
-  onOpenAsset: ((asset: AssetIdentifier) => void) | null;
+  onOpenAsset: (asset: AssetIdentifier) => void;
 };
 
 export function LinkedAssetPopover({ target, onClose, onOpenAsset }: LinkedAssetPopoverProps) {
@@ -64,8 +66,8 @@ function OpenLinkedAssetPopover({ target, onClose, onOpenAsset }: OpenLinkedAsse
   const criticality = getPropertyValue(data, CRITICALITY_PROPERTY_IDENTIFIER);
   const details: AssetPropertyDisplay[] = [
     {
-      identifier: 'externalId',
-      label: 'Functional location',
+      identifier: NODE_EXTERNAL_ID_PROPERTY,
+      label: FUNCTIONAL_LOCATION_LABEL,
       value: asset.externalId,
     },
     ...[PLANT_PROPERTY_IDENTIFIER, DESCRIPTION_PROPERTY_IDENTIFIER].flatMap(
@@ -84,7 +86,7 @@ function OpenLinkedAssetPopover({ target, onClose, onOpenAsset }: OpenLinkedAsse
     if (!isPressOnBox) onClose();
   }
   function handleOpenAsset(): void {
-    onOpenAsset?.(asset);
+    onOpenAsset(asset);
   }
   function handleRetry(): void {
     void refetch();
@@ -99,7 +101,7 @@ function OpenLinkedAssetPopover({ target, onClose, onOpenAsset }: OpenLinkedAsse
       >
         <PopoverHeaderContent>
           <PopoverTitle className="min-w-0 whitespace-normal break-words font-display tracking-wide">
-            {isPending || isError ? 'Linked asset' : (name ?? asset.externalId)}
+            {isPending || isError ? LINKED_ASSET_PENDING_TITLE : (name ?? asset.externalId)}
           </PopoverTitle>
           <PopoverClose className="hud-button" />
         </PopoverHeaderContent>
@@ -125,11 +127,9 @@ function OpenLinkedAssetPopover({ target, onClose, onOpenAsset }: OpenLinkedAsse
               </div>
             ) : null}
             <AssetProperties properties={details} />
-            {onOpenAsset ? (
-              <GeneralButton className="self-start" onClick={handleOpenAsset} size="sm">
-                Open asset
-              </GeneralButton>
-            ) : null}
+            <GeneralButton className="self-start" onClick={handleOpenAsset} size="sm">
+              Open asset
+            </GeneralButton>
           </>
         )}
       </PopoverContent>

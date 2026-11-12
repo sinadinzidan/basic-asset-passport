@@ -1,7 +1,11 @@
 import { IconNote, IconPencil, IconTrash } from '@tabler/icons-react';
 import { useState } from 'react';
 
-import { UNKNOWN_AUTHOR_LABEL } from '../../../constants/notes';
+import {
+  NOTE_DELETE_DIALOG_TITLE,
+  NOTE_DELETE_WARNING,
+  UNKNOWN_AUTHOR_LABEL,
+} from '../../../constants/notes';
 import { IconActionVariant } from '../../../enums/iconActionVariant';
 import { useUpdateAssetNote } from '../../../hooks/assets/notes/useUpdateAssetNote';
 import { formatNoteDate } from '../../../lib/formatNoteDate';
@@ -16,7 +20,6 @@ type AssetNoteItemProps = {
   assetIdentifier: AssetIdentifier;
   note: AssetNote;
   isDeleting: boolean;
-
   onDelete: (note: AssetNote) => Promise<void>;
 };
 
@@ -96,12 +99,12 @@ export function AssetNoteItem({ assetIdentifier, note, isDeleting, onDelete }: A
       {note.body ? <p className="whitespace-pre-wrap break-words p-4">{note.body}</p> : null}
       <ConfirmDeleteDialog
         isOpen={isConfirmingDelete}
-        title="Delete note?"
+        title={NOTE_DELETE_DIALOG_TITLE}
         confirmLabel="Delete note"
         onConfirm={handleDeleteConfirm}
         onClose={handleDeleteClose}
       >
-        {note.title} will be deleted permanently. This cannot be undone.
+        {note.title} {NOTE_DELETE_WARNING}
       </ConfirmDeleteDialog>
     </article>
   );

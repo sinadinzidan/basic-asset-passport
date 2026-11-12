@@ -2,8 +2,8 @@ import { IconUpload } from '@tabler/icons-react';
 import { useRef, type ChangeEvent } from 'react';
 
 import {
-  DOCUMENT_MAX_FILE_SIZE_LABEL,
   DOCUMENT_UPLOAD_ERROR_TITLE,
+  DOCUMENT_UPLOAD_HINT,
   DOCUMENT_UPLOAD_RETRY_LABEL,
 } from '../../../constants/documents';
 import { AppAlertVariant } from '../../../enums/appAlertVariant';
@@ -44,9 +44,7 @@ export function AssetDocumentUpload({ assetIdentifier }: AssetDocumentUploadProp
   return (
     <section aria-label="Upload documents" className="data-card flex flex-col gap-4 p-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-muted-foreground">
-          Choose one or more files, up to {DOCUMENT_MAX_FILE_SIZE_LABEL} each.
-        </p>
+        <p className="text-sm text-muted-foreground">{DOCUMENT_UPLOAD_HINT}</p>
         <GeneralButton disabled={isPending} onClick={handleChooseClick}>
           <IconUpload aria-hidden className="size-4" />
           {isPending ? 'Uploading...' : 'Upload documents'}

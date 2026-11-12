@@ -7,9 +7,7 @@ export type NavigationState = {
   activeAssetTab: AssetTab;
   searchQuery?: string;
   timeseriesChart?: TimeseriesChartOptions;
-
   registerCursors?: string[];
-
   isAssistantOpen?: boolean;
 };
 
@@ -27,6 +25,5 @@ export type NavigationActions = {
 
 export type NavigationStore = {
   navigationState: NavigationState;
-
   actions: NavigationActions;
 };

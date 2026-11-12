@@ -1,7 +1,11 @@
 import { IconPlus } from '@tabler/icons-react';
 import { useState, type FormEvent } from 'react';
 
-import { NOTE_BODY_MAX_LENGTH, NOTE_SAVE_ERROR_TITLE } from '../../../constants/notes';
+import {
+  NOTE_ADD_DIALOG_TITLE,
+  NOTE_ADD_HINT,
+  NOTE_SAVE_ERROR_TITLE,
+} from '../../../constants/notes';
 import { AppAlertVariant } from '../../../enums/appAlertVariant';
 import { useAddAssetNote } from '../../../hooks/assets/notes/useAddAssetNote';
 import { isNewAssetNoteValid } from '../../../lib/noteInput';
@@ -54,9 +58,7 @@ export function AssetNoteAdd({ assetIdentifier }: AssetNoteAddProps) {
   return (
     <section aria-label="Add a note" className="data-card flex flex-col gap-4 p-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-muted-foreground">
-          Add a note with a title and up to {NOTE_BODY_MAX_LENGTH} characters of text.
-        </p>
+        <p className="text-sm text-muted-foreground">{NOTE_ADD_HINT}</p>
         <GeneralButton onClick={handleAddClick}>
           <IconPlus aria-hidden className="size-4" />
           Add note
@@ -65,7 +67,7 @@ export function AssetNoteAdd({ assetIdentifier }: AssetNoteAddProps) {
       <GeneralDialog
         isOpen={isOpen}
         onOpenChange={handleOpenChange}
-        title="Add note"
+        title={NOTE_ADD_DIALOG_TITLE}
         footer={
           <>
             <GeneralButton disabled={isPending} onClick={handleCancelClick} variant="outline">

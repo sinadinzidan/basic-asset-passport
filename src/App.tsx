@@ -8,6 +8,11 @@ import { AppAlert } from './components/general/AppAlert';
 import { LoadingNotice } from './components/general/LoadingNotice';
 import { MockAppContent } from './components/general/MockAppContent';
 import { NeonStage } from './components/general/NeonStage';
+import {
+  HOST_CONNECTING_MESSAGE,
+  HOST_CONNECTION_ERROR_DESCRIPTION,
+  HOST_CONNECTION_ERROR_TITLE,
+} from './constants/labels';
 import { AppAlertVariant } from './enums/appAlertVariant';
 import { useHostConnection } from './hooks/general/useHostConnection';
 import { Assets } from './pages/assets/Assets';
@@ -26,14 +31,14 @@ const defaultCreateClient: AppDependencies['createClient'] = (config) => new Cog
 
 const loadingFallback = (
   <main className="flex min-h-screen items-center justify-center px-6 text-base-foreground">
-    <LoadingNotice className="px-8 py-6" message="Connecting to Cognite..." />
+    <LoadingNotice className="px-8 py-6" message={HOST_CONNECTING_MESSAGE} />
   </main>
 );
 
 const errorFallback = (
   <main className="flex min-h-screen w-full items-center px-6 text-base-foreground">
-    <AppAlert variant={AppAlertVariant.ERROR} title="Could not connect to Cognite">
-      Refresh the app to try again.
+    <AppAlert variant={AppAlertVariant.ERROR} title={HOST_CONNECTION_ERROR_TITLE}>
+      {HOST_CONNECTION_ERROR_DESCRIPTION}
     </AppAlert>
   </main>
 );

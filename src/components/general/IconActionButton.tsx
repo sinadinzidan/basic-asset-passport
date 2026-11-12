@@ -16,7 +16,6 @@ type IconActionButtonProps = {
   onClick: () => void;
   isDisabled?: boolean;
   variant?: IconActionVariant;
-
   className?: string;
 };
 

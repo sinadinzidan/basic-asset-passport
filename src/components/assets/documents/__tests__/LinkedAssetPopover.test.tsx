@@ -161,12 +161,4 @@ describe(LinkedAssetPopover.name, () => {
     expect(onClose).toHaveBeenCalled();
     outside.remove();
   });
-
-  it('only shows the details where the app cannot open an asset', async () => {
-    renderPopover({ onOpenAsset: null });
-
-    await screen.findByRole('heading', { name: 'Feed Pump 9' });
-
-    expect(screen.queryByRole('button', { name: 'Open asset' })).not.toBeInTheDocument();
-  });
 });

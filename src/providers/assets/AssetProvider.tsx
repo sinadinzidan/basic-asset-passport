@@ -2,6 +2,7 @@ import { useCogniteSdk } from '@cognite/app-sdk/react';
 import { lazy, Suspense, useMemo, type ReactNode } from 'react';
 
 import { LoadingNotice } from '../../components/general/LoadingNotice';
+import { DOCUMENT_PREVIEW_LOADING_MESSAGE } from '../../constants/documents';
 import { DocumentFileContext } from '../../hooks/assets/documents/useDocumentFileContext';
 import {
   DocumentPreviewContext,
@@ -19,7 +20,7 @@ const DocumentPreview = lazy(() =>
 );
 
 const renderDocumentPreview: RenderDocumentPreview = (document) => (
-  <Suspense fallback={<LoadingNotice message="Loading preview..." />}>
+  <Suspense fallback={<LoadingNotice message={DOCUMENT_PREVIEW_LOADING_MESSAGE} />}>
     <DocumentPreview document={document} />
   </Suspense>
 );

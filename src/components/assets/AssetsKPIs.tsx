@@ -1,6 +1,12 @@
 import { IconBuildingFactory2, IconCircleCheck, IconEngine } from '@tabler/icons-react';
 
-import { KPI_COUNTS_ERROR_DESCRIPTION, KPI_COUNTS_ERROR_TITLE } from '../../constants/assets';
+import {
+  KPI_ASSETS_LABEL,
+  KPI_COUNTS_ERROR_DESCRIPTION,
+  KPI_COUNTS_ERROR_TITLE,
+  KPI_EQUIPMENT_LABEL,
+  KPI_OPERATING_LABEL,
+} from '../../constants/assets';
 import { PENDING_COUNT_LABEL } from '../../constants/labels';
 import { useAssetsKPICounts } from '../../hooks/assets/useAssetsKPICounts';
 import { formatCount } from '../../lib/countBadge';
@@ -16,17 +22,17 @@ export function AssetsKPIs() {
     <section aria-label="Register summary" className="grid gap-4">
       <div className="grid gap-4 sm:grid-cols-3">
         <StatTile
-          label="Assets"
+          label={KPI_ASSETS_LABEL}
           value={toCardValue(assets)}
           icon={<IconBuildingFactory2 className="size-6" />}
         />
         <StatTile
-          label="Operating"
+          label={KPI_OPERATING_LABEL}
           value={toCardValue(operating)}
           icon={<IconCircleCheck className="size-6" />}
         />
         <StatTile
-          label="Equipment"
+          label={KPI_EQUIPMENT_LABEL}
           value={toCardValue(equipment)}
           icon={<IconEngine className="size-6" />}
         />

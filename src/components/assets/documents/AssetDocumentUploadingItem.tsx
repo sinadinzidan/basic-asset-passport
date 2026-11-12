@@ -1,5 +1,6 @@
 import { IconFile } from '@tabler/icons-react';
 
+import { DOCUMENT_UPLOADING_LABEL } from '../../../constants/documents';
 import { StatusPill } from '../../general/StatusPill';
 
 type AssetDocumentUploadingItemProps = {
@@ -18,7 +19,7 @@ export function AssetDocumentUploadingItem({ name }: AssetDocumentUploadingItemP
             <h3 className="font-display min-w-0 break-words text-lg font-semibold leading-tight tracking-wide">
               {name}
             </h3>
-            <StatusPill status="Uploading..." />
+            <StatusPill status={DOCUMENT_UPLOADING_LABEL} />
           </div>
         </div>
       </header>

@@ -1,7 +1,11 @@
 import { Skeleton } from '@cognite/aura/components/skeleton';
 import { useId } from 'react';
 
-import { TREND_WINDOW_LABEL } from '../../../constants/timeseries';
+import {
+  TIMESERIES_PREVIEW_LOADING_LABEL,
+  TIMESERIES_PREVIEW_MESSAGES,
+  TREND_WINDOW_LABEL,
+} from '../../../constants/timeseries';
 import { TimeseriesPreviewKind } from '../../../enums/timeseriesPreviewKind';
 import { buildSparkline, formatTrendValue, summarizeTrend } from '../../../lib/timeseriesTrend';
 import type { TimeseriesPreview as Preview } from '../../../types/timeseries';
@@ -9,15 +13,6 @@ import type { TimeseriesPreview as Preview } from '../../../types/timeseries';
 const CHART_SIZE = { width: 320, height: 104, padding: 8 };
 
 const STAT_COUNT = 4;
-
-const PREVIEW_MESSAGE_BY_KIND: Record<
-  Exclude<Preview['kind'], TimeseriesPreviewKind.LOADING | TimeseriesPreviewKind.READY>,
-  string
-> = {
-  [TimeseriesPreviewKind.NON_NUMERIC]: 'Not a numeric series: there is no trend to draw.',
-  [TimeseriesPreviewKind.EMPTY]: `No readings in the last ${TREND_WINDOW_LABEL}.`,
-  [TimeseriesPreviewKind.UNAVAILABLE]: 'The preview could not be loaded.',
-};
 
 type TimeseriesPreviewProps = {
   preview: Preview;
@@ -29,7 +24,11 @@ export function TimeseriesPreview({ preview, unit }: TimeseriesPreviewProps) {
 
   if (preview.kind === TimeseriesPreviewKind.LOADING) {
     return (
-      <div className="timeseries-preview" aria-busy="true" aria-label="Loading preview">
+      <div
+        className="timeseries-preview"
+        aria-busy="true"
+        aria-label={TIMESERIES_PREVIEW_LOADING_LABEL}
+      >
         <Skeleton className="h-[6.5rem] w-full" />
         <div className="timeseries-preview__stats">
           {Array.from({ length: STAT_COUNT }, (_item, index) => (
@@ -43,7 +42,7 @@ export function TimeseriesPreview({ preview, unit }: TimeseriesPreviewProps) {
   if (preview.kind !== TimeseriesPreviewKind.READY) {
     return (
       <p className="timeseries-preview timeseries-preview--message">
-        {PREVIEW_MESSAGE_BY_KIND[preview.kind]}
+        {TIMESERIES_PREVIEW_MESSAGES[preview.kind]}
       </p>
     );
   }

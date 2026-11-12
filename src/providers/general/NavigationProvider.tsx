@@ -12,7 +12,6 @@ import type { NavigationState } from '../../types/navigation';
 
 type NavigationProviderProps = {
   api: StateSyncApi | null;
-
   initialState?: string;
   children: ReactNode;
 };

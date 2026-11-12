@@ -11,7 +11,6 @@ export const UseAgentGreetingContext = createContext<UseAgentGreetingContextType
 
 export type AgentGreeting = {
   isIntroShown: boolean;
-
   dismissIntro: () => void;
 };
 

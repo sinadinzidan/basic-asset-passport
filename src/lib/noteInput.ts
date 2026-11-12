@@ -1,4 +1,8 @@
-import { NOTE_BODY_MAX_LENGTH, NOTE_TITLE_MAX_LENGTH } from '../constants/notes';
+import {
+  NOTE_BODY_MAX_LENGTH,
+  NOTE_INVALID_MESSAGE,
+  NOTE_TITLE_MAX_LENGTH,
+} from '../constants/notes';
 import type { NewAssetNote } from '../types/note';
 
 export function isNewAssetNoteValid(input: NewAssetNote): boolean {
@@ -13,9 +17,7 @@ export function isNewAssetNoteValid(input: NewAssetNote): boolean {
 
 export function normalizeNewAssetNote(input: NewAssetNote): NewAssetNote {
   if (!isNewAssetNoteValid(input)) {
-    throw new Error(
-      `A note needs a title of up to ${NOTE_TITLE_MAX_LENGTH} characters and a text of up to ${NOTE_BODY_MAX_LENGTH}.`,
-    );
+    throw new Error(NOTE_INVALID_MESSAGE);
   }
 
   return { title: input.title.trim(), body: input.body.trim() };

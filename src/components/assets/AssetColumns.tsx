@@ -1,6 +1,7 @@
 import type { ColumnDef } from '@cognite/aura/data-grid';
 
 import {
+  FUNCTIONAL_LOCATION_LABEL,
   NO_DESCRIPTION_LABEL,
   NOT_PROVIDED_LABEL,
   UNNAMED_ASSET_LABEL,
@@ -18,7 +19,7 @@ export const ASSET_COLUMNS: ColumnDef<AssetListItem>[] = [
   },
   {
     accessorKey: 'externalId',
-    header: 'Functional location',
+    header: FUNCTIONAL_LOCATION_LABEL,
     cell: ({ row }) => <span className="font-mono text-xs">{row.original.externalId}</span>,
   },
   {
