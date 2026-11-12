@@ -1,16 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { createContext, useContext } from 'react';
 
-import {
-  ASSET_PASSPORT_MODEL_EXTERNAL_ID,
-  ASSET_PASSPORT_MODEL_SPACE,
-  ASSET_PASSPORT_MODEL_VERSION,
-} from '../../../constants/assets';
-import {
-  DOCUMENT_QUERY_LIMIT,
-  DOCUMENT_QUERY_STALE_TIME_MS,
-  DOCUMENT_VIEW_EXTERNAL_ID,
-} from '../../../constants/documents';
+import { MODEL } from '../../../config/model';
+import { DOCUMENT_QUERY_LIMIT, DOCUMENT_QUERY_STALE_TIME_MS } from '../../../constants/documents';
 import { getDocumentRefetchInterval } from '../../../lib/documentPolling';
 import { isKeyOfList } from '../../../lib/queryKeys';
 import { listAssetDocuments } from '../../../services/assets/documents/assetDocument';
@@ -26,10 +18,10 @@ export function getAssetDocumentsQueryKey(project: string, assetIdentifier: Asse
   return [
     'asset-documents',
     project,
-    ASSET_PASSPORT_MODEL_SPACE,
-    ASSET_PASSPORT_MODEL_EXTERNAL_ID,
-    ASSET_PASSPORT_MODEL_VERSION,
-    DOCUMENT_VIEW_EXTERNAL_ID,
+    MODEL.space,
+    MODEL.externalId,
+    MODEL.version,
+    MODEL.views.document,
     assetIdentifier.space,
     assetIdentifier.externalId,
   ];

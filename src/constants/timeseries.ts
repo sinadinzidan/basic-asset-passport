@@ -1,10 +1,8 @@
+import { MODEL } from '../config/model';
 import type { TimeseriesPreviewKind } from '../enums/timeseriesPreviewKind';
 
 import { MS_PER_DAY } from './time';
 
-export const TIMESERIES_VIEW_EXTERNAL_ID = 'PI_Timeseries';
-
-export const TIMESERIES_ASSETS_PROPERTY = 'assets';
 export const TIMESERIES_QUERY_LIMIT = 200;
 export const TIMESERIES_QUERY_STALE_TIME_MS = 30_000;
 
@@ -18,15 +16,6 @@ export const TREND_QUERY_STALE_TIME_MS = 60_000;
 
 export const TREND_REQUEST_CHUNK_SIZE = 50;
 export const NUMERIC_TIMESERIES_TYPE = 'numeric';
-export const TIMESERIES_TYPE_PROPERTY = 'type';
-
-const TIMESERIES_UNIT_PROPERTY = 'engunits';
-export const OWE_LIMIT_MIN_PROPERTY = 'oweLimitMin';
-export const OWE_LIMIT_MAX_PROPERTY = 'oweLimitMax';
-export const DLE_LIMIT_MIN_PROPERTY = 'dleLimitMin';
-export const DLE_LIMIT_MAX_PROPERTY = 'dleLimitMax';
-export const TRIP_LIMIT_MIN_PROPERTY = 'tripLimitMin';
-export const TRIP_LIMIT_MAX_PROPERTY = 'tripLimitMax';
 
 export const OWE_HIGH_LABEL = 'OWE high';
 export const OWE_LOW_LABEL = 'OWE low';
@@ -38,8 +27,8 @@ export const TRIP_LOW_LABEL = 'Trip low';
 export const TIMESERIES_DISPLAY_PROPERTIES: readonly string[] = [
   'description',
   'tag',
-  TIMESERIES_UNIT_PROPERTY,
-  TIMESERIES_TYPE_PROPERTY,
+  MODEL.properties.timeseries.unit,
+  MODEL.properties.timeseries.type,
   'isStep',
   'plantName',
   'unitName',
@@ -48,14 +37,14 @@ export const TIMESERIES_DISPLAY_PROPERTIES: readonly string[] = [
   'typicalvalue',
   'zero',
   'span',
-  OWE_LIMIT_MIN_PROPERTY,
-  OWE_LIMIT_MAX_PROPERTY,
-  DLE_LIMIT_MIN_PROPERTY,
-  DLE_LIMIT_MAX_PROPERTY,
-  TRIP_LIMIT_MIN_PROPERTY,
-  TRIP_LIMIT_MAX_PROPERTY,
+  MODEL.properties.timeseries.oweLimitMin,
+  MODEL.properties.timeseries.oweLimitMax,
+  MODEL.properties.timeseries.dleLimitMin,
+  MODEL.properties.timeseries.dleLimitMax,
+  MODEL.properties.timeseries.tripLimitMin,
+  MODEL.properties.timeseries.tripLimitMax,
 ];
-export const TIMESERIES_UNIT_PROPERTIES: readonly string[] = [TIMESERIES_UNIT_PROPERTY];
+export const TIMESERIES_UNIT_PROPERTIES: readonly string[] = [MODEL.properties.timeseries.unit];
 
 export const CHART_MAX_POINTS = 1000;
 

@@ -1,6 +1,6 @@
 import { IconTool } from '@tabler/icons-react';
 
-import { NAME_PROPERTY_IDENTIFIER } from '../../constants/assets';
+import { MODEL } from '../../config/model';
 import { getPropertyValue } from '../../lib/assetProperties';
 import type { AssetInstanceDetails } from '../../types/asset';
 
@@ -11,7 +11,7 @@ type EquipmentDetailsProps = {
 };
 
 export function EquipmentDetails({ equipment }: EquipmentDetailsProps) {
-  const equipmentName = getPropertyValue(equipment, NAME_PROPERTY_IDENTIFIER);
+  const equipmentName = getPropertyValue(equipment, MODEL.properties.asset.name);
 
   return (
     <section className="data-card">

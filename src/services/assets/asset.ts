@@ -1,11 +1,11 @@
 import type { ViewDefinition } from '@cognite/sdk';
 
+import { MODEL } from '../../config/model';
 import {
   ASSET_LIST_PROPERTIES,
   ASSET_QUERY_LIMIT,
   ASSET_SEARCH_LIMIT,
   ASSET_SEARCH_PROPERTIES,
-  ASSET_VIEW_EXTERNAL_ID,
 } from '../../constants/assets';
 import { INSTANCE_TYPE_NODE } from '../../constants/cdfApi';
 import { getRequestLimit, toLimitedList } from '../../lib/limitedList';
@@ -22,7 +22,7 @@ import {
 } from './viewHelpers';
 
 export async function listAssets(client: AssetContextType, cursor?: string): Promise<AssetPage> {
-  const assetView = await findAssetPassportView(client, ASSET_VIEW_EXTERNAL_ID);
+  const assetView = await findAssetPassportView(client, MODEL.views.asset);
   const viewReference = toViewReference(assetView);
   const response = await client.instances.query({
     ...(cursor ? { cursors: { assets: cursor } } : {}),
@@ -52,7 +52,7 @@ export async function searchAssets(
   client: AssetContextType,
   searchText: string,
 ): Promise<AssetPage> {
-  const assetView = await findAssetPassportView(client, ASSET_VIEW_EXTERNAL_ID);
+  const assetView = await findAssetPassportView(client, MODEL.views.asset);
   const response = await client.instances.search({
     view: toViewReference(assetView),
     query: searchText,

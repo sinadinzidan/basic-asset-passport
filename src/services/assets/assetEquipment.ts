@@ -1,4 +1,5 @@
-import { ASSET_EQUIPMENT_QUERY_LIMIT, EQUIPMENT_VIEW_EXTERNAL_ID } from '../../constants/assets';
+import { MODEL } from '../../config/model';
+import { ASSET_EQUIPMENT_QUERY_LIMIT } from '../../constants/assets';
 import { getRequestLimit, toLimitedList } from '../../lib/limitedList';
 import type { AssetIdentifier, AssetInstanceDetails } from '../../types/asset';
 import type { AssetContextType } from '../../types/assetContext';
@@ -14,7 +15,7 @@ export async function listAssetEquipment(
   assetIdentifier: AssetIdentifier,
   limit: number = ASSET_EQUIPMENT_QUERY_LIMIT,
 ): Promise<LimitedList<AssetInstanceDetails>> {
-  const equipmentView = await findAssetPassportView(client, EQUIPMENT_VIEW_EXTERNAL_ID);
+  const equipmentView = await findAssetPassportView(client, MODEL.views.equipment);
   const viewReference = toViewReference(equipmentView);
   const mappedProperties = getMappedProperties(equipmentView);
   const response = await client.instances.query({

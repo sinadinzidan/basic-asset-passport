@@ -1,18 +1,11 @@
 import type { FilterDefinition } from '@cognite/sdk';
 
-import {
-  ASSET_RELATION_PROPERTY_IDENTIFIER,
-  DESCENDING_SORT_DIRECTION,
-  INSTANCE_TYPE_NODE,
-} from '../../../constants/cdfApi';
+import { MODEL } from '../../../config/model';
+import { DESCENDING_SORT_DIRECTION, INSTANCE_TYPE_NODE } from '../../../constants/cdfApi';
 import {
   DEFAULT_DOCUMENT_MIME_TYPE,
   DOCUMENT_EXTERNAL_ID_PREFIX,
-  DOCUMENT_INSTANCE_SPACE,
   DOCUMENT_QUERY_LIMIT,
-  DOCUMENT_VIEW_EXTERNAL_ID,
-  FILES_ASSETS_PROPERTY,
-  FILES_VIEW,
 } from '../../../constants/documents';
 import { DocumentOrigin } from '../../../enums/documentOrigin';
 import { getDocumentFileProblem } from '../../../lib/documentInput';
@@ -35,8 +28,8 @@ import {
   type ViewIdentity,
 } from '../viewHelpers';
 
-const UPLOADED_TIME_PROPERTY = 'uploadedTime';
-const DOCUMENT_PROPERTIES = ['name', 'mimeType', 'isUploaded', UPLOADED_TIME_PROPERTY];
+const UPLOADED_TIME_PROPERTY = MODEL.properties.document.uploadedTime;
+const DOCUMENT_PROPERTIES = Object.values(MODEL.properties.document);
 const DOCUMENTS_RESULT_SET = 'documents';
 const FILES_RESULT_SET = 'files';
 
@@ -63,7 +56,7 @@ export async function listAssetDocuments(
 ): Promise<LimitedList<AssetDocument>> {
   const { now } = { ...defaultDeps, ...overrides };
   const currentTime = now();
-  const documentView = await findAssetPassportView(client, DOCUMENT_VIEW_EXTERNAL_ID);
+  const documentView = await findAssetPassportView(client, MODEL.views.document);
 
   return listDocumentNodes(
     client,
@@ -91,8 +84,12 @@ export function listAssetLinkedFiles(
     client,
     {
       resultSetName: FILES_RESULT_SET,
-      view: FILES_VIEW,
-      assetFilter: matchAssetInList(FILES_VIEW, FILES_ASSETS_PROPERTY, assetIdentifier),
+      view: MODEL.filesView,
+      assetFilter: matchAssetInList(
+        MODEL.filesView,
+        MODEL.properties.files.assets,
+        assetIdentifier,
+      ),
       origin: DocumentOrigin.RMDM,
       nullsFirst: false,
     },
@@ -149,8 +146,8 @@ function toAssetDocument(
   return {
     space: node.space,
     externalId: node.externalId,
-    name: getStringProperty(properties, 'name') ?? node.externalId,
-    mimeType: getStringProperty(properties, 'mimeType'),
+    name: getStringProperty(properties, MODEL.properties.document.name) ?? node.externalId,
+    mimeType: getStringProperty(properties, MODEL.properties.document.mimeType),
     isUploaded,
     uploadStatus: getDocumentUploadStatus(
       { isUploaded, createdTime: node.createdTime },
@@ -173,9 +170,9 @@ export async function uploadAssetDocument(
   const problem = getDocumentFileProblem(file);
   if (problem) throw new Error(problem);
 
-  const documentView = await findAssetPassportView(client, DOCUMENT_VIEW_EXTERNAL_ID);
+  const documentView = await findAssetPassportView(client, MODEL.views.document);
   const document: DocumentIdentifier = {
-    space: DOCUMENT_INSTANCE_SPACE,
+    space: MODEL.instanceSpace,
     externalId: `${DOCUMENT_EXTERNAL_ID_PREFIX}${generateId()}`,
   };
 
@@ -191,7 +188,7 @@ export async function uploadAssetDocument(
             properties: {
               name: file.name,
               mimeType: file.type || DEFAULT_DOCUMENT_MIME_TYPE,
-              [ASSET_RELATION_PROPERTY_IDENTIFIER]: {
+              [MODEL.properties.assetRelation]: {
                 space: assetIdentifier.space,
                 externalId: assetIdentifier.externalId,
               },

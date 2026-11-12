@@ -1,16 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { createContext, useContext } from 'react';
 
-import {
-  ASSET_PASSPORT_MODEL_EXTERNAL_ID,
-  ASSET_PASSPORT_MODEL_SPACE,
-  ASSET_PASSPORT_MODEL_VERSION,
-} from '../../../constants/assets';
-import {
-  NOTE_QUERY_LIMIT,
-  NOTE_QUERY_STALE_TIME_MS,
-  NOTE_VIEW_EXTERNAL_ID,
-} from '../../../constants/notes';
+import { MODEL } from '../../../config/model';
+import { NOTE_QUERY_LIMIT, NOTE_QUERY_STALE_TIME_MS } from '../../../constants/notes';
 import { isKeyOfList } from '../../../lib/queryKeys';
 import { listAssetNotes } from '../../../services/assets/notes/assetNote';
 import type { AssetIdentifier } from '../../../types/asset';
@@ -25,10 +17,10 @@ export function getAssetNotesQueryKey(project: string, assetIdentifier: AssetIde
   return [
     'asset-notes',
     project,
-    ASSET_PASSPORT_MODEL_SPACE,
-    ASSET_PASSPORT_MODEL_EXTERNAL_ID,
-    ASSET_PASSPORT_MODEL_VERSION,
-    NOTE_VIEW_EXTERNAL_ID,
+    MODEL.space,
+    MODEL.externalId,
+    MODEL.version,
+    MODEL.views.note,
     assetIdentifier.space,
     assetIdentifier.externalId,
   ];

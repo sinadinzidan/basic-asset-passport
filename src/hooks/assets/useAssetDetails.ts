@@ -1,13 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { createContext, useContext } from 'react';
 
-import {
-  ASSET_QUERY_STALE_TIME_MS,
-  ASSET_VIEW_EXTERNAL_ID,
-  ASSET_PASSPORT_MODEL_EXTERNAL_ID,
-  ASSET_PASSPORT_MODEL_SPACE,
-  ASSET_PASSPORT_MODEL_VERSION,
-} from '../../constants/assets';
+import { MODEL } from '../../config/model';
+import { ASSET_QUERY_STALE_TIME_MS } from '../../constants/assets';
 import { getAssetDetails } from '../../services/assets/assetDetails';
 import type { AssetIdentifier } from '../../types/asset';
 
@@ -26,10 +21,10 @@ export function useAssetDetails(assetIdentifier: AssetIdentifier) {
     queryKey: [
       'asset-details',
       client.project,
-      ASSET_PASSPORT_MODEL_EXTERNAL_ID,
-      ASSET_PASSPORT_MODEL_SPACE,
-      ASSET_PASSPORT_MODEL_VERSION,
-      ASSET_VIEW_EXTERNAL_ID,
+      MODEL.externalId,
+      MODEL.space,
+      MODEL.version,
+      MODEL.views.asset,
       assetIdentifier.space,
       assetIdentifier.externalId,
     ],

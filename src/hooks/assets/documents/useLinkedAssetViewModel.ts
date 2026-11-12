@@ -1,17 +1,14 @@
-import {
-  CRITICALITY_PROPERTY_IDENTIFIER,
-  DESCRIPTION_PROPERTY_IDENTIFIER,
-  NAME_PROPERTY_IDENTIFIER,
-  PLANT_PROPERTY_IDENTIFIER,
-  STATUS_PROPERTY_IDENTIFIER,
-} from '../../../constants/assets';
+import { MODEL } from '../../../config/model';
 import { NODE_EXTERNAL_ID_PROPERTY } from '../../../constants/cdfApi';
 import { FUNCTIONAL_LOCATION_LABEL } from '../../../constants/labels';
 import { getPropertyValue } from '../../../lib/assetProperties';
 import type { AssetIdentifier, AssetPropertyDisplay } from '../../../types/asset';
 import { useAssetDetails } from '../useAssetDetails';
 
-const SHOWN_PROPERTY_IDENTIFIERS = [PLANT_PROPERTY_IDENTIFIER, DESCRIPTION_PROPERTY_IDENTIFIER];
+const SHOWN_PROPERTY_IDENTIFIERS = [
+  MODEL.properties.asset.plantName,
+  MODEL.properties.asset.description,
+];
 
 export function useLinkedAssetViewModel(asset: AssetIdentifier) {
   const { data, error, isError, isFetching, isPending, refetch } = useAssetDetails(asset);
@@ -33,9 +30,9 @@ export function useLinkedAssetViewModel(asset: AssetIdentifier) {
   }
 
   return {
-    title: getPropertyValue(data, NAME_PROPERTY_IDENTIFIER) ?? asset.externalId,
-    status: getPropertyValue(data, STATUS_PROPERTY_IDENTIFIER),
-    criticality: getPropertyValue(data, CRITICALITY_PROPERTY_IDENTIFIER),
+    title: getPropertyValue(data, MODEL.properties.asset.name) ?? asset.externalId,
+    status: getPropertyValue(data, MODEL.properties.asset.status),
+    criticality: getPropertyValue(data, MODEL.properties.asset.criticality),
     details,
     error,
     isError,

@@ -1,6 +1,6 @@
 import type { PropertySortV3, ViewDefinition } from '@cognite/sdk';
 
-import { NAME_PROPERTY_IDENTIFIER } from '../../constants/assets';
+import { MODEL } from '../../config/model';
 import {
   DESCENDING_SORT_DIRECTION,
   INSTANCE_TYPE_NODE,
@@ -38,8 +38,8 @@ export function sortByViewProperty(
 
 export function sortByName(view: ViewDefinition): PropertySortV3[] {
   return [
-    ...(NAME_PROPERTY_IDENTIFIER in view.properties
-      ? [sortByViewProperty(view, NAME_PROPERTY_IDENTIFIER)]
+    ...(MODEL.properties.asset.name in view.properties
+      ? [sortByViewProperty(view, MODEL.properties.asset.name)]
       : []),
     SORT_BY_EXTERNAL_ID,
   ];

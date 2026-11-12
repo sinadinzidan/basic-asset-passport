@@ -14,8 +14,6 @@ export const JSON_PROPERTY_TYPE = 'json';
 export const TEXT_PROPERTY_TYPE = 'text';
 export const ASSET_RESOURCE_TYPE = 'asset';
 
-export const ASSET_RELATION_PROPERTY_IDENTIFIER = 'asset';
-
 export const USER_MESSAGE_ROLE = 'user';
 
 export const TEXT_MESSAGE_CONTENT_TYPE = 'text';

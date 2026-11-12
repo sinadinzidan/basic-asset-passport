@@ -1,7 +1,8 @@
 import type { PropertySortV3, QueryRequest } from '@cognite/sdk';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { ASSET_QUERY_LIMIT, ASSET_VIEW_EXTERNAL_ID } from '../../constants/assets';
+import { MODEL } from '../../config/model';
+import { ASSET_QUERY_LIMIT } from '../../constants/assets';
 import { DocumentOrigin } from '../../enums/documentOrigin';
 import { isOperatingStatus } from '../../lib/assetStatus';
 import { listAssets, searchAssets } from '../../services/assets/asset';
@@ -215,7 +216,7 @@ describe('mock client requests', () => {
 
   it('returns only the selected properties', async () => {
     const view = (await listAssetPassportViews(client)).find(
-      ({ externalId }) => externalId === ASSET_VIEW_EXTERNAL_ID,
+      ({ externalId }) => externalId === MODEL.views.asset,
     );
     if (!view) throw new Error('The mock Asset view is missing.');
     const request: QueryRequest = {

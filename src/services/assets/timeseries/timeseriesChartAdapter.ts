@@ -1,6 +1,6 @@
 import type { ChartDataAdapter, TimeSeriesData, TimeSeriesDefinition } from '@flows/trend-chart';
 
-import { DESCRIPTION_PROPERTY_IDENTIFIER } from '../../../constants/assets';
+import { MODEL } from '../../../config/model';
 import {
   CHART_MAX_POINTS,
   CHART_NUMERIC_DATA_TYPE,
@@ -40,7 +40,7 @@ export function createTimeseriesChartAdapter(
     id: getTimeseriesKey(timeseries),
     name: getTimeseriesName(timeseries),
     tag: timeseries.externalId,
-    description: getPropertyValue(timeseries, DESCRIPTION_PROPERTY_IDENTIFIER) ?? '',
+    description: getPropertyValue(timeseries, MODEL.properties.asset.description) ?? '',
     unit: getTimeseriesUnit(timeseries) ?? undefined,
     dataType: CHART_NUMERIC_DATA_TYPE,
     sourceName,

@@ -1,14 +1,4 @@
-import { EQUIPMENT_VIEW_EXTERNAL_ID } from '../../constants/assets';
-import {
-  DOCUMENT_VIEW_EXTERNAL_ID,
-  FILES_ASSETS_PROPERTY,
-  FILES_VIEW,
-} from '../../constants/documents';
-import { NOTE_VIEW_EXTERNAL_ID } from '../../constants/notes';
-import {
-  TIMESERIES_ASSETS_PROPERTY,
-  TIMESERIES_VIEW_EXTERNAL_ID,
-} from '../../constants/timeseries';
+import { MODEL } from '../../config/model';
 import type { AssetIdentifier } from '../../types/asset';
 import type { AssetContextType } from '../../types/assetContext';
 
@@ -20,33 +10,33 @@ export function countAssetNotes(
   client: AssetContextType,
   assetIdentifier: AssetIdentifier,
 ): Promise<number> {
-  return countNodesOfAsset(client, NOTE_VIEW_EXTERNAL_ID, assetIdentifier);
+  return countNodesOfAsset(client, MODEL.views.note, assetIdentifier);
 }
 
 export function countAssetEquipment(
   client: AssetContextType,
   assetIdentifier: AssetIdentifier,
 ): Promise<number> {
-  return countNodesOfAsset(client, EQUIPMENT_VIEW_EXTERNAL_ID, assetIdentifier);
+  return countNodesOfAsset(client, MODEL.views.equipment, assetIdentifier);
 }
 
 export function countAssetDocuments(
   client: AssetContextType,
   assetIdentifier: AssetIdentifier,
 ): Promise<number> {
-  return countNodesOfAsset(client, DOCUMENT_VIEW_EXTERNAL_ID, assetIdentifier);
+  return countNodesOfAsset(client, MODEL.views.document, assetIdentifier);
 }
 
 export async function countAssetTimeseries(
   client: AssetContextType,
   assetIdentifier: AssetIdentifier,
 ): Promise<number> {
-  const timeseriesView = await findAssetPassportView(client, TIMESERIES_VIEW_EXTERNAL_ID);
+  const timeseriesView = await findAssetPassportView(client, MODEL.views.timeseries);
 
   return countNodes(
     client,
     timeseriesView,
-    matchAssetInList(timeseriesView, TIMESERIES_ASSETS_PROPERTY, assetIdentifier),
+    matchAssetInList(timeseriesView, MODEL.properties.timeseries.assets, assetIdentifier),
   );
 }
 
@@ -56,8 +46,8 @@ export function countAssetLinkedFiles(
 ): Promise<number> {
   return countNodes(
     client,
-    FILES_VIEW,
-    matchAssetInList(FILES_VIEW, FILES_ASSETS_PROPERTY, assetIdentifier),
+    MODEL.filesView,
+    matchAssetInList(MODEL.filesView, MODEL.properties.files.assets, assetIdentifier),
   );
 }
 

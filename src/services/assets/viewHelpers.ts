@@ -1,10 +1,6 @@
 import type { DataModelProperty, NodeOrEdge, ViewDefinition, ViewReference } from '@cognite/sdk';
 
-import {
-  ASSET_PASSPORT_MODEL_EXTERNAL_ID,
-  ASSET_PASSPORT_MODEL_SPACE,
-  ASSET_PASSPORT_MODEL_VERSION,
-} from '../../constants/assets';
+import { MODEL } from '../../config/model';
 import { INSTANCE_TYPE_NODE, VIEW_SOURCE_TYPE } from '../../constants/cdfApi';
 import type { AssetContextType } from '../../types/assetContext';
 
@@ -30,9 +26,9 @@ async function retrieveAssetPassportViews(client: AssetContextType): Promise<Vie
   const { items } = await client.dataModels.retrieve(
     [
       {
-        space: ASSET_PASSPORT_MODEL_SPACE,
-        externalId: ASSET_PASSPORT_MODEL_EXTERNAL_ID,
-        version: ASSET_PASSPORT_MODEL_VERSION,
+        space: MODEL.space,
+        externalId: MODEL.externalId,
+        version: MODEL.version,
       },
     ],
     { inlineViews: true },
@@ -40,9 +36,7 @@ async function retrieveAssetPassportViews(client: AssetContextType): Promise<Vie
   const [model] = items;
 
   if (!model) {
-    throw new Error(
-      `The ${ASSET_PASSPORT_MODEL_EXTERNAL_ID} data model was not found in ${ASSET_PASSPORT_MODEL_SPACE}.`,
-    );
+    throw new Error(`The ${MODEL.externalId} data model was not found in ${MODEL.space}.`);
   }
 
   return (model.views ?? []).filter(isViewDefinition);
@@ -57,7 +51,7 @@ export async function findAssetPassportView(
 
   if (!foundView) {
     throw new Error(
-      `The ${viewExternalId} view was not found in the ${ASSET_PASSPORT_MODEL_EXTERNAL_ID} data model.`,
+      `The ${viewExternalId} view was not found in the ${MODEL.externalId} data model.`,
     );
   }
 

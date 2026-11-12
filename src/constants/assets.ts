@@ -1,10 +1,5 @@
-export const ASSET_PASSPORT_MODEL_SPACE = 'sp-asset-passport';
-export const ASSET_PASSPORT_MODEL_EXTERNAL_ID = 'Asset_Passport';
-export const ASSET_PASSPORT_MODEL_VERSION = '1';
+import { MODEL } from '../config/model';
 
-export const ASSET_PASSPORT_INSTANCE_SPACE = 'sp-asset-passport-data';
-export const ASSET_VIEW_EXTERNAL_ID = 'Asset';
-export const EQUIPMENT_VIEW_EXTERNAL_ID = 'Equipment';
 export const ASSET_QUERY_LIMIT = 10;
 
 export const ASSET_SEARCH_LIMIT = 100;
@@ -40,26 +35,20 @@ export const EQUIPMENT_EMPTY_DESCRIPTION = 'There are no Equipment instances lin
 export const ASSET_EQUIPMENT_QUERY_LIMIT = 1000;
 export const OPERATING_ASSET_STATUS = 'operating';
 
-export const NAME_PROPERTY_IDENTIFIER = 'name';
-
 export const ASSETS_BREADCRUMB_LABEL = 'Assets';
-export const DESCRIPTION_PROPERTY_IDENTIFIER = 'description';
-export const PLANT_PROPERTY_IDENTIFIER = 'plantName';
-export const STATUS_PROPERTY_IDENTIFIER = 'flocStatus';
-export const CRITICALITY_PROPERTY_IDENTIFIER = 'abcIndicatorName';
 
 export const ASSET_LIST_PROPERTIES: readonly string[] = [
-  NAME_PROPERTY_IDENTIFIER,
-  DESCRIPTION_PROPERTY_IDENTIFIER,
-  PLANT_PROPERTY_IDENTIFIER,
-  STATUS_PROPERTY_IDENTIFIER,
-  CRITICALITY_PROPERTY_IDENTIFIER,
+  MODEL.properties.asset.name,
+  MODEL.properties.asset.description,
+  MODEL.properties.asset.plantName,
+  MODEL.properties.asset.status,
+  MODEL.properties.asset.criticality,
 ];
 
 export const ASSET_SEARCH_PROPERTIES: readonly string[] = [
-  NAME_PROPERTY_IDENTIFIER,
-  DESCRIPTION_PROPERTY_IDENTIFIER,
-  PLANT_PROPERTY_IDENTIFIER,
+  MODEL.properties.asset.name,
+  MODEL.properties.asset.description,
+  MODEL.properties.asset.plantName,
 ];
 
 export const INTERNAL_DETAIL_PROPERTY_IDENTIFIERS: ReadonlySet<string> = new Set([

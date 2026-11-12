@@ -3,11 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { makeNodeInstance, makeViewDefinition } from '../../../__mocks__/cdf';
 import { makeOfflineSdkClient, stubModelViews } from '../../../__mocks__/cogniteClient';
-import {
-  ASSET_PASSPORT_MODEL_EXTERNAL_ID,
-  ASSET_PASSPORT_MODEL_SPACE,
-  ASSET_PASSPORT_MODEL_VERSION,
-} from '../../../constants/assets';
+import { MODEL } from '../../../config/model';
 import {
   findAssetPassportView,
   getNodeViewProperties,
@@ -33,9 +29,9 @@ describe(listAssetPassportViews.name, () => {
     expect(retrieve).toHaveBeenCalledWith(
       [
         {
-          space: ASSET_PASSPORT_MODEL_SPACE,
-          externalId: ASSET_PASSPORT_MODEL_EXTERNAL_ID,
-          version: ASSET_PASSPORT_MODEL_VERSION,
+          space: MODEL.space,
+          externalId: MODEL.externalId,
+          version: MODEL.version,
         },
       ],
       { inlineViews: true },
@@ -61,7 +57,7 @@ describe(listAssetPassportViews.name, () => {
     vi.spyOn(client.dataModels, 'retrieve').mockResolvedValue({ items: [] });
 
     await expect(listAssetPassportViews(client)).rejects.toThrow(
-      `The ${ASSET_PASSPORT_MODEL_EXTERNAL_ID} data model was not found in ${ASSET_PASSPORT_MODEL_SPACE}.`,
+      `The ${MODEL.externalId} data model was not found in ${MODEL.space}.`,
     );
   });
 
@@ -122,7 +118,7 @@ describe(findAssetPassportView.name, () => {
     stubModelViews(client, [makeViewDefinition('Asset')]);
 
     await expect(findAssetPassportView(client, 'Note')).rejects.toThrow(
-      `The Note view was not found in the ${ASSET_PASSPORT_MODEL_EXTERNAL_ID} data model.`,
+      `The Note view was not found in the ${MODEL.externalId} data model.`,
     );
   });
 });

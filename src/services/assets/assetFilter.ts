@@ -1,6 +1,6 @@
 import type { FilterDefinition } from '@cognite/sdk';
 
-import { ASSET_RELATION_PROPERTY_IDENTIFIER } from '../../constants/cdfApi';
+import { MODEL } from '../../config/model';
 import type { AssetIdentifier } from '../../types/asset';
 
 import { toViewPropertyPath, type ViewIdentity } from './viewHelpers';
@@ -11,7 +11,7 @@ export function matchAssetRelation(
 ): FilterDefinition {
   return {
     equals: {
-      property: toViewPropertyPath(view, ASSET_RELATION_PROPERTY_IDENTIFIER),
+      property: toViewPropertyPath(view, MODEL.properties.assetRelation),
       value: toAssetReference(assetIdentifier),
     },
   };

@@ -1,7 +1,3 @@
-import { ASSET_PASSPORT_INSTANCE_SPACE } from './assets';
-
-export const NOTE_VIEW_EXTERNAL_ID = 'Note';
-export const NOTE_INSTANCE_SPACE = ASSET_PASSPORT_INSTANCE_SPACE;
 export const NOTE_EXTERNAL_ID_PREFIX = 'note-';
 
 export const NOTE_QUERY_LIMIT = 100;

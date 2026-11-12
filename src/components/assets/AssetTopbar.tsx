@@ -12,7 +12,8 @@ import {
   TopbarRight,
 } from '@cognite/aura/components/topbar';
 
-import { ASSETS_BREADCRUMB_LABEL, NAME_PROPERTY_IDENTIFIER } from '../../constants/assets';
+import { MODEL } from '../../config/model';
+import { ASSETS_BREADCRUMB_LABEL } from '../../constants/assets';
 import { APP_LOGO_ALT_TEXT, APP_LOGO_SOURCE, APP_NAME } from '../../constants/branding';
 import { useAssetDetails } from '../../hooks/assets/useAssetDetails';
 import { useNavigationState } from '../../hooks/general/useNavigationState';
@@ -30,7 +31,7 @@ function SelectedAssetBreadcrumb({ selectedAsset }: SelectedAssetBreadcrumbProps
   const clearSelectedAsset = useNavigationState((store) => store.actions.clearSelectedAsset);
   const { data } = useAssetDetails(selectedAsset);
 
-  const assetName = getPropertyValue(data, NAME_PROPERTY_IDENTIFIER) ?? selectedAsset.externalId;
+  const assetName = getPropertyValue(data, MODEL.properties.asset.name) ?? selectedAsset.externalId;
 
   return (
     <BreadcrumbList className="min-w-0 flex-nowrap">

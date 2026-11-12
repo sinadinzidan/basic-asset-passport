@@ -10,7 +10,7 @@ import { makeMockClient } from '../../../__mocks__/cogniteClient';
 import { makeLimitedList } from '../../../__mocks__/lists';
 import { makeNavigationStore } from '../../../__mocks__/navigation';
 import { makeQueryClientWrapper } from '../../../__mocks__/QueryClientWrapper';
-import { STATUS_PROPERTY_IDENTIFIER } from '../../../constants/assets';
+import { MODEL } from '../../../config/model';
 import { AssetTab } from '../../../enums/assetTab';
 import { UseAssetEquipmentContext } from '../../../hooks/assets/equipment/useAssetEquipment';
 import { AssetContext } from '../../../hooks/assets/useAssetContext';
@@ -117,7 +117,7 @@ describe(AssetDetails.name, () => {
     vi.mocked(mockContext.getAssetDetails).mockResolvedValue(
       makeInstanceDetails({
         properties: details.properties.map((property) =>
-          property.identifier === STATUS_PROPERTY_IDENTIFIER
+          property.identifier === MODEL.properties.asset.status
             ? { ...property, value: 'IN SERVICE' }
             : property,
         ),

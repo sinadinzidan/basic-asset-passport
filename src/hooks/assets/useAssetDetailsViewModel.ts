@@ -1,8 +1,4 @@
-import {
-  CRITICALITY_PROPERTY_IDENTIFIER,
-  NAME_PROPERTY_IDENTIFIER,
-  STATUS_PROPERTY_IDENTIFIER,
-} from '../../constants/assets';
+import { MODEL } from '../../config/model';
 import { getPropertyValue } from '../../lib/assetProperties';
 import type { AssetIdentifier } from '../../types/asset';
 
@@ -26,9 +22,9 @@ export function useAssetDetailsViewModel(assetIdentifier: AssetIdentifier) {
 
   return {
     asset,
-    title: getPropertyValue(asset, NAME_PROPERTY_IDENTIFIER) ?? assetIdentifier.externalId,
-    status: getPropertyValue(asset, STATUS_PROPERTY_IDENTIFIER),
-    criticality: getPropertyValue(asset, CRITICALITY_PROPERTY_IDENTIFIER),
+    title: getPropertyValue(asset, MODEL.properties.asset.name) ?? assetIdentifier.externalId,
+    status: getPropertyValue(asset, MODEL.properties.asset.status),
+    criticality: getPropertyValue(asset, MODEL.properties.asset.criticality),
     tabCounts,
     error,
     isError,

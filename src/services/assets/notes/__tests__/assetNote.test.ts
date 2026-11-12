@@ -3,7 +3,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { makeNodeInstance, makeQueryResponse, makeViewDefinition } from '../../../../__mocks__/cdf';
 import { makeOfflineSdkClient, stubModelViews } from '../../../../__mocks__/cogniteClient';
-import { NOTE_INSTANCE_SPACE, NOTE_QUERY_LIMIT } from '../../../../constants/notes';
+import { MODEL } from '../../../../config/model';
+import { NOTE_QUERY_LIMIT } from '../../../../constants/notes';
 import { TestPropertyType } from '../../../../enums/testPropertyType';
 import { SORT_BY_EXTERNAL_ID, SORT_BY_NEWEST } from '../../querySort';
 import { createAssetNote, deleteAssetNote, listAssetNotes, updateAssetNote } from '../assetNote';
@@ -106,7 +107,7 @@ describe(listAssetNotes.name, () => {
     expect(notes.hasMore).toBe(false);
     expect(notes.items).toEqual([
       {
-        space: NOTE_INSTANCE_SPACE,
+        space: MODEL.instanceSpace,
         externalId: 'note-new',
         title: 'New',
         body: 'Text',
@@ -114,7 +115,7 @@ describe(listAssetNotes.name, () => {
         createdTime: 2_000,
       },
       {
-        space: NOTE_INSTANCE_SPACE,
+        space: MODEL.instanceSpace,
         externalId: 'note-old',
         title: 'Old',
         body: null,
@@ -181,7 +182,7 @@ describe(createAssetNote.name, () => {
       items: [
         {
           instanceType: 'node',
-          space: NOTE_INSTANCE_SPACE,
+          space: MODEL.instanceSpace,
           externalId: 'note-abc-123',
           sources: [
             {
@@ -253,14 +254,14 @@ describe(createAssetNote.name, () => {
 
 function makeNote(externalId: string, createdTime: number, properties: Record<string, string>) {
   return {
-    ...makeNodeInstance(noteView, { space: NOTE_INSTANCE_SPACE, externalId }, properties),
+    ...makeNodeInstance(noteView, { space: MODEL.instanceSpace, externalId }, properties),
     createdTime,
   };
 }
 
 describe(updateAssetNote.name, () => {
   let client: CogniteClient;
-  const note = { space: NOTE_INSTANCE_SPACE, externalId: 'note-1' };
+  const note = { space: MODEL.instanceSpace, externalId: 'note-1' };
 
   beforeEach(() => {
     client = makeOfflineSdkClient();
@@ -282,7 +283,7 @@ describe(updateAssetNote.name, () => {
       items: [
         {
           instanceType: 'node',
-          space: NOTE_INSTANCE_SPACE,
+          space: MODEL.instanceSpace,
           externalId: 'note-1',
           sources: [
             {
@@ -348,12 +349,12 @@ describe(deleteAssetNote.name, () => {
     });
 
     await deleteAssetNote(client, {
-      space: NOTE_INSTANCE_SPACE,
+      space: MODEL.instanceSpace,
       externalId: 'note-1',
     });
 
     expect(remove).toHaveBeenCalledWith([
-      { instanceType: 'node', space: NOTE_INSTANCE_SPACE, externalId: 'note-1' },
+      { instanceType: 'node', space: MODEL.instanceSpace, externalId: 'note-1' },
     ]);
   });
 

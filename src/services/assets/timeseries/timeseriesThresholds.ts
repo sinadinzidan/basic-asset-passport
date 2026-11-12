@@ -5,18 +5,13 @@ import {
   type ChartThreshold,
 } from '@flows/trend-chart';
 
+import { MODEL } from '../../../config/model';
 import {
   DLE_HIGH_LABEL,
-  DLE_LIMIT_MAX_PROPERTY,
-  DLE_LIMIT_MIN_PROPERTY,
   DLE_LOW_LABEL,
   OWE_HIGH_LABEL,
-  OWE_LIMIT_MAX_PROPERTY,
-  OWE_LIMIT_MIN_PROPERTY,
   OWE_LOW_LABEL,
   TRIP_HIGH_LABEL,
-  TRIP_LIMIT_MAX_PROPERTY,
-  TRIP_LIMIT_MIN_PROPERTY,
   TRIP_LOW_LABEL,
 } from '../../../constants/timeseries';
 import { getPropertyValue } from '../../../lib/assetProperties';
@@ -32,37 +27,37 @@ type LimitProperty = {
 
 const LIMIT_PROPERTIES: readonly LimitProperty[] = [
   {
-    identifier: OWE_LIMIT_MAX_PROPERTY,
+    identifier: MODEL.properties.timeseries.oweLimitMax,
     label: OWE_HIGH_LABEL,
     level: ThresholdLevel.ALERT,
     side: ThresholdSide.UPPER,
   },
   {
-    identifier: OWE_LIMIT_MIN_PROPERTY,
+    identifier: MODEL.properties.timeseries.oweLimitMin,
     label: OWE_LOW_LABEL,
     level: ThresholdLevel.ALERT,
     side: ThresholdSide.LOWER,
   },
   {
-    identifier: DLE_LIMIT_MAX_PROPERTY,
+    identifier: MODEL.properties.timeseries.dleLimitMax,
     label: DLE_HIGH_LABEL,
     level: ThresholdLevel.ALERT,
     side: ThresholdSide.UPPER,
   },
   {
-    identifier: DLE_LIMIT_MIN_PROPERTY,
+    identifier: MODEL.properties.timeseries.dleLimitMin,
     label: DLE_LOW_LABEL,
     level: ThresholdLevel.ALERT,
     side: ThresholdSide.LOWER,
   },
   {
-    identifier: TRIP_LIMIT_MAX_PROPERTY,
+    identifier: MODEL.properties.timeseries.tripLimitMax,
     label: TRIP_HIGH_LABEL,
     level: ThresholdLevel.DANGER,
     side: ThresholdSide.UPPER,
   },
   {
-    identifier: TRIP_LIMIT_MIN_PROPERTY,
+    identifier: MODEL.properties.timeseries.tripLimitMin,
     label: TRIP_LOW_LABEL,
     level: ThresholdLevel.DANGER,
     side: ThresholdSide.LOWER,

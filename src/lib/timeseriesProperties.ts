@@ -1,8 +1,7 @@
-import { NAME_PROPERTY_IDENTIFIER } from '../constants/assets';
+import { MODEL } from '../config/model';
 import {
   NUMERIC_TIMESERIES_TYPE,
   TIMESERIES_DISPLAY_PROPERTIES,
-  TIMESERIES_TYPE_PROPERTY,
   TIMESERIES_UNIT_PROPERTIES,
 } from '../constants/timeseries';
 import type { AssetInstanceDetails, AssetPropertyDisplay } from '../types/asset';
@@ -16,11 +15,11 @@ export function getTimeseriesKey(timeseries: TimeseriesIdentifier): string {
 }
 
 export function getTimeseriesName(timeseries: AssetInstanceDetails): string {
-  return getPropertyValue(timeseries, NAME_PROPERTY_IDENTIFIER) ?? timeseries.externalId;
+  return getPropertyValue(timeseries, MODEL.properties.asset.name) ?? timeseries.externalId;
 }
 
 export function isNonNumericTimeseries(timeseries: AssetInstanceDetails): boolean {
-  const type = getPropertyValue(timeseries, TIMESERIES_TYPE_PROPERTY);
+  const type = getPropertyValue(timeseries, MODEL.properties.timeseries.type);
 
   return type !== undefined && type.toLowerCase() !== NUMERIC_TIMESERIES_TYPE;
 }

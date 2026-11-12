@@ -1,4 +1,4 @@
-import { ASSET_VIEW_EXTERNAL_ID } from '../../constants/assets';
+import { MODEL } from '../../config/model';
 import type { AssetIdentifier, AssetInstanceDetails } from '../../types/asset';
 import type { AssetContextType } from '../../types/assetContext';
 
@@ -9,7 +9,7 @@ export async function getAssetDetails(
   client: AssetContextType,
   assetIdentifier: AssetIdentifier,
 ): Promise<AssetInstanceDetails> {
-  const assetView = await findAssetPassportView(client, ASSET_VIEW_EXTERNAL_ID);
+  const assetView = await findAssetPassportView(client, MODEL.views.asset);
   const assetViewReference = toViewReference(assetView);
   const assetProperties = getMappedProperties(assetView);
   const response = await client.instances.query({

@@ -9,13 +9,8 @@ import type {
   SlimNodeAndEdgeCollectionResponse,
 } from '@cognite/sdk';
 
+import { MODEL } from '../config/model';
 import {
-  ASSET_VIEW_EXTERNAL_ID,
-  EQUIPMENT_VIEW_EXTERNAL_ID,
-  STATUS_PROPERTY_IDENTIFIER,
-} from '../constants/assets';
-import {
-  ASSET_RELATION_PROPERTY_IDENTIFIER,
   DESCENDING_SORT_DIRECTION,
   INSTANCE_TYPE_NODE,
   NODE_CREATED_TIME_PROPERTY,
@@ -23,9 +18,6 @@ import {
   NODE_SPACE_PROPERTY,
   VIEW_SOURCE_TYPE,
 } from '../constants/cdfApi';
-import { DOCUMENT_VIEW_EXTERNAL_ID, FILES_VIEW_EXTERNAL_ID } from '../constants/documents';
-import { NOTE_VIEW_EXTERNAL_ID } from '../constants/notes';
-import { TIMESERIES_VIEW_EXTERNAL_ID } from '../constants/timeseries';
 import { isRecord } from '../lib/isRecord';
 import type { NodeInstance } from '../services/assets/viewHelpers';
 import type { AssetContextType } from '../types/assetContext';
@@ -92,7 +84,7 @@ export function makeMockAssetContext(latencyMs: number = MOCK_LATENCY_MS): Asset
 }
 
 function answerCount(request: AggregationRequest, stored: StoredInstances): AggregationResponse {
-  if (request.groupBy?.includes(STATUS_PROPERTY_IDENTIFIER)) {
+  if (request.groupBy?.includes(MODEL.properties.asset.status)) {
     return answerCountsByStatus();
   }
 
@@ -119,7 +111,7 @@ function answerCountsByStatus(): AggregationResponse {
   return {
     items: [...countsByStatus].map(([status, value]) => ({
       instanceType: 'node',
-      group: { [STATUS_PROPERTY_IDENTIFIER]: status },
+      group: { [MODEL.properties.asset.status]: status },
       aggregates: [{ aggregate: 'count', value }],
     })),
   };
@@ -128,7 +120,7 @@ function answerCountsByStatus(): AggregationResponse {
 function readMockAssetStatus(asset: NodeInstance): string | undefined {
   for (const viewProperties of Object.values(asset.properties ?? {})) {
     for (const properties of Object.values(viewProperties)) {
-      const status = properties[STATUS_PROPERTY_IDENTIFIER];
+      const status = properties[MODEL.properties.asset.status];
       if (typeof status === 'string') return status;
     }
   }
@@ -142,25 +134,25 @@ function findNodesCounted(
   const filtered = { nodes: { filter: request.filter } };
 
   switch (request.view.externalId) {
-    case NOTE_VIEW_EXTERNAL_ID:
+    case MODEL.views.note:
       return stored.notes.filter((node) =>
         isInstanceForAsset(node, readRequestedAssetReference(filtered)),
       );
-    case DOCUMENT_VIEW_EXTERNAL_ID:
+    case MODEL.views.document:
       return stored.documents.filter((node) =>
         isInstanceForAsset(node, readRequestedAssetReference(filtered)),
       );
-    case TIMESERIES_VIEW_EXTERNAL_ID:
+    case MODEL.views.timeseries:
       return MOCK_TIMESERIES.filter((node) =>
         isNodeListingAsset(node, readRequestedAssetsContains(filtered)),
       );
-    case FILES_VIEW_EXTERNAL_ID:
+    case MODEL.filesView.externalId:
       return MOCK_FILES.filter((node) =>
         isNodeListingAsset(node, readRequestedAssetsContains(filtered)),
       );
-    case ASSET_VIEW_EXTERNAL_ID:
+    case MODEL.views.asset:
       return MOCK_ASSETS;
-    case EQUIPMENT_VIEW_EXTERNAL_ID: {
+    case MODEL.views.equipment: {
       const { externalId } = readRequestedAssetReference(filtered);
       return externalId === undefined
         ? [...MOCK_EQUIPMENT_BY_ASSET_ID.values()].flat()
@@ -378,7 +370,7 @@ function storeInstances(
             {
               space: source.space,
               group: `${source.externalId}/${source.version}`,
-              isDocumentView: source.externalId === DOCUMENT_VIEW_EXTERNAL_ID,
+              isDocumentView: source.externalId === MODEL.views.document,
               values,
             },
           ]
@@ -631,7 +623,7 @@ function findAssetRelationValue(filter: unknown): UnknownRecord | undefined {
   if (
     isRecord(equals) &&
     Array.isArray(equals.property) &&
-    equals.property[equals.property.length - 1] === ASSET_RELATION_PROPERTY_IDENTIFIER &&
+    equals.property[equals.property.length - 1] === MODEL.properties.assetRelation &&
     isRecord(equals.value)
   ) {
     return equals.value;

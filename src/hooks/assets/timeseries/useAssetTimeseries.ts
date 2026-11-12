@@ -1,15 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 import { createContext, useContext } from 'react';
 
-import {
-  ASSET_PASSPORT_MODEL_EXTERNAL_ID,
-  ASSET_PASSPORT_MODEL_SPACE,
-  ASSET_PASSPORT_MODEL_VERSION,
-} from '../../../constants/assets';
+import { MODEL } from '../../../config/model';
 import {
   TIMESERIES_QUERY_LIMIT,
   TIMESERIES_QUERY_STALE_TIME_MS,
-  TIMESERIES_VIEW_EXTERNAL_ID,
 } from '../../../constants/timeseries';
 import { isKeyOfList } from '../../../lib/queryKeys';
 import { listAssetTimeseries } from '../../../services/assets/timeseries/assetTimeseries';
@@ -25,10 +20,10 @@ export function getAssetTimeseriesQueryKey(project: string, assetIdentifier: Ass
   return [
     'asset-timeseries',
     project,
-    ASSET_PASSPORT_MODEL_SPACE,
-    ASSET_PASSPORT_MODEL_EXTERNAL_ID,
-    ASSET_PASSPORT_MODEL_VERSION,
-    TIMESERIES_VIEW_EXTERNAL_ID,
+    MODEL.space,
+    MODEL.externalId,
+    MODEL.version,
+    MODEL.views.timeseries,
     assetIdentifier.space,
     assetIdentifier.externalId,
   ];

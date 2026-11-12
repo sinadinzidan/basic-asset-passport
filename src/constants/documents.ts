@@ -1,21 +1,9 @@
-import { ASSET_PASSPORT_INSTANCE_SPACE } from './assets';
 import { BYTES_PER_KILOBYTE } from './number';
 import { MS_PER_MINUTE } from './time';
 
-export const DOCUMENT_VIEW_EXTERNAL_ID = 'Document';
-export const DOCUMENT_INSTANCE_SPACE = ASSET_PASSPORT_INSTANCE_SPACE;
 export const DOCUMENT_EXTERNAL_ID_PREFIX = 'doc-';
 export const DOCUMENT_QUERY_LIMIT = 100;
 
-const FILES_VIEW_SPACE = 'sp-dm-idi-rmdm';
-export const FILES_VIEW_EXTERNAL_ID = 'Files';
-const FILES_VIEW_VERSION = 'v1';
-export const FILES_VIEW = {
-  space: FILES_VIEW_SPACE,
-  externalId: FILES_VIEW_EXTERNAL_ID,
-  version: FILES_VIEW_VERSION,
-};
-export const FILES_ASSETS_PROPERTY = 'assets';
 export const DOCUMENT_QUERY_STALE_TIME_MS = 30_000;
 const DOCUMENT_MAX_FILE_SIZE_MB = 50;
 export const DOCUMENT_MAX_FILE_SIZE_BYTES =

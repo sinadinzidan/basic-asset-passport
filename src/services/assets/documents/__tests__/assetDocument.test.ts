@@ -3,8 +3,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { makeNodeInstance, makeQueryResponse, makeViewDefinition } from '../../../../__mocks__/cdf';
 import { makeOfflineSdkClient, stubModelViews } from '../../../../__mocks__/cogniteClient';
+import { MODEL } from '../../../../config/model';
 import {
-  DOCUMENT_INSTANCE_SPACE,
   DOCUMENT_PENDING_POLL_WINDOW_MS,
   DOCUMENT_QUERY_LIMIT,
 } from '../../../../constants/documents';
@@ -426,7 +426,7 @@ describe(uploadAssetDocument.name, () => {
       items: [
         {
           instanceType: 'node',
-          space: DOCUMENT_INSTANCE_SPACE,
+          space: MODEL.instanceSpace,
           externalId: 'doc-abc',
           sources: [
             {
@@ -445,7 +445,7 @@ describe(uploadAssetDocument.name, () => {
       autoCreateEndNodes: false,
     });
     expect(files.requestUploadUrl).toHaveBeenCalledWith({
-      space: DOCUMENT_INSTANCE_SPACE,
+      space: MODEL.instanceSpace,
       externalId: 'doc-abc',
     });
     expect(files.uploadContent).toHaveBeenCalledWith('https://upload.test/1', file);
@@ -485,7 +485,7 @@ describe(uploadAssetDocument.name, () => {
     expect(remove).toHaveBeenCalledWith([
       {
         instanceType: 'node',
-        space: DOCUMENT_INSTANCE_SPACE,
+        space: MODEL.instanceSpace,
         externalId: 'doc-abc',
       },
     ]);

@@ -1,19 +1,6 @@
 import type { DataModel, ViewDefinition } from '@cognite/sdk';
 
-import {
-  ASSET_PASSPORT_MODEL_EXTERNAL_ID,
-  ASSET_PASSPORT_MODEL_SPACE,
-  ASSET_PASSPORT_MODEL_VERSION,
-  ASSET_VIEW_EXTERNAL_ID,
-  EQUIPMENT_VIEW_EXTERNAL_ID,
-} from '../constants/assets';
-import {
-  DOCUMENT_INSTANCE_SPACE,
-  DOCUMENT_VIEW_EXTERNAL_ID,
-  FILES_VIEW_EXTERNAL_ID,
-} from '../constants/documents';
-import { NOTE_INSTANCE_SPACE, NOTE_VIEW_EXTERNAL_ID } from '../constants/notes';
-import { TIMESERIES_VIEW_EXTERNAL_ID } from '../constants/timeseries';
+import { MODEL } from '../config/model';
 import { TestPropertyType } from '../enums/testPropertyType';
 import type { NodeInstance } from '../services/assets/viewHelpers';
 
@@ -27,7 +14,7 @@ const MOCK_EQUIPMENT_INSTANCE_SPACE = 'mock-equipment-instances';
 const MOCK_ASSET_COUNT = 25;
 
 const MOCK_ASSET_VIEW: ViewDefinition = makeViewDefinition(
-  ASSET_VIEW_EXTERNAL_ID,
+  MODEL.views.asset,
   {
     name: { label: 'Name' },
     description: { label: 'Description' },
@@ -46,7 +33,7 @@ const MOCK_ASSET_VIEW: ViewDefinition = makeViewDefinition(
 );
 
 const MOCK_EQUIPMENT_VIEW: ViewDefinition = makeViewDefinition(
-  EQUIPMENT_VIEW_EXTERNAL_ID,
+  MODEL.views.equipment,
   {
     name: { label: 'Name' },
     equipmentId: { label: 'Equipment ID' },
@@ -62,7 +49,7 @@ const MOCK_EQUIPMENT_VIEW: ViewDefinition = makeViewDefinition(
 );
 
 const MOCK_NOTE_VIEW: ViewDefinition = makeViewDefinition(
-  NOTE_VIEW_EXTERNAL_ID,
+  MODEL.views.note,
   {
     title: { label: 'Title' },
     body: { label: 'Note' },
@@ -71,11 +58,11 @@ const MOCK_NOTE_VIEW: ViewDefinition = makeViewDefinition(
     asset: { label: 'Asset', type: TestPropertyType.DIRECT },
   },
   MOCK_VIEW_VERSION,
-  ASSET_PASSPORT_MODEL_SPACE,
+  MODEL.space,
 );
 
 export const MOCK_DOCUMENT_VIEW: ViewDefinition = makeViewDefinition(
-  DOCUMENT_VIEW_EXTERNAL_ID,
+  MODEL.views.document,
   {
     name: { label: 'Name' },
     mimeType: { label: 'File type' },
@@ -84,11 +71,11 @@ export const MOCK_DOCUMENT_VIEW: ViewDefinition = makeViewDefinition(
     asset: { label: 'Asset', type: TestPropertyType.DIRECT },
   },
   MOCK_VIEW_VERSION,
-  ASSET_PASSPORT_MODEL_SPACE,
+  MODEL.space,
 );
 
 const MOCK_TIMESERIES_VIEW: ViewDefinition = makeViewDefinition(
-  TIMESERIES_VIEW_EXTERNAL_ID,
+  MODEL.views.timeseries,
   {
     name: { label: 'Name' },
     description: { label: 'Description' },
@@ -112,7 +99,7 @@ const MOCK_TIMESERIES_VIEW: ViewDefinition = makeViewDefinition(
 );
 
 const MOCK_FILES_VIEW: ViewDefinition = makeViewDefinition(
-  FILES_VIEW_EXTERNAL_ID,
+  MODEL.filesView.externalId,
   {
     name: { label: 'Name' },
     mimeType: { label: 'File type' },
@@ -133,9 +120,9 @@ const MOCK_VIEWS: ViewDefinition[] = [
 ];
 
 export const MOCK_DATA_MODEL: DataModel = {
-  space: ASSET_PASSPORT_MODEL_SPACE,
-  externalId: ASSET_PASSPORT_MODEL_EXTERNAL_ID,
-  version: ASSET_PASSPORT_MODEL_VERSION,
+  space: MODEL.space,
+  externalId: MODEL.externalId,
+  version: MODEL.version,
   isGlobal: false,
   createdTime: 0,
   lastUpdatedTime: 0,
@@ -226,7 +213,7 @@ function makeMockNote(
   return {
     ...makeNodeInstance(
       MOCK_NOTE_VIEW,
-      { space: NOTE_INSTANCE_SPACE, externalId },
+      { space: MODEL.instanceSpace, externalId },
       {
         ...properties,
         asset: {
@@ -265,7 +252,7 @@ function makeMockDocument(
   return {
     ...makeNodeInstance(
       MOCK_DOCUMENT_VIEW,
-      { space: DOCUMENT_INSTANCE_SPACE, externalId },
+      { space: MODEL.instanceSpace, externalId },
       {
         ...rest,
         isUploaded,
