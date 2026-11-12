@@ -10,6 +10,7 @@ import {
 } from '../agent';
 import { AssetIdentifierSchema, AssetListPropertiesSchema } from '../asset';
 import { DocumentPropertiesSchema, UploadLinkResponseSchema } from '../document';
+import { RetryAfterErrorSchema } from '../httpError';
 import { NavigationStateSchema } from '../navigation';
 import { NewAssetNoteSchema, NotePropertiesSchema } from '../note';
 import { OptionalTextSchema } from '../text';
@@ -246,5 +247,21 @@ describe('NavigationStateSchema', () => {
 
   it('rejects a state that is not an object', () => {
     expect(NavigationStateSchema.safeParse('x').success).toBe(false);
+  });
+});
+
+describe('RetryAfterErrorSchema', () => {
+  it('reads the headers of an HTTP error', () => {
+    const parsed = RetryAfterErrorSchema.safeParse({
+      status: 429,
+      headers: { 'retry-after': '3' },
+    });
+
+    expect(parsed.success && parsed.data.headers['retry-after']).toBe('3');
+  });
+
+  it('rejects an error that carries no headers', () => {
+    expect(RetryAfterErrorSchema.safeParse(new Error('offline')).success).toBe(false);
+    expect(RetryAfterErrorSchema.safeParse({ headers: 'x' }).success).toBe(false);
   });
 });
