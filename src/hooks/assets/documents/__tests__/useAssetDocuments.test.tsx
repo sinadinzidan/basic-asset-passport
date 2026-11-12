@@ -124,6 +124,7 @@ describe(useAssetDocuments.name, () => {
           makeAssetDocument({
             isUploaded: false,
             uploadStatus: DocumentUploadStatus.PROCESSING,
+            createdTime: Date.now(),
           }),
         ]),
       )

@@ -52,4 +52,35 @@ describe(createQueryRetryDelay.name, () => {
     expect(delay).toBeGreaterThanOrEqual(0);
     expect(delay).toBeLessThanOrEqual(QUERY_RETRY_BASE_DELAY_MS);
   });
+
+  it('waits as long as the server asks in Retry-After seconds', () => {
+    const error = { status: 429, headers: { 'retry-after': '4' } };
+
+    expect(createQueryRetryDelay(() => 0)(0, error)).toBe(4000);
+  });
+
+  it('reads Retry-After whatever the case of the header name', () => {
+    const error = { status: 429, headers: { 'Retry-After': '2' } };
+
+    expect(createQueryRetryDelay(() => 0)(0, error)).toBe(2000);
+  });
+
+  it('never waits longer than the maximum delay, whatever Retry-After says', () => {
+    const error = { status: 429, headers: { 'retry-after': '3600' } };
+
+    expect(createQueryRetryDelay(() => 0)(0, error)).toBe(QUERY_RETRY_MAX_DELAY_MS);
+  });
+
+  it('keeps its own backoff when it is longer than Retry-After', () => {
+    const error = { status: 429, headers: { 'retry-after': '1' } };
+
+    expect(createQueryRetryDelay(() => 1)(2, error)).toBe(QUERY_RETRY_BASE_DELAY_MS * 4);
+  });
+
+  it.each([[{ status: 429 }], [{ headers: {} }], [{ headers: { 'retry-after': 'soon' } }], [null]])(
+    'falls back to its own backoff for %j',
+    (error) => {
+      expect(createQueryRetryDelay(() => 1)(0, error)).toBe(QUERY_RETRY_BASE_DELAY_MS);
+    },
+  );
 });

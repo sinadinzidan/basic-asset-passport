@@ -209,7 +209,7 @@ the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines
   visible if the user leaves the tab and comes back. CDF marks a file as
   uploaded a moment after its content arrives, so a document created in the last
   two minutes that is not yet marked uploaded shows "Processing..." and is re-read
-  every 2 seconds until it is; View then enables on its own, with no reload. Only
+  until it is, every 2 seconds at first and less often the longer it takes (4, 8, then every 16 seconds); View then enables on its own, with no reload. Only
   a document older than that which was never marked shows "Upload incomplete"
   (and is no longer re-read).
 - A document is a node of the `Document` view (`sp-asset-passport`, `v1`, a
@@ -505,7 +505,8 @@ the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines
   model, view and property names are kept in one place, `src/config/model.ts`.
 - At most 15 requests to CDF run at once; further ones wait their turn in the order they were made.
 - Throttled (429) and temporary gateway (502, 503, 504) responses are retried
-  up to 3 times with exponential backoff and jitter, capped at 15 seconds;
+  up to 3 times with exponential backoff and jitter, capped at 15 seconds, waiting at least as long as a
+  `Retry-After` header asks when the failure carries one;
   other errors are shown at once.
 - An unexpected rendering error shows "Something went wrong" with a Retry
   action instead of a blank page, on the same themed background as the rest of
