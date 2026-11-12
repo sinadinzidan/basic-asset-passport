@@ -47,7 +47,7 @@ describe(useUpdateAssetNote.name, () => {
     });
 
     await act(async () => {
-      await result.current.mutateAsync({ note, input });
+      await result.current.updateNote({ note, input });
     });
 
     expect(mockContext.updateAssetNote).toHaveBeenCalledWith(client, note, input);
@@ -60,7 +60,7 @@ describe(useUpdateAssetNote.name, () => {
     });
 
     await act(async () => {
-      await result.current.mutateAsync({ note, input });
+      await result.current.updateNote({ note, input });
     });
 
     expect(invalidate).toHaveBeenCalledWith({
@@ -76,10 +76,10 @@ describe(useUpdateAssetNote.name, () => {
     });
 
     await act(async () => {
-      await result.current.mutateAsync({ note, input }).catch(() => undefined);
+      await result.current.updateNote({ note, input }).catch(() => undefined);
     });
 
-    await waitFor(() => expect(result.current.isError).toBe(true));
+    await waitFor(() => expect(result.current.error).not.toBeNull());
     expect(invalidate).not.toHaveBeenCalled();
   });
 });

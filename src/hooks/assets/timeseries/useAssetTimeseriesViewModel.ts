@@ -59,12 +59,12 @@ export function useAssetTimeseriesViewModel(assetIdentifier: AssetIdentifier, li
     items,
     timeseries: allTimeseries,
     hasMore: series.data?.hasMore ?? false,
-    isLoadingMore: series.isPlaceholderData,
+    isLoadingMore: series.isLoadingMore,
     isPending: series.isPending,
     isError: series.isError,
     error: series.error,
     isFetching: series.isFetching,
-    retry: () => void series.refetch(),
+    retry: series.retry,
   };
 }
 

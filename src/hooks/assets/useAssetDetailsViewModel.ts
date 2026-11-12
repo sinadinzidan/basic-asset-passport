@@ -12,13 +12,9 @@ export function useAssetDetailsViewModel(assetIdentifier: AssetIdentifier) {
     isError,
     isFetching,
     isPending,
-    refetch,
+    retry,
   } = useAssetDetails(assetIdentifier);
   const tabCounts = useAssetDetailsTabCounts(assetIdentifier);
-
-  function retry(): void {
-    void refetch();
-  }
 
   return {
     asset,

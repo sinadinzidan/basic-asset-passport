@@ -43,7 +43,7 @@ describe(useAssetTimeseries.name, () => {
     });
 
     expect(result.current.isPending).toBe(true);
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    await waitFor(() => expect(result.current.isPending).toBe(false));
   });
 
   it('loads the series of the asset with the injected client', async () => {
@@ -62,7 +62,7 @@ describe(useAssetTimeseries.name, () => {
   it('reads the series to the limit asked for', async () => {
     const { result } = renderHook(() => useAssetTimeseries(assetIdentifier, 400), { wrapper });
 
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    await waitFor(() => expect(result.current.isPending).toBe(false));
     expect(mockContext.listAssetTimeseries).toHaveBeenCalledWith(client, assetIdentifier, 400);
   });
 

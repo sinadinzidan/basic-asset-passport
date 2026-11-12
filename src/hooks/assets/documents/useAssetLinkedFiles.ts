@@ -4,6 +4,7 @@ import { createContext, useContext } from 'react';
 import { MODEL } from '../../../config/model';
 import { DOCUMENT_QUERY_LIMIT, DOCUMENT_QUERY_STALE_TIME_MS } from '../../../constants/documents';
 import { isKeyOfList } from '../../../lib/queryKeys';
+import { toQueryState } from '../../../lib/queryState';
 import { listAssetLinkedFiles } from '../../../services/assets/documents/assetDocument';
 import type { AssetIdentifier } from '../../../types/asset';
 import { useAssetContext } from '../useAssetContext';
@@ -36,11 +37,13 @@ export function useAssetLinkedFiles(
 
   const listKey = getAssetLinkedFilesQueryKey(client.project, assetIdentifier);
 
-  return useQuery({
+  const query = useQuery({
     queryKey: [...listKey, limit],
     queryFn: () => loadFiles(client, assetIdentifier, limit),
     staleTime: DOCUMENT_QUERY_STALE_TIME_MS,
     placeholderData: (previousData, previousQuery) =>
       isKeyOfList(previousQuery?.queryKey, listKey) ? previousData : undefined,
   });
+
+  return toQueryState(query);
 }

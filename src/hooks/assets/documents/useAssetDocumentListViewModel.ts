@@ -16,7 +16,7 @@ export function useAssetDocumentListViewModel(assetIdentifier: AssetIdentifier) 
   const linkedFileLimit = useListLimit(DOCUMENT_QUERY_LIMIT);
   const documents = useAssetDocuments(assetIdentifier, documentLimit.limit);
   const linkedFiles = useAssetLinkedFiles(assetIdentifier, linkedFileLimit.limit);
-  const deleteMutation = useDeleteAssetDocument(assetIdentifier);
+  const deletion = useDeleteAssetDocument(assetIdentifier);
   const uploadingNames = useUploadingDocumentNames(assetIdentifier);
 
   const uploadedDocuments = documents.data?.items ?? NO_DOCUMENTS;
@@ -24,42 +24,41 @@ export function useAssetDocumentListViewModel(assetIdentifier: AssetIdentifier) 
   const hasNothingToShow =
     uploadedDocuments.length === 0 && uploadingNames.length === 0 && existingFiles.length === 0;
 
-  function retry(): void {
-    void documents.refetch();
-  }
-
-  function retryExistingFiles(): void {
-    void linkedFiles.refetch();
-  }
-
   async function deleteDocument(document: AssetDocument): Promise<void> {
-    await deleteMutation.mutateAsync(document).catch(() => undefined);
+    await deletion.deleteDocument(document).catch(() => undefined);
   }
 
   function isDeleting(document: AssetDocument): boolean {
-    return deleteMutation.isPending && isSameInstance(document, deleteMutation.variables);
+    return (
+      deletion.deletingDocument !== null && isSameInstance(document, deletion.deletingDocument)
+    );
   }
 
   return {
     uploadingNames,
     documents: uploadedDocuments,
     hasMoreDocuments: documents.data?.hasMore ?? false,
-    isLoadingMoreDocuments: documents.isPlaceholderData,
+    isLoadingMoreDocuments: documents.isLoadingMore,
     existingFiles,
     hasMoreExistingFiles: linkedFiles.data?.hasMore ?? false,
-    isLoadingMoreExistingFiles: linkedFiles.isPlaceholderData,
+    isLoadingMoreExistingFiles: linkedFiles.isLoadingMore,
     isPending:
       documents.isPending || (!documents.isError && hasNothingToShow && linkedFiles.isPending),
     isError: documents.isError,
     error: documents.error,
     isFetching: documents.isFetching,
-    isEmpty: hasNothingToShow && documents.isSuccess && linkedFiles.isSuccess,
+    isEmpty:
+      hasNothingToShow &&
+      !documents.isPending &&
+      !documents.isError &&
+      !linkedFiles.isPending &&
+      !linkedFiles.isError,
     hasExistingFilesError: linkedFiles.isError,
     existingFilesError: linkedFiles.error,
     isFetchingExistingFiles: linkedFiles.isFetching,
-    deleteErrorMessage: deleteMutation.isError ? deleteMutation.error.message : null,
-    retry,
-    retryExistingFiles,
+    deleteErrorMessage: deletion.error?.message ?? null,
+    retry: documents.retry,
+    retryExistingFiles: linkedFiles.retry,
     showMoreDocuments: documentLimit.showMore,
     showMoreExistingFiles: linkedFileLimit.showMore,
     deleteDocument,

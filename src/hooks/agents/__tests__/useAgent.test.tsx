@@ -29,7 +29,7 @@ describe(useAgent.name, () => {
     });
 
     expect(result.current.isPending).toBe(true);
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    await waitFor(() => expect(result.current.isPending).toBe(false));
   });
 
   it('looks up only the agent asked for', async () => {
@@ -45,7 +45,7 @@ describe(useAgent.name, () => {
   it('looks nothing up when told not to', () => {
     const { result } = renderHook(() => useAgent('cooling-expert', false), { wrapper });
 
-    expect(result.current.fetchStatus).toBe('idle');
+    expect(result.current.isFetching).toBe(false);
     expect(getAgent).not.toHaveBeenCalled();
   });
 
@@ -54,7 +54,7 @@ describe(useAgent.name, () => {
 
     const { result } = renderHook(() => useAgent('missing'), { wrapper });
 
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    await waitFor(() => expect(result.current.isPending).toBe(false));
     expect(result.current.data).toBeNull();
   });
 

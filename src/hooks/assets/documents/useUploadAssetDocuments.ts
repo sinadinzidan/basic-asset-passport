@@ -17,6 +17,9 @@ const defaultDeps = {
   uploadAssetDocument,
 };
 
+const NO_RESULTS: DocumentUploadResult[] = [];
+const NO_FILES: File[] = [];
+
 export type UseUploadAssetDocumentsContextType = typeof defaultDeps;
 export const UseUploadAssetDocumentsContext =
   createContext<UseUploadAssetDocumentsContextType>(defaultDeps);
@@ -37,7 +40,7 @@ export function useUploadAssetDocuments(assetIdentifier: AssetIdentifier) {
   const showSuccessToast = useToast();
   const queryClient = useQueryClient();
 
-  return useMutation({
+  const mutation = useMutation({
     mutationKey: getUploadAssetDocumentsMutationKey(client.project, assetIdentifier),
     mutationFn: (files: File[]): Promise<DocumentUploadResult[]> =>
       Promise.all(
@@ -64,4 +67,11 @@ export function useUploadAssetDocuments(assetIdentifier: AssetIdentifier) {
         queryKey: getAssetDocumentsQueryKey(client.project, assetIdentifier),
       }),
   });
+
+  return {
+    upload: mutation.mutateAsync,
+    isUploading: mutation.isPending,
+    results: mutation.data ?? NO_RESULTS,
+    uploadedFiles: mutation.variables ?? NO_FILES,
+  };
 }

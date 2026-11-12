@@ -44,7 +44,7 @@ describe(useAssetDocuments.name, () => {
     });
 
     expect(result.current.isPending).toBe(true);
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    await waitFor(() => expect(result.current.isPending).toBe(false));
   });
 
   it('loads the documents of the asset with the injected client', async () => {
@@ -81,10 +81,10 @@ describe(useAssetDocuments.name, () => {
 
     // Assert
     expect(result.current.data).toEqual(firstPage);
-    expect(result.current.isPlaceholderData).toBe(true);
+    expect(result.current.isLoadingMore).toBe(true);
     expect(mockContext.listAssetDocuments).toHaveBeenLastCalledWith(client, assetIdentifier, 2);
     longer.resolve(makeLimitedList([makeAssetDocument()]));
-    await waitFor(() => expect(result.current.isPlaceholderData).toBe(false));
+    await waitFor(() => expect(result.current.isLoadingMore).toBe(false));
   });
 
   it('never shows the documents of another asset while its own load', async () => {
@@ -97,7 +97,7 @@ describe(useAssetDocuments.name, () => {
       wrapper,
       initialProps: { asset: assetIdentifier },
     });
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    await waitFor(() => expect(result.current.isPending).toBe(false));
 
     // Act
     rerender({ asset: otherAsset });

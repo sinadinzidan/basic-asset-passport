@@ -44,7 +44,7 @@ describe(useAssetLinkedFiles.name, () => {
     });
 
     expect(result.current.isPending).toBe(true);
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    await waitFor(() => expect(result.current.isPending).toBe(false));
   });
 
   it('loads the files linked to the asset with the injected client', async () => {
@@ -68,7 +68,7 @@ describe(useAssetLinkedFiles.name, () => {
   it('reads the files to the limit asked for', async () => {
     const { result } = renderHook(() => useAssetLinkedFiles(assetIdentifier, 300), { wrapper });
 
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    await waitFor(() => expect(result.current.isPending).toBe(false));
     expect(mockContext.listAssetLinkedFiles).toHaveBeenCalledWith(client, assetIdentifier, 300);
   });
 

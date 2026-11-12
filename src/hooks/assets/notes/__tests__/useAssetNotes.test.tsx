@@ -43,7 +43,7 @@ describe(useAssetNotes.name, () => {
     });
 
     expect(result.current.isPending).toBe(true);
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    await waitFor(() => expect(result.current.isPending).toBe(false));
   });
 
   it('loads the notes of the asset with the injected client', async () => {
@@ -80,10 +80,10 @@ describe(useAssetNotes.name, () => {
 
     // Assert
     expect(result.current.data).toEqual(firstPage);
-    expect(result.current.isPlaceholderData).toBe(true);
+    expect(result.current.isLoadingMore).toBe(true);
     expect(mockContext.listAssetNotes).toHaveBeenLastCalledWith(client, assetIdentifier, 2);
     longer.resolve(makeLimitedList([makeAssetNote()]));
-    await waitFor(() => expect(result.current.isPlaceholderData).toBe(false));
+    await waitFor(() => expect(result.current.isLoadingMore).toBe(false));
   });
 
   it('never shows the notes of another asset while its own load', async () => {
@@ -96,7 +96,7 @@ describe(useAssetNotes.name, () => {
       wrapper,
       initialProps: { asset: assetIdentifier },
     });
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    await waitFor(() => expect(result.current.isPending).toBe(false));
 
     // Act
     rerender({ asset: otherAsset });
@@ -122,7 +122,7 @@ describe(useAssetNotes.name, () => {
         useAssetNotes({ space: 'asset-space', externalId }),
       { wrapper, initialProps: { externalId: 'FLOC-1' } },
     );
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    await waitFor(() => expect(result.current.isPending).toBe(false));
 
     rerender({ externalId: 'FLOC-2' });
 

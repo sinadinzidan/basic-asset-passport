@@ -46,7 +46,7 @@ describe(useAddAssetNote.name, () => {
     });
 
     await act(async () => {
-      await result.current.mutateAsync(newNote);
+      await result.current.addNote(newNote);
     });
 
     expect(mockContext.createAssetNote).toHaveBeenCalledWith(client, assetIdentifier, newNote);
@@ -59,7 +59,7 @@ describe(useAddAssetNote.name, () => {
     });
 
     await act(async () => {
-      await result.current.mutateAsync(newNote);
+      await result.current.addNote(newNote);
     });
 
     expect(invalidate).toHaveBeenCalledWith({
@@ -75,10 +75,10 @@ describe(useAddAssetNote.name, () => {
     });
 
     await act(async () => {
-      await result.current.mutateAsync(newNote).catch(() => undefined);
+      await result.current.addNote(newNote).catch(() => undefined);
     });
 
-    await waitFor(() => expect(result.current.isError).toBe(true));
+    await waitFor(() => expect(result.current.error).not.toBeNull());
     expect(invalidate).not.toHaveBeenCalled();
   });
 });

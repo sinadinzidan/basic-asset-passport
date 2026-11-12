@@ -46,7 +46,7 @@ describe(useDeleteAssetNote.name, () => {
     });
 
     await act(async () => {
-      await result.current.mutateAsync(note);
+      await result.current.deleteNote(note);
     });
 
     expect(mockContext.deleteAssetNote).toHaveBeenCalledWith(client, note);
@@ -59,7 +59,7 @@ describe(useDeleteAssetNote.name, () => {
     });
 
     await act(async () => {
-      await result.current.mutateAsync(note);
+      await result.current.deleteNote(note);
     });
 
     expect(invalidate).toHaveBeenCalledWith({
@@ -75,10 +75,10 @@ describe(useDeleteAssetNote.name, () => {
     });
 
     await act(async () => {
-      await result.current.mutateAsync(note).catch(() => undefined);
+      await result.current.deleteNote(note).catch(() => undefined);
     });
 
-    await waitFor(() => expect(result.current.isError).toBe(true));
+    await waitFor(() => expect(result.current.error).not.toBeNull());
     expect(invalidate).not.toHaveBeenCalled();
   });
 });

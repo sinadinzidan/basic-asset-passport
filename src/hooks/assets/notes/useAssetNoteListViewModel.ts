@@ -11,33 +11,29 @@ const NO_NOTES: AssetNote[] = [];
 
 export function useAssetNoteListViewModel(assetIdentifier: AssetIdentifier) {
   const { limit, showMore } = useListLimit(NOTE_QUERY_LIMIT);
-  const { data, error, isError, isFetching, isPending, isPlaceholderData, refetch } = useAssetNotes(
+  const { data, error, isError, isFetching, isPending, isLoadingMore, retry } = useAssetNotes(
     assetIdentifier,
     limit,
   );
-  const deleteMutation = useDeleteAssetNote(assetIdentifier);
-
-  function retry(): void {
-    void refetch();
-  }
+  const deletion = useDeleteAssetNote(assetIdentifier);
 
   async function deleteNote({ space, externalId }: AssetNote): Promise<void> {
-    await deleteMutation.mutateAsync({ space, externalId }).catch(() => undefined);
+    await deletion.deleteNote({ space, externalId }).catch(() => undefined);
   }
 
   function isDeleting(note: AssetNote): boolean {
-    return deleteMutation.isPending && isSameInstance(note, deleteMutation.variables);
+    return deletion.deletingNote !== null && isSameInstance(note, deletion.deletingNote);
   }
 
   return {
     notes: data?.items ?? NO_NOTES,
     hasMore: data?.hasMore ?? false,
-    isLoadingMore: isPlaceholderData,
+    isLoadingMore,
     error,
     isError,
     isFetching,
     isPending,
-    deleteErrorMessage: deleteMutation.isError ? deleteMutation.error.message : null,
+    deleteErrorMessage: deletion.error?.message ?? null,
     retry,
     showMore,
     deleteNote,

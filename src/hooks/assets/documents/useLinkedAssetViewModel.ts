@@ -11,7 +11,7 @@ const SHOWN_PROPERTY_IDENTIFIERS = [
 ];
 
 export function useLinkedAssetViewModel(asset: AssetIdentifier) {
-  const { data, error, isError, isFetching, isPending, refetch } = useAssetDetails(asset);
+  const { data, error, isError, isFetching, isPending, retry } = useAssetDetails(asset);
 
   const details: AssetPropertyDisplay[] = [
     {
@@ -24,10 +24,6 @@ export function useLinkedAssetViewModel(asset: AssetIdentifier) {
         data?.properties.filter((property) => property.identifier === identifier) ?? [],
     ),
   ];
-
-  function retry(): void {
-    void refetch();
-  }
 
   return {
     title: getPropertyValue(data, MODEL.properties.asset.name) ?? asset.externalId,

@@ -5,12 +5,7 @@ import { useAssetEquipment } from './useAssetEquipment';
 const NO_EQUIPMENT: AssetInstanceDetails[] = [];
 
 export function useAssetEquipmentViewModel(assetIdentifier: AssetIdentifier) {
-  const { data, error, isError, isFetching, isPending, refetch } =
-    useAssetEquipment(assetIdentifier);
-
-  function retry(): void {
-    void refetch();
-  }
+  const { data, error, isError, isFetching, isPending, retry } = useAssetEquipment(assetIdentifier);
 
   return {
     equipment: data?.items ?? NO_EQUIPMENT,

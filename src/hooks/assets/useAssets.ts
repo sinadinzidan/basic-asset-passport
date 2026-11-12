@@ -3,6 +3,7 @@ import { createContext, useContext } from 'react';
 
 import { MODEL } from '../../config/model';
 import { ASSET_QUERY_STALE_TIME_MS } from '../../constants/assets';
+import { toQueryState } from '../../lib/queryState';
 import { listAssets, searchAssets } from '../../services/assets/asset';
 
 import { useAssetContext } from './useAssetContext';
@@ -19,7 +20,7 @@ export function useAssets(cursor?: string, searchText: string = '') {
   const searchQuery = searchText.trim();
   const pageCursor = searchQuery ? undefined : cursor;
 
-  return useQuery({
+  const query = useQuery({
     queryKey: [
       'assets',
       client.project,
@@ -33,4 +34,6 @@ export function useAssets(cursor?: string, searchText: string = '') {
     queryFn: () => (searchQuery ? findAssets(client, searchQuery) : loadAssets(client, pageCursor)),
     staleTime: ASSET_QUERY_STALE_TIME_MS,
   });
+
+  return toQueryState(query);
 }

@@ -61,9 +61,9 @@ describe(useUploadAssetDocuments.name, () => {
     const { result } = renderHook(() => useUploadAssetDocuments(assetIdentifier), { wrapper });
 
     // Act
-    let results: Awaited<ReturnType<typeof result.current.mutateAsync>> = [];
+    let results: Awaited<ReturnType<typeof result.current.upload>> = [];
     await act(async () => {
-      results = await result.current.mutateAsync([first, second]);
+      results = await result.current.upload([first, second]);
     });
 
     // Assert
@@ -96,12 +96,9 @@ describe(useUploadAssetDocuments.name, () => {
     const { result } = renderHook(() => useUploadAssetDocuments(assetIdentifier), { wrapper });
 
     // Act
-    let results: Awaited<ReturnType<typeof result.current.mutateAsync>> = [];
+    let results: Awaited<ReturnType<typeof result.current.upload>> = [];
     await act(async () => {
-      results = await result.current.mutateAsync([
-        makeFile(REJECTED_FILE_NAME),
-        makeFile('good.pdf'),
-      ]);
+      results = await result.current.upload([makeFile(REJECTED_FILE_NAME), makeFile('good.pdf')]);
     });
 
     // Assert
@@ -116,7 +113,7 @@ describe(useUploadAssetDocuments.name, () => {
     const { result } = renderHook(() => useUploadAssetDocuments(assetIdentifier), { wrapper });
 
     await act(async () => {
-      await result.current.mutateAsync([makeFile('a.pdf')]);
+      await result.current.upload([makeFile('a.pdf')]);
     });
 
     expect(invalidate).toHaveBeenCalledWith({
@@ -130,7 +127,7 @@ describe(useUploadAssetDocuments.name, () => {
 
     // Act
     await act(async () => {
-      await result.current.mutateAsync([makeFile('a.pdf'), makeFile('b.pdf')]);
+      await result.current.upload([makeFile('a.pdf'), makeFile('b.pdf')]);
     });
 
     // Assert
@@ -148,7 +145,7 @@ describe(useUploadAssetDocuments.name, () => {
     const { result } = renderHook(() => useUploadAssetDocuments(assetIdentifier), { wrapper });
 
     await act(async () => {
-      await result.current.mutateAsync([makeFile(REJECTED_FILE_NAME), makeFile('good.pdf')]);
+      await result.current.upload([makeFile(REJECTED_FILE_NAME), makeFile('good.pdf')]);
     });
 
     expect(showSuccessToast).toHaveBeenCalledWith('1 document uploaded.');
@@ -159,7 +156,7 @@ describe(useUploadAssetDocuments.name, () => {
     const { result } = renderHook(() => useUploadAssetDocuments(assetIdentifier), { wrapper });
 
     await act(async () => {
-      await result.current.mutateAsync([makeFile('a.pdf')]);
+      await result.current.upload([makeFile('a.pdf')]);
     });
 
     expect(showSuccessToast).not.toHaveBeenCalled();

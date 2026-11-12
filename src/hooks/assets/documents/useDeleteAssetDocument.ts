@@ -19,11 +19,17 @@ export function useDeleteAssetDocument(assetIdentifier: AssetIdentifier) {
   const client = useAssetContext();
   const queryClient = useQueryClient();
 
-  return useMutation({
+  const mutation = useMutation({
     mutationFn: (document: DocumentIdentifier) => deleteDocument(client, document),
     onSuccess: () =>
       queryClient.invalidateQueries({
         queryKey: getAssetDocumentsQueryKey(client.project, assetIdentifier),
       }),
   });
+
+  return {
+    deleteDocument: mutation.mutateAsync,
+    deletingDocument: mutation.isPending ? mutation.variables : null,
+    error: mutation.error,
+  };
 }

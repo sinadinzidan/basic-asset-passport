@@ -32,7 +32,7 @@ describe(useAssets.name, () => {
     const { result } = renderHook(() => useAssets(), { wrapper });
 
     expect(result.current.isPending).toBe(true);
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    await waitFor(() => expect(result.current.isPending).toBe(false));
   });
 
   it('loads the requested page with the injected client', async () => {
@@ -60,7 +60,7 @@ describe(useAssets.name, () => {
       ({ cursor }: { cursor?: string }) => useAssets(cursor),
       { wrapper, initialProps: {} },
     );
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    await waitFor(() => expect(result.current.isPending).toBe(false));
 
     rerender({ cursor: 'page-2' });
 
@@ -85,7 +85,7 @@ describe(useAssets.name, () => {
       wrapper,
     });
 
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    await waitFor(() => expect(result.current.isPending).toBe(false));
     expect(mockContext.listAssets).toHaveBeenCalledWith(client, undefined);
     expect(mockContext.searchAssets).not.toHaveBeenCalled();
   });
@@ -95,7 +95,7 @@ describe(useAssets.name, () => {
       ({ searchText }: { searchText: string }) => useAssets(undefined, searchText),
       { wrapper, initialProps: { searchText: 'pump' } },
     );
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    await waitFor(() => expect(result.current.isPending).toBe(false));
 
     rerender({ searchText: 'valve' });
 

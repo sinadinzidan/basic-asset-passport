@@ -43,7 +43,7 @@ describe(useAssetEquipment.name, () => {
     });
 
     expect(result.current.isPending).toBe(true);
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    await waitFor(() => expect(result.current.isPending).toBe(false));
   });
 
   it('loads the equipment of the asset to the usual limit with the injected client', async () => {
@@ -74,7 +74,7 @@ describe(useAssetEquipment.name, () => {
       wrapper,
       initialProps: { identifier: assetIdentifier },
     });
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    await waitFor(() => expect(result.current.isPending).toBe(false));
     vi.mocked(mockContext.listAssetEquipment).mockReturnValue(new Promise(() => undefined));
 
     rerender({ identifier: { ...assetIdentifier, externalId: 'FLOC-2' } });

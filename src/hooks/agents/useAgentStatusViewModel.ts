@@ -12,11 +12,7 @@ type AgentStatusViewModel = {
 };
 
 export function useAgentStatusViewModel(): AgentStatusViewModel {
-  const { data, error, isPending, isError, isFetching, refetch } = useFocusedAgent(true);
-
-  function retry(): void {
-    void refetch();
-  }
+  const { data, error, isPending, isError, isFetching, retry } = useFocusedAgent(true);
 
   return {
     isLoading: isPending,

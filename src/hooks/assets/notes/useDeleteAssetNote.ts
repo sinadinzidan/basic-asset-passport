@@ -18,11 +18,17 @@ export function useDeleteAssetNote(assetIdentifier: AssetIdentifier) {
   const client = useAssetContext();
   const queryClient = useQueryClient();
 
-  return useMutation({
+  const mutation = useMutation({
     mutationFn: (note: NoteIdentifier) => deleteNote(client, note),
     onSuccess: () =>
       queryClient.invalidateQueries({
         queryKey: getAssetNotesQueryKey(client.project, assetIdentifier),
       }),
   });
+
+  return {
+    deleteNote: mutation.mutateAsync,
+    deletingNote: mutation.isPending ? mutation.variables : null,
+    error: mutation.error,
+  };
 }

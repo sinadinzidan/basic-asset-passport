@@ -18,11 +18,18 @@ export function useAddAssetNote(assetIdentifier: AssetIdentifier) {
   const client = useAssetContext();
   const queryClient = useQueryClient();
 
-  return useMutation({
+  const mutation = useMutation({
     mutationFn: (note: NewAssetNote) => createNote(client, assetIdentifier, note),
     onSuccess: () =>
       queryClient.invalidateQueries({
         queryKey: getAssetNotesQueryKey(client.project, assetIdentifier),
       }),
   });
+
+  return {
+    addNote: mutation.mutateAsync,
+    isAdding: mutation.isPending,
+    error: mutation.error,
+    discardError: mutation.reset,
+  };
 }

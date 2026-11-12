@@ -23,11 +23,18 @@ export function useUpdateAssetNote(assetIdentifier: AssetIdentifier) {
   const client = useAssetContext();
   const queryClient = useQueryClient();
 
-  return useMutation({
+  const mutation = useMutation({
     mutationFn: ({ note, input }: UpdateAssetNoteRequest) => updateNote(client, note, input),
     onSuccess: () =>
       queryClient.invalidateQueries({
         queryKey: getAssetNotesQueryKey(client.project, assetIdentifier),
       }),
   });
+
+  return {
+    updateNote: mutation.mutateAsync,
+    isUpdating: mutation.isPending,
+    error: mutation.error,
+    discardError: mutation.reset,
+  };
 }

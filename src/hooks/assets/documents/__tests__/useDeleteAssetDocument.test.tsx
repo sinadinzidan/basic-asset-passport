@@ -44,7 +44,7 @@ describe(useDeleteAssetDocument.name, () => {
     const { result } = renderHook(() => useDeleteAssetDocument(assetIdentifier), { wrapper });
 
     await act(async () => {
-      await result.current.mutateAsync(document);
+      await result.current.deleteDocument(document);
     });
 
     expect(mockContext.deleteAssetDocument).toHaveBeenCalledWith(client, document);
@@ -55,7 +55,7 @@ describe(useDeleteAssetDocument.name, () => {
     const { result } = renderHook(() => useDeleteAssetDocument(assetIdentifier), { wrapper });
 
     await act(async () => {
-      await result.current.mutateAsync(document);
+      await result.current.deleteDocument(document);
     });
 
     expect(invalidate).toHaveBeenCalledWith({
@@ -69,10 +69,10 @@ describe(useDeleteAssetDocument.name, () => {
     const { result } = renderHook(() => useDeleteAssetDocument(assetIdentifier), { wrapper });
 
     await act(async () => {
-      await result.current.mutateAsync(document).catch(() => undefined);
+      await result.current.deleteDocument(document).catch(() => undefined);
     });
 
-    await waitFor(() => expect(result.current.isError).toBe(true));
+    await waitFor(() => expect(result.current.error).not.toBeNull());
     expect(invalidate).not.toHaveBeenCalled();
   });
 });

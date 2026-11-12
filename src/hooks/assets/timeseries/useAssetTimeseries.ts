@@ -7,6 +7,7 @@ import {
   TIMESERIES_QUERY_STALE_TIME_MS,
 } from '../../../constants/timeseries';
 import { isKeyOfList } from '../../../lib/queryKeys';
+import { toQueryState } from '../../../lib/queryState';
 import { listAssetTimeseries } from '../../../services/assets/timeseries/assetTimeseries';
 import type { AssetIdentifier } from '../../../types/asset';
 import { useAssetContext } from '../useAssetContext';
@@ -38,11 +39,13 @@ export function useAssetTimeseries(
 
   const listKey = getAssetTimeseriesQueryKey(client.project, assetIdentifier);
 
-  return useQuery({
+  const query = useQuery({
     queryKey: [...listKey, limit],
     queryFn: () => loadTimeseries(client, assetIdentifier, limit),
     staleTime: TIMESERIES_QUERY_STALE_TIME_MS,
     placeholderData: (previousData, previousQuery) =>
       isKeyOfList(previousQuery?.queryKey, listKey) ? previousData : undefined,
   });
+
+  return toQueryState(query);
 }

@@ -38,7 +38,7 @@ describe(useAssetDetails.name, () => {
     const { result } = renderHook(() => useAssetDetails(assetIdentifier), { wrapper });
 
     expect(result.current.isPending).toBe(true);
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    await waitFor(() => expect(result.current.isPending).toBe(false));
   });
 
   it('loads the asset with the injected client', async () => {

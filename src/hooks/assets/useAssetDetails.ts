@@ -3,6 +3,7 @@ import { createContext, useContext } from 'react';
 
 import { MODEL } from '../../config/model';
 import { ASSET_QUERY_STALE_TIME_MS } from '../../constants/assets';
+import { toQueryState } from '../../lib/queryState';
 import { getAssetDetails } from '../../services/assets/assetDetails';
 import type { AssetIdentifier } from '../../types/asset';
 
@@ -17,7 +18,7 @@ export function useAssetDetails(assetIdentifier: AssetIdentifier) {
   const { getAssetDetails: loadDetails } = useContext(UseAssetDetailsContext);
   const client = useAssetContext();
 
-  return useQuery({
+  const query = useQuery({
     queryKey: [
       'asset-details',
       client.project,
@@ -31,4 +32,6 @@ export function useAssetDetails(assetIdentifier: AssetIdentifier) {
     queryFn: () => loadDetails(client, assetIdentifier),
     staleTime: ASSET_QUERY_STALE_TIME_MS,
   });
+
+  return toQueryState(query);
 }

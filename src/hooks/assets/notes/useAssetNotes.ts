@@ -4,6 +4,7 @@ import { createContext, useContext } from 'react';
 import { MODEL } from '../../../config/model';
 import { NOTE_QUERY_LIMIT, NOTE_QUERY_STALE_TIME_MS } from '../../../constants/notes';
 import { isKeyOfList } from '../../../lib/queryKeys';
+import { toQueryState } from '../../../lib/queryState';
 import { listAssetNotes } from '../../../services/assets/notes/assetNote';
 import type { AssetIdentifier } from '../../../types/asset';
 import { useAssetContext } from '../useAssetContext';
@@ -32,11 +33,13 @@ export function useAssetNotes(assetIdentifier: AssetIdentifier, limit: number = 
 
   const listKey = getAssetNotesQueryKey(client.project, assetIdentifier);
 
-  return useQuery({
+  const query = useQuery({
     queryKey: [...listKey, limit],
     queryFn: () => loadNotes(client, assetIdentifier, limit),
     staleTime: NOTE_QUERY_STALE_TIME_MS,
     placeholderData: (previousData, previousQuery) =>
       isKeyOfList(previousQuery?.queryKey, listKey) ? previousData : undefined,
   });
+
+  return toQueryState(query);
 }

@@ -45,7 +45,7 @@ describe(useFocusedAgent.name, () => {
       ),
     });
 
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    await waitFor(() => expect(result.current.isPending).toBe(false));
     expect(getAgent).toHaveBeenCalledWith(FOCUSED_AGENT_EXTERNAL_ID);
   });
 

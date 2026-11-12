@@ -62,7 +62,7 @@ describe(useUploadingDocumentNames.name, () => {
     );
 
     act(() => {
-      result.current.upload.mutate([makeFile('a.pdf'), makeFile('b.pdf')]);
+      void result.current.upload.upload([makeFile('a.pdf'), makeFile('b.pdf')]);
     });
 
     await waitFor(() => expect(result.current.names).toEqual(['a.pdf', 'b.pdf']));
@@ -78,10 +78,10 @@ describe(useUploadingDocumentNames.name, () => {
     );
 
     act(() => {
-      result.current.upload.mutate([makeFile('a.pdf')]);
+      void result.current.upload.upload([makeFile('a.pdf')]);
     });
 
-    await waitFor(() => expect(result.current.upload.isPending).toBe(true));
+    await waitFor(() => expect(result.current.upload.isUploading).toBe(true));
     expect(result.current.names).toEqual([]);
   });
 });

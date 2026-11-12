@@ -21,16 +21,12 @@ export function useAssetTableViewModel() {
     isError,
     isFetching,
     isPending,
-    refetch,
+    retry,
   } = useAssets(registerCursors?.[registerCursors.length - 1], searchQuery);
 
   const pageCursors = registerCursors ?? [];
   const isSearching = searchQuery !== '';
   const nextCursor = assetPage?.nextCursor ?? null;
-
-  function retry(): void {
-    void refetch();
-  }
 
   function goToNextPage(): void {
     if (nextCursor) goToNextRegisterPage(nextCursor);

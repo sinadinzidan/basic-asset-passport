@@ -39,7 +39,7 @@ describe(useTimeseriesTrends.name, () => {
       wrapper,
     });
 
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    await waitFor(() => expect(result.current.isPending).toBe(false));
     expect(client.getTrends).toHaveBeenCalledTimes(1);
     expect(client.getTrends).toHaveBeenCalledWith([first, second], {
       from: NOW - TREND_WINDOW_MS,
@@ -53,7 +53,7 @@ describe(useTimeseriesTrends.name, () => {
       wrapper,
     });
 
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    await waitFor(() => expect(result.current.isPending).toBe(false));
     expect(result.current.data?.get(getTimeseriesKey(first))).toEqual({
       ...first,
       points: [{ timestamp: NOW - 1000, value: 4 }],
@@ -64,7 +64,7 @@ describe(useTimeseriesTrends.name, () => {
   it('fetches nothing for an empty list', () => {
     const { result } = renderHook(() => useTimeseriesTrends([]), { wrapper });
 
-    expect(result.current.fetchStatus).toBe('idle');
+    expect(result.current.isFetching).toBe(false);
     expect(client.getTrends).not.toHaveBeenCalled();
   });
 

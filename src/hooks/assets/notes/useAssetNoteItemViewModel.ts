@@ -7,16 +7,16 @@ export function useAssetNoteItemViewModel(
   assetIdentifier: AssetIdentifier,
   { space, externalId }: NoteIdentifier,
 ) {
-  const updateMutation = useUpdateAssetNote(assetIdentifier);
+  const { updateNote, isUpdating, error, discardError } = useUpdateAssetNote(assetIdentifier);
 
   function save(input: NewAssetNote, onSaved: () => void): void {
-    updateMutation.mutate({ note: { space, externalId }, input }, { onSuccess: onSaved });
+    void updateNote({ note: { space, externalId }, input }).then(onSaved, () => undefined);
   }
 
   return {
-    isSaving: updateMutation.isPending,
-    saveErrorMessage: updateMutation.isError ? updateMutation.error.message : null,
+    isSaving: isUpdating,
+    saveErrorMessage: error?.message ?? null,
     save,
-    discardSaveError: updateMutation.reset,
+    discardSaveError: discardError,
   };
 }

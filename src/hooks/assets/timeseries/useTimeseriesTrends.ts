@@ -6,6 +6,7 @@ import {
   TREND_QUERY_STALE_TIME_MS,
   TREND_WINDOW_MS,
 } from '../../../constants/timeseries';
+import { toQueryState } from '../../../lib/queryState';
 import { getTimeseriesKey } from '../../../lib/timeseriesProperties';
 import type { TimeseriesIdentifier, TimeseriesTrend } from '../../../types/timeseries';
 
@@ -21,7 +22,7 @@ export function useTimeseriesTrends(identifiers: TimeseriesIdentifier[]) {
   const { now } = useContext(UseTimeseriesTrendsContext);
   const client = useTimeseriesContext();
 
-  return useQuery({
+  const query = useQuery({
     queryKey: [
       'timeseries-trends',
       client.project,
@@ -41,4 +42,6 @@ export function useTimeseriesTrends(identifiers: TimeseriesIdentifier[]) {
     enabled: identifiers.length > 0,
     staleTime: TREND_QUERY_STALE_TIME_MS,
   });
+
+  return toQueryState(query);
 }

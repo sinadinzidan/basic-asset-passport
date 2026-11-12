@@ -5,6 +5,7 @@ import { MODEL } from '../../../config/model';
 import { DOCUMENT_QUERY_LIMIT, DOCUMENT_QUERY_STALE_TIME_MS } from '../../../constants/documents';
 import { getDocumentRefetchInterval } from '../../../lib/documentPolling';
 import { isKeyOfList } from '../../../lib/queryKeys';
+import { toQueryState } from '../../../lib/queryState';
 import { listAssetDocuments } from '../../../services/assets/documents/assetDocument';
 import type { AssetIdentifier } from '../../../types/asset';
 import { useAssetContext } from '../useAssetContext';
@@ -36,7 +37,7 @@ export function useAssetDocuments(
 
   const listKey = getAssetDocumentsQueryKey(client.project, assetIdentifier);
 
-  return useQuery({
+  const query = useQuery({
     queryKey: [...listKey, limit],
     queryFn: () => loadDocuments(client, assetIdentifier, limit),
     staleTime: DOCUMENT_QUERY_STALE_TIME_MS,
@@ -44,4 +45,6 @@ export function useAssetDocuments(
     placeholderData: (previousData, previousQuery) =>
       isKeyOfList(previousQuery?.queryKey, listKey) ? previousData : undefined,
   });
+
+  return toQueryState(query);
 }
