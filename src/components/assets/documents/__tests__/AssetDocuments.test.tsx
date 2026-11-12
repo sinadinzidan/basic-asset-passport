@@ -1,0 +1,78 @@
+import { render, screen } from '@testing-library/react';
+import type { ComponentType, ReactNode } from 'react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import {
+  UseAssetDocumentsContext,
+  type UseAssetDocumentsContextType,
+} from '../../../../hooks/assets/documents/useAssetDocuments';
+import {
+  UseAssetLinkedFilesContext,
+  type UseAssetLinkedFilesContextType,
+} from '../../../../hooks/assets/documents/useAssetLinkedFiles';
+import { DocumentFileContext } from '../../../../hooks/assets/documents/useDocumentFileContext';
+import { AssetContext } from '../../../../hooks/assets/useAssetContext';
+import { makeMockClient } from '../../../../mocks/cogniteClient';
+import { makeAssetDocument } from '../../../../mocks/documents';
+import { makeLimitedList } from '../../../../mocks/lists';
+import { makeQueryClientWrapper } from '../../../../mocks/QueryClientWrapper';
+import type { DocumentFileContextType } from '../../../../types/documentFileContext';
+import { AssetDocuments } from '../AssetDocuments';
+
+const assetIdentifier = { space: 'asset-space', externalId: 'FLOC-1' };
+
+describe(AssetDocuments.name, () => {
+  let listContext: UseAssetDocumentsContextType;
+  let linkedContext: UseAssetLinkedFilesContextType;
+  let wrapper: ComponentType<{ children: ReactNode }>;
+
+  beforeEach(() => {
+    const client = makeMockClient();
+    const files: DocumentFileContextType = {
+      requestUploadUrl: vi.fn(() => Promise.resolve('https://upload.test/doc-1')),
+      uploadContent: vi.fn(() => Promise.resolve()),
+    };
+    listContext = {
+      listAssetDocuments: vi.fn(() => Promise.resolve(makeLimitedList([makeAssetDocument()]))),
+    };
+    linkedContext = {
+      listAssetLinkedFiles: vi.fn(() => Promise.resolve(makeLimitedList([]))),
+    };
+    const QueryWrapper = makeQueryClientWrapper();
+    wrapper = ({ children }) => (
+      <UseAssetDocumentsContext.Provider value={listContext}>
+        <UseAssetLinkedFilesContext.Provider value={linkedContext}>
+          <QueryWrapper>
+            <AssetContext.Provider value={client}>
+              <DocumentFileContext.Provider value={files}>{children}</DocumentFileContext.Provider>
+            </AssetContext.Provider>
+          </QueryWrapper>
+        </UseAssetLinkedFilesContext.Provider>
+      </UseAssetDocumentsContext.Provider>
+    );
+  });
+
+  it('puts the upload control above the documents of the asset', async () => {
+    render(<AssetDocuments assetIdentifier={assetIdentifier} />, { wrapper });
+
+    const upload = screen.getByRole('region', { name: 'Upload documents' });
+    const document = await screen.findByRole('heading', { name: 'Pump manual.pdf' });
+    expect(upload.compareDocumentPosition(document)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+  });
+
+  it('reads the documents and existing files of the asset it is given', async () => {
+    render(<AssetDocuments assetIdentifier={assetIdentifier} />, { wrapper });
+    await screen.findByRole('heading', { name: 'Pump manual.pdf' });
+
+    expect(listContext.listAssetDocuments).toHaveBeenCalledWith(
+      expect.anything(),
+      assetIdentifier,
+      expect.any(Number),
+    );
+    expect(linkedContext.listAssetLinkedFiles).toHaveBeenCalledWith(
+      expect.anything(),
+      assetIdentifier,
+      expect.any(Number),
+    );
+  });
+});
