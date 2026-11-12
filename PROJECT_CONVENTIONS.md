@@ -232,8 +232,7 @@ export function AssetList({ page, search }: AssetListProps) {
   (`<AssetContext.Provider value={makeMockClient()}>`).
 - Keep a per-hook deps context (`Use<Name>Context`) only for what no provider
   supplies: service functions, clocks, timers, ID generators. Delete it when
-  nothing is left in it. This narrows the React context pattern in
-  `AGENTS.md` §3.
+  nothing is left in it.
 - Use host integration for project context and credentials. Never hardcode
   credentials, tokens, or deployment-specific runtime project context.
 - Include project and relevant filters in query keys.
