@@ -31,6 +31,7 @@ describe(useAgentChatState.name, () => {
 
   it('reads the store it is given instead of the app store', () => {
     const store = createAgentChatStore({
+      ...INITIAL_AGENT_CHAT_STATE,
       conversations: { [AGENT_EXTERNAL_ID]: { ...EMPTY_CONVERSATION, messages: [question] } },
     });
 

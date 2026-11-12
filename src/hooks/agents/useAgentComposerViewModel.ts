@@ -1,15 +1,14 @@
-import { useState } from 'react';
-
 import { appendSpokenText } from '../../lib/appendSpokenText';
 import { useSpeechDictation } from '../general/useSpeechDictation';
 
+import { useAgentChatState } from './useAgentChatState';
 import { useAgentChatViewModel } from './useAgentChatViewModel';
 
 export function useAgentComposerViewModel() {
   const { messages, isSending, errorMessage, send, retry, startNewChat } = useAgentChatViewModel();
   const dictation = useSpeechDictation();
-
-  const [draft, setDraft] = useState('');
+  const draft = useAgentChatState((store) => store.draft);
+  const setDraft = useAgentChatState((store) => store.changeDraft);
 
   const canSend = draft.trim() !== '' && !isSending;
   const canStartNewChat = messages.length > 0 && !isSending;

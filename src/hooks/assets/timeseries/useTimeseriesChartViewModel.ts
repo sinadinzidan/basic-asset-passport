@@ -7,7 +7,7 @@ import {
   type ChartConfiguration,
   type ChartDataSource,
 } from '@flows/trend-chart';
-import { createContext, useContext, useMemo, useState } from 'react';
+import { createContext, useContext, useMemo } from 'react';
 
 import {
   CHART_MOCK_SOURCE_NAME,
@@ -33,10 +33,10 @@ export function useTimeseriesChartViewModel(
   const { now } = useContext(UseTimeseriesChartViewModelContext);
   const options = useNavigationState((store) => store.navigationState.timeseriesChart ?? null);
   const changeTimeseriesChart = useNavigationState((store) => store.actions.changeTimeseriesChart);
+  const clockMs = useNavigationState((store) => store.timeseriesChartClockMs);
   const client = useTimeseriesContext();
 
-  const [nowMs, setNowMs] = useState(() => currentMinuteMs(now));
-
+  const nowMs = currentMinuteMs(clockMs === null ? now : () => clockMs);
   const isOpen = options !== null;
   const isSimulated = client.isSimulated === true;
   const source = useMemo<ChartDataSource>(
@@ -56,7 +56,6 @@ export function useTimeseriesChartViewModel(
 
   function openSeries(seriesId: string, title: string): void {
     const endMs = currentMinuteMs(now);
-    setNowMs(endMs);
     changeTimeseriesChart(
       serialiseConfiguration(
         createChartConfiguration([seriesId], {
@@ -65,6 +64,7 @@ export function useTimeseriesChartViewModel(
           window: { start: endMs - CHART_OPEN_WINDOW_MS, end: endMs },
         }),
       ),
+      endMs,
     );
   }
 

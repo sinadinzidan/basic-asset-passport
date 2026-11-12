@@ -1,8 +1,7 @@
-import { useState } from 'react';
-
 import { PanelPhase } from '../../enums/panelPhase';
 import { useNavigationState } from '../general/useNavigationState';
 
+import { useAgentChatState } from './useAgentChatState';
 import { useAgentChatViewModel } from './useAgentChatViewModel';
 import { useAgentGreeting } from './useAgentGreeting';
 
@@ -11,9 +10,10 @@ export function useAgentHelperViewModel() {
   const { isIntroShown, dismissIntro } = useAgentGreeting();
   const isOpen = useNavigationState((store) => store.navigationState.isAssistantOpen === true);
   const changeAssistantOpen = useNavigationState((store) => store.actions.changeAssistantOpen);
-
-  const [isPointedAt, setIsPointedAt] = useState(false);
-  const [isClosing, setIsClosing] = useState(false);
+  const isPointedAt = useAgentChatState((store) => store.isMascotPointedAt);
+  const isClosing = useAgentChatState((store) => store.isPanelClosing);
+  const setIsPointedAt = useAgentChatState((store) => store.changeMascotPointedAt);
+  const setIsClosing = useAgentChatState((store) => store.changePanelClosing);
 
   const phase = isOpen ? PanelPhase.OPEN : isClosing ? PanelPhase.CLOSING : PanelPhase.CLOSED;
 

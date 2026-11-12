@@ -5,10 +5,12 @@ import type { NavigationStore } from '../../types/navigation';
 
 export type NavigationDeps = {
   logError: (message: string, error: unknown) => void;
+  now: () => number;
 };
 
 const defaultDeps: NavigationDeps = {
   logError: (message, error) => console.error(message, error),
+  now: () => Date.now(),
 };
 
 export const NavigationContext = createContext<NavigationDeps>(defaultDeps);

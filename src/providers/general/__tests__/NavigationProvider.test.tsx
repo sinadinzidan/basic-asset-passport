@@ -21,7 +21,7 @@ describe(NavigationProvider.name, () => {
     api = {
       syncInternalState: vi.fn<StateSyncApi['syncInternalState']>(() => Promise.resolve(true)),
     };
-    deps = { logError: vi.fn() };
+    deps = { logError: vi.fn(), now: () => 5000 };
   });
 
   function renderProvider(hostApi: StateSyncApi | null, initialState?: string) {
@@ -39,6 +39,12 @@ describe(NavigationProvider.name, () => {
 
     expect(screen.getByText('Searching for pump')).toBeVisible();
     expect(api.syncInternalState).not.toHaveBeenCalled();
+  });
+
+  it('starts the chart clock at the time the app opened', () => {
+    renderProvider(api);
+
+    expect(screen.getByText('Chart clock 5000')).toBeVisible();
   });
 
   it('falls back to the register when the host state is unreadable', () => {
@@ -95,10 +101,12 @@ describe(NavigationProvider.name, () => {
 function Probe() {
   const searchQuery = useNavigationState((store) => store.navigationState.searchQuery);
   const { changeSearchQuery, selectAsset } = useNavigationState((store) => store.actions);
+  const chartClockMs = useNavigationState((store) => store.timeseriesChartClockMs);
 
   return (
     <>
       <p>Searching for {searchQuery ?? 'nothing'}</p>
+      <p>Chart clock {chartClockMs}</p>
       <button onClick={() => changeSearchQuery('pump')} type="button">
         Search for pump
       </button>

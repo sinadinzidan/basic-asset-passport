@@ -184,14 +184,11 @@ export function AssetList({ page, search }: AssetListProps) {
   up subscriptions or obsolete asynchronous work.
 - Derive values instead of copying them into state. Use TanStack Query for
   server data and the Flows host for shareable state, as in `AGENTS.md`.
-- Transient state may remain local. Share state through context/storage when
-  consumers must stay synchronized; do not add a store solely for isolated
-  local state. This qualifies the template's blanket ViewModel state ban.
-- A ViewModel that a single component calls holds its transient state with
-  `useState` directly (`useAgentComposerViewModel`'s draft). Do not wrap
-  `useState` in a `use<Name>State` hook only to keep it out of the ViewModel.
-  When a second component needs the same state, move it to the shared store
-  instead of calling the ViewModel twice.
+- A ViewModel hook holds no state of its own (`useState`, `useReducer`), as the
+  Flows template says: its state lives in the shared storage layer, a store in
+  `src/store/` or a context-backed hook, and the ViewModel composes it with
+  commands and derived values. In-flight form input and other transient state
+  of one component may stay in that component.
 - Client state that changes often and is read in several places lives in a
   Zustand store (Flows recommends it over context for that case), in
   `src/store/<name>.ts` when the whole app reads it (`navigation.ts`, `agents.ts`), or in a group folder like `src/hooks/` when one feature does. Make the store with `createStore` from

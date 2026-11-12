@@ -252,4 +252,44 @@ describe(createNavigationStore.name, () => {
 
     expect(store.getState().navigationState.isAssistantOpen).toBe(true);
   });
+
+  it('has no chart clock until it is given one', () => {
+    const store = createNavigationStore();
+
+    expect(store.getState().timeseriesChartClockMs).toBeNull();
+  });
+
+  it('starts with the chart clock it is given', () => {
+    const store = createNavigationStore({ timeseriesChartClockMs: 5000 });
+
+    expect(store.getState().timeseriesChartClockMs).toBe(5000);
+  });
+
+  it('sets the chart clock when a chart is opened with a time', () => {
+    const store = createNavigationStore();
+
+    store.getState().actions.changeTimeseriesChart({ sig: 'ts:PI.1' }, 9000);
+
+    expect(store.getState().timeseriesChartClockMs).toBe(9000);
+  });
+
+  it('keeps the chart clock when the open chart changes without a time', () => {
+    const store = createNavigationStore();
+    store.getState().actions.changeTimeseriesChart({ sig: 'ts:PI.1' }, 9000);
+
+    store.getState().actions.changeTimeseriesChart({ sig: 'ts:PI.1', title: 'Pressure' });
+
+    expect(store.getState().timeseriesChartClockMs).toBe(9000);
+  });
+
+  it('does not send the chart clock to the host', () => {
+    const onChange = vi.fn();
+    const store = createNavigationStore({ onChange });
+
+    store.getState().actions.changeTimeseriesChart({ sig: 'ts:PI.1' }, 9000);
+
+    expect(onChange).toHaveBeenCalledWith(
+      expect.not.objectContaining({ timeseriesChartClockMs: expect.anything() }),
+    );
+  });
 });

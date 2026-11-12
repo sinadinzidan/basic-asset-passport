@@ -325,8 +325,8 @@ the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines
 - Each agent reply ends with a small copy icon button (its tooltip reads "Copy response"). It copies the reply's text, then shows a check
   ("Copied") for about two seconds; if the browser refuses the clipboard it shows "Could not copy". Your own
   questions have no copy icon.
-- The conversation is kept while the app is open (it is not synced
-  to the URL and is gone after a reload). Replies are shown as plain text.
+- The conversation and a question still being written are kept while the app is open, also when the panel is closed (they are not synced
+  to the URL and are gone after a reload). Replies are shown as plain text.
 - An agent that needs approval to run a tool cannot be answered: the chat says
   "This agent needs approval to run a tool, which this chat cannot give." Tools
   that run without approval work as usual.
