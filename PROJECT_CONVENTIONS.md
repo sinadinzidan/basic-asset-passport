@@ -237,10 +237,18 @@ export function AssetList({ page, search }: AssetListProps) {
 - Use host integration for project context and credentials. Never hardcode
   credentials, tokens, or deployment-specific runtime project context.
 - Include project and relevant filters in query keys.
-- Prefer small typed service functions. Interface/class services and
-  ViewModel hooks are appropriate only when useful; they are not mandatory
-  for every operation. This supersedes the template's blanket class and
-  ViewModel requirements, without weakening dependency injection.
+- A service is an interface implemented by a class, as the Flows template
+  says. The file exports the interface and a `create<Name>` factory and keeps
+  the class to itself, so nothing outside the file names the concrete class.
+  Methods are arrow properties, so one can be passed on without losing `this`.
+  A clock, ID generator or `fetch` the service needs goes into its constructor
+  through the factory's `overrides`, not into each call.
+- A hook gets the factory through its deps context and builds the service from
+  the signed-in client (`createAssetNoteService(client)`), typed to the methods
+  it uses (`Pick<AssetNoteService, 'listAssetNotes'>`). A test supplies
+  `{ createAssetNoteService: () => mockService }`.
+- Pure helpers a service is built from (filters, sorts, parsers, the view
+  lookup) stay plain functions that take what they need as arguments.
 - Keep mocks separate from real CDF services. Do not add empty abstractions.
 - Every list of an asset (notes, documents, existing files, timeseries,
   equipment, search matches) is read with a limit and sorted on the server,

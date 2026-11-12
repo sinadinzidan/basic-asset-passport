@@ -17,11 +17,11 @@ export type AgentReply = {
   cursor: string | null;
 };
 
-export type AgentContextType = {
+export interface AgentContextType {
   project: string;
   getAgent: (externalId: string) => Promise<CdfAgent | null>;
   chat: (request: AgentChatRequest) => Promise<AgentReply>;
-};
+}
 
 export type ChatMessage = {
   id: string;

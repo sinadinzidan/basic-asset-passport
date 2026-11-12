@@ -14,49 +14,65 @@ import type {
 
 type DatapointsSdk = Pick<CogniteClient, 'project' | 'post'>;
 
-export function createTimeseriesContext(sdk: DatapointsSdk): TimeseriesContextType {
-  async function requestChunk(
+class CdfTimeseriesContext implements TimeseriesContextType {
+  readonly project: string;
+
+  constructor(private readonly sdk: DatapointsSdk) {
+    this.project = sdk.project;
+  }
+
+  getTrends = async (
+    identifiers: TimeseriesIdentifier[],
+    window: TimeseriesTrendWindow,
+    options: TimeseriesTrendOptions = {},
+  ): Promise<TimeseriesTrend[]> => {
+    const chunks: TimeseriesIdentifier[][] = [];
+    for (let start = 0; start < identifiers.length; start += TREND_REQUEST_CHUNK_SIZE) {
+      chunks.push(identifiers.slice(start, start + TREND_REQUEST_CHUNK_SIZE));
+    }
+
+    if (options.isStrict) {
+      const trends = await Promise.all(chunks.map((chunk) => this.requestChunk(chunk, window)));
+      return trends.flat();
+    }
+
+    const results = await Promise.allSettled(
+      chunks.map((chunk) => this.requestChunk(chunk, window)),
+    );
+
+    return results.flatMap((result, chunkIndex) =>
+      result.status === FULFILLED_PROMISE_STATUS
+        ? result.value
+        : (chunks[chunkIndex] ?? []).map(toFailedTrend),
+    );
+  };
+
+  private async requestChunk(
     identifiers: TimeseriesIdentifier[],
     window: TimeseriesTrendWindow,
   ): Promise<TimeseriesTrend[]> {
-    const response = await sdk.post(`/api/v1/projects/${sdk.project}/timeseries/data/list`, {
-      data: {
-        items: identifiers.map(({ space, externalId }) => ({
-          instanceId: { space, externalId },
-        })),
-        start: Math.round(window.from),
-        end: Math.round(window.to),
-        aggregates: [AVERAGE_AGGREGATE],
-        granularity: window.granularity,
-        ...(window.limit === undefined ? {} : { limit: window.limit }),
+    const response = await this.sdk.post(
+      `/api/v1/projects/${this.sdk.project}/timeseries/data/list`,
+      {
+        data: {
+          items: identifiers.map(({ space, externalId }) => ({
+            instanceId: { space, externalId },
+          })),
+          start: Math.round(window.from),
+          end: Math.round(window.to),
+          aggregates: [AVERAGE_AGGREGATE],
+          granularity: window.granularity,
+          ...(window.limit === undefined ? {} : { limit: window.limit }),
+        },
       },
-    });
+    );
 
     return readTrends(response.data);
   }
+}
 
-  return {
-    project: sdk.project,
-    async getTrends(identifiers, window, options: TimeseriesTrendOptions = {}) {
-      const chunks: TimeseriesIdentifier[][] = [];
-      for (let start = 0; start < identifiers.length; start += TREND_REQUEST_CHUNK_SIZE) {
-        chunks.push(identifiers.slice(start, start + TREND_REQUEST_CHUNK_SIZE));
-      }
-
-      if (options.isStrict) {
-        const trends = await Promise.all(chunks.map((chunk) => requestChunk(chunk, window)));
-        return trends.flat();
-      }
-
-      const results = await Promise.allSettled(chunks.map((chunk) => requestChunk(chunk, window)));
-
-      return results.flatMap((result, chunkIndex) =>
-        result.status === FULFILLED_PROMISE_STATUS
-          ? result.value
-          : (chunks[chunkIndex] ?? []).map(toFailedTrend),
-      );
-    },
-  };
+export function createTimeseriesContext(sdk: DatapointsSdk): TimeseriesContextType {
+  return new CdfTimeseriesContext(sdk);
 }
 
 function toFailedTrend({ space, externalId }: TimeseriesIdentifier): TimeseriesTrend {

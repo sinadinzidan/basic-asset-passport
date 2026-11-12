@@ -22,7 +22,7 @@ export type TimeseriesTrendOptions = {
   isStrict?: boolean;
 };
 
-export type TimeseriesContextType = {
+export interface TimeseriesContextType {
   project: string;
   isSimulated?: boolean;
   getTrends: (
@@ -30,7 +30,7 @@ export type TimeseriesContextType = {
     window: TimeseriesTrendWindow,
     options?: TimeseriesTrendOptions,
   ) => Promise<TimeseriesTrend[]>;
-};
+}
 
 export type TimeseriesPreview =
   | { kind: TimeseriesPreviewKind.LOADING }
