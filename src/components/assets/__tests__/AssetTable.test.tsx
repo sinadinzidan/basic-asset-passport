@@ -266,7 +266,7 @@ describe(AssetTable.name, () => {
     const items = Array.from({ length: ASSET_SEARCH_LIMIT }, (_item, index) =>
       makeAssetListItem({ externalId: `FLOC-${index}` }),
     );
-    vi.mocked(mockContext.searchAssets).mockResolvedValue(makeAssetPage(items));
+    vi.mocked(mockContext.searchAssets).mockResolvedValue(makeAssetPage(items, null, true));
 
     renderTable({ searchQuery: 'pump' });
 

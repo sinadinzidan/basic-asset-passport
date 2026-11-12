@@ -94,6 +94,7 @@ describe(makeMockAssetContext.name, () => {
     await expect(searchAssets(client, 'no-such-thing-xyz')).resolves.toEqual({
       items: [],
       nextCursor: null,
+      hasMore: false,
     });
   });
 

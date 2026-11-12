@@ -6,6 +6,8 @@ import { PageShell } from '../../components/general/PageShell';
 import { RetryAlert } from '../../components/general/RetryAlert';
 import { StatusPill } from '../../components/general/StatusPill';
 import {
+  ASSET_DETAILS_ERROR_DESCRIPTION,
+  ASSET_DETAILS_ERROR_TITLE,
   CRITICALITY_PROPERTY_IDENTIFIER,
   NAME_PROPERTY_IDENTIFIER,
   STATUS_PROPERTY_IDENTIFIER,
@@ -14,6 +16,7 @@ import { useAssetDetails } from '../../hooks/assets/useAssetDetails';
 import { useAssetDetailsTabCounts } from '../../hooks/assets/useAssetDetailsTabCounts';
 import { getPropertyValue } from '../../lib/assetProperties';
 import { getStatusTone } from '../../lib/assetStatus';
+import { getErrorReason } from '../../lib/errorReason';
 import type { AssetIdentifier } from '../../types/asset';
 
 type AssetDetailsProps = {
@@ -21,8 +24,7 @@ type AssetDetailsProps = {
 };
 
 export function AssetDetails({ assetIdentifier }: AssetDetailsProps) {
-  const { data, isError, isFetching, isPending, refetch } = useAssetDetails(assetIdentifier);
-
+  const { data, error, isError, isFetching, isPending, refetch } = useAssetDetails(assetIdentifier);
   const tabCounts = useAssetDetailsTabCounts(assetIdentifier);
 
   const assetName = getPropertyValue(data, NAME_PROPERTY_IDENTIFIER);
@@ -45,8 +47,9 @@ export function AssetDetails({ assetIdentifier }: AssetDetailsProps) {
     return (
       <PageShell>
         <RetryAlert
-          title="Asset details could not be loaded"
-          description="Check access to the Asset view, then try again."
+          title={ASSET_DETAILS_ERROR_TITLE}
+          description={ASSET_DETAILS_ERROR_DESCRIPTION}
+          reason={getErrorReason(error)}
           isRetrying={isFetching}
           onRetry={handleRetry}
         />

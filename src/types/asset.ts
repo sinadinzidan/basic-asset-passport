@@ -1,3 +1,5 @@
+import type { LimitedList } from './list';
+
 export type AssetListItem = {
   space: string;
   externalId: string;
@@ -24,7 +26,6 @@ export type AssetInstanceDetails = {
   properties: AssetPropertyDisplay[];
 };
 
-export type AssetPage = {
-  items: AssetListItem[];
+export type AssetPage = LimitedList<AssetListItem> & {
   nextCursor: string | null;
 };

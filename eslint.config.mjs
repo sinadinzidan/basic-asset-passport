@@ -42,6 +42,7 @@ const EXTERNAL_BOOLEAN_NAMES = [
   'shiftKey',
   'childList',
   'subtree',
+  'loading',
 ];
 
 const sharedRules = {

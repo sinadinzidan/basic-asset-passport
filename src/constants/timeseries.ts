@@ -57,3 +57,11 @@ export const CHART_MOCK_SOURCE_NAME = 'Mock time series (generated readings)';
 export const CHART_QUERY_LIMIT_FACTOR = 2;
 
 export const CHART_OPEN_WINDOW_MS = TREND_WINDOW_MS;
+
+export const TIMESERIES_LOADING_MESSAGE = 'Loading timeseries...';
+export const TIMESERIES_ERROR_TITLE = 'Timeseries could not be loaded';
+export const TIMESERIES_ERROR_DESCRIPTION = 'Check access to the Timeseries view, then try again.';
+export const TIMESERIES_EMPTY_TITLE = 'No timeseries linked';
+export const TIMESERIES_EMPTY_DESCRIPTION =
+  'There are no Timeseries instances linked to this asset.';
+export const SHOW_MORE_TIMESERIES_LABEL = 'Show more timeseries';

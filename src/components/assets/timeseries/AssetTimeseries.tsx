@@ -1,10 +1,19 @@
 import { lazy, Suspense } from 'react';
 
-import { TIMESERIES_QUERY_LIMIT } from '../../../constants/timeseries';
+import {
+  SHOW_MORE_TIMESERIES_LABEL,
+  TIMESERIES_EMPTY_DESCRIPTION,
+  TIMESERIES_EMPTY_TITLE,
+  TIMESERIES_ERROR_DESCRIPTION,
+  TIMESERIES_ERROR_TITLE,
+  TIMESERIES_LOADING_MESSAGE,
+  TIMESERIES_QUERY_LIMIT,
+} from '../../../constants/timeseries';
 import { LoadingNoticeVariant } from '../../../enums/loadingNoticeVariant';
 import { useAssetTimeseriesViewModel } from '../../../hooks/assets/timeseries/useAssetTimeseriesViewModel';
 import { useTimeseriesChartViewModel } from '../../../hooks/assets/timeseries/useTimeseriesChartViewModel';
 import { useListLimit } from '../../../hooks/general/useListLimit';
+import { getErrorReason } from '../../../lib/errorReason';
 import { getTimeseriesKey, getTimeseriesName } from '../../../lib/timeseriesProperties';
 import type { AssetIdentifier, AssetInstanceDetails } from '../../../types/asset';
 import { EmptyStateMessage } from '../../general/EmptyStateMessage';
@@ -26,8 +35,17 @@ type AssetTimeseriesProps = {
 
 export function AssetTimeseries({ assetIdentifier }: AssetTimeseriesProps) {
   const { limit, showMore } = useListLimit(TIMESERIES_QUERY_LIMIT);
-  const { items, timeseries, hasMore, isError, isFetching, isLoadingMore, isPending, retry } =
-    useAssetTimeseriesViewModel(assetIdentifier, limit);
+  const {
+    items,
+    timeseries,
+    hasMore,
+    error,
+    isError,
+    isFetching,
+    isLoadingMore,
+    isPending,
+    retry,
+  } = useAssetTimeseriesViewModel(assetIdentifier, limit);
   const chart = useTimeseriesChartViewModel(assetIdentifier, timeseries);
 
   function handleOpenChart(opened: AssetInstanceDetails): void {
@@ -38,7 +56,7 @@ export function AssetTimeseries({ assetIdentifier }: AssetTimeseriesProps) {
     return (
       <LoadingNotice
         className="p-6"
-        message="Loading timeseries..."
+        message={TIMESERIES_LOADING_MESSAGE}
         variant={LoadingNoticeVariant.CARD}
       />
     );
@@ -47,8 +65,9 @@ export function AssetTimeseries({ assetIdentifier }: AssetTimeseriesProps) {
   if (isError) {
     return (
       <RetryAlert
-        title="Timeseries could not be loaded"
-        description="Check access to the Timeseries view, then try again."
+        title={TIMESERIES_ERROR_TITLE}
+        description={TIMESERIES_ERROR_DESCRIPTION}
+        reason={getErrorReason(error)}
         isRetrying={isFetching}
         onRetry={retry}
       />
@@ -58,8 +77,8 @@ export function AssetTimeseries({ assetIdentifier }: AssetTimeseriesProps) {
   if (items.length === 0) {
     return (
       <EmptyStateMessage
-        title="No timeseries linked"
-        description="There are no Timeseries instances linked to this asset."
+        title={TIMESERIES_EMPTY_TITLE}
+        description={TIMESERIES_EMPTY_DESCRIPTION}
       />
     );
   }
@@ -78,7 +97,7 @@ export function AssetTimeseries({ assetIdentifier }: AssetTimeseriesProps) {
         </div>
         {hasMore ? (
           <ShowMoreButton
-            label="Show more timeseries"
+            label={SHOW_MORE_TIMESERIES_LABEL}
             isLoading={isLoadingMore}
             onShowMore={showMore}
           />

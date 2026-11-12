@@ -7,6 +7,8 @@ import {
   ASSET_SEARCH_PROPERTIES,
   ASSET_VIEW_EXTERNAL_ID,
 } from '../../constants/assets';
+import { INSTANCE_TYPE_NODE } from '../../constants/cdfApi';
+import { getRequestLimit, toLimitedList } from '../../lib/limitedList';
 import type { AssetListItem, AssetPage } from '../../types/asset';
 import type { AssetContextType } from '../../types/assetContext';
 
@@ -41,7 +43,9 @@ export async function listAssets(client: AssetContextType, cursor?: string): Pro
     .filter(isNodeInstance)
     .map((node) => toAssetListItem(node, assetView));
 
-  return { items, nextCursor: response.nextCursor.assets ?? null };
+  const nextCursor = response.nextCursor.assets ?? null;
+
+  return { items, nextCursor, hasMore: nextCursor !== null };
 }
 
 export async function searchAssets(
@@ -52,16 +56,16 @@ export async function searchAssets(
   const response = await client.instances.search({
     view: toViewReference(assetView),
     query: searchText,
-    instanceType: 'node',
+    instanceType: INSTANCE_TYPE_NODE,
     properties: [...ASSET_SEARCH_PROPERTIES],
-    limit: ASSET_SEARCH_LIMIT,
+    limit: getRequestLimit(ASSET_SEARCH_LIMIT),
   });
 
-  const items = response.items
+  const matches = response.items
     .filter(isNodeInstance)
     .map((node) => toAssetListItem(node, assetView));
 
-  return { items, nextCursor: null };
+  return { ...toLimitedList(matches, ASSET_SEARCH_LIMIT), nextCursor: null };
 }
 
 function toAssetListItem(node: NodeInstance, assetView: ViewDefinition): AssetListItem {

@@ -241,6 +241,7 @@ describe(AssetTimeseries.name, () => {
     renderList();
 
     expect(await screen.findByText('Timeseries could not be loaded')).toBeInTheDocument();
+    expect(screen.getByText('Reason: no access')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Retry' }));
 
     expect(await screen.findByRole('heading', { name: 'Discharge pressure' })).toBeInTheDocument();

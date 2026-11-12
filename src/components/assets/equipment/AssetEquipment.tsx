@@ -1,7 +1,15 @@
+import {
+  EQUIPMENT_EMPTY_DESCRIPTION,
+  EQUIPMENT_EMPTY_TITLE,
+  EQUIPMENT_ERROR_DESCRIPTION,
+  EQUIPMENT_ERROR_TITLE,
+  EQUIPMENT_LOADING_MESSAGE,
+} from '../../../constants/assets';
 import { AppAlertVariant } from '../../../enums/appAlertVariant';
 import { LoadingNoticeVariant } from '../../../enums/loadingNoticeVariant';
 import { useAssetEquipment } from '../../../hooks/assets/equipment/useAssetEquipment';
-import { formatCount } from '../../../lib/countBadge';
+import { formatEquipmentTruncatedMessage } from '../../../lib/assetMessage';
+import { getErrorReason } from '../../../lib/errorReason';
 import { getInstanceKey } from '../../../lib/instanceKey';
 import type { AssetIdentifier } from '../../../types/asset';
 import { AppAlert } from '../../general/AppAlert';
@@ -15,7 +23,8 @@ type AssetEquipmentProps = {
 };
 
 export function AssetEquipment({ assetIdentifier }: AssetEquipmentProps) {
-  const { data, isError, isFetching, isPending, refetch } = useAssetEquipment(assetIdentifier);
+  const { data, error, isError, isFetching, isPending, refetch } =
+    useAssetEquipment(assetIdentifier);
 
   function handleRetry(): void {
     void refetch();
@@ -25,7 +34,7 @@ export function AssetEquipment({ assetIdentifier }: AssetEquipmentProps) {
     return (
       <LoadingNotice
         className="p-6"
-        message="Loading equipment..."
+        message={EQUIPMENT_LOADING_MESSAGE}
         variant={LoadingNoticeVariant.CARD}
       />
     );
@@ -34,8 +43,9 @@ export function AssetEquipment({ assetIdentifier }: AssetEquipmentProps) {
   if (isError) {
     return (
       <RetryAlert
-        title="Equipment could not be loaded"
-        description="Check access to the Equipment view, then try again."
+        title={EQUIPMENT_ERROR_TITLE}
+        description={EQUIPMENT_ERROR_DESCRIPTION}
+        reason={getErrorReason(error)}
         isRetrying={isFetching}
         onRetry={handleRetry}
       />
@@ -44,10 +54,7 @@ export function AssetEquipment({ assetIdentifier }: AssetEquipmentProps) {
 
   if (data.items.length === 0) {
     return (
-      <EmptyStateMessage
-        title="No equipment linked"
-        description="There are no Equipment instances linked to this asset."
-      />
+      <EmptyStateMessage title={EQUIPMENT_EMPTY_TITLE} description={EQUIPMENT_EMPTY_DESCRIPTION} />
     );
   }
 
@@ -55,8 +62,7 @@ export function AssetEquipment({ assetIdentifier }: AssetEquipmentProps) {
     <div className="flex flex-col gap-5">
       {data.hasMore ? (
         <AppAlert variant={AppAlertVariant.INFO}>
-          Showing the first {formatCount(data.items.length)} equipment, sorted by name. This asset
-          has more.
+          {formatEquipmentTruncatedMessage(data.items.length)}
         </AppAlert>
       ) : null}
       {data.items.map((equipment) => (

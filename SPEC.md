@@ -51,14 +51,19 @@ the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines
 - A search box above the table searches the Asset view's name, description and
   plant with CDF's full-text search. What is typed shows at once and is applied
   after a short pause (300 ms), on Enter, or when cleared with the clear button;
-  a blank search lists every asset again. A search is one page of at most 100
-  matches with no paging; when it hits that limit the table says "Showing the
-  first 100 matches. Refine the search to narrow them." Changing the search
+  a blank search lists every asset again. The box follows the applied search
+  when that changes from elsewhere (for example a restored link). A search is
+  one page of at most 100 matches with no paging; when more than 100 assets
+  match (the app asks for one more than it shows to find out) the table says
+  "Showing the first 100 matches. Refine the search to narrow them." Exactly
+  100 matches show without that notice. Changing the search
   returns to the first page. The summary cards keep counting the whole register. The
   applied search is host-synced with the rest of the navigation state, so a
   reload or shared link restores it, and it is kept when an asset is opened and
   the user returns to the register.
-- Loading shows grid skeleton rows. An empty view shows "No assets found"; a
+- Loading a page for the first time shows grid skeleton rows; when a page
+  already on screen is read again in the background its rows stay. An empty
+  view shows "No assets found"; a
   search without matches shows "No matching assets" with the text searched for.
   A failed load shows "Assets could not be loaded" with a Retry action inside
   the table panel (the search box stays usable); it is never shown as an empty
@@ -82,7 +87,7 @@ the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines
   first 1,000 equipment, sorted by name. This asset has more."), Timeseries (see below), Notes and Documents (see below). Each equipment is a card with its name,
   "Equipment ID: <external ID>" and its properties as a grid of label and value
   cells. With no linked equipment the tab shows
-  "No equipment linked". The Timeseries, Notes and Documents tabs carry a count badge too. The server counts all four lists (an aggregate request per list, with the same filter the list uses and no row read), so each badge is the whole number, with a thousands separator and no "+": the equipment of the asset, the series linked to it, the notes, and the uploaded documents plus the files already linked to the asset. The counts start together with the request for the asset itself, without waiting for it. While a tab's list is being counted the tab is disabled and shows no badge, except the tab that is open (Properties is never disabled). A list that could not be counted shows no badge and its tab stays open; a list with nothing in it shows "0". Adding, editing or deleting a note or document counts again.
+  "No equipment linked"; a failed load shows "Equipment could not be loaded" with the reason and Retry. The Timeseries, Notes and Documents tabs carry a count badge too. The server counts all four lists (an aggregate request per list, with the same filter the list uses and no row read), so each badge is the whole number, with a thousands separator and no "+": the equipment of the asset, the series linked to it, the notes, and the uploaded documents plus the files already linked to the asset. The counts start together with the request for the asset itself, without waiting for it. While a tab's list is being counted the tab is disabled and shows no badge, except the tab that is open (Properties is never disabled). A list that could not be counted shows no badge and its tab stays open; a list with nothing in it shows "0". Adding, editing or deleting a note or document counts again.
 - The asset request reads only the asset. Each tab loads its own list when it is opened (or on load, when a shared link restores that tab).
 - Properties are every non-relation, non-JSON property the view defines and
   that has a value, labelled with the view property name. System and
@@ -90,7 +95,7 @@ the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines
   `createdByUser`) are hidden.
 - Loading shows a skeleton of the page (kicker, title with badges, tab bar and a card of property cells,
   announced as "Loading asset and equipment properties..."). A failed
-  load shows "Asset details could not be loaded" with Retry; the page is never shown with partial or fabricated data.
+  load shows "Asset details could not be loaded" with the reason (see "Load errors" below) and Retry; the page is never shown with partial or fabricated data.
 
 ## Asset timeseries
 
@@ -111,7 +116,8 @@ the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines
   shows a placeholder. A series whose `type` is `string` or `state` is not requested and shows "Not a numeric
   series: there is no trend to draw."; a series with no `type` is treated as numeric; a series with no readings in the window shows "No readings in the last 6 months."; if the
   readings cannot be loaded the preview says "The preview could not be loaded." and the rest of the card
-  stays. The chart has a text alternative giving the latest, lowest and highest reading.
+  stays. When only one of the requests fails, the series of that request say so and the others show their
+  readings; a failed read is never shown as a series without readings. The chart has a text alternative giving the latest, lowest and highest reading.
 - Clicking a series' preview (a hover hint reads "Open chart"; non-numeric series have no preview to click) opens that
   series in the trend chart over the whole screen, showing the last 6 months until another range is picked in the
   chart. The chart is the shared `@flows/trend-chart` package
@@ -128,7 +134,7 @@ the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines
   so a reload or shared link reopens the same chart. It is dropped when the asset or the tab changes or the chart
   is closed. In mock mode the readings are generated and the chart marks the source as simulated.
 - Loading shows "Loading timeseries..." in a plain card; a failed load shows "Timeseries could not be loaded"
-  with Retry; no series shows "No timeseries linked".
+  with the reason and Retry; no series shows "No timeseries linked".
 - The relation and fields follow RMDM's published schema (`end-to-end-asset-passport/schema.graphql`):
   `PI_Timeseries.assets` is the direct relation list to `Asset` (its reverse is `Asset.timeSeries`), `type` is
   `numeric`, `string` or `state`, and the unit is `engunits`. `unitName` is the plant unit the point belongs to,
@@ -462,7 +468,8 @@ the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines
   optional title, a message and an optional action. Variants are error,
   warning, info and success, taken from Aura's semantic colour tokens. Errors
   and warnings are announced as alerts; info and success as status.
-- Load errors: the asset register and the assistant show why the load failed
+- Load errors: every failed load (the register, an asset, its equipment, timeseries, notes, documents and
+  existing files, a linked asset, the summary counts and the assistant) shows why it failed
   on a second, muted line under the hint, as "Reason: ...". The reason is the
   message of the failure: what CDF answered, followed by the HTTP status in
   brackets when there is one (the request ID the SDK appends is left out), or

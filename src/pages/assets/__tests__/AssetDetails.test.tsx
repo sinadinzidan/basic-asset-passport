@@ -187,6 +187,14 @@ describe(AssetDetails.name, () => {
     expect(await screen.findByText('Equipment ID: P-1')).toBeInTheDocument();
   });
 
+  it('shows the reason the details cannot be loaded', async () => {
+    vi.mocked(mockContext.getAssetDetails).mockRejectedValue(new Error('No access to the view.'));
+
+    renderRegister();
+
+    expect(await screen.findByText('Reason: No access to the view.')).toBeInTheDocument();
+  });
+
   it('offers a retry when the details cannot be loaded', async () => {
     vi.mocked(mockContext.getAssetDetails).mockRejectedValueOnce(new Error('failed'));
 

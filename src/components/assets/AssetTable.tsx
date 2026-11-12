@@ -1,10 +1,20 @@
 import { DataGrid } from '@cognite/aura/data-grid';
 import type { Row } from '@tanstack/react-table';
 
-import { ASSET_QUERY_LIMIT, ASSET_SEARCH_LIMIT } from '../../constants/assets';
+import {
+  ASSET_QUERY_LIMIT,
+  ASSET_SEARCH_TRUNCATED_MESSAGE,
+  ASSETS_EMPTY_DESCRIPTION,
+  ASSETS_EMPTY_TITLE,
+  ASSETS_ERROR_DESCRIPTION,
+  ASSETS_ERROR_TITLE,
+  ASSETS_LATER_PAGE_ERROR_DESCRIPTION,
+  ASSETS_NO_MATCH_TITLE,
+} from '../../constants/assets';
 import { HudShape } from '../../enums/hudShape';
 import { useAssets } from '../../hooks/assets/useAssets';
 import { useNavigationState } from '../../hooks/general/useNavigationState';
+import { formatNoMatchingAssetsMessage } from '../../lib/assetMessage';
 import { getErrorReason } from '../../lib/errorReason';
 import { getInstanceKey } from '../../lib/instanceKey';
 import type { AssetListItem } from '../../types/asset';
@@ -44,15 +54,21 @@ export function AssetTable() {
     selectAsset,
   } = useNavigationState((store) => store.actions);
 
-  const pageCursors = registerCursors ?? [];
-  const cursor = pageCursors[pageCursors.length - 1];
-  const { data: assetPage, error, isError, isFetching, refetch } = useAssets(cursor, searchQuery);
+  const {
+    data: assetPage,
+    error,
+    isError,
+    isFetching,
+    isPending,
+    refetch,
+  } = useAssets(registerCursors?.[registerCursors.length - 1], searchQuery);
 
+  const pageCursors = registerCursors ?? [];
   const isOnLaterPage = pageCursors.length > 0;
   const isSearching = searchQuery !== '';
   const assets = assetPage?.items ?? [];
   const nextCursor = assetPage?.nextCursor ?? null;
-  const isSearchTruncated = isSearching && assets.length >= ASSET_SEARCH_LIMIT;
+  const isSearchTruncated = isSearching && assetPage?.hasMore === true;
 
   function handleRetry(): void {
     void refetch();
@@ -91,11 +107,9 @@ export function AssetTable() {
           <div className="flex flex-col items-start gap-3 p-5">
             <div className="w-full">
               <RetryAlert
-                title="Assets could not be loaded"
+                title={ASSETS_ERROR_TITLE}
                 description={
-                  isOnLaterPage
-                    ? 'This page may no longer exist. Try again, or go back to the first page.'
-                    : 'Check access to the Asset view, then try again.'
+                  isOnLaterPage ? ASSETS_LATER_PAGE_ERROR_DESCRIPTION : ASSETS_ERROR_DESCRIPTION
                 }
                 reason={getErrorReason(error)}
                 isRetrying={isFetching}
@@ -118,20 +132,20 @@ export function AssetTable() {
               emptyState={
                 isSearching ? (
                   <EmptyStateMessage
-                    title="No matching assets"
-                    description={`No asset matches "${searchQuery}". Try a different name, description or plant.`}
+                    title={ASSETS_NO_MATCH_TITLE}
+                    description={formatNoMatchingAssetsMessage(searchQuery)}
                   />
                 ) : (
                   <EmptyStateMessage
-                    title="No assets found"
-                    description="The Asset view returned no instances."
+                    title={ASSETS_EMPTY_TITLE}
+                    description={ASSETS_EMPTY_DESCRIPTION}
                   />
                 )
               }
               enableSorting
               emphasizeHeader
               getRowId={getInstanceKey}
-              loading={isFetching}
+              loading={isPending}
               loadingRowCount={ASSET_QUERY_LIMIT}
               onRowClick={handleAssetRowClick}
               size="default"
@@ -141,7 +155,7 @@ export function AssetTable() {
             {isSearching ? (
               isSearchTruncated ? (
                 <p className="border-t border-default px-5 py-3 text-sm text-muted-foreground">
-                  {`Showing the first ${ASSET_SEARCH_LIMIT} matches. Refine the search to narrow them.`}
+                  {ASSET_SEARCH_TRUNCATED_MESSAGE}
                 </p>
               ) : null
             ) : (

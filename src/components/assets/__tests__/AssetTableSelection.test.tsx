@@ -1,10 +1,13 @@
 import type { ColumnDef } from '@cognite/aura/data-grid';
+import type { QueryClient } from '@tanstack/react-query';
 import type { Row } from '@tanstack/react-table';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ComponentType, ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { StoreApi } from 'zustand';
 
+import { ASSET_SEARCH_LIMIT } from '../../../constants/assets';
 import { AssetContext } from '../../../hooks/assets/useAssetContext';
 import { UseAssetsContext, type UseAssetsContextType } from '../../../hooks/assets/useAssets';
 import { UseAssetsKPICountsContext } from '../../../hooks/assets/useAssetsKPICounts';
@@ -13,25 +16,28 @@ import { makeAssetListItem, makeAssetPage } from '../../../mocks/assets';
 import { makeAssetsKPICountsContext } from '../../../mocks/assetsKPICounts';
 import { makeMockClient } from '../../../mocks/cogniteClient';
 import { makeNavigationStore } from '../../../mocks/navigation';
-import { makeQueryClientWrapper } from '../../../mocks/QueryClientWrapper';
+import { makeQueryClientWrapper, makeTestQueryClient } from '../../../mocks/QueryClientWrapper';
 import type { AssetListItem } from '../../../types/asset';
+import type { NavigationState, NavigationStore } from '../../../types/navigation';
 import { AssetTable } from '../AssetTable';
 
 const assetContext = makeMockClient();
 
 type GridStubProps = {
   data: AssetListItem[];
+  loading: boolean;
   columns: ColumnDef<AssetListItem>[];
   onRowClick: (row: Row<AssetListItem>) => void;
 };
 
 // Aura's DataGrid is virtualised and renders no data rows without real layout,
 // which Happy DOM does not provide. This stub renders one button per row so the
-// row-selection wiring of AssetTable can still be verified.
+// rows AssetTable hands to the grid can still be verified. While the grid is told
+// to load it shows skeletons in place of its rows, which the stub does too.
 vi.mock('@cognite/aura/data-grid', () => ({
-  DataGrid: ({ data, onRowClick }: GridStubProps) => (
+  DataGrid: ({ data, loading, onRowClick }: GridStubProps) => (
     <div>
-      {data.map((asset) => (
+      {(loading ? [] : data).map((asset) => (
         <button
           key={asset.externalId}
           onClick={() =>
@@ -45,10 +51,11 @@ vi.mock('@cognite/aura/data-grid', () => ({
   ),
 }));
 
-describe('AssetTable row selection', () => {
+describe('AssetTable rows', () => {
   let mockContext: UseAssetsContextType;
   let wrapper: ComponentType<{ children: ReactNode }>;
-  const store = makeNavigationStore();
+  let store: StoreApi<NavigationStore>;
+  let queryClient: QueryClient;
 
   beforeEach(() => {
     mockContext = {
@@ -59,7 +66,9 @@ describe('AssetTable row selection', () => {
       ),
       searchAssets: vi.fn(() => Promise.resolve(makeAssetPage())),
     };
-    const QueryWrapper = makeQueryClientWrapper();
+    store = makeNavigationStore();
+    queryClient = makeTestQueryClient();
+    const QueryWrapper = makeQueryClientWrapper(queryClient);
     const countsContext = makeAssetsKPICountsContext();
     wrapper = ({ children }) => (
       <NavigationStoreContext.Provider value={store}>
@@ -75,7 +84,7 @@ describe('AssetTable row selection', () => {
   });
 
   it('selects the clicked asset', async () => {
-    render(<AssetTable />, { wrapper });
+    renderTable();
 
     await userEvent.click(await screen.findByRole('button', { name: 'FLOC-7' }));
 
@@ -84,4 +93,33 @@ describe('AssetTable row selection', () => {
       externalId: 'FLOC-7',
     });
   });
+
+  it('keeps the rows while the assets are read again in the background', async () => {
+    renderTable();
+    expect(await screen.findByRole('button', { name: 'FLOC-7' })).toBeInTheDocument();
+    vi.mocked(mockContext.listAssets).mockReturnValue(new Promise(() => {}));
+
+    void queryClient.invalidateQueries();
+
+    await waitFor(() => expect(mockContext.listAssets).toHaveBeenCalledTimes(2));
+    expect(screen.getByRole('button', { name: 'FLOC-7' })).toBeInTheDocument();
+  });
+
+  it('does not say the search is cut short when exactly the limit matched', async () => {
+    const items = Array.from({ length: ASSET_SEARCH_LIMIT }, (_item, index) =>
+      makeAssetListItem({ externalId: `FLOC-${index}` }),
+    );
+    vi.mocked(mockContext.searchAssets).mockResolvedValue(makeAssetPage(items));
+
+    renderTable({ searchQuery: 'pump' });
+
+    expect(await screen.findByRole('button', { name: 'FLOC-0' })).toBeInTheDocument();
+    expect(screen.queryByText(/Showing the first/)).not.toBeInTheDocument();
+  });
+
+  function renderTable(navigationState: Partial<NavigationState> = {}) {
+    store = makeNavigationStore(navigationState);
+
+    return render(<AssetTable />, { wrapper });
+  }
 });

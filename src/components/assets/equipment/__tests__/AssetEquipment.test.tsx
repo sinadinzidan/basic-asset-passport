@@ -97,6 +97,7 @@ describe(AssetEquipment.name, () => {
     renderEquipment();
 
     expect(await screen.findByText('Equipment could not be loaded')).toBeInTheDocument();
+    expect(screen.getByText('Reason: failed')).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Retry' }));
     expect(await screen.findByText('Equipment ID: P-1')).toBeInTheDocument();
   });

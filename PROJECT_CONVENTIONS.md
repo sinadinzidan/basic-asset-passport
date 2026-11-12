@@ -342,7 +342,7 @@ export function AssetList({ page, search }: AssetListProps) {
   not linted. The shared `packages/*/src` are linted and type-checked with the
   same rules as `src`. Library-dictated names are allow-listed rather than
   renamed: `initialProps` (Testing Library) and DOM, observer and event option
-  booleans such as `passive`, `shiftKey`, `childList` and `subtree`. Enum
+  booleans such as `passive`, `shiftKey`, `childList` and `subtree`, and Aura's `loading` prop. Enum
   values the CSS or DOM matches on (`data-tone`, `tone-cyan`) stay lowercase and
   are reached through a `Record<Enum, string>`.
 - Passing the tools does not mean the unenforced rules are met (abbreviations

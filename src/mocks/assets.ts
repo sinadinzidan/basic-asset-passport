@@ -16,8 +16,9 @@ export function makeAssetListItem(overrides: Partial<AssetListItem> = {}): Asset
 export function makeAssetPage(
   items: AssetListItem[] = [makeAssetListItem()],
   nextCursor: string | null = null,
+  hasMore: boolean = nextCursor !== null,
 ): AssetPage {
-  return { items, nextCursor };
+  return { items, nextCursor, hasMore };
 }
 
 export function makeInstanceDetails(

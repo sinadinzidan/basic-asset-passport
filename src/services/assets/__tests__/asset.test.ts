@@ -98,6 +98,7 @@ describe(listAssets.name, () => {
         },
       ],
       nextCursor: 'next',
+      hasMore: true,
     });
   });
 
@@ -108,6 +109,7 @@ describe(listAssets.name, () => {
     await expect(listAssets(client)).resolves.toEqual({
       items: [],
       nextCursor: null,
+      hasMore: false,
     });
   });
 
@@ -148,7 +150,7 @@ describe(searchAssets.name, () => {
       query: 'pump',
       instanceType: 'node',
       properties: ['name', 'description', 'plantName'],
-      limit: ASSET_SEARCH_LIMIT,
+      limit: ASSET_SEARCH_LIMIT + 1,
     });
   });
 
@@ -185,7 +187,34 @@ describe(searchAssets.name, () => {
         },
       ],
       nextCursor: null,
+      hasMore: false,
     });
+  });
+
+  it('keeps the first matches and says there are more when the limit is passed', async () => {
+    stubModelViews(client, [assetView]);
+    const nodes = Array.from({ length: ASSET_SEARCH_LIMIT + 1 }, (_item, index) =>
+      makeNodeInstance(assetView, { space: 'instances', externalId: `FLOC-${index}` }, {}),
+    );
+    vi.spyOn(client.instances, 'search').mockResolvedValue({ items: nodes });
+
+    const page = await searchAssets(client, 'pump');
+
+    expect(page.items).toHaveLength(ASSET_SEARCH_LIMIT);
+    expect(page.hasMore).toBe(true);
+  });
+
+  it('has no more matches when exactly the limit matched', async () => {
+    stubModelViews(client, [assetView]);
+    const nodes = Array.from({ length: ASSET_SEARCH_LIMIT }, (_item, index) =>
+      makeNodeInstance(assetView, { space: 'instances', externalId: `FLOC-${index}` }, {}),
+    );
+    vi.spyOn(client.instances, 'search').mockResolvedValue({ items: nodes });
+
+    const page = await searchAssets(client, 'pump');
+
+    expect(page.items).toHaveLength(ASSET_SEARCH_LIMIT);
+    expect(page.hasMore).toBe(false);
   });
 
   it('throws when the Asset view does not exist', async () => {
