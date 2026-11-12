@@ -6,11 +6,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { makeMockClient } from '../../../../__mocks__/cogniteClient';
 import { makeAssetNote } from '../../../../__mocks__/notes';
 import { makeQueryClientWrapper } from '../../../../__mocks__/QueryClientWrapper';
-import {
-  UseUpdateAssetNoteContext,
-  type UseUpdateAssetNoteContextType,
-} from '../../../../hooks/assets/notes/useUpdateAssetNote';
+import { UseUpdateAssetNoteContext } from '../../../../hooks/assets/notes/useUpdateAssetNote';
 import { AssetContext } from '../../../../hooks/assets/useAssetContext';
+import type { AssetNoteService } from '../../../../services/assets/notes/assetNote';
 import type { AssetNote } from '../../../../types/note';
 import { AssetNoteItem } from '../AssetNoteItem';
 
@@ -23,7 +21,7 @@ type ItemOptions = {
 
 describe(AssetNoteItem.name, () => {
   const client = makeMockClient();
-  let updateContext: UseUpdateAssetNoteContextType;
+  let updateContext: Pick<AssetNoteService, 'updateAssetNote'>;
   let onDelete: (note: AssetNote) => Promise<void>;
   let wrapper: ComponentType<{ children: ReactNode }>;
 
@@ -32,7 +30,7 @@ describe(AssetNoteItem.name, () => {
     onDelete = vi.fn(() => Promise.resolve());
     const QueryWrapper = makeQueryClientWrapper();
     wrapper = ({ children }) => (
-      <UseUpdateAssetNoteContext.Provider value={updateContext}>
+      <UseUpdateAssetNoteContext.Provider value={{ createAssetNoteService: () => updateContext }}>
         <QueryWrapper>
           <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
         </QueryWrapper>
@@ -102,7 +100,6 @@ describe(AssetNoteItem.name, () => {
 
     await waitFor(() =>
       expect(updateContext.updateAssetNote).toHaveBeenCalledExactlyOnceWith(
-        client,
         { space: 'sp-asset-passport-data', externalId: 'note-1' },
         { title: 'Bearing check', body: 'Mechanical seal checked, no leaks.' },
       ),

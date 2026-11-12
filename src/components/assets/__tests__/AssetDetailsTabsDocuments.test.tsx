@@ -13,13 +13,11 @@ import { makeNavigationStore } from '../../../__mocks__/navigation';
 import { makeQueryClientWrapper } from '../../../__mocks__/QueryClientWrapper';
 import { DOCUMENT_QUERY_LIMIT } from '../../../constants/documents';
 import { AssetTab } from '../../../enums/assetTab';
-import {
-  UseAssetDocumentsContext,
-  type UseAssetDocumentsContextType,
-} from '../../../hooks/assets/documents/useAssetDocuments';
+import { UseAssetDocumentsContext } from '../../../hooks/assets/documents/useAssetDocuments';
 import { DocumentFileContext } from '../../../hooks/assets/documents/useDocumentFileContext';
 import { AssetContext } from '../../../hooks/assets/useAssetContext';
 import { NavigationStoreContext } from '../../../hooks/general/useNavigationState';
+import type { AssetDocumentService } from '../../../services/assets/documents/assetDocument';
 import type { NavigationStore } from '../../../types/navigation';
 import { AssetDetailsTabs } from '../AssetDetailsTabs';
 
@@ -29,7 +27,7 @@ const asset = makeInstanceDetails({
 });
 
 describe(`${AssetDetailsTabs.name} documents`, () => {
-  let listContext: UseAssetDocumentsContextType;
+  let listContext: Pick<AssetDocumentService, 'listAssetDocuments'>;
   let wrapper: ComponentType<{ children: ReactNode }>;
   let store: StoreApi<NavigationStore>;
 
@@ -49,7 +47,9 @@ describe(`${AssetDetailsTabs.name} documents`, () => {
               uploadContent: vi.fn(),
             }}
           >
-            <UseAssetDocumentsContext.Provider value={listContext}>
+            <UseAssetDocumentsContext.Provider
+              value={{ createAssetDocumentService: () => listContext }}
+            >
               <QueryWrapper>
                 <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
               </QueryWrapper>
@@ -66,7 +66,6 @@ describe(`${AssetDetailsTabs.name} documents`, () => {
 
     expect(await screen.findByText('Pump manual.pdf')).toBeInTheDocument();
     expect(listContext.listAssetDocuments).toHaveBeenCalledWith(
-      expect.anything(),
       { space: 'asset-space', externalId: 'FLOC-7' },
       DOCUMENT_QUERY_LIMIT,
     );

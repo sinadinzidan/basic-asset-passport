@@ -3,13 +3,7 @@ import { createContext, useContext } from 'react';
 
 import { COUNT_QUERY_KEY_PART, COUNT_QUERY_STALE_TIME_MS } from '../../constants/assets';
 import { toCountState } from '../../lib/countBadge';
-import {
-  countAssetDocuments,
-  countAssetEquipment,
-  countAssetLinkedFiles,
-  countAssetNotes,
-  countAssetTimeseries,
-} from '../../services/assets/assetDetailsTabCounts';
+import { createAssetDetailsTabCountService } from '../../services/assets/assetDetailsTabCounts';
 import type { AssetIdentifier } from '../../types/asset';
 import type { CountState } from '../../types/countState';
 
@@ -20,13 +14,7 @@ import { getAssetNotesQueryKey } from './notes/useAssetNotes';
 import { getAssetTimeseriesQueryKey } from './timeseries/useAssetTimeseries';
 import { useAssetContext } from './useAssetContext';
 
-const defaultDeps = {
-  countAssetEquipment,
-  countAssetNotes,
-  countAssetTimeseries,
-  countAssetDocuments,
-  countAssetLinkedFiles,
-};
+const defaultDeps = { createAssetDetailsTabCountService };
 
 export type UseAssetDetailsTabCountsContextType = typeof defaultDeps;
 export const UseAssetDetailsTabCountsContext =
@@ -40,23 +28,18 @@ export type AssetDetailsTabCounts = {
 };
 
 export function useAssetDetailsTabCounts(assetIdentifier: AssetIdentifier): AssetDetailsTabCounts {
-  const {
-    countAssetEquipment: countEquipment,
-    countAssetNotes: countNotes,
-    countAssetTimeseries: countTimeseries,
-    countAssetDocuments: countDocuments,
-    countAssetLinkedFiles: countLinkedFiles,
-  } = useContext(UseAssetDetailsTabCountsContext);
+  const { createAssetDetailsTabCountService } = useContext(UseAssetDetailsTabCountsContext);
   const client = useAssetContext();
+  const countService = createAssetDetailsTabCountService(client);
 
   const equipment = useQuery({
     queryKey: [...getAssetEquipmentQueryKey(client.project, assetIdentifier), COUNT_QUERY_KEY_PART],
-    queryFn: () => countEquipment(client, assetIdentifier),
+    queryFn: () => countService.countAssetEquipment(assetIdentifier),
     staleTime: COUNT_QUERY_STALE_TIME_MS,
   });
   const notes = useQuery({
     queryKey: [...getAssetNotesQueryKey(client.project, assetIdentifier), COUNT_QUERY_KEY_PART],
-    queryFn: () => countNotes(client, assetIdentifier),
+    queryFn: () => countService.countAssetNotes(assetIdentifier),
     staleTime: COUNT_QUERY_STALE_TIME_MS,
   });
   const timeseries = useQuery({
@@ -64,12 +47,12 @@ export function useAssetDetailsTabCounts(assetIdentifier: AssetIdentifier): Asse
       ...getAssetTimeseriesQueryKey(client.project, assetIdentifier),
       COUNT_QUERY_KEY_PART,
     ],
-    queryFn: () => countTimeseries(client, assetIdentifier),
+    queryFn: () => countService.countAssetTimeseries(assetIdentifier),
     staleTime: COUNT_QUERY_STALE_TIME_MS,
   });
   const documents = useQuery({
     queryKey: [...getAssetDocumentsQueryKey(client.project, assetIdentifier), COUNT_QUERY_KEY_PART],
-    queryFn: () => countDocuments(client, assetIdentifier),
+    queryFn: () => countService.countAssetDocuments(assetIdentifier),
     staleTime: COUNT_QUERY_STALE_TIME_MS,
   });
   const linkedFiles = useQuery({
@@ -77,7 +60,7 @@ export function useAssetDetailsTabCounts(assetIdentifier: AssetIdentifier): Asse
       ...getAssetLinkedFilesQueryKey(client.project, assetIdentifier),
       COUNT_QUERY_KEY_PART,
     ],
-    queryFn: () => countLinkedFiles(client, assetIdentifier),
+    queryFn: () => countService.countAssetLinkedFiles(assetIdentifier),
     staleTime: COUNT_QUERY_STALE_TIME_MS,
   });
 

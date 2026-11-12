@@ -1,14 +1,20 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createContext, useContext } from 'react';
 
-import { updateAssetNote } from '../../../services/assets/notes/assetNote';
+import {
+  createAssetNoteService,
+  type AssetNoteService,
+} from '../../../services/assets/notes/assetNote';
 import type { AssetIdentifier } from '../../../types/asset';
+import type { AssetContextType } from '../../../types/assetContext';
 import type { NewAssetNote, NoteIdentifier } from '../../../types/note';
 import { useAssetContext } from '../useAssetContext';
 
 import { getAssetNotesQueryKey } from './useAssetNotes';
 
-const defaultDeps = { updateAssetNote };
+const defaultDeps: {
+  createAssetNoteService: (client: AssetContextType) => Pick<AssetNoteService, 'updateAssetNote'>;
+} = { createAssetNoteService };
 
 export type UseUpdateAssetNoteContextType = typeof defaultDeps;
 export const UseUpdateAssetNoteContext = createContext<UseUpdateAssetNoteContextType>(defaultDeps);
@@ -19,12 +25,14 @@ type UpdateAssetNoteRequest = {
 };
 
 export function useUpdateAssetNote(assetIdentifier: AssetIdentifier) {
-  const { updateAssetNote: updateNote } = useContext(UseUpdateAssetNoteContext);
+  const { createAssetNoteService } = useContext(UseUpdateAssetNoteContext);
   const client = useAssetContext();
   const queryClient = useQueryClient();
+  const noteService = createAssetNoteService(client);
 
   const mutation = useMutation({
-    mutationFn: ({ note, input }: UpdateAssetNoteRequest) => updateNote(client, note, input),
+    mutationFn: ({ note, input }: UpdateAssetNoteRequest) =>
+      noteService.updateAssetNote(note, input),
     onSuccess: () =>
       queryClient.invalidateQueries({
         queryKey: getAssetNotesQueryKey(client.project, assetIdentifier),

@@ -4,8 +4,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { makeMockClient } from '../../../../__mocks__/cogniteClient';
 import { makeQueryClientWrapper } from '../../../../__mocks__/QueryClientWrapper';
+import type { AssetNoteService } from '../../../../services/assets/notes/assetNote';
 import { AssetContext } from '../../useAssetContext';
-import { UseAddAssetNoteContext, type UseAddAssetNoteContextType } from '../useAddAssetNote';
+import { UseAddAssetNoteContext } from '../useAddAssetNote';
 import { useAssetNoteAddViewModel } from '../useAssetNoteAddViewModel';
 
 const assetIdentifier = { space: 'asset-space', externalId: 'FLOC-1' };
@@ -13,14 +14,14 @@ const note = { title: 'Inspection', body: 'All good' };
 
 describe(useAssetNoteAddViewModel.name, () => {
   const client = makeMockClient();
-  let noteService: UseAddAssetNoteContextType;
+  let noteService: Pick<AssetNoteService, 'createAssetNote'>;
   let wrapper: ComponentType<{ children: ReactNode }>;
 
   beforeEach(() => {
     noteService = { createAssetNote: vi.fn(() => Promise.resolve()) };
     const QueryWrapper = makeQueryClientWrapper();
     wrapper = ({ children }) => (
-      <UseAddAssetNoteContext.Provider value={noteService}>
+      <UseAddAssetNoteContext.Provider value={{ createAssetNoteService: () => noteService }}>
         <QueryWrapper>
           <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
         </QueryWrapper>
@@ -58,7 +59,7 @@ describe(useAssetNoteAddViewModel.name, () => {
     act(() => result.current.save(note, onSaved));
 
     await waitFor(() => expect(onSaved).toHaveBeenCalledTimes(1));
-    expect(noteService.createAssetNote).toHaveBeenCalledWith(client, assetIdentifier, note);
+    expect(noteService.createAssetNote).toHaveBeenCalledWith(assetIdentifier, note);
   });
 
   it('does not send a note that cannot be saved', () => {

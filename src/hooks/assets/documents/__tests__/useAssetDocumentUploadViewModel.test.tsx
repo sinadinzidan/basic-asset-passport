@@ -4,14 +4,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { makeMockClient } from '../../../../__mocks__/cogniteClient';
 import { makeQueryClientWrapper } from '../../../../__mocks__/QueryClientWrapper';
+import type { AssetDocumentService } from '../../../../services/assets/documents/assetDocument';
 import type { DocumentFileContextType } from '../../../../types/documentFileContext';
 import { AssetContext } from '../../useAssetContext';
 import { useAssetDocumentUploadViewModel } from '../useAssetDocumentUploadViewModel';
 import { DocumentFileContext } from '../useDocumentFileContext';
-import {
-  UseUploadAssetDocumentsContext,
-  type UseUploadAssetDocumentsContextType,
-} from '../useUploadAssetDocuments';
+import { UseUploadAssetDocumentsContext } from '../useUploadAssetDocuments';
 
 const assetIdentifier = { space: 'asset-space', externalId: 'FLOC-1' };
 const good = new File(['a'], 'good.pdf', { type: 'application/pdf' });
@@ -20,12 +18,12 @@ const bad = new File(['b'], 'bad.pdf', { type: 'application/pdf' });
 describe(useAssetDocumentUploadViewModel.name, () => {
   const client = makeMockClient();
   const fileClient = {} as Partial<DocumentFileContextType> as DocumentFileContextType;
-  let documentService: Pick<UseUploadAssetDocumentsContextType, 'uploadAssetDocument'>;
+  let documentService: Pick<AssetDocumentService, 'uploadAssetDocument'>;
   let wrapper: ComponentType<{ children: ReactNode }>;
 
   beforeEach(() => {
     documentService = {
-      uploadAssetDocument: vi.fn((_client, _files, _asset, file: File) =>
+      uploadAssetDocument: vi.fn((_files, _asset, file: File) =>
         file === bad ? Promise.reject(new Error('The file is empty.')) : Promise.resolve(),
       ),
     };
@@ -34,7 +32,7 @@ describe(useAssetDocumentUploadViewModel.name, () => {
       <UseUploadAssetDocumentsContext.Provider
         value={{
           useSuccessToast: () => vi.fn(),
-          uploadAssetDocument: documentService.uploadAssetDocument,
+          createAssetDocumentService: () => documentService,
         }}
       >
         <QueryWrapper>
@@ -96,7 +94,6 @@ describe(useAssetDocumentUploadViewModel.name, () => {
 
     await waitFor(() => expect(documentService.uploadAssetDocument).toHaveBeenCalledTimes(1));
     expect(documentService.uploadAssetDocument).toHaveBeenCalledWith(
-      client,
       fileClient,
       assetIdentifier,
       bad,

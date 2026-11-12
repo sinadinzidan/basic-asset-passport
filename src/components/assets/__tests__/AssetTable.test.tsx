@@ -12,13 +12,12 @@ import { makeNavigationStore } from '../../../__mocks__/navigation';
 import { makeQueryClientWrapper } from '../../../__mocks__/QueryClientWrapper';
 import { ASSET_SEARCH_LIMIT } from '../../../constants/assets';
 import { AssetContext } from '../../../hooks/assets/useAssetContext';
-import { UseAssetsContext, type UseAssetsContextType } from '../../../hooks/assets/useAssets';
-import {
-  UseAssetsKPICountsContext,
-  type UseAssetsKPICountsContextType,
-} from '../../../hooks/assets/useAssetsKPICounts';
+import { UseAssetsContext } from '../../../hooks/assets/useAssets';
+import { UseAssetsKPICountsContext } from '../../../hooks/assets/useAssetsKPICounts';
 import { DebounceContext, type DebounceDeps } from '../../../hooks/general/useDebouncedCallback';
 import { NavigationStoreContext } from '../../../hooks/general/useNavigationState';
+import type { AssetService } from '../../../services/assets/asset';
+import type { AssetsKPICountService } from '../../../services/assets/assetsKPICounts';
 import type { NavigationState, NavigationStore } from '../../../types/navigation';
 import { AssetTable } from '../AssetTable';
 
@@ -30,8 +29,8 @@ const immediateDebounce: DebounceDeps = {
 
 describe(AssetTable.name, () => {
   const client = makeMockClient();
-  let mockContext: UseAssetsContextType;
-  let countsContext: UseAssetsKPICountsContextType;
+  let mockContext: AssetService;
+  let countsContext: AssetsKPICountService;
   let wrapper: ComponentType<{ children: ReactNode }>;
   let store: StoreApi<NavigationStore>;
 
@@ -46,8 +45,10 @@ describe(AssetTable.name, () => {
     wrapper = ({ children }) => (
       <NavigationStoreContext.Provider value={store}>
         <DebounceContext.Provider value={immediateDebounce}>
-          <UseAssetsContext.Provider value={mockContext}>
-            <UseAssetsKPICountsContext.Provider value={countsContext}>
+          <UseAssetsContext.Provider value={{ createAssetService: () => mockContext }}>
+            <UseAssetsKPICountsContext.Provider
+              value={{ createAssetsKPICountService: () => countsContext }}
+            >
               <QueryWrapper>
                 <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
               </QueryWrapper>
@@ -150,7 +151,7 @@ describe(AssetTable.name, () => {
     renderTable({ registerCursors: ['cursor-2', 'cursor-3'] });
 
     expect(await screen.findByText('Page 3')).toBeInTheDocument();
-    expect(mockContext.listAssets).toHaveBeenLastCalledWith(client, 'cursor-3');
+    expect(mockContext.listAssets).toHaveBeenLastCalledWith('cursor-3');
     await waitFor(() =>
       expect(screen.getByRole('button', { name: 'Previous page' })).toBeEnabled(),
     );
@@ -160,7 +161,7 @@ describe(AssetTable.name, () => {
     renderTable();
 
     expect(await screen.findByText('Page 1')).toBeInTheDocument();
-    expect(mockContext.listAssets).toHaveBeenLastCalledWith(client, undefined);
+    expect(mockContext.listAssets).toHaveBeenLastCalledWith(undefined);
     expect(screen.getByRole('button', { name: 'Previous page' })).toBeDisabled();
   });
 
@@ -231,7 +232,7 @@ describe(AssetTable.name, () => {
     await userEvent.type(screen.getByRole('searchbox', { name: 'Search assets' }), 'pump');
 
     await waitFor(() => expect(store.getState().navigationState.searchQuery).toBe('pump'));
-    await waitFor(() => expect(mockContext.searchAssets).toHaveBeenCalledWith(client, 'pump'));
+    await waitFor(() => expect(mockContext.searchAssets).toHaveBeenCalledWith('pump'));
   });
 
   it('searches for the text of the page instead of listing', async () => {
@@ -240,7 +241,7 @@ describe(AssetTable.name, () => {
 
     renderTable({ searchQuery: 'pump' });
 
-    await waitFor(() => expect(mockContext.searchAssets).toHaveBeenCalledWith(client, 'pump'));
+    await waitFor(() => expect(mockContext.searchAssets).toHaveBeenCalledWith('pump'));
     expect(mockContext.listAssets).not.toHaveBeenCalled();
     expect(screen.getByRole('searchbox')).toHaveValue('pump');
   });

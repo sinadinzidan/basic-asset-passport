@@ -6,8 +6,9 @@ import { makeInstanceDetails } from '../../../../__mocks__/assets';
 import { makeMockClient } from '../../../../__mocks__/cogniteClient';
 import { makeLimitedList } from '../../../../__mocks__/lists';
 import { makeQueryClientWrapper } from '../../../../__mocks__/QueryClientWrapper';
+import type { AssetEquipmentService } from '../../../../services/assets/assetEquipment';
 import { AssetContext } from '../../useAssetContext';
-import { UseAssetEquipmentContext, type UseAssetEquipmentContextType } from '../useAssetEquipment';
+import { UseAssetEquipmentContext } from '../useAssetEquipment';
 import { useAssetEquipmentViewModel } from '../useAssetEquipmentViewModel';
 
 const assetIdentifier = { space: 'asset-space', externalId: 'FLOC-1' };
@@ -15,7 +16,7 @@ const pump = makeInstanceDetails({ externalId: 'P-1', properties: [] });
 
 describe(useAssetEquipmentViewModel.name, () => {
   const client = makeMockClient();
-  let equipmentService: UseAssetEquipmentContextType;
+  let equipmentService: AssetEquipmentService;
   let wrapper: ComponentType<{ children: ReactNode }>;
 
   beforeEach(() => {
@@ -24,7 +25,9 @@ describe(useAssetEquipmentViewModel.name, () => {
     };
     const QueryWrapper = makeQueryClientWrapper();
     wrapper = ({ children }) => (
-      <UseAssetEquipmentContext.Provider value={equipmentService}>
+      <UseAssetEquipmentContext.Provider
+        value={{ createAssetEquipmentService: () => equipmentService }}
+      >
         <QueryWrapper>
           <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
         </QueryWrapper>

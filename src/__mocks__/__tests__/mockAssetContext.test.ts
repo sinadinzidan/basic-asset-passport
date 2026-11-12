@@ -5,34 +5,14 @@ import { MODEL } from '../../config/model';
 import { ASSET_QUERY_LIMIT } from '../../constants/assets';
 import { DocumentOrigin } from '../../enums/documentOrigin';
 import { isOperatingStatus } from '../../lib/assetStatus';
-import { listAssets, searchAssets } from '../../services/assets/asset';
-import { getAssetDetails } from '../../services/assets/assetDetails';
-import {
-  countAssetDocuments,
-  countAssetEquipment,
-  countAssetLinkedFiles,
-  countAssetNotes,
-  countAssetTimeseries,
-} from '../../services/assets/assetDetailsTabCounts';
-import { listAssetEquipment } from '../../services/assets/assetEquipment';
-import {
-  countAllAssets,
-  countAllEquipment,
-  countOperatingAssets,
-} from '../../services/assets/assetsKPICounts';
-import {
-  deleteAssetDocument,
-  listAssetDocuments,
-  listAssetLinkedFiles,
-  uploadAssetDocument,
-} from '../../services/assets/documents/assetDocument';
-import {
-  createAssetNote,
-  deleteAssetNote,
-  listAssetNotes,
-  updateAssetNote,
-} from '../../services/assets/notes/assetNote';
-import { listAssetTimeseries } from '../../services/assets/timeseries/assetTimeseries';
+import { createAssetService } from '../../services/assets/asset';
+import { createAssetDetailsService } from '../../services/assets/assetDetails';
+import { createAssetDetailsTabCountService } from '../../services/assets/assetDetailsTabCounts';
+import { createAssetEquipmentService } from '../../services/assets/assetEquipment';
+import { createAssetsKPICountService } from '../../services/assets/assetsKPICounts';
+import { createAssetDocumentService } from '../../services/assets/documents/assetDocument';
+import { createAssetNoteService } from '../../services/assets/notes/assetNote';
+import { createAssetTimeseriesService } from '../../services/assets/timeseries/assetTimeseries';
 import { listAssetPassportViews } from '../../services/assets/viewHelpers';
 import type { AssetListItem } from '../../types/asset';
 import type { AssetContextType } from '../../types/assetContext';
@@ -62,7 +42,7 @@ describe(makeMockAssetContext.name, () => {
   });
 
   it('serves a first page of assets with the next cursor', async () => {
-    const page = await listAssets(client);
+    const page = await createAssetService(client).listAssets();
 
     expect(page.items).toHaveLength(ASSET_QUERY_LIMIT);
     expect(page.nextCursor).not.toBeNull();
@@ -77,7 +57,7 @@ describe(makeMockAssetContext.name, () => {
   });
 
   it('finds assets whose name, description or plant holds the search text', async () => {
-    const page = await searchAssets(client, 'cooling water');
+    const page = await createAssetService(client).searchAssets('cooling water');
 
     expect(page.nextCursor).toBeNull();
     expect(page.items.length).toBeGreaterThan(0);
@@ -92,7 +72,7 @@ describe(makeMockAssetContext.name, () => {
   });
 
   it('finds nothing for text no asset holds', async () => {
-    await expect(searchAssets(client, 'no-such-thing-xyz')).resolves.toEqual({
+    await expect(createAssetService(client).searchAssets('no-such-thing-xyz')).resolves.toEqual({
       items: [],
       nextCursor: null,
       hasMore: false,
@@ -104,7 +84,7 @@ describe(makeMockAssetContext.name, () => {
     let cursor: string | undefined;
 
     do {
-      const page = await listAssets(client, cursor);
+      const page = await createAssetService(client).listAssets(cursor);
       externalIds.push(...page.items.map((item) => item.externalId));
       cursor = page.nextCursor ?? undefined;
     } while (cursor !== undefined);
@@ -114,7 +94,7 @@ describe(makeMockAssetContext.name, () => {
   });
 
   it('includes assets with missing values to exercise the empty labels', async () => {
-    const page = await listAssets(client);
+    const page = await createAssetService(client).listAssets();
 
     expect(page.items.some((item) => item.description === null)).toBe(true);
   });
@@ -122,7 +102,7 @@ describe(makeMockAssetContext.name, () => {
   it('serves the details of an asset', async () => {
     const [asset] = MOCK_ASSETS;
 
-    const details = await getAssetDetails(client, {
+    const details = await createAssetDetailsService(client).getAssetDetails({
       space: asset.space,
       externalId: asset.externalId,
     });
@@ -136,7 +116,7 @@ describe(makeMockAssetContext.name, () => {
   it('serves the equipment linked to an asset', async () => {
     const [asset] = MOCK_ASSETS;
 
-    const equipment = await listAssetEquipment(client, {
+    const equipment = await createAssetEquipmentService(client).listAssetEquipment({
       space: asset.space,
       externalId: asset.externalId,
     });
@@ -147,7 +127,7 @@ describe(makeMockAssetContext.name, () => {
   it('leaves out system, relation and JSON properties like the app does', async () => {
     const [asset] = MOCK_ASSETS;
 
-    const details = await getAssetDetails(client, {
+    const details = await createAssetDetailsService(client).getAssetDetails({
       space: asset.space,
       externalId: asset.externalId,
     });
@@ -162,7 +142,7 @@ describe(makeMockAssetContext.name, () => {
   it('serves an asset with no equipment', async () => {
     const assetWithoutEquipment = MOCK_ASSETS[2];
 
-    const equipment = await listAssetEquipment(client, {
+    const equipment = await createAssetEquipmentService(client).listAssetEquipment({
       space: assetWithoutEquipment.space,
       externalId: assetWithoutEquipment.externalId,
     });
@@ -172,7 +152,7 @@ describe(makeMockAssetContext.name, () => {
 
   it('reports an unknown asset as not found, as CDF would return no node', async () => {
     await expect(
-      getAssetDetails(client, {
+      createAssetDetailsService(client).getAssetDetails({
         space: 'mock-asset-instances',
         externalId: 'does-not-exist',
       }),
@@ -334,7 +314,7 @@ describe('mock client requests', () => {
     const slowClient = makeMockAssetContext();
     const onSettled = vi.fn();
 
-    void listAssets(slowClient).then(onSettled);
+    void createAssetService(slowClient).listAssets().then(onSettled);
     // listAssets waits for the view lookup and then for the query.
     await vi.advanceTimersByTimeAsync(MOCK_LATENCY_MS);
     expect(onSettled).not.toHaveBeenCalled();
@@ -367,7 +347,7 @@ describe(`${makeMockAssetContext.name} notes`, () => {
   it('lists the seeded notes of an asset, newest first', async () => {
     const client = makeMockAssetContext(0);
 
-    const { items: notes } = await listAssetNotes(client, firstAsset);
+    const { items: notes } = await createAssetNoteService(client).listAssetNotes(firstAsset);
 
     expect(notes.map((note) => note.title)).toEqual(['Vibration above normal', 'Seal inspection']);
   });
@@ -376,7 +356,7 @@ describe(`${makeMockAssetContext.name} notes`, () => {
     const client = makeMockAssetContext(0);
 
     await expect(
-      listAssetNotes(client, { ...firstAsset, externalId: 'FLOC-1010' }),
+      createAssetNoteService(client).listAssetNotes({ ...firstAsset, externalId: 'FLOC-1010' }),
     ).resolves.toEqual({ items: [], hasMore: false });
   });
 
@@ -384,19 +364,24 @@ describe(`${makeMockAssetContext.name} notes`, () => {
     const client = makeMockAssetContext(0);
 
     const counts = {
-      notes: await countAssetNotes(client, firstAsset),
-      timeseries: await countAssetTimeseries(client, firstAsset),
-      documents: await countAssetDocuments(client, firstAsset),
-      linkedFiles: await countAssetLinkedFiles(client, firstAsset),
-      equipment: await countAssetEquipment(client, firstAsset),
+      notes: await createAssetDetailsTabCountService(client).countAssetNotes(firstAsset),
+      timeseries: await createAssetDetailsTabCountService(client).countAssetTimeseries(firstAsset),
+      documents: await createAssetDetailsTabCountService(client).countAssetDocuments(firstAsset),
+      linkedFiles:
+        await createAssetDetailsTabCountService(client).countAssetLinkedFiles(firstAsset),
+      equipment: await createAssetDetailsTabCountService(client).countAssetEquipment(firstAsset),
     };
 
     expect(counts).toEqual({
-      notes: (await listAssetNotes(client, firstAsset)).items.length,
-      timeseries: (await listAssetTimeseries(client, firstAsset)).items.length,
-      documents: (await listAssetDocuments(client, firstAsset)).items.length,
-      linkedFiles: (await listAssetLinkedFiles(client, firstAsset)).items.length,
-      equipment: (await listAssetEquipment(client, firstAsset)).items.length,
+      notes: (await createAssetNoteService(client).listAssetNotes(firstAsset)).items.length,
+      timeseries: (await createAssetTimeseriesService(client).listAssetTimeseries(firstAsset)).items
+        .length,
+      documents: (await createAssetDocumentService(client).listAssetDocuments(firstAsset)).items
+        .length,
+      linkedFiles: (await createAssetDocumentService(client).listAssetLinkedFiles(firstAsset)).items
+        .length,
+      equipment: (await createAssetEquipmentService(client).listAssetEquipment(firstAsset)).items
+        .length,
     });
     expect(counts.notes).toBeGreaterThan(0);
   });
@@ -404,14 +389,16 @@ describe(`${makeMockAssetContext.name} notes`, () => {
   it('counts every asset of the register', async () => {
     const client = makeMockAssetContext(0);
 
-    await expect(countAllAssets(client)).resolves.toBe(MOCK_ASSETS.length);
+    await expect(createAssetsKPICountService(client).countAllAssets()).resolves.toBe(
+      MOCK_ASSETS.length,
+    );
   });
 
   it('counts the assets that operate, as the table shows them', async () => {
     const client = makeMockAssetContext(0);
     const listed = await listEveryAsset(client);
 
-    const operating = await countOperatingAssets(client);
+    const operating = await createAssetsKPICountService(client).countOperatingAssets();
 
     expect(operating).toBe(listed.filter((asset) => isOperatingStatus(asset.flocStatus)).length);
     expect(operating).toBeGreaterThan(0);
@@ -421,7 +408,7 @@ describe(`${makeMockAssetContext.name} notes`, () => {
   it('counts the equipment of every asset', async () => {
     const client = makeMockAssetContext(0);
 
-    const total = await countAllEquipment(client);
+    const total = await createAssetsKPICountService(client).countAllEquipment();
 
     expect(total).toBe(
       [...MOCK_EQUIPMENT_BY_ASSET_ID.values()].reduce(
@@ -429,39 +416,49 @@ describe(`${makeMockAssetContext.name} notes`, () => {
         0,
       ),
     );
-    expect(total).toBeGreaterThan(await countAssetEquipment(client, firstAsset));
+    expect(total).toBeGreaterThan(
+      await createAssetDetailsTabCountService(client).countAssetEquipment(firstAsset),
+    );
   });
 
   it('counts none for an asset that has none', async () => {
     const client = makeMockAssetContext(0);
 
-    await expect(countAssetNotes(client, { ...firstAsset, externalId: 'FLOC-1010' })).resolves.toBe(
-      0,
-    );
+    await expect(
+      createAssetDetailsTabCountService(client).countAssetNotes({
+        ...firstAsset,
+        externalId: 'FLOC-1010',
+      }),
+    ).resolves.toBe(0);
   });
 
   it('counts a created note, and not a deleted one', async () => {
     const client = makeMockAssetContext(0);
-    const before = await countAssetNotes(client, firstAsset);
+    const before = await createAssetDetailsTabCountService(client).countAssetNotes(firstAsset);
 
-    await createAssetNote(client, firstAsset, { title: 'New', body: 'Text' });
-    const afterCreate = await countAssetNotes(client, firstAsset);
-    const [newest] = (await listAssetNotes(client, firstAsset)).items;
-    await deleteAssetNote(client, newest);
+    await createAssetNoteService(client).createAssetNote(firstAsset, {
+      title: 'New',
+      body: 'Text',
+    });
+    const afterCreate = await createAssetDetailsTabCountService(client).countAssetNotes(firstAsset);
+    const [newest] = (await createAssetNoteService(client).listAssetNotes(firstAsset)).items;
+    await createAssetNoteService(client).deleteAssetNote(newest);
 
     expect(afterCreate).toBe(before + 1);
-    await expect(countAssetNotes(client, firstAsset)).resolves.toBe(before);
+    await expect(
+      createAssetDetailsTabCountService(client).countAssetNotes(firstAsset),
+    ).resolves.toBe(before);
   });
 
   it('keeps a created note and shows it first for that asset only', async () => {
     const client = makeMockAssetContext(0);
 
-    await createAssetNote(client, firstAsset, {
+    await createAssetNoteService(client).createAssetNote(firstAsset, {
       title: 'New finding',
       body: 'Checked on site',
     });
 
-    const [newest] = (await listAssetNotes(client, firstAsset)).items;
+    const [newest] = (await createAssetNoteService(client).listAssetNotes(firstAsset)).items;
     expect(newest).toEqual(
       expect.objectContaining({
         title: 'New finding',
@@ -469,7 +466,7 @@ describe(`${makeMockAssetContext.name} notes`, () => {
         author: MOCK_USER_NAME,
       }),
     );
-    const { items: otherNotes } = await listAssetNotes(client, {
+    const { items: otherNotes } = await createAssetNoteService(client).listAssetNotes({
       ...firstAsset,
       externalId: 'FLOC-1002',
     });
@@ -478,14 +475,14 @@ describe(`${makeMockAssetContext.name} notes`, () => {
 
   it('keeps an edited note where it was, with its author and date', async () => {
     const client = makeMockAssetContext(0);
-    const [original] = (await listAssetNotes(client, firstAsset)).items;
+    const [original] = (await createAssetNoteService(client).listAssetNotes(firstAsset)).items;
 
-    await updateAssetNote(client, original, {
+    await createAssetNoteService(client).updateAssetNote(original, {
       title: 'Edited title',
       body: 'Edited text',
     });
 
-    const [edited] = (await listAssetNotes(client, firstAsset)).items;
+    const [edited] = (await createAssetNoteService(client).listAssetNotes(firstAsset)).items;
     expect(edited).toEqual({
       ...original,
       title: 'Edited title',
@@ -495,45 +492,54 @@ describe(`${makeMockAssetContext.name} notes`, () => {
 
   it('shows an emptied note text as no text', async () => {
     const client = makeMockAssetContext(0);
-    const [original] = (await listAssetNotes(client, firstAsset)).items;
+    const [original] = (await createAssetNoteService(client).listAssetNotes(firstAsset)).items;
 
-    await updateAssetNote(client, original, { title: 'Title', body: '' });
+    await createAssetNoteService(client).updateAssetNote(original, { title: 'Title', body: '' });
 
-    const [edited] = (await listAssetNotes(client, firstAsset)).items;
+    const [edited] = (await createAssetNoteService(client).listAssetNotes(firstAsset)).items;
     expect(edited?.body).toBeNull();
   });
 
   it('removes a deleted note for that client only', async () => {
     const client = makeMockAssetContext(0);
     const other = makeMockAssetContext(0);
-    const [doomed] = (await listAssetNotes(client, firstAsset)).items;
+    const [doomed] = (await createAssetNoteService(client).listAssetNotes(firstAsset)).items;
 
-    await deleteAssetNote(client, doomed);
+    await createAssetNoteService(client).deleteAssetNote(doomed);
 
-    expect((await listAssetNotes(client, firstAsset)).items).not.toContainEqual(doomed);
-    expect((await listAssetNotes(other, firstAsset)).items).toContainEqual(doomed);
+    expect(
+      (await createAssetNoteService(client).listAssetNotes(firstAsset)).items,
+    ).not.toContainEqual(doomed);
+    expect((await createAssetNoteService(other).listAssetNotes(firstAsset)).items).toContainEqual(
+      doomed,
+    );
   });
 
   it('does not share an edited seeded note between clients', async () => {
     const first = makeMockAssetContext(0);
     const second = makeMockAssetContext(0);
-    const [original] = (await listAssetNotes(first, firstAsset)).items;
+    const [original] = (await createAssetNoteService(first).listAssetNotes(firstAsset)).items;
 
-    await updateAssetNote(first, original, {
+    await createAssetNoteService(first).updateAssetNote(original, {
       title: 'Edited here only',
       body: 'Edited text',
     });
 
-    expect((await listAssetNotes(second, firstAsset)).items).toContainEqual(original);
+    expect((await createAssetNoteService(second).listAssetNotes(firstAsset)).items).toContainEqual(
+      original,
+    );
   });
 
   it('does not share created notes between clients', async () => {
     const first = makeMockAssetContext(0);
     const second = makeMockAssetContext(0);
 
-    await createAssetNote(first, firstAsset, { title: 'Only here', body: '' });
+    await createAssetNoteService(first).createAssetNote(firstAsset, {
+      title: 'Only here',
+      body: '',
+    });
 
-    const { items: notes } = await listAssetNotes(second, firstAsset);
+    const { items: notes } = await createAssetNoteService(second).listAssetNotes(firstAsset);
     expect(notes.map((note) => note.title)).not.toContain('Only here');
   });
 
@@ -558,7 +564,8 @@ describe(`${makeMockAssetContext.name} documents`, () => {
   it('lists the seeded documents of an asset, newest first', async () => {
     const client = makeMockAssetContext(0);
 
-    const { items: documents, hasMore } = await listAssetDocuments(client, firstAsset);
+    const { items: documents, hasMore } =
+      await createAssetDocumentService(client).listAssetDocuments(firstAsset);
 
     expect(hasMore).toBe(false);
     expect(documents.map((document) => document.name)).toEqual([
@@ -573,14 +580,17 @@ describe(`${makeMockAssetContext.name} documents`, () => {
     const client = makeMockAssetContext(0);
 
     await expect(
-      listAssetDocuments(client, { ...firstAsset, externalId: 'FLOC-1010' }),
+      createAssetDocumentService(client).listAssetDocuments({
+        ...firstAsset,
+        externalId: 'FLOC-1010',
+      }),
     ).resolves.toEqual({ items: [], hasMore: false });
   });
 
   it('cuts the documents at the limit and says that more exist', async () => {
     const client = makeMockAssetContext(0);
 
-    const documents = await listAssetDocuments(client, firstAsset, 2);
+    const documents = await createAssetDocumentService(client).listAssetDocuments(firstAsset, 2);
 
     expect(documents.items.map((document) => document.name)).toEqual([
       'Maintenance schedule.xlsx',
@@ -592,7 +602,7 @@ describe(`${makeMockAssetContext.name} documents`, () => {
   it('does not mix notes and documents', async () => {
     const client = makeMockAssetContext(0);
 
-    const { items: notes } = await listAssetNotes(client, firstAsset);
+    const { items: notes } = await createAssetNoteService(client).listAssetNotes(firstAsset);
 
     expect(notes.map((note) => note.title)).not.toContain('Pump datasheet.pdf');
   });
@@ -606,10 +616,11 @@ describe(`${makeMockAssetContext.name} documents`, () => {
     });
 
     // Act
-    await uploadAssetDocument(client, files, firstAsset, file);
+    await createAssetDocumentService(client).uploadAssetDocument(files, firstAsset, file);
 
     // Assert
-    const { items: documents } = await listAssetDocuments(client, firstAsset);
+    const { items: documents } =
+      await createAssetDocumentService(client).listAssetDocuments(firstAsset);
     const newest = documents.find((document) => document.name === NEW_DOCUMENT_NAME);
     expect(newest).toEqual(
       expect.objectContaining({
@@ -629,11 +640,12 @@ describe(`${makeMockAssetContext.name} documents`, () => {
     const client = makeMockAssetContext(0);
     const {
       items: [first],
-    } = await listAssetDocuments(client, firstAsset);
+    } = await createAssetDocumentService(client).listAssetDocuments(firstAsset);
 
-    await deleteAssetDocument(client, first);
+    await createAssetDocumentService(client).deleteAssetDocument(first);
 
-    const { items: remaining } = await listAssetDocuments(client, firstAsset);
+    const { items: remaining } =
+      await createAssetDocumentService(client).listAssetDocuments(firstAsset);
     expect(remaining.map((document) => document.externalId)).not.toContain(first.externalId);
     expect(remaining).toHaveLength(2);
   });
@@ -657,7 +669,8 @@ describe(`${makeMockAssetContext.name} existing files`, () => {
   it('lists the files linked to an asset as read-only documents', async () => {
     const client = makeMockAssetContext(0);
 
-    const { items: files } = await listAssetLinkedFiles(client, firstAsset);
+    const { items: files } =
+      await createAssetDocumentService(client).listAssetLinkedFiles(firstAsset);
 
     expect(files.map((file) => file.name).sort()).toEqual(['P&ID 1001.pdf', 'Pump data sheet.pdf']);
     expect(files.every((file) => file.origin === DocumentOrigin.RMDM)).toBe(true);
@@ -666,7 +679,8 @@ describe(`${makeMockAssetContext.name} existing files`, () => {
   it('lists a file for every asset it is linked to', async () => {
     const client = makeMockAssetContext(0);
 
-    const { items: files } = await listAssetLinkedFiles(client, secondAsset);
+    const { items: files } =
+      await createAssetDocumentService(client).listAssetLinkedFiles(secondAsset);
 
     expect(files.map((file) => file.name)).toEqual(['Pump data sheet.pdf']);
   });
@@ -674,7 +688,7 @@ describe(`${makeMockAssetContext.name} existing files`, () => {
   it('has no existing files for an asset without any', async () => {
     const client = makeMockAssetContext(0);
 
-    expect(await listAssetLinkedFiles(client, thirdAsset)).toEqual({
+    expect(await createAssetDocumentService(client).listAssetLinkedFiles(thirdAsset)).toEqual({
       items: [],
       hasMore: false,
     });
@@ -683,7 +697,8 @@ describe(`${makeMockAssetContext.name} existing files`, () => {
   it('keeps them apart from the documents uploaded in the app', async () => {
     const client = makeMockAssetContext(0);
 
-    const { items: documents } = await listAssetDocuments(client, firstAsset);
+    const { items: documents } =
+      await createAssetDocumentService(client).listAssetDocuments(firstAsset);
 
     expect(documents.map((document) => document.name)).not.toContain('P&ID 1001.pdf');
   });
@@ -698,7 +713,8 @@ describe(`${makeMockAssetContext.name} timeseries`, () => {
   it('lists the series linked to an asset, sorted by name', async () => {
     const client = makeMockAssetContext(0);
 
-    const { items: timeseries } = await listAssetTimeseries(client, firstAsset);
+    const { items: timeseries } =
+      await createAssetTimeseriesService(client).listAssetTimeseries(firstAsset);
 
     expect(timeseries.map((series) => series.properties[0]?.value)).toEqual([
       'Discharge pressure',
@@ -710,7 +726,8 @@ describe(`${makeMockAssetContext.name} timeseries`, () => {
   it('lists a series for every asset it is linked to', async () => {
     const client = makeMockAssetContext(0);
 
-    const { items: timeseries } = await listAssetTimeseries(client, secondAsset);
+    const { items: timeseries } =
+      await createAssetTimeseriesService(client).listAssetTimeseries(secondAsset);
 
     expect(timeseries.map((series) => series.properties[0]?.value)).toEqual([
       'Bearing vibration',
@@ -721,7 +738,7 @@ describe(`${makeMockAssetContext.name} timeseries`, () => {
   it('has no series for an asset without any', async () => {
     const client = makeMockAssetContext(0);
 
-    expect(await listAssetTimeseries(client, thirdAsset)).toEqual({
+    expect(await createAssetTimeseriesService(client).listAssetTimeseries(thirdAsset)).toEqual({
       items: [],
       hasMore: false,
     });
@@ -730,7 +747,10 @@ describe(`${makeMockAssetContext.name} timeseries`, () => {
   it('cuts the series at the limit, in name order, and says that more exist', async () => {
     const client = makeMockAssetContext(0);
 
-    const timeseries = await listAssetTimeseries(client, firstAsset, 2);
+    const timeseries = await createAssetTimeseriesService(client).listAssetTimeseries(
+      firstAsset,
+      2,
+    );
 
     expect(timeseries.items.map((series) => series.properties[0]?.value)).toEqual([
       'Discharge pressure',
@@ -750,7 +770,7 @@ describe(`${makeMockAssetContext.name} sorting and paging`, () => {
   it('hands out a cursor for an unsorted result set that has more, and reads on from it', async () => {
     // Arrange
     const client = makeMockAssetContext(0);
-    const { items: allNotes } = await listAssetNotes(client, firstAsset);
+    const { items: allNotes } = await createAssetNoteService(client).listAssetNotes(firstAsset);
 
     // Act
     const firstPage = await client.instances.query(makeNotesRequest(firstAsset, { limit: 1 }));
@@ -817,7 +837,7 @@ describe(`${makeMockAssetContext.name} sorting and paging`, () => {
   it('serves the equipment of an asset sorted by name', async () => {
     const client = makeMockAssetContext(0);
 
-    const equipment = await listAssetEquipment(client, secondAsset);
+    const equipment = await createAssetEquipmentService(client).listAssetEquipment(secondAsset);
 
     const names = equipment.items.map((item) => item.properties[0]?.value);
     expect(names).toHaveLength(2);
@@ -857,7 +877,7 @@ async function listEveryAsset(client: AssetContextType) {
   const assets: AssetListItem[] = [];
   let cursor: string | undefined;
   do {
-    const page = await listAssets(client, cursor);
+    const page = await createAssetService(client).listAssets(cursor);
     assets.push(...page.items);
     cursor = page.nextCursor ?? undefined;
   } while (cursor);

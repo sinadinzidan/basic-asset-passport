@@ -2,8 +2,8 @@ import type { ThemeMode } from '../enums/themeMode';
 
 export type ThemeModeStorage = Pick<Storage, 'getItem' | 'setItem'>;
 
-export type ThemeModeStore = {
+export interface ThemeModeStore {
   getThemeMode: () => ThemeMode;
   setThemeMode: (themeMode: ThemeMode) => void;
   subscribe: (onChange: () => void) => () => void;
-};
+}

@@ -48,54 +48,137 @@ const defaultDeps: UploadDocumentDeps = {
   now: () => Date.now(),
 };
 
-export async function listAssetDocuments(
-  client: AssetContextType,
-  assetIdentifier: AssetIdentifier,
-  limit: number = DOCUMENT_QUERY_LIMIT,
-  overrides?: Partial<Pick<UploadDocumentDeps, 'now'>>,
-): Promise<LimitedList<AssetDocument>> {
-  const { now } = { ...defaultDeps, ...overrides };
-  const currentTime = now();
-  const documentView = await findAssetPassportView(client, MODEL.views.document);
-
-  return listDocumentNodes(
-    client,
-    {
-      resultSetName: DOCUMENTS_RESULT_SET,
-      view: documentView,
-      assetFilter: matchAssetRelation(documentView, assetIdentifier),
-      origin: DocumentOrigin.APP,
-      nullsFirst: true,
-    },
-    limit,
-    currentTime,
-  );
+export interface AssetDocumentService {
+  listAssetDocuments(
+    assetIdentifier: AssetIdentifier,
+    limit?: number,
+  ): Promise<LimitedList<AssetDocument>>;
+  listAssetLinkedFiles(
+    assetIdentifier: AssetIdentifier,
+    limit?: number,
+  ): Promise<LimitedList<AssetDocument>>;
+  uploadAssetDocument(
+    files: DocumentFileContextType,
+    assetIdentifier: AssetIdentifier,
+    file: File,
+  ): Promise<void>;
+  deleteAssetDocument(document: DocumentIdentifier): Promise<void>;
 }
 
-export function listAssetLinkedFiles(
-  client: AssetContextType,
-  assetIdentifier: AssetIdentifier,
-  limit: number = DOCUMENT_QUERY_LIMIT,
-  overrides?: Partial<Pick<UploadDocumentDeps, 'now'>>,
-): Promise<LimitedList<AssetDocument>> {
-  const { now } = { ...defaultDeps, ...overrides };
+class CdfAssetDocumentService implements AssetDocumentService {
+  constructor(
+    private readonly client: AssetContextType,
+    private readonly deps: UploadDocumentDeps,
+  ) {}
 
-  return listDocumentNodes(
-    client,
-    {
-      resultSetName: FILES_RESULT_SET,
-      view: MODEL.filesView,
-      assetFilter: matchAssetInList(
-        MODEL.filesView,
-        MODEL.properties.files.assets,
-        assetIdentifier,
-      ),
-      origin: DocumentOrigin.RMDM,
-      nullsFirst: false,
-    },
-    limit,
-    now(),
-  );
+  listAssetDocuments = async (
+    assetIdentifier: AssetIdentifier,
+    limit: number = DOCUMENT_QUERY_LIMIT,
+  ): Promise<LimitedList<AssetDocument>> => {
+    const currentTime = this.deps.now();
+    const documentView = await findAssetPassportView(this.client, MODEL.views.document);
+
+    return listDocumentNodes(
+      this.client,
+      {
+        resultSetName: DOCUMENTS_RESULT_SET,
+        view: documentView,
+        assetFilter: matchAssetRelation(documentView, assetIdentifier),
+        origin: DocumentOrigin.APP,
+        nullsFirst: true,
+      },
+      limit,
+      currentTime,
+    );
+  };
+
+  listAssetLinkedFiles = (
+    assetIdentifier: AssetIdentifier,
+    limit: number = DOCUMENT_QUERY_LIMIT,
+  ): Promise<LimitedList<AssetDocument>> => {
+    return listDocumentNodes(
+      this.client,
+      {
+        resultSetName: FILES_RESULT_SET,
+        view: MODEL.filesView,
+        assetFilter: matchAssetInList(
+          MODEL.filesView,
+          MODEL.properties.files.assets,
+          assetIdentifier,
+        ),
+        origin: DocumentOrigin.RMDM,
+        nullsFirst: false,
+      },
+      limit,
+      this.deps.now(),
+    );
+  };
+
+  uploadAssetDocument = async (
+    files: DocumentFileContextType,
+    assetIdentifier: AssetIdentifier,
+    file: File,
+  ): Promise<void> => {
+    const problem = getDocumentFileProblem(file);
+    if (problem) throw new Error(problem);
+
+    const documentView = await findAssetPassportView(this.client, MODEL.views.document);
+    const document: DocumentIdentifier = {
+      space: MODEL.instanceSpace,
+      externalId: `${DOCUMENT_EXTERNAL_ID_PREFIX}${this.deps.generateId()}`,
+    };
+
+    await this.client.instances.upsert({
+      items: [
+        {
+          instanceType: INSTANCE_TYPE_NODE,
+          space: document.space,
+          externalId: document.externalId,
+          sources: [
+            {
+              source: toViewReference(documentView),
+              properties: {
+                name: file.name,
+                mimeType: file.type || DEFAULT_DOCUMENT_MIME_TYPE,
+                [MODEL.properties.assetRelation]: {
+                  space: assetIdentifier.space,
+                  externalId: assetIdentifier.externalId,
+                },
+              },
+            },
+          ],
+        },
+      ],
+      autoCreateDirectRelations: false,
+      autoCreateStartNodes: false,
+      autoCreateEndNodes: false,
+    });
+
+    try {
+      const uploadUrl = await files.requestUploadUrl(document);
+      await files.uploadContent(uploadUrl, file);
+    } catch (error) {
+      await this.deleteAssetDocument(document).catch(() => undefined);
+      throw error;
+    }
+  };
+
+  deleteAssetDocument = async (document: DocumentIdentifier): Promise<void> => {
+    await this.client.instances.delete([
+      {
+        instanceType: INSTANCE_TYPE_NODE,
+        space: document.space,
+        externalId: document.externalId,
+      },
+    ]);
+  };
+}
+
+export function createAssetDocumentService(
+  client: AssetContextType,
+  overrides?: Partial<UploadDocumentDeps>,
+): AssetDocumentService {
+  return new CdfAssetDocumentService(client, { ...defaultDeps, ...overrides });
 }
 
 async function listDocumentNodes(
@@ -158,69 +241,4 @@ function toAssetDocument(
     uploadedTime,
     createdTime: node.createdTime,
   };
-}
-
-export async function uploadAssetDocument(
-  client: AssetContextType,
-  files: DocumentFileContextType,
-  assetIdentifier: AssetIdentifier,
-  file: File,
-  overrides?: Partial<UploadDocumentDeps>,
-): Promise<void> {
-  const { generateId } = { ...defaultDeps, ...overrides };
-  const problem = getDocumentFileProblem(file);
-  if (problem) throw new Error(problem);
-
-  const documentView = await findAssetPassportView(client, MODEL.views.document);
-  const document: DocumentIdentifier = {
-    space: MODEL.instanceSpace,
-    externalId: `${DOCUMENT_EXTERNAL_ID_PREFIX}${generateId()}`,
-  };
-
-  await client.instances.upsert({
-    items: [
-      {
-        instanceType: INSTANCE_TYPE_NODE,
-        space: document.space,
-        externalId: document.externalId,
-        sources: [
-          {
-            source: toViewReference(documentView),
-            properties: {
-              name: file.name,
-              mimeType: file.type || DEFAULT_DOCUMENT_MIME_TYPE,
-              [MODEL.properties.assetRelation]: {
-                space: assetIdentifier.space,
-                externalId: assetIdentifier.externalId,
-              },
-            },
-          },
-        ],
-      },
-    ],
-    autoCreateDirectRelations: false,
-    autoCreateStartNodes: false,
-    autoCreateEndNodes: false,
-  });
-
-  try {
-    const uploadUrl = await files.requestUploadUrl(document);
-    await files.uploadContent(uploadUrl, file);
-  } catch (error) {
-    await deleteAssetDocument(client, document).catch(() => undefined);
-    throw error;
-  }
-}
-
-export async function deleteAssetDocument(
-  client: AssetContextType,
-  document: DocumentIdentifier,
-): Promise<void> {
-  await client.instances.delete([
-    {
-      instanceType: INSTANCE_TYPE_NODE,
-      space: document.space,
-      externalId: document.externalId,
-    },
-  ]);
 }

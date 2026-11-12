@@ -10,26 +10,40 @@ import { findAssetPassportView, toViewReference } from './viewHelpers';
 
 const MAX_STATUS_GROUPS = 1000;
 
-export async function countAllAssets(client: AssetContextType): Promise<number> {
-  return countNodes(client, await findAssetPassportView(client, MODEL.views.asset));
+export interface AssetsKPICountService {
+  countAllAssets(): Promise<number>;
+  countOperatingAssets(): Promise<number>;
+  countAllEquipment(): Promise<number>;
 }
 
-export async function countOperatingAssets(client: AssetContextType): Promise<number> {
-  const assetView = toViewReference(await findAssetPassportView(client, MODEL.views.asset));
+class CdfAssetsKPICountService implements AssetsKPICountService {
+  constructor(private readonly client: AssetContextType) {}
 
-  const response = await client.instances.aggregate({
-    view: assetView,
-    instanceType: INSTANCE_TYPE_NODE,
-    groupBy: [MODEL.properties.asset.status],
-    aggregates: [{ count: { property: COUNT_PROPERTY } }],
-    limit: MAX_STATUS_GROUPS,
-  });
+  countAllAssets = async (): Promise<number> => {
+    return countNodes(this.client, await findAssetPassportView(this.client, MODEL.views.asset));
+  };
 
-  return sumOperatingGroups(response);
+  countOperatingAssets = async (): Promise<number> => {
+    const assetView = toViewReference(await findAssetPassportView(this.client, MODEL.views.asset));
+
+    const response = await this.client.instances.aggregate({
+      view: assetView,
+      instanceType: INSTANCE_TYPE_NODE,
+      groupBy: [MODEL.properties.asset.status],
+      aggregates: [{ count: { property: COUNT_PROPERTY } }],
+      limit: MAX_STATUS_GROUPS,
+    });
+
+    return sumOperatingGroups(response);
+  };
+
+  countAllEquipment = async (): Promise<number> => {
+    return countNodes(this.client, await findAssetPassportView(this.client, MODEL.views.equipment));
+  };
 }
 
-export async function countAllEquipment(client: AssetContextType): Promise<number> {
-  return countNodes(client, await findAssetPassportView(client, MODEL.views.equipment));
+export function createAssetsKPICountService(client: AssetContextType): AssetsKPICountService {
+  return new CdfAssetsKPICountService(client);
 }
 
 function sumOperatingGroups(response: AggregationResponse): number {

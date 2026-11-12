@@ -5,8 +5,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { makeInstanceDetails } from '../../../../__mocks__/assets';
 import { makeMockClient } from '../../../../__mocks__/cogniteClient';
 import { makeQueryClientWrapper } from '../../../../__mocks__/QueryClientWrapper';
+import type { AssetDetailsService } from '../../../../services/assets/assetDetails';
 import { AssetContext } from '../../useAssetContext';
-import { UseAssetDetailsContext, type UseAssetDetailsContextType } from '../../useAssetDetails';
+import { UseAssetDetailsContext } from '../../useAssetDetails';
 import { useLinkedAssetViewModel } from '../useLinkedAssetViewModel';
 
 const linkedAsset = { space: 'asset-space', externalId: 'FLOC-9' };
@@ -18,7 +19,7 @@ const FUNCTIONAL_LOCATION = {
 
 describe(useLinkedAssetViewModel.name, () => {
   const client = makeMockClient();
-  let detailsService: UseAssetDetailsContextType;
+  let detailsService: AssetDetailsService;
   let wrapper: ComponentType<{ children: ReactNode }>;
 
   beforeEach(() => {
@@ -41,7 +42,7 @@ describe(useLinkedAssetViewModel.name, () => {
     };
     const QueryWrapper = makeQueryClientWrapper();
     wrapper = ({ children }) => (
-      <UseAssetDetailsContext.Provider value={detailsService}>
+      <UseAssetDetailsContext.Provider value={{ createAssetDetailsService: () => detailsService }}>
         <QueryWrapper>
           <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
         </QueryWrapper>

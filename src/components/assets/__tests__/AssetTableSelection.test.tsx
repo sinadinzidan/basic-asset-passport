@@ -14,9 +14,10 @@ import { makeNavigationStore } from '../../../__mocks__/navigation';
 import { makeQueryClientWrapper, makeTestQueryClient } from '../../../__mocks__/QueryClientWrapper';
 import { ASSET_SEARCH_LIMIT } from '../../../constants/assets';
 import { AssetContext } from '../../../hooks/assets/useAssetContext';
-import { UseAssetsContext, type UseAssetsContextType } from '../../../hooks/assets/useAssets';
+import { UseAssetsContext } from '../../../hooks/assets/useAssets';
 import { UseAssetsKPICountsContext } from '../../../hooks/assets/useAssetsKPICounts';
 import { NavigationStoreContext } from '../../../hooks/general/useNavigationState';
+import type { AssetService } from '../../../services/assets/asset';
 import type { AssetListItem } from '../../../types/asset';
 import type { NavigationState, NavigationStore } from '../../../types/navigation';
 import { AssetTable } from '../AssetTable';
@@ -52,7 +53,7 @@ vi.mock('@cognite/aura/data-grid', () => ({
 }));
 
 describe('AssetTable rows', () => {
-  let mockContext: UseAssetsContextType;
+  let mockContext: AssetService;
   let wrapper: ComponentType<{ children: ReactNode }>;
   let store: StoreApi<NavigationStore>;
   let queryClient: QueryClient;
@@ -72,8 +73,10 @@ describe('AssetTable rows', () => {
     const countsContext = makeAssetsKPICountsContext();
     wrapper = ({ children }) => (
       <NavigationStoreContext.Provider value={store}>
-        <UseAssetsContext.Provider value={mockContext}>
-          <UseAssetsKPICountsContext.Provider value={countsContext}>
+        <UseAssetsContext.Provider value={{ createAssetService: () => mockContext }}>
+          <UseAssetsKPICountsContext.Provider
+            value={{ createAssetsKPICountService: () => countsContext }}
+          >
             <QueryWrapper>
               <AssetContext.Provider value={assetContext}>{children}</AssetContext.Provider>
             </QueryWrapper>

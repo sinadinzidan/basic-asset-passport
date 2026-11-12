@@ -4,19 +4,20 @@ import { createContext, useContext } from 'react';
 import { MODEL } from '../../config/model';
 import { ASSET_QUERY_STALE_TIME_MS } from '../../constants/assets';
 import { toQueryState } from '../../lib/queryState';
-import { getAssetDetails } from '../../services/assets/assetDetails';
+import { createAssetDetailsService } from '../../services/assets/assetDetails';
 import type { AssetIdentifier } from '../../types/asset';
 
 import { useAssetContext } from './useAssetContext';
 
-const defaultDeps = { getAssetDetails };
+const defaultDeps = { createAssetDetailsService };
 
 export type UseAssetDetailsContextType = typeof defaultDeps;
 export const UseAssetDetailsContext = createContext<UseAssetDetailsContextType>(defaultDeps);
 
 export function useAssetDetails(assetIdentifier: AssetIdentifier) {
-  const { getAssetDetails: loadDetails } = useContext(UseAssetDetailsContext);
+  const { createAssetDetailsService } = useContext(UseAssetDetailsContext);
   const client = useAssetContext();
+  const detailsService = createAssetDetailsService(client);
 
   const query = useQuery({
     queryKey: [
@@ -29,7 +30,7 @@ export function useAssetDetails(assetIdentifier: AssetIdentifier) {
       assetIdentifier.space,
       assetIdentifier.externalId,
     ],
-    queryFn: () => loadDetails(client, assetIdentifier),
+    queryFn: () => detailsService.getAssetDetails(assetIdentifier),
     staleTime: ASSET_QUERY_STALE_TIME_MS,
   });
 

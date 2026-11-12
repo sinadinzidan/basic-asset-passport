@@ -10,6 +10,6 @@ export type DictationSession = {
   stop: () => void;
 };
 
-export type DictationEngine = {
+export interface DictationEngine {
   start: (callbacks: DictationCallbacks) => DictationSession;
-};
+}

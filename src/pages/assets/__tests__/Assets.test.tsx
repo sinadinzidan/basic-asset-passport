@@ -11,23 +11,20 @@ import { makeAssetDocument } from '../../../__mocks__/documents';
 import { makeLimitedList } from '../../../__mocks__/lists';
 import { makeQueryClientWrapper } from '../../../__mocks__/QueryClientWrapper';
 import { AssetTab } from '../../../enums/assetTab';
-import {
-  UseAssetDocumentsContext,
-  type UseAssetDocumentsContextType,
-} from '../../../hooks/assets/documents/useAssetDocuments';
+import { UseAssetDocumentsContext } from '../../../hooks/assets/documents/useAssetDocuments';
 import { DocumentFileContext } from '../../../hooks/assets/documents/useDocumentFileContext';
 import { DocumentPreviewContext } from '../../../hooks/assets/documents/useDocumentPreview';
 import { AssetContext } from '../../../hooks/assets/useAssetContext';
-import {
-  UseAssetDetailsContext,
-  type UseAssetDetailsContextType,
-} from '../../../hooks/assets/useAssetDetails';
+import { UseAssetDetailsContext } from '../../../hooks/assets/useAssetDetails';
 import { UseAssetDetailsTabCountsContext } from '../../../hooks/assets/useAssetDetailsTabCounts';
-import { UseAssetsContext, type UseAssetsContextType } from '../../../hooks/assets/useAssets';
+import { UseAssetsContext } from '../../../hooks/assets/useAssets';
 import { UseAssetsKPICountsContext } from '../../../hooks/assets/useAssetsKPICounts';
 import { DebounceContext, type DebounceDeps } from '../../../hooks/general/useDebouncedCallback';
 import { useNavigationState } from '../../../hooks/general/useNavigationState';
 import { NavigationProvider } from '../../../providers/general/NavigationProvider';
+import type { AssetService } from '../../../services/assets/asset';
+import type { AssetDetailsService } from '../../../services/assets/assetDetails';
+import type { AssetDocumentService } from '../../../services/assets/documents/assetDocument';
 import type { StateSyncApi } from '../../../types/host';
 import { Assets } from '../Assets';
 
@@ -41,7 +38,7 @@ const immediateDebounce: DebounceDeps = {
 
 describe(Assets.name, () => {
   let api: StateSyncApi;
-  let assetsContext: UseAssetsContextType;
+  let assetsContext: AssetService;
   let wrapper: ComponentType<{ children: ReactNode }>;
 
   beforeEach(() => {
@@ -50,7 +47,7 @@ describe(Assets.name, () => {
       listAssets: vi.fn(() => Promise.resolve(makeAssetPage())),
       searchAssets: vi.fn(() => Promise.resolve(makeAssetPage())),
     };
-    const detailsContext: UseAssetDetailsContextType = {
+    const detailsContext: AssetDetailsService = {
       getAssetDetails: vi.fn(() => Promise.resolve(makeInstanceDetails())),
     };
     api = {
@@ -61,10 +58,16 @@ describe(Assets.name, () => {
     const QueryWrapper = makeQueryClientWrapper();
     wrapper = ({ children }) => (
       <DebounceContext.Provider value={immediateDebounce}>
-        <UseAssetsContext.Provider value={assetsContext}>
-          <UseAssetDetailsContext.Provider value={detailsContext}>
-            <UseAssetDetailsTabCountsContext.Provider value={tabCountsContext}>
-              <UseAssetsKPICountsContext.Provider value={registerCountsContext}>
+        <UseAssetsContext.Provider value={{ createAssetService: () => assetsContext }}>
+          <UseAssetDetailsContext.Provider
+            value={{ createAssetDetailsService: () => detailsContext }}
+          >
+            <UseAssetDetailsTabCountsContext.Provider
+              value={{ createAssetDetailsTabCountService: () => tabCountsContext }}
+            >
+              <UseAssetsKPICountsContext.Provider
+                value={{ createAssetsKPICountService: () => registerCountsContext }}
+              >
                 <QueryWrapper>
                   <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
                 </QueryWrapper>
@@ -139,9 +142,7 @@ describe(Assets.name, () => {
         }),
       ),
     );
-    await waitFor(() =>
-      expect(assetsContext.searchAssets).toHaveBeenCalledWith(expect.anything(), 'pump'),
-    );
+    await waitFor(() => expect(assetsContext.searchAssets).toHaveBeenCalledWith('pump'));
   });
 
   it('restores the search from the shared link', async () => {
@@ -152,9 +153,7 @@ describe(Assets.name, () => {
     });
 
     expect(await screen.findByRole('searchbox', { name: 'Search assets' })).toHaveValue('pump');
-    await waitFor(() =>
-      expect(assetsContext.searchAssets).toHaveBeenCalledWith(expect.anything(), 'pump'),
-    );
+    await waitFor(() => expect(assetsContext.searchAssets).toHaveBeenCalledWith('pump'));
   });
 
   it('keeps the search when an asset is opened and closed', async () => {
@@ -186,7 +185,7 @@ describe(Assets.name, () => {
     await userEvent.click(nextButton);
 
     expect(await screen.findByText('Page 2')).toBeInTheDocument();
-    expect(assetsContext.listAssets).toHaveBeenLastCalledWith(expect.anything(), 'cursor-2');
+    expect(assetsContext.listAssets).toHaveBeenLastCalledWith('cursor-2');
     expect(api.syncInternalState).toHaveBeenLastCalledWith(
       JSON.stringify({
         selectedAsset: null,
@@ -206,7 +205,7 @@ describe(Assets.name, () => {
     });
 
     expect(await screen.findByText('Page 3')).toBeInTheDocument();
-    expect(assetsContext.listAssets).toHaveBeenCalledWith(expect.anything(), 'cursor-3');
+    expect(assetsContext.listAssets).toHaveBeenCalledWith('cursor-3');
   });
 
   it('goes back one page from a restored page', async () => {
@@ -224,7 +223,7 @@ describe(Assets.name, () => {
     await userEvent.click(previousButton);
 
     expect(await screen.findByText('Page 2')).toBeInTheDocument();
-    expect(assetsContext.listAssets).toHaveBeenLastCalledWith(expect.anything(), 'cursor-2');
+    expect(assetsContext.listAssets).toHaveBeenLastCalledWith('cursor-2');
   });
 
   it('goes back to the first page when the search changes', async () => {
@@ -248,7 +247,7 @@ describe(Assets.name, () => {
   });
 
   it('returns to the first page when a restored page cannot be loaded', async () => {
-    vi.mocked(assetsContext.listAssets).mockImplementation((_asset, cursor) =>
+    vi.mocked(assetsContext.listAssets).mockImplementation((cursor) =>
       cursor ? Promise.reject(new Error('stale cursor')) : Promise.resolve(makeAssetPage()),
     );
     const initialState = JSON.stringify({ registerCursors: ['stale-cursor'] });
@@ -265,7 +264,7 @@ describe(Assets.name, () => {
     // Arrange
     const user = userEvent.setup();
     const client = makeMockClient();
-    const documentsContext: UseAssetDocumentsContextType = {
+    const documentsContext: Pick<AssetDocumentService, 'listAssetDocuments'> = {
       listAssetDocuments: vi.fn(() => Promise.resolve(makeLimitedList([makeAssetDocument()]))),
     };
     const initialState = JSON.stringify({
@@ -285,7 +284,9 @@ describe(Assets.name, () => {
     render(
       <AssetContext.Provider value={client}>
         <DocumentFileContext.Provider value={{ requestUploadUrl: vi.fn(), uploadContent: vi.fn() }}>
-          <UseAssetDocumentsContext.Provider value={documentsContext}>
+          <UseAssetDocumentsContext.Provider
+            value={{ createAssetDocumentService: () => documentsContext }}
+          >
             <DocumentPreviewContext.Provider value={() => <OpenOtherAssetButton />}>
               <RegisterWithState api={api} initialState={initialState} />
             </DocumentPreviewContext.Provider>

@@ -8,12 +8,9 @@ import {
   makeQueryClientWrapper,
   makeTestQueryClient,
 } from '../../../../__mocks__/QueryClientWrapper';
+import type { AssetNoteService } from '../../../../services/assets/notes/assetNote';
 import { AssetContext } from '../../useAssetContext';
-import {
-  useAddAssetNote,
-  UseAddAssetNoteContext,
-  type UseAddAssetNoteContextType,
-} from '../useAddAssetNote';
+import { useAddAssetNote, UseAddAssetNoteContext } from '../useAddAssetNote';
 import { getAssetNotesQueryKey } from '../useAssetNotes';
 
 const assetIdentifier = { space: 'asset-space', externalId: 'FLOC-1' };
@@ -22,7 +19,7 @@ const newNote = { title: 'Inspection', body: 'All good' };
 describe(useAddAssetNote.name, () => {
   const client = makeMockClient();
   let queryClient: QueryClient;
-  let mockContext: UseAddAssetNoteContextType;
+  let mockContext: Pick<AssetNoteService, 'createAssetNote'>;
   let wrapper: ComponentType<{ children: ReactNode }>;
 
   beforeEach(() => {
@@ -32,7 +29,7 @@ describe(useAddAssetNote.name, () => {
     };
     const QueryWrapper = makeQueryClientWrapper(queryClient);
     wrapper = ({ children }) => (
-      <UseAddAssetNoteContext.Provider value={mockContext}>
+      <UseAddAssetNoteContext.Provider value={{ createAssetNoteService: () => mockContext }}>
         <QueryWrapper>
           <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
         </QueryWrapper>
@@ -49,7 +46,7 @@ describe(useAddAssetNote.name, () => {
       await result.current.addNote(newNote);
     });
 
-    expect(mockContext.createAssetNote).toHaveBeenCalledWith(client, assetIdentifier, newNote);
+    expect(mockContext.createAssetNote).toHaveBeenCalledWith(assetIdentifier, newNote);
   });
 
   it('refreshes the notes of that asset after a save', async () => {

@@ -5,11 +5,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { makeMockClient } from '../../../__mocks__/cogniteClient';
 import { makeQueryClientWrapper, makeTestQueryClient } from '../../../__mocks__/QueryClientWrapper';
+import type { AssetDetailsTabCountService } from '../../../services/assets/assetDetailsTabCounts';
 import { getAssetNotesQueryKey } from '../notes/useAssetNotes';
 import { AssetContext } from '../useAssetContext';
 import {
   UseAssetDetailsTabCountsContext,
-  type UseAssetDetailsTabCountsContextType,
   useAssetDetailsTabCounts,
 } from '../useAssetDetailsTabCounts';
 
@@ -18,7 +18,7 @@ const assetContext = makeMockClient();
 const assetIdentifier = { space: 'asset-space', externalId: 'FLOC-1' };
 
 describe(useAssetDetailsTabCounts.name, () => {
-  let context: UseAssetDetailsTabCountsContextType;
+  let context: AssetDetailsTabCountService;
   let queryClient: QueryClient;
   let wrapper: ComponentType<{ children: ReactNode }>;
 
@@ -33,7 +33,9 @@ describe(useAssetDetailsTabCounts.name, () => {
     queryClient = makeTestQueryClient();
     const QueryWrapper = makeQueryClientWrapper(queryClient);
     wrapper = ({ children }) => (
-      <UseAssetDetailsTabCountsContext.Provider value={context}>
+      <UseAssetDetailsTabCountsContext.Provider
+        value={{ createAssetDetailsTabCountService: () => context }}
+      >
         <QueryWrapper>
           <AssetContext.Provider value={assetContext}>{children}</AssetContext.Provider>
         </QueryWrapper>

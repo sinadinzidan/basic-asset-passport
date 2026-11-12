@@ -10,42 +10,59 @@ import { getMappedProperties, toInstanceDetails } from './instanceDetails';
 import { sortByName } from './querySort';
 import { findAssetPassportView, isNodeInstance, toViewReference } from './viewHelpers';
 
-export async function listAssetEquipment(
-  client: AssetContextType,
-  assetIdentifier: AssetIdentifier,
-  limit: number = ASSET_EQUIPMENT_QUERY_LIMIT,
-): Promise<LimitedList<AssetInstanceDetails>> {
-  const equipmentView = await findAssetPassportView(client, MODEL.views.equipment);
-  const viewReference = toViewReference(equipmentView);
-  const mappedProperties = getMappedProperties(equipmentView);
-  const response = await client.instances.query({
-    with: {
-      equipment: {
-        nodes: {
-          filter: {
-            and: [{ hasData: [viewReference] }, matchAssetRelation(equipmentView, assetIdentifier)],
-          },
-        },
-        sort: sortByName(equipmentView),
-        limit: getRequestLimit(limit),
-      },
-    },
-    select: {
-      equipment: {
-        sources: [
-          {
-            source: viewReference,
-            properties: mappedProperties.map(({ identifier }) => identifier),
-          },
-        ],
-      },
-    },
-  });
+export interface AssetEquipmentService {
+  listAssetEquipment(
+    assetIdentifier: AssetIdentifier,
+    limit?: number,
+  ): Promise<LimitedList<AssetInstanceDetails>>;
+}
 
-  return toLimitedList(
-    (response.items.equipment ?? [])
-      .filter(isNodeInstance)
-      .map((node) => toInstanceDetails(node, equipmentView, mappedProperties)),
-    limit,
-  );
+class CdfAssetEquipmentService implements AssetEquipmentService {
+  constructor(private readonly client: AssetContextType) {}
+
+  listAssetEquipment = async (
+    assetIdentifier: AssetIdentifier,
+    limit: number = ASSET_EQUIPMENT_QUERY_LIMIT,
+  ): Promise<LimitedList<AssetInstanceDetails>> => {
+    const equipmentView = await findAssetPassportView(this.client, MODEL.views.equipment);
+    const viewReference = toViewReference(equipmentView);
+    const mappedProperties = getMappedProperties(equipmentView);
+    const response = await this.client.instances.query({
+      with: {
+        equipment: {
+          nodes: {
+            filter: {
+              and: [
+                { hasData: [viewReference] },
+                matchAssetRelation(equipmentView, assetIdentifier),
+              ],
+            },
+          },
+          sort: sortByName(equipmentView),
+          limit: getRequestLimit(limit),
+        },
+      },
+      select: {
+        equipment: {
+          sources: [
+            {
+              source: viewReference,
+              properties: mappedProperties.map(({ identifier }) => identifier),
+            },
+          ],
+        },
+      },
+    });
+
+    return toLimitedList(
+      (response.items.equipment ?? [])
+        .filter(isNodeInstance)
+        .map((node) => toInstanceDetails(node, equipmentView, mappedProperties)),
+      limit,
+    );
+  };
+}
+
+export function createAssetEquipmentService(client: AssetContextType): AssetEquipmentService {
+  return new CdfAssetEquipmentService(client);
 }

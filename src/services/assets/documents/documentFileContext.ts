@@ -15,37 +15,42 @@ const defaultDeps: DocumentFileDeps = {
   sendContent: (input, init) => fetch(input, init),
 };
 
+class CdfDocumentFileContext implements DocumentFileContextType {
+  constructor(
+    private readonly sdk: DocumentFileSdk,
+    private readonly deps: DocumentFileDeps,
+  ) {}
+
+  requestUploadUrl = async (document: DocumentIdentifier): Promise<string> => {
+    const response = await this.sdk.post(`/api/v1/projects/${this.sdk.project}/files/uploadlink`, {
+      data: { items: [{ instanceId: toInstanceId(document) }] },
+    });
+    const parsed = UploadLinkResponseSchema.safeParse(response.data);
+    if (!parsed.success) {
+      throw new Error(UPLOAD_LINK_MISSING_MESSAGE);
+    }
+
+    return parsed.data.items[0].uploadUrl;
+  };
+
+  uploadContent = async (uploadUrl: string, file: File): Promise<void> => {
+    const response = await this.deps.sendContent(uploadUrl, {
+      method: 'PUT',
+      headers: { 'Content-Type': file.type || DEFAULT_DOCUMENT_MIME_TYPE },
+      body: file,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Uploading the file failed (${response.status}).`);
+    }
+  };
+}
+
 export function createDocumentFileContext(
   sdk: DocumentFileSdk,
   overrides?: Partial<DocumentFileDeps>,
 ): DocumentFileContextType {
-  const { sendContent } = { ...defaultDeps, ...overrides };
-
-  return {
-    async requestUploadUrl(document: DocumentIdentifier): Promise<string> {
-      const response = await sdk.post(`/api/v1/projects/${sdk.project}/files/uploadlink`, {
-        data: { items: [{ instanceId: toInstanceId(document) }] },
-      });
-      const parsed = UploadLinkResponseSchema.safeParse(response.data);
-      if (!parsed.success) {
-        throw new Error(UPLOAD_LINK_MISSING_MESSAGE);
-      }
-
-      return parsed.data.items[0].uploadUrl;
-    },
-
-    async uploadContent(uploadUrl: string, file: File): Promise<void> {
-      const response = await sendContent(uploadUrl, {
-        method: 'PUT',
-        headers: { 'Content-Type': file.type || DEFAULT_DOCUMENT_MIME_TYPE },
-        body: file,
-      });
-
-      if (!response.ok) {
-        throw new Error(`Uploading the file failed (${response.status}).`);
-      }
-    },
-  };
+  return new CdfDocumentFileContext(sdk, { ...defaultDeps, ...overrides });
 }
 
 function toInstanceId(document: DocumentIdentifier): DocumentIdentifier {

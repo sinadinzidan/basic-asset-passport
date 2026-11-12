@@ -14,15 +14,11 @@ import { MODEL } from '../../../config/model';
 import { AssetTab } from '../../../enums/assetTab';
 import { UseAssetEquipmentContext } from '../../../hooks/assets/equipment/useAssetEquipment';
 import { AssetContext } from '../../../hooks/assets/useAssetContext';
-import {
-  UseAssetDetailsContext,
-  type UseAssetDetailsContextType,
-} from '../../../hooks/assets/useAssetDetails';
-import {
-  UseAssetDetailsTabCountsContext,
-  type UseAssetDetailsTabCountsContextType,
-} from '../../../hooks/assets/useAssetDetailsTabCounts';
+import { UseAssetDetailsContext } from '../../../hooks/assets/useAssetDetails';
+import { UseAssetDetailsTabCountsContext } from '../../../hooks/assets/useAssetDetailsTabCounts';
 import { NavigationStoreContext } from '../../../hooks/general/useNavigationState';
+import type { AssetDetailsService } from '../../../services/assets/assetDetails';
+import type { AssetDetailsTabCountService } from '../../../services/assets/assetDetailsTabCounts';
 import type { AssetInstanceDetails } from '../../../types/asset';
 import type { NavigationStore } from '../../../types/navigation';
 import { AssetDetails } from '../AssetDetails';
@@ -49,8 +45,8 @@ function makeDetails(): AssetInstanceDetails {
 }
 
 describe(AssetDetails.name, () => {
-  let mockContext: UseAssetDetailsContextType;
-  let tabCountsContext: UseAssetDetailsTabCountsContextType;
+  let mockContext: AssetDetailsService;
+  let tabCountsContext: AssetDetailsTabCountService;
   let wrapper: ComponentType<{ children: ReactNode }>;
   let store: StoreApi<NavigationStore>;
 
@@ -70,9 +66,13 @@ describe(AssetDetails.name, () => {
     const QueryWrapper = makeQueryClientWrapper();
     wrapper = ({ children }) => (
       <NavigationStoreContext.Provider value={store}>
-        <UseAssetDetailsContext.Provider value={mockContext}>
-          <UseAssetDetailsTabCountsContext.Provider value={tabCountsContext}>
-            <UseAssetEquipmentContext.Provider value={equipmentContext}>
+        <UseAssetDetailsContext.Provider value={{ createAssetDetailsService: () => mockContext }}>
+          <UseAssetDetailsTabCountsContext.Provider
+            value={{ createAssetDetailsTabCountService: () => tabCountsContext }}
+          >
+            <UseAssetEquipmentContext.Provider
+              value={{ createAssetEquipmentService: () => equipmentContext }}
+            >
               <QueryWrapper>
                 <AssetContext.Provider value={assetContext}>{children}</AssetContext.Provider>
               </QueryWrapper>
@@ -162,7 +162,7 @@ describe(AssetDetails.name, () => {
       tabCountsContext.countAssetDocuments,
       tabCountsContext.countAssetLinkedFiles,
     ]) {
-      expect(count).toHaveBeenCalledWith(expect.anything(), assetIdentifier);
+      expect(count).toHaveBeenCalledWith(assetIdentifier);
     }
   });
 

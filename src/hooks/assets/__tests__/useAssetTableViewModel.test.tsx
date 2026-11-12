@@ -7,15 +7,16 @@ import { makeAssetListItem, makeAssetPage } from '../../../__mocks__/assets';
 import { makeMockClient } from '../../../__mocks__/cogniteClient';
 import { makeNavigationStore } from '../../../__mocks__/navigation';
 import { makeQueryClientWrapper } from '../../../__mocks__/QueryClientWrapper';
+import type { AssetService } from '../../../services/assets/asset';
 import type { NavigationState, NavigationStore } from '../../../types/navigation';
 import { NavigationStoreContext } from '../../general/useNavigationState';
 import { AssetContext } from '../useAssetContext';
-import { UseAssetsContext, type UseAssetsContextType } from '../useAssets';
+import { UseAssetsContext } from '../useAssets';
 import { useAssetTableViewModel } from '../useAssetTableViewModel';
 
 describe(useAssetTableViewModel.name, () => {
   const client = makeMockClient();
-  let assetService: UseAssetsContextType;
+  let assetService: AssetService;
   let store: StoreApi<NavigationStore>;
   let wrapper: ComponentType<{ children: ReactNode }>;
 
@@ -27,7 +28,7 @@ describe(useAssetTableViewModel.name, () => {
     const QueryWrapper = makeQueryClientWrapper();
     wrapper = ({ children }) => (
       <NavigationStoreContext.Provider value={store}>
-        <UseAssetsContext.Provider value={assetService}>
+        <UseAssetsContext.Provider value={{ createAssetService: () => assetService }}>
           <QueryWrapper>
             <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
           </QueryWrapper>
@@ -64,7 +65,7 @@ describe(useAssetTableViewModel.name, () => {
     const { result } = renderViewModel({ registerCursors: ['cursor-2', 'cursor-3'] });
 
     await waitFor(() => expect(result.current.isPending).toBe(false));
-    expect(assetService.listAssets).toHaveBeenCalledWith(client, 'cursor-3');
+    expect(assetService.listAssets).toHaveBeenCalledWith('cursor-3');
     expect(result.current.pageNumber).toBe(3);
     expect(result.current.isOnLaterPage).toBe(true);
   });
@@ -82,7 +83,7 @@ describe(useAssetTableViewModel.name, () => {
     const { result } = renderViewModel({ searchQuery: 'pump' });
 
     await waitFor(() => expect(result.current.isSearchTruncated).toBe(true));
-    expect(assetService.searchAssets).toHaveBeenCalledWith(client, 'pump');
+    expect(assetService.searchAssets).toHaveBeenCalledWith('pump');
     expect(result.current.isSearching).toBe(true);
     expect(result.current.searchQuery).toBe('pump');
   });

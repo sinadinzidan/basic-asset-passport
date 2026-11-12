@@ -8,20 +8,17 @@ import { makeLimitedList } from '../../../../__mocks__/lists';
 import { makeQueryClientWrapper } from '../../../../__mocks__/QueryClientWrapper';
 import { DOCUMENT_QUERY_LIMIT } from '../../../../constants/documents';
 import { DocumentUploadStatus } from '../../../../enums/documentUploadStatus';
+import type { AssetDocumentService } from '../../../../services/assets/documents/assetDocument';
 import type { AssetDocument } from '../../../../types/document';
 import type { LimitedList } from '../../../../types/list';
 import { AssetContext } from '../../useAssetContext';
-import {
-  useAssetDocuments,
-  UseAssetDocumentsContext,
-  type UseAssetDocumentsContextType,
-} from '../useAssetDocuments';
+import { useAssetDocuments, UseAssetDocumentsContext } from '../useAssetDocuments';
 
 const assetIdentifier = { space: 'asset-space', externalId: 'FLOC-1' };
 
 describe(useAssetDocuments.name, () => {
   const client = makeMockClient();
-  let mockContext: UseAssetDocumentsContextType;
+  let mockContext: Pick<AssetDocumentService, 'listAssetDocuments'>;
   let wrapper: ComponentType<{ children: ReactNode }>;
 
   beforeEach(() => {
@@ -30,7 +27,7 @@ describe(useAssetDocuments.name, () => {
     };
     const QueryWrapper = makeQueryClientWrapper();
     wrapper = ({ children }) => (
-      <UseAssetDocumentsContext.Provider value={mockContext}>
+      <UseAssetDocumentsContext.Provider value={{ createAssetDocumentService: () => mockContext }}>
         <QueryWrapper>
           <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
         </QueryWrapper>
@@ -57,7 +54,6 @@ describe(useAssetDocuments.name, () => {
 
     await waitFor(() => expect(result.current.data).toEqual(documents));
     expect(mockContext.listAssetDocuments).toHaveBeenCalledWith(
-      client,
       assetIdentifier,
       DOCUMENT_QUERY_LIMIT,
     );
@@ -82,7 +78,7 @@ describe(useAssetDocuments.name, () => {
     // Assert
     expect(result.current.data).toEqual(firstPage);
     expect(result.current.isLoadingMore).toBe(true);
-    expect(mockContext.listAssetDocuments).toHaveBeenLastCalledWith(client, assetIdentifier, 2);
+    expect(mockContext.listAssetDocuments).toHaveBeenLastCalledWith(assetIdentifier, 2);
     longer.resolve(makeLimitedList([makeAssetDocument()]));
     await waitFor(() => expect(result.current.isLoadingMore).toBe(false));
   });

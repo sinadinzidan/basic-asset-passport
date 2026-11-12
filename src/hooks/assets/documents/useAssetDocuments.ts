@@ -6,12 +6,20 @@ import { DOCUMENT_QUERY_LIMIT, DOCUMENT_QUERY_STALE_TIME_MS } from '../../../con
 import { getDocumentRefetchInterval } from '../../../lib/documentPolling';
 import { isKeyOfList } from '../../../lib/queryKeys';
 import { toQueryState } from '../../../lib/queryState';
-import { listAssetDocuments } from '../../../services/assets/documents/assetDocument';
+import {
+  createAssetDocumentService,
+  type AssetDocumentService,
+} from '../../../services/assets/documents/assetDocument';
 import type { AssetIdentifier } from '../../../types/asset';
+import type { AssetContextType } from '../../../types/assetContext';
 import { useClock } from '../../general/useClock';
 import { useAssetContext } from '../useAssetContext';
 
-const defaultDeps = { listAssetDocuments };
+const defaultDeps: {
+  createAssetDocumentService: (
+    client: AssetContextType,
+  ) => Pick<AssetDocumentService, 'listAssetDocuments'>;
+} = { createAssetDocumentService };
 
 export type UseAssetDocumentsContextType = typeof defaultDeps;
 export const UseAssetDocumentsContext = createContext<UseAssetDocumentsContextType>(defaultDeps);
@@ -33,15 +41,16 @@ export function useAssetDocuments(
   assetIdentifier: AssetIdentifier,
   limit: number = DOCUMENT_QUERY_LIMIT,
 ) {
-  const { listAssetDocuments: loadDocuments } = useContext(UseAssetDocumentsContext);
+  const { createAssetDocumentService } = useContext(UseAssetDocumentsContext);
   const now = useClock();
   const client = useAssetContext();
+  const documentService = createAssetDocumentService(client);
 
   const listKey = getAssetDocumentsQueryKey(client.project, assetIdentifier);
 
   const query = useQuery({
     queryKey: [...listKey, limit],
-    queryFn: () => loadDocuments(client, assetIdentifier, limit),
+    queryFn: () => documentService.listAssetDocuments(assetIdentifier, limit),
     staleTime: DOCUMENT_QUERY_STALE_TIME_MS,
     refetchInterval: (query) => getDocumentRefetchInterval(query.state.data?.items, now()),
     placeholderData: (previousData, previousQuery) =>

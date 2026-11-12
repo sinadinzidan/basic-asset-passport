@@ -21,34 +21,41 @@ import type { AgentChatRequest, AgentContextType, AgentReply, CdfAgent } from '.
 
 type AgentSdkClient = Pick<CogniteClient, 'project' | 'post'>;
 
-export function createAgentContext(sdk: AgentSdkClient): AgentContextType {
-  const agentsPath = `/api/v1/projects/${encodeURIComponent(sdk.project)}/ai/agents`;
+class CdfAgentContext implements AgentContextType {
+  readonly project: string;
 
-  return {
-    project: sdk.project,
-    async getAgent(externalId: string) {
-      const response = await sdk.post<unknown>(`${agentsPath}/byids`, {
-        data: { items: [{ externalId }], ignoreUnknownIds: true },
-        headers: BETA_API_HEADERS,
-      });
+  private readonly agentsPath: string;
 
-      return parseFoundAgent(response.data);
-    },
-    async chat({ agentExternalId, text, cursor }: AgentChatRequest) {
-      const response = await sdk.post<unknown>(`${agentsPath}/chat`, {
-        data: {
-          agentExternalId,
-          messages: [
-            { role: USER_MESSAGE_ROLE, content: { type: TEXT_MESSAGE_CONTENT_TYPE, text } },
-          ],
-          ...(cursor === null ? {} : { cursor }),
-        },
-        headers: BETA_API_HEADERS,
-      });
+  constructor(private readonly sdk: AgentSdkClient) {
+    this.project = sdk.project;
+    this.agentsPath = `/api/v1/projects/${encodeURIComponent(sdk.project)}/ai/agents`;
+  }
 
-      return parseReply(response.data);
-    },
+  getAgent = async (externalId: string): Promise<CdfAgent | null> => {
+    const response = await this.sdk.post<unknown>(`${this.agentsPath}/byids`, {
+      data: { items: [{ externalId }], ignoreUnknownIds: true },
+      headers: BETA_API_HEADERS,
+    });
+
+    return parseFoundAgent(response.data);
   };
+
+  chat = async ({ agentExternalId, text, cursor }: AgentChatRequest): Promise<AgentReply> => {
+    const response = await this.sdk.post<unknown>(`${this.agentsPath}/chat`, {
+      data: {
+        agentExternalId,
+        messages: [{ role: USER_MESSAGE_ROLE, content: { type: TEXT_MESSAGE_CONTENT_TYPE, text } }],
+        ...(cursor === null ? {} : { cursor }),
+      },
+      headers: BETA_API_HEADERS,
+    });
+
+    return parseReply(response.data);
+  };
+}
+
+export function createAgentContext(sdk: AgentSdkClient): AgentContextType {
+  return new CdfAgentContext(sdk);
 }
 
 function parseReply(data: unknown): AgentReply {

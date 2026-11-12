@@ -30,36 +30,97 @@ const NOTE_PROPERTIES = [
   MODEL.properties.note.author,
 ];
 
-export async function listAssetNotes(
-  client: AssetContextType,
-  assetIdentifier: AssetIdentifier,
-  limit: number = NOTE_QUERY_LIMIT,
-): Promise<LimitedList<AssetNote>> {
-  const noteView = await findAssetPassportView(client, MODEL.views.note);
-  const viewReference = toViewReference(noteView);
-  const response = await client.instances.query({
-    with: {
-      notes: {
-        nodes: {
-          filter: {
-            and: [{ hasData: [viewReference] }, matchAssetRelation(noteView, assetIdentifier)],
-          },
-        },
-        sort: [SORT_BY_NEWEST, SORT_BY_EXTERNAL_ID],
-        limit: getRequestLimit(limit),
-      },
-    },
-    select: {
-      notes: {
-        sources: [{ source: viewReference, properties: NOTE_PROPERTIES }],
-      },
-    },
-  });
+export interface AssetNoteService {
+  listAssetNotes(assetIdentifier: AssetIdentifier, limit?: number): Promise<LimitedList<AssetNote>>;
+  createAssetNote(assetIdentifier: AssetIdentifier, input: NewAssetNote): Promise<void>;
+  updateAssetNote(note: NoteIdentifier, input: NewAssetNote): Promise<void>;
+  deleteAssetNote(note: NoteIdentifier): Promise<void>;
+}
 
-  return toLimitedList(
-    (response.items.notes ?? []).filter(isNodeInstance).map((node) => toAssetNote(node, noteView)),
-    limit,
-  );
+class CdfAssetNoteService implements AssetNoteService {
+  constructor(
+    private readonly client: AssetContextType,
+    private readonly deps: CreateNoteDeps,
+  ) {}
+
+  listAssetNotes = async (
+    assetIdentifier: AssetIdentifier,
+    limit: number = NOTE_QUERY_LIMIT,
+  ): Promise<LimitedList<AssetNote>> => {
+    const noteView = await findAssetPassportView(this.client, MODEL.views.note);
+    const viewReference = toViewReference(noteView);
+    const response = await this.client.instances.query({
+      with: {
+        notes: {
+          nodes: {
+            filter: {
+              and: [{ hasData: [viewReference] }, matchAssetRelation(noteView, assetIdentifier)],
+            },
+          },
+          sort: [SORT_BY_NEWEST, SORT_BY_EXTERNAL_ID],
+          limit: getRequestLimit(limit),
+        },
+      },
+      select: {
+        notes: {
+          sources: [{ source: viewReference, properties: NOTE_PROPERTIES }],
+        },
+      },
+    });
+
+    return toLimitedList(
+      (response.items.notes ?? [])
+        .filter(isNodeInstance)
+        .map((node) => toAssetNote(node, noteView)),
+      limit,
+    );
+  };
+
+  createAssetNote = async (
+    assetIdentifier: AssetIdentifier,
+    input: NewAssetNote,
+  ): Promise<void> => {
+    const note = normalizeNewAssetNote(input);
+    const noteView = await findAssetPassportView(this.client, MODEL.views.note);
+    const author = await readAuthor(this.client);
+
+    await upsertNote(
+      this.client,
+      noteView,
+      {
+        space: MODEL.instanceSpace,
+        externalId: `${NOTE_EXTERNAL_ID_PREFIX}${this.deps.generateId()}`,
+      },
+      {
+        ...note,
+        ...(author ?? {}),
+        [MODEL.properties.assetRelation]: {
+          space: assetIdentifier.space,
+          externalId: assetIdentifier.externalId,
+        },
+      },
+    );
+  };
+
+  updateAssetNote = async (note: NoteIdentifier, input: NewAssetNote): Promise<void> => {
+    const edited = normalizeNewAssetNote(input);
+    const noteView = await findAssetPassportView(this.client, MODEL.views.note);
+
+    await upsertNote(this.client, noteView, note, edited);
+  };
+
+  deleteAssetNote = async (note: NoteIdentifier): Promise<void> => {
+    await this.client.instances.delete([
+      { instanceType: INSTANCE_TYPE_NODE, space: note.space, externalId: note.externalId },
+    ]);
+  };
+}
+
+export function createAssetNoteService(
+  client: AssetContextType,
+  overrides?: Partial<CreateNoteDeps>,
+): AssetNoteService {
+  return new CdfAssetNoteService(client, { ...defaultDeps, ...overrides });
 }
 
 function toAssetNote(node: NodeInstance, view: ViewIdentity): AssetNote {
@@ -75,43 +136,6 @@ function toAssetNote(node: NodeInstance, view: ViewIdentity): AssetNote {
     author,
     createdTime: node.createdTime,
   };
-}
-
-export async function createAssetNote(
-  client: AssetContextType,
-  assetIdentifier: AssetIdentifier,
-  input: NewAssetNote,
-  overrides?: Partial<CreateNoteDeps>,
-): Promise<void> {
-  const { generateId } = { ...defaultDeps, ...overrides };
-  const note = normalizeNewAssetNote(input);
-  const noteView = await findAssetPassportView(client, MODEL.views.note);
-  const author = await readAuthor(client);
-
-  await upsertNote(
-    client,
-    noteView,
-    { space: MODEL.instanceSpace, externalId: `${NOTE_EXTERNAL_ID_PREFIX}${generateId()}` },
-    {
-      ...note,
-      ...(author ?? {}),
-      [MODEL.properties.assetRelation]: {
-        space: assetIdentifier.space,
-        externalId: assetIdentifier.externalId,
-      },
-    },
-  );
-}
-
-export async function updateAssetNote(
-  client: AssetContextType,
-  note: NoteIdentifier,
-  input: NewAssetNote,
-): Promise<void> {
-  const edited = normalizeNewAssetNote(input);
-  const noteView = await findAssetPassportView(client, MODEL.views.note);
-
-  await upsertNote(client, noteView, note, edited);
 }
 
 async function upsertNote(
@@ -133,15 +157,6 @@ async function upsertNote(
     autoCreateStartNodes: false,
     autoCreateEndNodes: false,
   });
-}
-
-export async function deleteAssetNote(
-  client: AssetContextType,
-  note: NoteIdentifier,
-): Promise<void> {
-  await client.instances.delete([
-    { instanceType: INSTANCE_TYPE_NODE, space: note.space, externalId: note.externalId },
-  ]);
 }
 
 async function readAuthor(
