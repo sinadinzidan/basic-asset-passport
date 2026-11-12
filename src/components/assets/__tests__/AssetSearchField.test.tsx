@@ -35,6 +35,25 @@ describe(AssetSearchField.name, () => {
     expect(screen.getByRole('searchbox', { name: 'Search assets' })).toHaveValue('pump');
   });
 
+  it('follows the applied search when it changes from outside', () => {
+    const { rerender } = render(<AssetSearchField value="pump" onChange={vi.fn()} />, { wrapper });
+
+    rerender(<AssetSearchField value="valve" onChange={vi.fn()} />);
+
+    expect(screen.getByRole('searchbox', { name: 'Search assets' })).toHaveValue('valve');
+  });
+
+  it('keeps the spaces being typed when its own search is applied', async () => {
+    const onChange = vi.fn();
+    const { rerender } = render(<AssetSearchField value="" onChange={onChange} />, { wrapper });
+    await userEvent.type(screen.getByRole('searchbox'), 'pump ');
+    fireScheduled();
+
+    rerender(<AssetSearchField value="pump" onChange={onChange} />);
+
+    expect(screen.getByRole('searchbox')).toHaveValue('pump ');
+  });
+
   it('shows what is typed at once but applies it only after the pause', async () => {
     const onChange = vi.fn();
     render(<AssetSearchField value="" onChange={onChange} />, { wrapper });

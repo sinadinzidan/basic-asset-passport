@@ -7,7 +7,6 @@ import { useDebouncedCallback } from '../../hooks/general/useDebouncedCallback';
 
 type AssetSearchFieldProps = {
   value: string;
-
   onChange: (searchText: string) => void;
 };
 
@@ -15,6 +14,12 @@ export function AssetSearchField({ value, onChange }: AssetSearchFieldProps) {
   const apply = useDebouncedCallback(onChange, ASSET_SEARCH_DEBOUNCE_MS);
 
   const [draft, setDraft] = useState(value);
+  const [followedValue, setFollowedValue] = useState(value);
+
+  if (value !== followedValue) {
+    setFollowedValue(value);
+    if (value !== draft.trim()) setDraft(value);
+  }
 
   function handleChange(event: ChangeEvent<HTMLInputElement>): void {
     setDraft(event.target.value);
