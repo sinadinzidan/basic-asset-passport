@@ -2,7 +2,7 @@ import { Skeleton } from '@cognite/aura/components/skeleton';
 
 import { ASSET_DETAILS_LOADING_MESSAGE } from '../../constants/assets';
 import { HudShape } from '../../enums/hudShape';
-import { HudPanel } from '../general/HudPanel';
+import { HudPanel } from '../general';
 
 const TAB_COUNT = 5;
 const PROPERTY_CELL_COUNT = 6;

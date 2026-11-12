@@ -3,11 +3,9 @@ import { CogniteSdkProvider } from '@cognite/app-sdk/react';
 import { CogniteClient } from '@cognite/sdk';
 import type { ComponentProps } from 'react';
 
-import { AgentHelper } from './components/agents/AgentHelper';
-import { AppAlert } from './components/general/AppAlert';
-import { LoadingNotice } from './components/general/LoadingNotice';
+import { AgentHelper } from './components/agents';
+import { AppAlert, LoadingNotice, NeonStage } from './components/general';
 import { MockAppContent } from './components/general/MockAppContent';
-import { NeonStage } from './components/general/NeonStage';
 import {
   HOST_CONNECTING_MESSAGE,
   HOST_CONNECTION_ERROR_DESCRIPTION,

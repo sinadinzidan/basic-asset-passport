@@ -5,8 +5,7 @@ import {
   ASSISTANT_MISSING_MESSAGE,
 } from '../../constants/agents';
 import { useAgentStatusViewModel } from '../../hooks/agents/useAgentStatusViewModel';
-import { LoadingNotice } from '../general/LoadingNotice';
-import { RetryAlert } from '../general/RetryAlert';
+import { LoadingNotice, RetryAlert } from '../general';
 
 import { AgentPanelHeader } from './AgentPanelHeader';
 

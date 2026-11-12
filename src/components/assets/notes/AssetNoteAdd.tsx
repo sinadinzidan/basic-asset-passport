@@ -9,9 +9,7 @@ import {
 import { AppAlertVariant } from '../../../enums/appAlertVariant';
 import { useAssetNoteAddViewModel } from '../../../hooks/assets/notes/useAssetNoteAddViewModel';
 import type { AssetIdentifier } from '../../../types/asset';
-import { AppAlert } from '../../general/AppAlert';
-import { GeneralButton } from '../../general/GeneralButton';
-import { GeneralDialog } from '../../general/GeneralDialog';
+import { AppAlert, GeneralButton, GeneralDialog } from '../../general';
 
 import { AssetNoteFields } from './AssetNoteFields';
 

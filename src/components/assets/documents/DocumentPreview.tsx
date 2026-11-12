@@ -13,8 +13,7 @@ import {
 import { PERCENT_FACTOR } from '../../../constants/number';
 import type { DocumentPreviewProps } from '../../../hooks/assets/documents/useDocumentPreview';
 import { useNavigationState } from '../../../hooks/general/useNavigationState';
-import { GeneralButton } from '../../general/GeneralButton';
-import { IconActionButton } from '../../general/IconActionButton';
+import { GeneralButton, IconActionButton } from '../../general';
 
 import { DocumentViewerContext } from './documentViewerContext';
 import { LinkedAssetPopover, type LinkedAssetTarget } from './LinkedAssetPopover';

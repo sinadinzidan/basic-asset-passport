@@ -13,11 +13,13 @@ import { useAssetNoteListViewModel } from '../../../hooks/assets/notes/useAssetN
 import { getErrorReason } from '../../../lib/errorReason';
 import { getInstanceKey } from '../../../lib/instanceKey';
 import type { AssetIdentifier } from '../../../types/asset';
-import { AppAlert } from '../../general/AppAlert';
-import { EmptyStateMessage } from '../../general/EmptyStateMessage';
-import { LoadingNotice } from '../../general/LoadingNotice';
-import { RetryAlert } from '../../general/RetryAlert';
-import { ShowMoreButton } from '../../general/ShowMoreButton';
+import {
+  AppAlert,
+  EmptyStateMessage,
+  LoadingNotice,
+  RetryAlert,
+  ShowMoreButton,
+} from '../../general';
 
 import { AssetNoteItem } from './AssetNoteItem';
 

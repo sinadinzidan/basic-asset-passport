@@ -7,13 +7,13 @@ import { useNavigationState } from '../../hooks/general/useNavigationState';
 import { formatTabCountBadge } from '../../lib/countBadge';
 import type { AssetIdentifier, AssetInstanceDetails } from '../../types/asset';
 import type { CountState } from '../../types/countState';
-import { HudPanel } from '../general/HudPanel';
+import { HudPanel } from '../general';
 
 import { AssetProperties } from './AssetProperties';
-import { AssetDocuments } from './documents/AssetDocuments';
-import { AssetEquipment } from './equipment/AssetEquipment';
-import { AssetNotes } from './notes/AssetNotes';
-import { AssetTimeseries } from './timeseries/AssetTimeseries';
+import { AssetDocuments } from './documents';
+import { AssetEquipment } from './equipment';
+import { AssetNotes } from './notes';
+import { AssetTimeseries } from './timeseries';
 
 type AssetDetailsTabsProps = {
   asset: AssetInstanceDetails;

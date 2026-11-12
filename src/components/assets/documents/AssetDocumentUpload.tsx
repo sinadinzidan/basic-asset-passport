@@ -9,8 +9,7 @@ import {
 import { AppAlertVariant } from '../../../enums/appAlertVariant';
 import { useAssetDocumentUploadViewModel } from '../../../hooks/assets/documents/useAssetDocumentUploadViewModel';
 import type { AssetIdentifier } from '../../../types/asset';
-import { AppAlert } from '../../general/AppAlert';
-import { GeneralButton } from '../../general/GeneralButton';
+import { AppAlert, GeneralButton } from '../../general';
 
 type AssetDocumentUploadProps = {
   assetIdentifier: AssetIdentifier;

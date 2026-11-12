@@ -5,7 +5,7 @@ import { AssetContext } from '../../hooks/assets/useAssetContext';
 import { Assets } from '../../pages/assets/Assets';
 import { NavigationProvider } from '../../providers/general/NavigationProvider';
 import type { MockContexts } from '../../types/mockContext';
-import { AgentHelper } from '../agents/AgentHelper';
+import { AgentHelper } from '../agents';
 
 import { MockModeNotice } from './MockModeNotice';
 

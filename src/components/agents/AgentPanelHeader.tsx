@@ -2,7 +2,7 @@ import { IconX } from '@tabler/icons-react';
 import type { ReactNode } from 'react';
 
 import { ASSISTANT_NAME } from '../../constants/agents';
-import { GeneralButton } from '../general/GeneralButton';
+import { GeneralButton } from '../general';
 
 type AgentPanelHeaderProps = {
   onClose: () => void;

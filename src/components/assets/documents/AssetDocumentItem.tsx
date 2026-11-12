@@ -30,9 +30,7 @@ import { StatusTone } from '../../../enums/statusTone';
 import { formatDocumentType, getDocumentKind } from '../../../lib/documentType';
 import { formatNoteDate } from '../../../lib/formatNoteDate';
 import type { AssetDocument } from '../../../types/document';
-import { ConfirmDeleteDialog } from '../../general/ConfirmDeleteDialog';
-import { IconActionButton } from '../../general/IconActionButton';
-import { StatusPill } from '../../general/StatusPill';
+import { ConfirmDeleteDialog, IconActionButton, StatusPill } from '../../general';
 
 import { DocumentPreviewDialog } from './DocumentPreviewDialog';
 

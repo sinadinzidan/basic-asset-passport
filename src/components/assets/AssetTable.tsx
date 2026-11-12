@@ -18,13 +18,15 @@ import { formatNoMatchingAssetsMessage } from '../../lib/assetMessage';
 import { getErrorReason } from '../../lib/errorReason';
 import { getInstanceKey } from '../../lib/instanceKey';
 import type { AssetListItem } from '../../types/asset';
-import { CursorPagination } from '../general/CursorPagination';
-import { EmptyStateMessage } from '../general/EmptyStateMessage';
-import { GeneralButton } from '../general/GeneralButton';
-import { HudPanel } from '../general/HudPanel';
-import { PageHeader } from '../general/PageHeader';
-import { PageShell } from '../general/PageShell';
-import { RetryAlert } from '../general/RetryAlert';
+import {
+  CursorPagination,
+  EmptyStateMessage,
+  GeneralButton,
+  HudPanel,
+  PageHeader,
+  PageShell,
+  RetryAlert,
+} from '../general';
 
 import { ASSET_COLUMNS } from './AssetColumns';
 import { AssetSearchField } from './AssetSearchField';

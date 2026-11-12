@@ -4,7 +4,7 @@ import { DOCUMENT_PREVIEW_UNAVAILABLE_MESSAGE } from '../../../constants/documen
 import { DialogSize } from '../../../enums/dialogSize';
 import { useDocumentPreview } from '../../../hooks/assets/documents/useDocumentPreview';
 import type { AssetDocument } from '../../../types/document';
-import { GeneralDialog } from '../../general/GeneralDialog';
+import { GeneralDialog } from '../../general';
 
 type DocumentPreviewDialogProps = {
   document: AssetDocument;

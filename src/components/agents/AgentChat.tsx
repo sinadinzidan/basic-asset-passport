@@ -15,8 +15,7 @@ import { RETRY_LABEL } from '../../constants/labels';
 import { AppAlertVariant } from '../../enums/appAlertVariant';
 import { useAgentComposerViewModel } from '../../hooks/agents/useAgentComposerViewModel';
 import { useScrollToEnd } from '../../hooks/general/useScrollToEnd';
-import { AppAlert } from '../general/AppAlert';
-import { GeneralButton } from '../general/GeneralButton';
+import { AppAlert, GeneralButton } from '../general';
 
 import { AgentMessage } from './AgentMessage';
 import { AgentPanelHeader } from './AgentPanelHeader';

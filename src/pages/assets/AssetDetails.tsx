@@ -1,10 +1,11 @@
-import { AssetDetailsSkeleton } from '../../components/assets/AssetDetailsSkeleton';
-import { AssetDetailsTabs } from '../../components/assets/AssetDetailsTabs';
-import { CriticalityPill } from '../../components/general/CriticalityPill';
-import { PageHeader } from '../../components/general/PageHeader';
-import { PageShell } from '../../components/general/PageShell';
-import { RetryAlert } from '../../components/general/RetryAlert';
-import { StatusPill } from '../../components/general/StatusPill';
+import { AssetDetailsSkeleton, AssetDetailsTabs } from '../../components/assets';
+import {
+  CriticalityPill,
+  PageHeader,
+  PageShell,
+  RetryAlert,
+  StatusPill,
+} from '../../components/general';
 import { ASSET_DETAILS_ERROR_DESCRIPTION, ASSET_DETAILS_ERROR_TITLE } from '../../constants/assets';
 import { useAssetDetailsViewModel } from '../../hooks/assets/useAssetDetailsViewModel';
 import { getStatusTone } from '../../lib/assetStatus';

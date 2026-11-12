@@ -19,7 +19,7 @@ import { useAssetDetails } from '../../hooks/assets/useAssetDetails';
 import { useNavigationState } from '../../hooks/general/useNavigationState';
 import { getPropertyValue } from '../../lib/assetProperties';
 import type { AssetIdentifier } from '../../types/asset';
-import { ThemeModeToggle } from '../general/ThemeModeToggle';
+import { ThemeModeToggle } from '../general';
 
 import { AppLogo } from './AppLogo';
 

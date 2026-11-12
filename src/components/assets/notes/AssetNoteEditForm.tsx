@@ -4,8 +4,7 @@ import { NOTE_SAVE_ERROR_TITLE } from '../../../constants/notes';
 import { AppAlertVariant } from '../../../enums/appAlertVariant';
 import { isNewAssetNoteValid } from '../../../lib/noteInput';
 import type { AssetNote, NewAssetNote } from '../../../types/note';
-import { AppAlert } from '../../general/AppAlert';
-import { GeneralButton } from '../../general/GeneralButton';
+import { AppAlert, GeneralButton } from '../../general';
 
 import { AssetNoteFields } from './AssetNoteFields';
 

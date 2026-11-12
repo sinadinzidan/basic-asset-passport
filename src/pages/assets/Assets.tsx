@@ -1,5 +1,4 @@
-import { AssetTable } from '../../components/assets/AssetTable';
-import { AssetTopbar } from '../../components/assets/AssetTopbar';
+import { AssetTable, AssetTopbar } from '../../components/assets';
 import { useNavigationState } from '../../hooks/general/useNavigationState';
 
 import { AssetDetails } from './AssetDetails';

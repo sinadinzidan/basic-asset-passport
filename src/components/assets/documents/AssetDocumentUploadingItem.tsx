@@ -1,7 +1,7 @@
 import { IconFile } from '@tabler/icons-react';
 
 import { DOCUMENT_UPLOADING_LABEL } from '../../../constants/documents';
-import { StatusPill } from '../../general/StatusPill';
+import { StatusPill } from '../../general';
 
 type AssetDocumentUploadingItemProps = {
   name: string;

@@ -12,8 +12,7 @@ import { useAssetsKPICounts } from '../../hooks/assets/useAssetsKPICounts';
 import { formatCount } from '../../lib/countBadge';
 import { getErrorReason } from '../../lib/errorReason';
 import type { CountState } from '../../types/countState';
-import { RetryAlert } from '../general/RetryAlert';
-import { StatTile } from '../general/StatTile';
+import { RetryAlert, StatTile } from '../general';
 
 export function AssetsKPIs() {
   const { assets, operating, equipment, error, isRetrying, retry } = useAssetsKPICounts();

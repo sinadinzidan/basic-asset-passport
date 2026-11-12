@@ -5,7 +5,7 @@ import { CopyStatus } from '../../enums/copyStatus';
 import { useCopyToClipboard } from '../../hooks/general/useCopyToClipboard';
 import { cn } from '../../lib/utils';
 import type { ChatMessage } from '../../types/agent';
-import { IconActionButton } from '../general/IconActionButton';
+import { IconActionButton } from '../general';
 
 type AgentMessageProps = {
   message: ChatMessage;

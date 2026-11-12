@@ -12,10 +12,7 @@ import { formatEquipmentTruncatedMessage } from '../../../lib/assetMessage';
 import { getErrorReason } from '../../../lib/errorReason';
 import { getInstanceKey } from '../../../lib/instanceKey';
 import type { AssetIdentifier } from '../../../types/asset';
-import { AppAlert } from '../../general/AppAlert';
-import { EmptyStateMessage } from '../../general/EmptyStateMessage';
-import { LoadingNotice } from '../../general/LoadingNotice';
-import { RetryAlert } from '../../general/RetryAlert';
+import { AppAlert, EmptyStateMessage, LoadingNotice, RetryAlert } from '../../general';
 import { EquipmentDetails } from '../EquipmentDetails';
 
 type AssetEquipmentProps = {

@@ -16,10 +16,7 @@ import { useListLimit } from '../../../hooks/general/useListLimit';
 import { getErrorReason } from '../../../lib/errorReason';
 import { getTimeseriesKey, getTimeseriesName } from '../../../lib/timeseriesProperties';
 import type { AssetIdentifier, AssetInstanceDetails } from '../../../types/asset';
-import { EmptyStateMessage } from '../../general/EmptyStateMessage';
-import { LoadingNotice } from '../../general/LoadingNotice';
-import { RetryAlert } from '../../general/RetryAlert';
-import { ShowMoreButton } from '../../general/ShowMoreButton';
+import { EmptyStateMessage, LoadingNotice, RetryAlert, ShowMoreButton } from '../../general';
 
 import { TimeseriesDetails } from './TimeseriesDetails';
 

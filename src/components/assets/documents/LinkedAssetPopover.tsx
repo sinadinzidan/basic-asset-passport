@@ -17,11 +17,13 @@ import { useLinkedAssetViewModel } from '../../../hooks/assets/documents/useLink
 import { getStatusTone } from '../../../lib/assetStatus';
 import { getErrorReason } from '../../../lib/errorReason';
 import type { AssetIdentifier } from '../../../types/asset';
-import { CriticalityPill } from '../../general/CriticalityPill';
-import { GeneralButton } from '../../general/GeneralButton';
-import { LoadingNotice } from '../../general/LoadingNotice';
-import { RetryAlert } from '../../general/RetryAlert';
-import { StatusPill } from '../../general/StatusPill';
+import {
+  CriticalityPill,
+  GeneralButton,
+  LoadingNotice,
+  RetryAlert,
+  StatusPill,
+} from '../../general';
 import { AssetProperties } from '../AssetProperties';
 
 export type LinkedAssetTarget = {

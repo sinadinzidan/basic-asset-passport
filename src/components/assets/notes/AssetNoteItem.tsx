@@ -11,8 +11,7 @@ import { useAssetNoteItemViewModel } from '../../../hooks/assets/notes/useAssetN
 import { formatNoteDate } from '../../../lib/formatNoteDate';
 import type { AssetIdentifier } from '../../../types/asset';
 import type { AssetNote, NewAssetNote } from '../../../types/note';
-import { ConfirmDeleteDialog } from '../../general/ConfirmDeleteDialog';
-import { IconActionButton } from '../../general/IconActionButton';
+import { ConfirmDeleteDialog, IconActionButton } from '../../general';
 
 import { AssetNoteEditForm } from './AssetNoteEditForm';
 
