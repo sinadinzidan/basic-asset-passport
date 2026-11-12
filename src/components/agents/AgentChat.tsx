@@ -5,10 +5,8 @@ import { useId, type ChangeEvent, type FormEvent, type KeyboardEvent } from 'rea
 
 import {
   ANSWER_ERROR_TITLE,
-  CHAT_EMPTY_MESSAGE,
   DICTATION_ERROR_TITLE,
   DICTATION_FAILURE_MESSAGES,
-  SAMPLE_QUESTIONS,
 } from '../../constants/agents';
 import { ENTER_KEY } from '../../constants/keyboard';
 import { RETRY_LABEL } from '../../constants/labels';
@@ -17,6 +15,7 @@ import { useAgentComposerViewModel } from '../../hooks/agents/useAgentComposerVi
 import { useScrollToEnd } from '../../hooks/general/useScrollToEnd';
 import { AppAlert, GeneralButton } from '../general';
 
+import { AgentChatWelcome } from './AgentChatWelcome';
 import { AgentMessage } from './AgentMessage';
 import { AgentPanelHeader } from './AgentPanelHeader';
 import { AgentThinking } from './AgentThinking';
@@ -72,22 +71,7 @@ export function AgentChat({ onClose }: AgentChatProps) {
       <div className="agent-panel__body agent-chat">
         <div ref={logReference} role="log" aria-label="Conversation" className="agent-chat__log">
           {messages.length === 0 ? (
-            <div className="agent-chat__welcome">
-              <p className="agent-panel__empty">{CHAT_EMPTY_MESSAGE}</p>
-              <ul className="agent-chat__samples" aria-label="Sample questions">
-                {SAMPLE_QUESTIONS.map((question) => (
-                  <li key={question}>
-                    <GeneralButton
-                      className="agent-chat__sample"
-                      onClick={() => sendSample(question)}
-                      variant="outline"
-                    >
-                      {question}
-                    </GeneralButton>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            <AgentChatWelcome onSelect={sendSample} />
           ) : (
             messages.map((message) => <AgentMessage key={message.id} message={message} />)
           )}

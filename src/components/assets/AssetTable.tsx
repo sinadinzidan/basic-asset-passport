@@ -5,22 +5,17 @@ import {
   ASSET_QUERY_LIMIT,
   ASSET_REGISTER_DESCRIPTION,
   ASSET_SEARCH_TRUNCATED_MESSAGE,
-  ASSETS_EMPTY_DESCRIPTION,
-  ASSETS_EMPTY_TITLE,
   ASSETS_ERROR_DESCRIPTION,
   ASSETS_ERROR_TITLE,
   ASSETS_LATER_PAGE_ERROR_DESCRIPTION,
-  ASSETS_NO_MATCH_TITLE,
 } from '../../constants/assets';
 import { HudShape } from '../../enums/hudShape';
 import { useAssetTableViewModel } from '../../hooks/assets/useAssetTableViewModel';
-import { formatNoMatchingAssetsMessage } from '../../lib/assetMessage';
 import { getErrorReason } from '../../lib/errorReason';
 import { getInstanceKey } from '../../lib/instanceKey';
 import type { AssetListItem } from '../../types/asset';
 import {
   CursorPagination,
-  EmptyStateMessage,
   GeneralButton,
   HudPanel,
   PageHeader,
@@ -29,21 +24,10 @@ import {
 } from '../general';
 
 import { ASSET_COLUMNS } from './AssetColumns';
+import { ASSET_GRID_CLASS_NAME } from './assetGridClassName';
 import { AssetSearchField } from './AssetSearchField';
 import { AssetsKPIs } from './AssetsKPIs';
-
-const ASSET_GRID_CLASS_NAME = [
-  'rounded-none bg-muted-background/80',
-  "[&_[data-slot='data-grid-header-row']]:border-t-0",
-  "[&_[data-slot='data-grid-header-row']]:bg-muted-background/60",
-  "[&_[data-slot='data-grid-row']]:cursor-pointer",
-  "[&_[data-slot='data-grid-row']]:bg-transparent",
-  "[&_[data-slot='data-grid-row']]:transition-colors",
-  "[&_[data-slot='data-grid-column-header']:hover]:bg-brand/10",
-  "[&_[data-slot='data-grid-row']:hover]:bg-brand/10",
-  "[&_[data-slot='data-grid-header-row']_[aria-colindex='5']]:justify-center",
-  "[&_[data-slot='data-grid-header-row']_[aria-colindex='5']]:text-center",
-].join(' ');
+import { AssetTableEmptyState } from './AssetTableEmptyState';
 
 export function AssetTable() {
   const {
@@ -116,19 +100,7 @@ export function AssetTable() {
               columns={ASSET_COLUMNS}
               className={ASSET_GRID_CLASS_NAME}
               data={assets}
-              emptyState={
-                isSearching ? (
-                  <EmptyStateMessage
-                    title={ASSETS_NO_MATCH_TITLE}
-                    description={formatNoMatchingAssetsMessage(searchQuery)}
-                  />
-                ) : (
-                  <EmptyStateMessage
-                    title={ASSETS_EMPTY_TITLE}
-                    description={ASSETS_EMPTY_DESCRIPTION}
-                  />
-                )
-              }
+              emptyState={<AssetTableEmptyState searchQuery={searchQuery} />}
               enableSorting
               emphasizeHeader
               getRowId={getInstanceKey}
