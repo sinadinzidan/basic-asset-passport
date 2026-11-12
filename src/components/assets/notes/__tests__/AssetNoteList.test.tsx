@@ -8,20 +8,28 @@ import { makeLimitedList } from '../../../../__mocks__/lists';
 import { makeAssetNote } from '../../../../__mocks__/notes';
 import { makeQueryClientWrapper } from '../../../../__mocks__/QueryClientWrapper';
 import { NOTE_QUERY_LIMIT } from '../../../../constants/notes';
-import { UseAssetNotesContext } from '../../../../hooks/assets/notes/useAssetNotes';
-import { UseDeleteAssetNoteContext } from '../../../../hooks/assets/notes/useDeleteAssetNote';
-import { UseUpdateAssetNoteContext } from '../../../../hooks/assets/notes/useUpdateAssetNote';
+import {
+  UseAssetNotesContext,
+  type UseAssetNotesContextType,
+} from '../../../../hooks/assets/notes/useAssetNotes';
+import {
+  UseDeleteAssetNoteContext,
+  type UseDeleteAssetNoteContextType,
+} from '../../../../hooks/assets/notes/useDeleteAssetNote';
+import {
+  UseUpdateAssetNoteContext,
+  type UseUpdateAssetNoteContextType,
+} from '../../../../hooks/assets/notes/useUpdateAssetNote';
 import { AssetContext } from '../../../../hooks/assets/useAssetContext';
-import type { AssetNoteService } from '../../../../services/assets/notes/assetNote';
 import { AssetNoteList } from '../AssetNoteList';
 
 const assetIdentifier = { space: 'asset-space', externalId: 'FLOC-1' };
 
 describe(AssetNoteList.name, () => {
   const client = makeMockClient();
-  let mockContext: Pick<AssetNoteService, 'listAssetNotes'>;
-  let updateContext: Pick<AssetNoteService, 'updateAssetNote'>;
-  let deleteContext: Pick<AssetNoteService, 'deleteAssetNote'>;
+  let mockContext: UseAssetNotesContextType;
+  let updateContext: UseUpdateAssetNoteContextType;
+  let deleteContext: UseDeleteAssetNoteContextType;
   let wrapper: ComponentType<{ children: ReactNode }>;
 
   beforeEach(() => {
@@ -36,11 +44,9 @@ describe(AssetNoteList.name, () => {
     };
     const QueryWrapper = makeQueryClientWrapper();
     wrapper = ({ children }) => (
-      <UseAssetNotesContext.Provider value={{ createAssetNoteService: () => mockContext }}>
-        <UseUpdateAssetNoteContext.Provider value={{ createAssetNoteService: () => updateContext }}>
-          <UseDeleteAssetNoteContext.Provider
-            value={{ createAssetNoteService: () => deleteContext }}
-          >
+      <UseAssetNotesContext.Provider value={mockContext}>
+        <UseUpdateAssetNoteContext.Provider value={updateContext}>
+          <UseDeleteAssetNoteContext.Provider value={deleteContext}>
             <QueryWrapper>
               <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
             </QueryWrapper>
@@ -116,6 +122,7 @@ describe(AssetNoteList.name, () => {
     // Assert
     expect(await screen.findByText('Bearing check')).toBeInTheDocument();
     expect(mockContext.listAssetNotes).toHaveBeenLastCalledWith(
+      client,
       assetIdentifier,
       NOTE_QUERY_LIMIT * 2,
     );
@@ -171,7 +178,7 @@ describe(AssetNoteList.name, () => {
 
       await user.click(within(dialog).getByRole('button', { name: 'Delete note' }));
 
-      expect(deleteContext.deleteAssetNote).toHaveBeenCalledWith({
+      expect(deleteContext.deleteAssetNote).toHaveBeenCalledWith(client, {
         space: 'sp-asset-passport-data',
         externalId: 'note-1',
       });
@@ -250,6 +257,7 @@ describe(AssetNoteList.name, () => {
       await user.click(screen.getByRole('button', { name: 'Save' }));
 
       expect(updateContext.updateAssetNote).toHaveBeenCalledWith(
+        client,
         { space: 'sp-asset-passport-data', externalId: 'note-1' },
         { title: 'Seal replaced', body: 'Mechanical seal checked, no leaks.' },
       );

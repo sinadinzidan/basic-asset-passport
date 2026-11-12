@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { makeNodeInstance, makeQueryResponse, makeViewDefinition } from '../../../__mocks__/cdf';
 import { makeOfflineSdkClient, stubModelViews } from '../../../__mocks__/cogniteClient';
 import { ASSET_QUERY_LIMIT, ASSET_SEARCH_LIMIT } from '../../../constants/assets';
-import { createAssetService } from '../asset';
+import { listAssets, searchAssets } from '../asset';
 
 const assetView = makeViewDefinition('Asset', { name: {} });
 const assetReference = {
@@ -14,7 +14,7 @@ const assetReference = {
   version: assetView.version,
 };
 
-describe('listAssets', () => {
+describe(listAssets.name, () => {
   let client: CogniteClient;
 
   beforeEach(() => {
@@ -29,7 +29,7 @@ describe('listAssets', () => {
       .mockResolvedValue(makeQueryResponse({ assets: [] }));
 
     // Act
-    await createAssetService(client).listAssets();
+    await listAssets(client);
 
     // Assert
     expect(query).toHaveBeenCalledWith({
@@ -58,7 +58,7 @@ describe('listAssets', () => {
       .spyOn(client.instances, 'query')
       .mockResolvedValue(makeQueryResponse({ assets: [] }));
 
-    await createAssetService(client).listAssets('page-2');
+    await listAssets(client, 'page-2');
 
     expect(query).toHaveBeenCalledWith(expect.objectContaining({ cursors: { assets: 'page-2' } }));
   });
@@ -82,7 +82,7 @@ describe('listAssets', () => {
     );
 
     // Act
-    const page = await createAssetService(client).listAssets();
+    const page = await listAssets(client);
 
     // Assert
     expect(page).toEqual({
@@ -106,7 +106,7 @@ describe('listAssets', () => {
     stubModelViews(client, [assetView]);
     vi.spyOn(client.instances, 'query').mockResolvedValue(makeQueryResponse({}));
 
-    await expect(createAssetService(client).listAssets()).resolves.toEqual({
+    await expect(listAssets(client)).resolves.toEqual({
       items: [],
       nextCursor: null,
       hasMore: false,
@@ -116,7 +116,7 @@ describe('listAssets', () => {
   it('throws when the Asset view does not exist', async () => {
     stubModelViews(client, [makeViewDefinition('Equipment')]);
 
-    await expect(createAssetService(client).listAssets()).rejects.toThrow(
+    await expect(listAssets(client)).rejects.toThrow(
       'The Asset view was not found in the Asset_Passport data model.',
     );
   });
@@ -125,11 +125,11 @@ describe('listAssets', () => {
     stubModelViews(client, [assetView]);
     vi.spyOn(client.instances, 'query').mockRejectedValue(new Error('query failed'));
 
-    await expect(createAssetService(client).listAssets()).rejects.toThrow('query failed');
+    await expect(listAssets(client)).rejects.toThrow('query failed');
   });
 });
 
-describe('searchAssets', () => {
+describe(searchAssets.name, () => {
   let client: CogniteClient;
 
   beforeEach(() => {
@@ -142,7 +142,7 @@ describe('searchAssets', () => {
     const search = vi.spyOn(client.instances, 'search').mockResolvedValue({ items: [] });
 
     // Act
-    await createAssetService(client).searchAssets('pump');
+    await searchAssets(client, 'pump');
 
     // Assert
     expect(search).toHaveBeenCalledWith({
@@ -171,7 +171,7 @@ describe('searchAssets', () => {
     vi.spyOn(client.instances, 'search').mockResolvedValue({ items: [node] });
 
     // Act
-    const page = await createAssetService(client).searchAssets('pump');
+    const page = await searchAssets(client, 'pump');
 
     // Assert
     expect(page).toEqual({
@@ -198,7 +198,7 @@ describe('searchAssets', () => {
     );
     vi.spyOn(client.instances, 'search').mockResolvedValue({ items: nodes });
 
-    const page = await createAssetService(client).searchAssets('pump');
+    const page = await searchAssets(client, 'pump');
 
     expect(page.items).toHaveLength(ASSET_SEARCH_LIMIT);
     expect(page.hasMore).toBe(true);
@@ -211,7 +211,7 @@ describe('searchAssets', () => {
     );
     vi.spyOn(client.instances, 'search').mockResolvedValue({ items: nodes });
 
-    const page = await createAssetService(client).searchAssets('pump');
+    const page = await searchAssets(client, 'pump');
 
     expect(page.items).toHaveLength(ASSET_SEARCH_LIMIT);
     expect(page.hasMore).toBe(false);
@@ -220,7 +220,7 @@ describe('searchAssets', () => {
   it('throws when the Asset view does not exist', async () => {
     stubModelViews(client, [makeViewDefinition('Equipment')]);
 
-    await expect(createAssetService(client).searchAssets('pump')).rejects.toThrow(
+    await expect(searchAssets(client, 'pump')).rejects.toThrow(
       'The Asset view was not found in the Asset_Passport data model.',
     );
   });
@@ -229,6 +229,6 @@ describe('searchAssets', () => {
     stubModelViews(client, [assetView]);
     vi.spyOn(client.instances, 'search').mockRejectedValue(new Error('search failed'));
 
-    await expect(createAssetService(client).searchAssets('pump')).rejects.toThrow('search failed');
+    await expect(searchAssets(client, 'pump')).rejects.toThrow('search failed');
   });
 });

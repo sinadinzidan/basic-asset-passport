@@ -11,10 +11,12 @@ import { makeQueryClientWrapper } from '../../../__mocks__/QueryClientWrapper';
 import { makeThemeModeStore } from '../../../__mocks__/themeMode';
 import { APP_LOGO_SOURCE } from '../../../constants/branding';
 import { AssetContext } from '../../../hooks/assets/useAssetContext';
-import { UseAssetDetailsContext } from '../../../hooks/assets/useAssetDetails';
+import {
+  UseAssetDetailsContext,
+  type UseAssetDetailsContextType,
+} from '../../../hooks/assets/useAssetDetails';
 import { NavigationStoreContext } from '../../../hooks/general/useNavigationState';
 import { UseThemeModeViewModelContext } from '../../../hooks/general/useThemeModeViewModel';
-import type { AssetDetailsService } from '../../../services/assets/assetDetails';
 import type { NavigationStore } from '../../../types/navigation';
 import { AssetTopbar } from '../AssetTopbar';
 
@@ -23,7 +25,7 @@ const assetContext = makeMockClient();
 const selectedAsset = { space: 'asset-instance-space', externalId: 'FLOC-100' };
 
 describe(AssetTopbar.name, () => {
-  let mockContext: AssetDetailsService;
+  let mockContext: UseAssetDetailsContextType;
   let wrapper: ComponentType<{ children: ReactNode }>;
   let store: StoreApi<NavigationStore>;
 
@@ -37,7 +39,7 @@ describe(AssetTopbar.name, () => {
     wrapper = ({ children }) => (
       <NavigationStoreContext.Provider value={store}>
         <UseThemeModeViewModelContext.Provider value={themeModeContext}>
-          <UseAssetDetailsContext.Provider value={{ createAssetDetailsService: () => mockContext }}>
+          <UseAssetDetailsContext.Provider value={mockContext}>
             <QueryWrapper>
               <AssetContext.Provider value={assetContext}>{children}</AssetContext.Provider>
             </QueryWrapper>

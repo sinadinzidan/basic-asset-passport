@@ -10,23 +10,31 @@ import { makeQueryClientWrapper } from '../../../../__mocks__/QueryClientWrapper
 import { DOCUMENT_QUERY_LIMIT } from '../../../../constants/documents';
 import { DocumentOrigin } from '../../../../enums/documentOrigin';
 import { DocumentUploadStatus } from '../../../../enums/documentUploadStatus';
-import { UseAssetDocumentsContext } from '../../../../hooks/assets/documents/useAssetDocuments';
-import { UseAssetLinkedFilesContext } from '../../../../hooks/assets/documents/useAssetLinkedFiles';
-import { UseDeleteAssetDocumentContext } from '../../../../hooks/assets/documents/useDeleteAssetDocument';
+import {
+  UseAssetDocumentsContext,
+  type UseAssetDocumentsContextType,
+} from '../../../../hooks/assets/documents/useAssetDocuments';
+import {
+  UseAssetLinkedFilesContext,
+  type UseAssetLinkedFilesContextType,
+} from '../../../../hooks/assets/documents/useAssetLinkedFiles';
+import {
+  UseDeleteAssetDocumentContext,
+  type UseDeleteAssetDocumentContextType,
+} from '../../../../hooks/assets/documents/useDeleteAssetDocument';
 import {
   DocumentPreviewContext,
   type RenderDocumentPreview,
 } from '../../../../hooks/assets/documents/useDocumentPreview';
 import { AssetContext } from '../../../../hooks/assets/useAssetContext';
-import type { AssetDocumentService } from '../../../../services/assets/documents/assetDocument';
 import { AssetDocumentList } from '../AssetDocumentList';
 
 const assetIdentifier = { space: 'asset-space', externalId: 'FLOC-1' };
 
 describe(AssetDocumentList.name, () => {
-  let listContext: Pick<AssetDocumentService, 'listAssetDocuments'>;
-  let linkedContext: Pick<AssetDocumentService, 'listAssetLinkedFiles'>;
-  let deleteContext: Pick<AssetDocumentService, 'deleteAssetDocument'>;
+  let listContext: UseAssetDocumentsContextType;
+  let linkedContext: UseAssetLinkedFilesContextType;
+  let deleteContext: UseDeleteAssetDocumentContextType;
   let wrapper: ComponentType<{ children: ReactNode }>;
 
   beforeEach(() => {
@@ -42,14 +50,10 @@ describe(AssetDocumentList.name, () => {
     };
     const QueryWrapper = makeQueryClientWrapper();
     wrapper = ({ children }) => (
-      <UseAssetDocumentsContext.Provider value={{ createAssetDocumentService: () => listContext }}>
-        <UseAssetLinkedFilesContext.Provider
-          value={{ createAssetDocumentService: () => linkedContext }}
-        >
+      <UseAssetDocumentsContext.Provider value={listContext}>
+        <UseAssetLinkedFilesContext.Provider value={linkedContext}>
           <DocumentPreviewContext.Provider value={renderPreviewStub}>
-            <UseDeleteAssetDocumentContext.Provider
-              value={{ createAssetDocumentService: () => deleteContext }}
-            >
+            <UseDeleteAssetDocumentContext.Provider value={deleteContext}>
               <QueryWrapper>
                 <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
               </QueryWrapper>
@@ -155,6 +159,7 @@ describe(AssetDocumentList.name, () => {
 
     await waitFor(() =>
       expect(listContext.listAssetDocuments).toHaveBeenLastCalledWith(
+        expect.anything(),
         assetIdentifier,
         DOCUMENT_QUERY_LIMIT * 2,
       ),
@@ -188,11 +193,13 @@ describe(AssetDocumentList.name, () => {
 
     await waitFor(() =>
       expect(linkedContext.listAssetLinkedFiles).toHaveBeenLastCalledWith(
+        expect.anything(),
         assetIdentifier,
         DOCUMENT_QUERY_LIMIT * 2,
       ),
     );
     expect(listContext.listAssetDocuments).toHaveBeenLastCalledWith(
+      expect.anything(),
       assetIdentifier,
       DOCUMENT_QUERY_LIMIT,
     );
@@ -329,6 +336,7 @@ describe(AssetDocumentList.name, () => {
 
     await vi.waitFor(() =>
       expect(deleteContext.deleteAssetDocument).toHaveBeenCalledWith(
+        expect.anything(),
         expect.objectContaining({
           space: 'sp-asset-passport-data',
           externalId: 'doc-1',

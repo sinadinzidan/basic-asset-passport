@@ -6,12 +6,23 @@ import { makeMockClient } from '../../../../__mocks__/cogniteClient';
 import { makeLimitedList } from '../../../../__mocks__/lists';
 import { makeAssetNote } from '../../../../__mocks__/notes';
 import { makeQueryClientWrapper } from '../../../../__mocks__/QueryClientWrapper';
-import { UseAddAssetNoteContext } from '../../../../hooks/assets/notes/useAddAssetNote';
-import { UseAssetNotesContext } from '../../../../hooks/assets/notes/useAssetNotes';
-import { UseDeleteAssetNoteContext } from '../../../../hooks/assets/notes/useDeleteAssetNote';
-import { UseUpdateAssetNoteContext } from '../../../../hooks/assets/notes/useUpdateAssetNote';
+import {
+  UseAddAssetNoteContext,
+  type UseAddAssetNoteContextType,
+} from '../../../../hooks/assets/notes/useAddAssetNote';
+import {
+  UseAssetNotesContext,
+  type UseAssetNotesContextType,
+} from '../../../../hooks/assets/notes/useAssetNotes';
+import {
+  UseDeleteAssetNoteContext,
+  type UseDeleteAssetNoteContextType,
+} from '../../../../hooks/assets/notes/useDeleteAssetNote';
+import {
+  UseUpdateAssetNoteContext,
+  type UseUpdateAssetNoteContextType,
+} from '../../../../hooks/assets/notes/useUpdateAssetNote';
 import { AssetContext } from '../../../../hooks/assets/useAssetContext';
-import type { AssetNoteService } from '../../../../services/assets/notes/assetNote';
 import { AssetNotes } from '../AssetNotes';
 
 describe(AssetNotes.name, () => {
@@ -19,28 +30,24 @@ describe(AssetNotes.name, () => {
 
   beforeEach(() => {
     const client = makeMockClient();
-    const listContext: Pick<AssetNoteService, 'listAssetNotes'> = {
+    const listContext: UseAssetNotesContextType = {
       listAssetNotes: vi.fn(() => Promise.resolve(makeLimitedList([makeAssetNote()]))),
     };
-    const addContext: Pick<AssetNoteService, 'createAssetNote'> = {
+    const addContext: UseAddAssetNoteContextType = {
       createAssetNote: vi.fn(() => Promise.resolve()),
     };
-    const updateContext: Pick<AssetNoteService, 'updateAssetNote'> = {
+    const updateContext: UseUpdateAssetNoteContextType = {
       updateAssetNote: vi.fn(() => Promise.resolve()),
     };
-    const deleteContext: Pick<AssetNoteService, 'deleteAssetNote'> = {
+    const deleteContext: UseDeleteAssetNoteContextType = {
       deleteAssetNote: vi.fn(() => Promise.resolve()),
     };
     const QueryWrapper = makeQueryClientWrapper();
     wrapper = ({ children }) => (
-      <UseAssetNotesContext.Provider value={{ createAssetNoteService: () => listContext }}>
-        <UseAddAssetNoteContext.Provider value={{ createAssetNoteService: () => addContext }}>
-          <UseUpdateAssetNoteContext.Provider
-            value={{ createAssetNoteService: () => updateContext }}
-          >
-            <UseDeleteAssetNoteContext.Provider
-              value={{ createAssetNoteService: () => deleteContext }}
-            >
+      <UseAssetNotesContext.Provider value={listContext}>
+        <UseAddAssetNoteContext.Provider value={addContext}>
+          <UseUpdateAssetNoteContext.Provider value={updateContext}>
+            <UseDeleteAssetNoteContext.Provider value={deleteContext}>
               <QueryWrapper>
                 <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
               </QueryWrapper>

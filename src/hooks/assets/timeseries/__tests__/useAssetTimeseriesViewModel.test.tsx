@@ -8,10 +8,12 @@ import { makeLimitedList } from '../../../../__mocks__/lists';
 import { makeQueryClientWrapper } from '../../../../__mocks__/QueryClientWrapper';
 import { TimeseriesPreviewKind } from '../../../../enums/timeseriesPreviewKind';
 import { getTimeseriesKey } from '../../../../lib/timeseriesProperties';
-import type { AssetTimeseriesService } from '../../../../services/assets/timeseries/assetTimeseries';
 import type { TimeseriesContextType } from '../../../../types/timeseries';
 import { AssetContext } from '../../useAssetContext';
-import { UseAssetTimeseriesContext } from '../useAssetTimeseries';
+import {
+  UseAssetTimeseriesContext,
+  type UseAssetTimeseriesContextType,
+} from '../useAssetTimeseries';
 import { useAssetTimeseriesViewModel } from '../useAssetTimeseriesViewModel';
 import { TimeseriesContext } from '../useTimeseriesContext';
 import { UseTimeseriesTrendsContext } from '../useTimeseriesTrends';
@@ -36,7 +38,7 @@ const status = makeInstanceDetails({
 const POINTS = [{ timestamp: 1000, value: 3 }];
 
 describe(useAssetTimeseriesViewModel.name, () => {
-  let listContext: AssetTimeseriesService;
+  let listContext: UseAssetTimeseriesContextType;
   let datapoints: TimeseriesContextType;
   let wrapper: ComponentType<{ children: ReactNode }>;
 
@@ -52,9 +54,7 @@ describe(useAssetTimeseriesViewModel.name, () => {
     };
     const QueryWrapper = makeQueryClientWrapper();
     wrapper = ({ children }) => (
-      <UseAssetTimeseriesContext.Provider
-        value={{ createAssetTimeseriesService: () => listContext }}
-      >
+      <UseAssetTimeseriesContext.Provider value={listContext}>
         <UseTimeseriesTrendsContext.Provider
           value={{
             now: () => 5000,

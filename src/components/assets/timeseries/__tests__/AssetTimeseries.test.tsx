@@ -9,7 +9,10 @@ import { makeMockClient } from '../../../../__mocks__/cogniteClient';
 import { makeLimitedList } from '../../../../__mocks__/lists';
 import { makeQueryClientWrapper } from '../../../../__mocks__/QueryClientWrapper';
 import { TIMESERIES_QUERY_LIMIT } from '../../../../constants/timeseries';
-import { UseAssetTimeseriesContext } from '../../../../hooks/assets/timeseries/useAssetTimeseries';
+import {
+  UseAssetTimeseriesContext,
+  type UseAssetTimeseriesContextType,
+} from '../../../../hooks/assets/timeseries/useAssetTimeseries';
 import {
   UseTimeseriesChartViewModelContext,
   type UseTimeseriesChartViewModelContextType,
@@ -19,7 +22,6 @@ import { UseTimeseriesTrendsContext } from '../../../../hooks/assets/timeseries/
 import { AssetContext } from '../../../../hooks/assets/useAssetContext';
 import { NavigationStoreContext } from '../../../../hooks/general/useNavigationState';
 import { DEFAULT_NAVIGATION_STATE } from '../../../../lib/navigationState';
-import type { AssetTimeseriesService } from '../../../../services/assets/timeseries/assetTimeseries';
 import { createNavigationStore } from '../../../../store/navigation';
 import type { NavigationStore } from '../../../../types/navigation';
 import type { TimeseriesContextType, TimeseriesIdentifier } from '../../../../types/timeseries';
@@ -28,7 +30,7 @@ import { AssetTimeseries } from '../AssetTimeseries';
 const assetIdentifier = { space: 'asset-space', externalId: 'FLOC-1' };
 
 describe(AssetTimeseries.name, () => {
-  let mockContext: AssetTimeseriesService;
+  let mockContext: UseAssetTimeseriesContextType;
   let datapoints: TimeseriesContextType;
   let chartContext: UseTimeseriesChartViewModelContextType;
   let navigationStore: StoreApi<NavigationStore>;
@@ -72,9 +74,7 @@ describe(AssetTimeseries.name, () => {
     const QueryWrapper = makeQueryClientWrapper();
     wrapper = ({ children }) => (
       <NavigationStoreContext.Provider value={navigationStore}>
-        <UseAssetTimeseriesContext.Provider
-          value={{ createAssetTimeseriesService: () => mockContext }}
-        >
+        <UseAssetTimeseriesContext.Provider value={mockContext}>
           <UseTimeseriesChartViewModelContext.Provider value={chartContext}>
             <UseTimeseriesTrendsContext.Provider
               value={{
@@ -213,6 +213,7 @@ describe(AssetTimeseries.name, () => {
 
     await waitFor(() =>
       expect(mockContext.listAssetTimeseries).toHaveBeenLastCalledWith(
+        expect.anything(),
         assetIdentifier,
         TIMESERIES_QUERY_LIMIT * 2,
       ),

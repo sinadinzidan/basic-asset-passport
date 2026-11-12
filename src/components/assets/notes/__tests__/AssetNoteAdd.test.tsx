@@ -5,16 +5,18 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { makeMockClient } from '../../../../__mocks__/cogniteClient';
 import { makeQueryClientWrapper } from '../../../../__mocks__/QueryClientWrapper';
-import { UseAddAssetNoteContext } from '../../../../hooks/assets/notes/useAddAssetNote';
+import {
+  UseAddAssetNoteContext,
+  type UseAddAssetNoteContextType,
+} from '../../../../hooks/assets/notes/useAddAssetNote';
 import { AssetContext } from '../../../../hooks/assets/useAssetContext';
-import type { AssetNoteService } from '../../../../services/assets/notes/assetNote';
 import { AssetNoteAdd } from '../AssetNoteAdd';
 
 const assetIdentifier = { space: 'asset-space', externalId: 'FLOC-1' };
 const client = makeMockClient();
 
 describe(AssetNoteAdd.name, () => {
-  let mockContext: Pick<AssetNoteService, 'createAssetNote'>;
+  let mockContext: UseAddAssetNoteContextType;
   let wrapper: ComponentType<{ children: ReactNode }>;
 
   beforeEach(() => {
@@ -23,7 +25,7 @@ describe(AssetNoteAdd.name, () => {
     };
     const QueryWrapper = makeQueryClientWrapper();
     wrapper = ({ children }) => (
-      <UseAddAssetNoteContext.Provider value={{ createAssetNoteService: () => mockContext }}>
+      <UseAddAssetNoteContext.Provider value={mockContext}>
         <QueryWrapper>
           <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
         </QueryWrapper>
@@ -71,7 +73,7 @@ describe(AssetNoteAdd.name, () => {
     await user.type(screen.getByLabelText('Note'), 'All good');
     await user.click(screen.getByRole('button', { name: 'Save note' }));
 
-    expect(mockContext.createAssetNote).toHaveBeenCalledWith(assetIdentifier, {
+    expect(mockContext.createAssetNote).toHaveBeenCalledWith(client, assetIdentifier, {
       title: '  Inspection ',
       body: 'All good',
     });

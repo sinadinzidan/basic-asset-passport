@@ -8,20 +8,19 @@ import {
   ASSET_PASSPORT_MODEL_SPACE,
   ASSET_PASSPORT_MODEL_VERSION,
 } from '../../constants/assets';
-import { createAssetDetailsService } from '../../services/assets/assetDetails';
+import { getAssetDetails } from '../../services/assets/assetDetails';
 import type { AssetIdentifier } from '../../types/asset';
 
 import { useAssetContext } from './useAssetContext';
 
-const defaultDeps = { createAssetDetailsService };
+const defaultDeps = { getAssetDetails };
 
 export type UseAssetDetailsContextType = typeof defaultDeps;
 export const UseAssetDetailsContext = createContext<UseAssetDetailsContextType>(defaultDeps);
 
 export function useAssetDetails(assetIdentifier: AssetIdentifier) {
-  const { createAssetDetailsService } = useContext(UseAssetDetailsContext);
+  const { getAssetDetails: loadDetails } = useContext(UseAssetDetailsContext);
   const client = useAssetContext();
-  const detailsService = createAssetDetailsService(client);
 
   return useQuery({
     queryKey: [
@@ -34,7 +33,7 @@ export function useAssetDetails(assetIdentifier: AssetIdentifier) {
       assetIdentifier.space,
       assetIdentifier.externalId,
     ],
-    queryFn: () => detailsService.getAssetDetails(assetIdentifier),
+    queryFn: () => loadDetails(client, assetIdentifier),
     staleTime: ASSET_QUERY_STALE_TIME_MS,
   });
 }

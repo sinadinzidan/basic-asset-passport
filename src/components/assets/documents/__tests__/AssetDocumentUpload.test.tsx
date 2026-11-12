@@ -12,7 +12,6 @@ import {
 } from '../../../../hooks/assets/documents/useUploadAssetDocuments';
 import { AssetContext } from '../../../../hooks/assets/useAssetContext';
 import type { ShowSuccessToast } from '../../../../hooks/general/useSuccessToast';
-import type { AssetDocumentService } from '../../../../services/assets/documents/assetDocument';
 import { AssetDocumentUpload } from '../AssetDocumentUpload';
 
 const assetContext = makeMockClient();
@@ -23,8 +22,7 @@ const REJECTED_FILE_NAME = 'bad.pdf';
 const assetIdentifier = { space: 'asset-space', externalId: 'FLOC-1' };
 
 describe(AssetDocumentUpload.name, () => {
-  let mockContext: Pick<UseUploadAssetDocumentsContextType, 'useSuccessToast'> &
-    Pick<AssetDocumentService, 'uploadAssetDocument'>;
+  let mockContext: UseUploadAssetDocumentsContextType;
   let showSuccessToast: Mock<ShowSuccessToast>;
   let wrapper: ComponentType<{ children: ReactNode }>;
 
@@ -36,12 +34,7 @@ describe(AssetDocumentUpload.name, () => {
     };
     const QueryWrapper = makeQueryClientWrapper();
     wrapper = ({ children }) => (
-      <UseUploadAssetDocumentsContext.Provider
-        value={{
-          useSuccessToast: mockContext.useSuccessToast,
-          createAssetDocumentService: () => mockContext,
-        }}
-      >
+      <UseUploadAssetDocumentsContext.Provider value={mockContext}>
         <QueryWrapper>
           <AssetContext.Provider value={assetContext}>
             <DocumentFileContext.Provider value={documentFileContext}>
@@ -84,6 +77,7 @@ describe(AssetDocumentUpload.name, () => {
     expect(mockContext.uploadAssetDocument).toHaveBeenCalledTimes(2);
     expect(mockContext.uploadAssetDocument).toHaveBeenCalledWith(
       expect.anything(),
+      expect.anything(),
       assetIdentifier,
       files[0],
     );
@@ -102,10 +96,11 @@ describe(AssetDocumentUpload.name, () => {
   it('shows which files failed and why, and still reports the others', async () => {
     // Arrange
     const user = userEvent.setup();
-    vi.mocked(mockContext.uploadAssetDocument).mockImplementation((_files, _asset, file) =>
-      file.name === REJECTED_FILE_NAME
-        ? Promise.reject(new Error('Uploading the file failed (403).'))
-        : Promise.resolve(),
+    vi.mocked(mockContext.uploadAssetDocument).mockImplementation(
+      (_client, _files, _asset, file) =>
+        file.name === REJECTED_FILE_NAME
+          ? Promise.reject(new Error('Uploading the file failed (403).'))
+          : Promise.resolve(),
     );
     renderUpload();
 
@@ -140,6 +135,7 @@ describe(AssetDocumentUpload.name, () => {
     // Assert
     await vi.waitFor(() => expect(mockContext.uploadAssetDocument).toHaveBeenCalledTimes(3));
     expect(mockContext.uploadAssetDocument).toHaveBeenLastCalledWith(
+      expect.anything(),
       expect.anything(),
       assetIdentifier,
       rejectedFile,

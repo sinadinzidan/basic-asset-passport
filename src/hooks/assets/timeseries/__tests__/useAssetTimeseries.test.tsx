@@ -7,15 +7,18 @@ import { makeMockClient } from '../../../../__mocks__/cogniteClient';
 import { makeLimitedList } from '../../../../__mocks__/lists';
 import { makeQueryClientWrapper } from '../../../../__mocks__/QueryClientWrapper';
 import { TIMESERIES_QUERY_LIMIT } from '../../../../constants/timeseries';
-import type { AssetTimeseriesService } from '../../../../services/assets/timeseries/assetTimeseries';
 import { AssetContext } from '../../useAssetContext';
-import { useAssetTimeseries, UseAssetTimeseriesContext } from '../useAssetTimeseries';
+import {
+  useAssetTimeseries,
+  UseAssetTimeseriesContext,
+  type UseAssetTimeseriesContextType,
+} from '../useAssetTimeseries';
 
 const assetIdentifier = { space: 'asset-space', externalId: 'FLOC-1' };
 
 describe(useAssetTimeseries.name, () => {
   const client = makeMockClient();
-  let mockContext: AssetTimeseriesService;
+  let mockContext: UseAssetTimeseriesContextType;
   let wrapper: ComponentType<{ children: ReactNode }>;
 
   beforeEach(() => {
@@ -26,9 +29,7 @@ describe(useAssetTimeseries.name, () => {
     };
     const QueryWrapper = makeQueryClientWrapper();
     wrapper = ({ children }) => (
-      <UseAssetTimeseriesContext.Provider
-        value={{ createAssetTimeseriesService: () => mockContext }}
-      >
+      <UseAssetTimeseriesContext.Provider value={mockContext}>
         <QueryWrapper>
           <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
         </QueryWrapper>
@@ -52,6 +53,7 @@ describe(useAssetTimeseries.name, () => {
 
     await waitFor(() => expect(result.current.data?.items).toHaveLength(1));
     expect(mockContext.listAssetTimeseries).toHaveBeenCalledWith(
+      client,
       assetIdentifier,
       TIMESERIES_QUERY_LIMIT,
     );
@@ -61,7 +63,7 @@ describe(useAssetTimeseries.name, () => {
     const { result } = renderHook(() => useAssetTimeseries(assetIdentifier, 400), { wrapper });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(mockContext.listAssetTimeseries).toHaveBeenCalledWith(assetIdentifier, 400);
+    expect(mockContext.listAssetTimeseries).toHaveBeenCalledWith(client, assetIdentifier, 400);
   });
 
   it('reports a failed load', async () => {

@@ -5,13 +5,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { makeAssetListItem, makeAssetPage } from '../../../__mocks__/assets';
 import { makeMockClient } from '../../../__mocks__/cogniteClient';
 import { makeQueryClientWrapper } from '../../../__mocks__/QueryClientWrapper';
-import type { AssetService } from '../../../services/assets/asset';
 import { AssetContext } from '../useAssetContext';
-import { useAssets, UseAssetsContext } from '../useAssets';
+import { useAssets, UseAssetsContext, type UseAssetsContextType } from '../useAssets';
 
 describe(useAssets.name, () => {
   const client = makeMockClient();
-  let mockContext: AssetService;
+  let mockContext: UseAssetsContextType;
   let wrapper: ComponentType<{ children: ReactNode }>;
 
   beforeEach(() => {
@@ -21,7 +20,7 @@ describe(useAssets.name, () => {
     };
     const QueryWrapper = makeQueryClientWrapper();
     wrapper = ({ children }) => (
-      <UseAssetsContext.Provider value={{ createAssetService: () => mockContext }}>
+      <UseAssetsContext.Provider value={mockContext}>
         <QueryWrapper>
           <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
         </QueryWrapper>
@@ -45,7 +44,7 @@ describe(useAssets.name, () => {
     });
 
     await waitFor(() => expect(result.current.data).toEqual(page));
-    expect(mockContext.listAssets).toHaveBeenCalledWith('current-cursor');
+    expect(mockContext.listAssets).toHaveBeenCalledWith(client, 'current-cursor');
   });
 
   it('reports a failed load as an error', async () => {
@@ -77,7 +76,7 @@ describe(useAssets.name, () => {
     });
 
     await waitFor(() => expect(result.current.data).toEqual(page));
-    expect(mockContext.searchAssets).toHaveBeenCalledWith('pump');
+    expect(mockContext.searchAssets).toHaveBeenCalledWith(client, 'pump');
     expect(mockContext.listAssets).not.toHaveBeenCalled();
   });
 
@@ -87,7 +86,7 @@ describe(useAssets.name, () => {
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(mockContext.listAssets).toHaveBeenCalledWith(undefined);
+    expect(mockContext.listAssets).toHaveBeenCalledWith(client, undefined);
     expect(mockContext.searchAssets).not.toHaveBeenCalled();
   });
 
@@ -100,6 +99,6 @@ describe(useAssets.name, () => {
 
     rerender({ searchText: 'valve' });
 
-    await waitFor(() => expect(mockContext.searchAssets).toHaveBeenCalledWith('valve'));
+    await waitFor(() => expect(mockContext.searchAssets).toHaveBeenCalledWith(client, 'valve'));
   });
 });

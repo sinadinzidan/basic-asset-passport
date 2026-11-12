@@ -19,12 +19,11 @@ type NavigationActions = {
   selectAsset: (assetIdentifier: AssetIdentifier) => void;
   clearSelectedAsset: () => void;
   changeAssetTab: (activeAssetTab: AssetTab) => void;
-  changeTimeseriesChart: (timeseriesChart: TimeseriesChartOptions | null, clockMs?: number) => void;
+  changeTimeseriesChart: (timeseriesChart: TimeseriesChartOptions | null) => void;
   changeAssistantOpen: (isOpen: boolean) => void;
 };
 
 export type NavigationStore = {
   navigationState: NavigationState;
-  timeseriesChartClockMs: number | null;
   actions: NavigationActions;
 };

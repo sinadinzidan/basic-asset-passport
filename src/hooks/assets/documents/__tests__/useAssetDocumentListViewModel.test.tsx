@@ -8,12 +8,17 @@ import { makeLimitedList } from '../../../../__mocks__/lists';
 import { makeQueryClientWrapper } from '../../../../__mocks__/QueryClientWrapper';
 import { DOCUMENT_QUERY_LIMIT } from '../../../../constants/documents';
 import { DocumentOrigin } from '../../../../enums/documentOrigin';
-import type { AssetDocumentService } from '../../../../services/assets/documents/assetDocument';
 import { AssetContext } from '../../useAssetContext';
 import { useAssetDocumentListViewModel } from '../useAssetDocumentListViewModel';
-import { UseAssetDocumentsContext } from '../useAssetDocuments';
-import { UseAssetLinkedFilesContext } from '../useAssetLinkedFiles';
-import { UseDeleteAssetDocumentContext } from '../useDeleteAssetDocument';
+import { UseAssetDocumentsContext, type UseAssetDocumentsContextType } from '../useAssetDocuments';
+import {
+  UseAssetLinkedFilesContext,
+  type UseAssetLinkedFilesContextType,
+} from '../useAssetLinkedFiles';
+import {
+  UseDeleteAssetDocumentContext,
+  type UseDeleteAssetDocumentContextType,
+} from '../useDeleteAssetDocument';
 
 const assetIdentifier = { space: 'asset-space', externalId: 'FLOC-1' };
 const uploaded = makeAssetDocument();
@@ -21,10 +26,9 @@ const existing = makeAssetDocument({ externalId: 'file-1', origin: DocumentOrigi
 
 describe(useAssetDocumentListViewModel.name, () => {
   const client = makeMockClient();
-  let documentService: Pick<
-    AssetDocumentService,
-    'listAssetDocuments' | 'listAssetLinkedFiles' | 'deleteAssetDocument'
-  >;
+  let documentService: UseAssetDocumentsContextType &
+    UseAssetLinkedFilesContextType &
+    UseDeleteAssetDocumentContextType;
   let wrapper: ComponentType<{ children: ReactNode }>;
 
   beforeEach(() => {
@@ -33,7 +37,7 @@ describe(useAssetDocumentListViewModel.name, () => {
       listAssetLinkedFiles: vi.fn(() => Promise.resolve(makeLimitedList([existing]))),
       deleteAssetDocument: vi.fn(() => Promise.resolve()),
     };
-    const deps = { createAssetDocumentService: () => documentService };
+    const deps = documentService;
     const QueryWrapper = makeQueryClientWrapper();
     wrapper = ({ children }) => (
       <UseAssetDocumentsContext.Provider value={deps}>
@@ -111,12 +115,14 @@ describe(useAssetDocumentListViewModel.name, () => {
 
     await waitFor(() =>
       expect(documentService.listAssetDocuments).toHaveBeenLastCalledWith(
+        client,
         assetIdentifier,
         DOCUMENT_QUERY_LIMIT * 2,
       ),
     );
     await waitFor(() =>
       expect(documentService.listAssetLinkedFiles).toHaveBeenLastCalledWith(
+        client,
         assetIdentifier,
         DOCUMENT_QUERY_LIMIT * 2,
       ),

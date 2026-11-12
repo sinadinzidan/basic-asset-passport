@@ -6,19 +6,24 @@ import { makeMockClient } from '../../../../__mocks__/cogniteClient';
 import { makeAssetDocument } from '../../../../__mocks__/documents';
 import { makeLimitedList } from '../../../../__mocks__/lists';
 import { makeQueryClientWrapper } from '../../../../__mocks__/QueryClientWrapper';
-import { UseAssetDocumentsContext } from '../../../../hooks/assets/documents/useAssetDocuments';
-import { UseAssetLinkedFilesContext } from '../../../../hooks/assets/documents/useAssetLinkedFiles';
+import {
+  UseAssetDocumentsContext,
+  type UseAssetDocumentsContextType,
+} from '../../../../hooks/assets/documents/useAssetDocuments';
+import {
+  UseAssetLinkedFilesContext,
+  type UseAssetLinkedFilesContextType,
+} from '../../../../hooks/assets/documents/useAssetLinkedFiles';
 import { DocumentFileContext } from '../../../../hooks/assets/documents/useDocumentFileContext';
 import { AssetContext } from '../../../../hooks/assets/useAssetContext';
-import type { AssetDocumentService } from '../../../../services/assets/documents/assetDocument';
 import type { DocumentFileContextType } from '../../../../types/documentFileContext';
 import { AssetDocuments } from '../AssetDocuments';
 
 const assetIdentifier = { space: 'asset-space', externalId: 'FLOC-1' };
 
 describe(AssetDocuments.name, () => {
-  let listContext: Pick<AssetDocumentService, 'listAssetDocuments'>;
-  let linkedContext: Pick<AssetDocumentService, 'listAssetLinkedFiles'>;
+  let listContext: UseAssetDocumentsContextType;
+  let linkedContext: UseAssetLinkedFilesContextType;
   let wrapper: ComponentType<{ children: ReactNode }>;
 
   beforeEach(() => {
@@ -35,10 +40,8 @@ describe(AssetDocuments.name, () => {
     };
     const QueryWrapper = makeQueryClientWrapper();
     wrapper = ({ children }) => (
-      <UseAssetDocumentsContext.Provider value={{ createAssetDocumentService: () => listContext }}>
-        <UseAssetLinkedFilesContext.Provider
-          value={{ createAssetDocumentService: () => linkedContext }}
-        >
+      <UseAssetDocumentsContext.Provider value={listContext}>
+        <UseAssetLinkedFilesContext.Provider value={linkedContext}>
           <QueryWrapper>
             <AssetContext.Provider value={client}>
               <DocumentFileContext.Provider value={files}>{children}</DocumentFileContext.Provider>
@@ -62,10 +65,12 @@ describe(AssetDocuments.name, () => {
     await screen.findByRole('heading', { name: 'Pump manual.pdf' });
 
     expect(listContext.listAssetDocuments).toHaveBeenCalledWith(
+      expect.anything(),
       assetIdentifier,
       expect.any(Number),
     );
     expect(linkedContext.listAssetLinkedFiles).toHaveBeenCalledWith(
+      expect.anything(),
       assetIdentifier,
       expect.any(Number),
     );

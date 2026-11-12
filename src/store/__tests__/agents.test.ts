@@ -2,12 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { makeCdfAgent } from '../../__mocks__/agents';
 import { ChatMessageRole } from '../../enums/chatMessageRole';
-import {
-  createAgentChatStore,
-  EMPTY_CONVERSATION,
-  getConversation,
-  INITIAL_AGENT_CHAT_STATE,
-} from '../agents';
+import { createAgentChatStore, EMPTY_CONVERSATION, getConversation } from '../agents';
 
 const agent = makeCdfAgent();
 const userMessage = { id: 'm1', role: ChatMessageRole.USER, text: 'Hi' };
@@ -22,10 +17,7 @@ describe(createAgentChatStore.name, () => {
 
   it('starts from the state it is given', () => {
     const conversation = { ...EMPTY_CONVERSATION, messages: [userMessage] };
-    const store = createAgentChatStore({
-      ...INITIAL_AGENT_CHAT_STATE,
-      conversations: { [agent.externalId]: conversation },
-    });
+    const store = createAgentChatStore({ conversations: { [agent.externalId]: conversation } });
 
     expect(getConversation(store.getState(), agent.externalId)).toEqual(conversation);
   });
@@ -37,38 +29,6 @@ describe(createAgentChatStore.name, () => {
     first.getState().addUserMessage(agent.externalId, userMessage);
 
     expect(getConversation(second.getState(), agent.externalId)).toEqual(EMPTY_CONVERSATION);
-  });
-
-  it('starts with an empty draft, a mascot nobody points at and a panel that is not closing', () => {
-    const store = createAgentChatStore();
-
-    expect(store.getState().draft).toBe('');
-    expect(store.getState().isMascotPointedAt).toBe(false);
-    expect(store.getState().isPanelClosing).toBe(false);
-  });
-
-  it('keeps the draft of the question being written', () => {
-    const store = createAgentChatStore();
-
-    store.getState().changeDraft('Why is pump 1 hot?');
-
-    expect(store.getState().draft).toBe('Why is pump 1 hot?');
-  });
-
-  it('records whether the mascot is pointed at', () => {
-    const store = createAgentChatStore();
-
-    store.getState().changeMascotPointedAt(true);
-
-    expect(store.getState().isMascotPointedAt).toBe(true);
-  });
-
-  it('records whether the panel is closing', () => {
-    const store = createAgentChatStore();
-
-    store.getState().changePanelClosing(true);
-
-    expect(store.getState().isPanelClosing).toBe(true);
   });
 
   it('adds the question and marks the conversation as waiting', () => {

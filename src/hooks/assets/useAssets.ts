@@ -8,19 +8,18 @@ import {
   ASSET_PASSPORT_MODEL_SPACE,
   ASSET_PASSPORT_MODEL_VERSION,
 } from '../../constants/assets';
-import { createAssetService } from '../../services/assets/asset';
+import { listAssets, searchAssets } from '../../services/assets/asset';
 
 import { useAssetContext } from './useAssetContext';
 
-const defaultDeps = { createAssetService };
+const defaultDeps = { listAssets, searchAssets };
 
 export type UseAssetsContextType = typeof defaultDeps;
 export const UseAssetsContext = createContext<UseAssetsContextType>(defaultDeps);
 
 export function useAssets(cursor?: string, searchText: string = '') {
-  const { createAssetService } = useContext(UseAssetsContext);
+  const { listAssets: loadAssets, searchAssets: findAssets } = useContext(UseAssetsContext);
   const client = useAssetContext();
-  const assetService = createAssetService(client);
 
   const searchQuery = searchText.trim();
   const pageCursor = searchQuery ? undefined : cursor;
@@ -36,8 +35,7 @@ export function useAssets(cursor?: string, searchText: string = '') {
       pageCursor,
       searchQuery,
     ],
-    queryFn: () =>
-      searchQuery ? assetService.searchAssets(searchQuery) : assetService.listAssets(pageCursor),
+    queryFn: () => (searchQuery ? findAssets(client, searchQuery) : loadAssets(client, pageCursor)),
     staleTime: ASSET_QUERY_STALE_TIME_MS,
   });
 }

@@ -7,17 +7,20 @@ import { makeLimitedList } from '../../../../__mocks__/lists';
 import { makeAssetNote } from '../../../../__mocks__/notes';
 import { makeQueryClientWrapper } from '../../../../__mocks__/QueryClientWrapper';
 import { NOTE_QUERY_LIMIT } from '../../../../constants/notes';
-import type { AssetNoteService } from '../../../../services/assets/notes/assetNote';
 import type { LimitedList } from '../../../../types/list';
 import type { AssetNote } from '../../../../types/note';
 import { AssetContext } from '../../useAssetContext';
-import { useAssetNotes, UseAssetNotesContext } from '../useAssetNotes';
+import {
+  useAssetNotes,
+  UseAssetNotesContext,
+  type UseAssetNotesContextType,
+} from '../useAssetNotes';
 
 const assetIdentifier = { space: 'asset-space', externalId: 'FLOC-1' };
 
 describe(useAssetNotes.name, () => {
   const client = makeMockClient();
-  let mockContext: Pick<AssetNoteService, 'listAssetNotes'>;
+  let mockContext: UseAssetNotesContextType;
   let wrapper: ComponentType<{ children: ReactNode }>;
 
   beforeEach(() => {
@@ -26,7 +29,7 @@ describe(useAssetNotes.name, () => {
     };
     const QueryWrapper = makeQueryClientWrapper();
     wrapper = ({ children }) => (
-      <UseAssetNotesContext.Provider value={{ createAssetNoteService: () => mockContext }}>
+      <UseAssetNotesContext.Provider value={mockContext}>
         <QueryWrapper>
           <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
         </QueryWrapper>
@@ -52,7 +55,11 @@ describe(useAssetNotes.name, () => {
     });
 
     await waitFor(() => expect(result.current.data).toEqual(notes));
-    expect(mockContext.listAssetNotes).toHaveBeenCalledWith(assetIdentifier, NOTE_QUERY_LIMIT);
+    expect(mockContext.listAssetNotes).toHaveBeenCalledWith(
+      client,
+      assetIdentifier,
+      NOTE_QUERY_LIMIT,
+    );
   });
 
   it('reads on to a longer limit while the notes already read stay', async () => {
@@ -74,7 +81,7 @@ describe(useAssetNotes.name, () => {
     // Assert
     expect(result.current.data).toEqual(firstPage);
     expect(result.current.isPlaceholderData).toBe(true);
-    expect(mockContext.listAssetNotes).toHaveBeenLastCalledWith(assetIdentifier, 2);
+    expect(mockContext.listAssetNotes).toHaveBeenLastCalledWith(client, assetIdentifier, 2);
     longer.resolve(makeLimitedList([makeAssetNote()]));
     await waitFor(() => expect(result.current.isPlaceholderData).toBe(false));
   });

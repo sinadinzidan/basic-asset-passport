@@ -5,13 +5,16 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { makeAssetsKPICountsContext } from '../../../__mocks__/assetsKPICounts';
 import { makeMockClient } from '../../../__mocks__/cogniteClient';
 import { makeQueryClientWrapper } from '../../../__mocks__/QueryClientWrapper';
-import type { AssetsKPICountService } from '../../../services/assets/assetsKPICounts';
 import { AssetContext } from '../useAssetContext';
-import { UseAssetsKPICountsContext, useAssetsKPICounts } from '../useAssetsKPICounts';
+import {
+  UseAssetsKPICountsContext,
+  type UseAssetsKPICountsContextType,
+  useAssetsKPICounts,
+} from '../useAssetsKPICounts';
 
 describe(useAssetsKPICounts.name, () => {
   const client = makeMockClient();
-  let context: AssetsKPICountService;
+  let context: UseAssetsKPICountsContextType;
   let wrapper: ComponentType<{ children: ReactNode }>;
 
   beforeEach(() => {
@@ -19,7 +22,7 @@ describe(useAssetsKPICounts.name, () => {
     const QueryWrapper = makeQueryClientWrapper();
     wrapper = ({ children }) => (
       <AssetContext.Provider value={client}>
-        <UseAssetsKPICountsContext.Provider value={{ createAssetsKPICountService: () => context }}>
+        <UseAssetsKPICountsContext.Provider value={context}>
           <QueryWrapper>{children}</QueryWrapper>
         </UseAssetsKPICountsContext.Provider>
       </AssetContext.Provider>

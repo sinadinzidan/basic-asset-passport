@@ -6,13 +6,11 @@ import type { NavigationState, NavigationStore } from '../types/navigation';
 
 type NavigationStoreOptions = {
   initialState?: NavigationState;
-  timeseriesChartClockMs?: number | null;
   onChange?: (navigationState: NavigationState) => void;
 };
 
 export function createNavigationStore({
   initialState = DEFAULT_NAVIGATION_STATE,
-  timeseriesChartClockMs = null,
   onChange,
 }: NavigationStoreOptions = {}): StoreApi<NavigationStore> {
   return createStore<NavigationStore>()((set, get) => {
@@ -35,7 +33,6 @@ export function createNavigationStore({
 
     return {
       navigationState: initialState,
-      timeseriesChartClockMs,
       actions: {
         changeSearchQuery: (searchQuery) => {
           if (searchQuery === (get().navigationState.searchQuery ?? '')) return;
@@ -56,10 +53,8 @@ export function createNavigationStore({
           }),
         clearSelectedAsset: () => update({ selectedAsset: null, timeseriesChart: undefined }),
         changeAssetTab: (activeAssetTab) => update({ activeAssetTab, timeseriesChart: undefined }),
-        changeTimeseriesChart: (timeseriesChart, clockMs) => {
-          if (clockMs !== undefined) set({ timeseriesChartClockMs: clockMs });
-          update({ timeseriesChart: timeseriesChart ?? undefined });
-        },
+        changeTimeseriesChart: (timeseriesChart) =>
+          update({ timeseriesChart: timeseriesChart ?? undefined }),
         changeAssistantOpen: (isOpen) => {
           if (isOpen === Boolean(get().navigationState.isAssistantOpen)) return;
           update({ isAssistantOpen: isOpen });

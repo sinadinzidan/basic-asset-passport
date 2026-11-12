@@ -8,10 +8,13 @@ import {
   makeQueryClientWrapper,
   makeTestQueryClient,
 } from '../../../../__mocks__/QueryClientWrapper';
-import type { AssetNoteService } from '../../../../services/assets/notes/assetNote';
 import { AssetContext } from '../../useAssetContext';
 import { getAssetNotesQueryKey } from '../useAssetNotes';
-import { useDeleteAssetNote, UseDeleteAssetNoteContext } from '../useDeleteAssetNote';
+import {
+  useDeleteAssetNote,
+  UseDeleteAssetNoteContext,
+  type UseDeleteAssetNoteContextType,
+} from '../useDeleteAssetNote';
 
 const assetIdentifier = { space: 'asset-space', externalId: 'FLOC-1' };
 const note = { space: 'data', externalId: 'note-1' };
@@ -19,7 +22,7 @@ const note = { space: 'data', externalId: 'note-1' };
 describe(useDeleteAssetNote.name, () => {
   const client = makeMockClient();
   let queryClient: QueryClient;
-  let mockContext: Pick<AssetNoteService, 'deleteAssetNote'>;
+  let mockContext: UseDeleteAssetNoteContextType;
   let wrapper: ComponentType<{ children: ReactNode }>;
 
   beforeEach(() => {
@@ -29,7 +32,7 @@ describe(useDeleteAssetNote.name, () => {
     };
     const QueryWrapper = makeQueryClientWrapper(queryClient);
     wrapper = ({ children }) => (
-      <UseDeleteAssetNoteContext.Provider value={{ createAssetNoteService: () => mockContext }}>
+      <UseDeleteAssetNoteContext.Provider value={mockContext}>
         <QueryWrapper>
           <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
         </QueryWrapper>
@@ -46,7 +49,7 @@ describe(useDeleteAssetNote.name, () => {
       await result.current.mutateAsync(note);
     });
 
-    expect(mockContext.deleteAssetNote).toHaveBeenCalledWith(note);
+    expect(mockContext.deleteAssetNote).toHaveBeenCalledWith(client, note);
   });
 
   it('refreshes the notes of that asset after a delete', async () => {

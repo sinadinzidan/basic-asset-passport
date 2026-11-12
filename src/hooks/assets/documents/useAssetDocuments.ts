@@ -13,19 +13,11 @@ import {
 } from '../../../constants/documents';
 import { getDocumentRefetchInterval } from '../../../lib/documentPolling';
 import { isKeyOfList } from '../../../lib/queryKeys';
-import {
-  createAssetDocumentService,
-  type AssetDocumentService,
-} from '../../../services/assets/documents/assetDocument';
+import { listAssetDocuments } from '../../../services/assets/documents/assetDocument';
 import type { AssetIdentifier } from '../../../types/asset';
-import type { AssetContextType } from '../../../types/assetContext';
 import { useAssetContext } from '../useAssetContext';
 
-const defaultDeps: {
-  createAssetDocumentService: (
-    client: AssetContextType,
-  ) => Pick<AssetDocumentService, 'listAssetDocuments'>;
-} = { createAssetDocumentService };
+const defaultDeps = { listAssetDocuments };
 
 export type UseAssetDocumentsContextType = typeof defaultDeps;
 export const UseAssetDocumentsContext = createContext<UseAssetDocumentsContextType>(defaultDeps);
@@ -47,15 +39,14 @@ export function useAssetDocuments(
   assetIdentifier: AssetIdentifier,
   limit: number = DOCUMENT_QUERY_LIMIT,
 ) {
-  const { createAssetDocumentService } = useContext(UseAssetDocumentsContext);
+  const { listAssetDocuments: loadDocuments } = useContext(UseAssetDocumentsContext);
   const client = useAssetContext();
-  const documentService = createAssetDocumentService(client);
 
   const listKey = getAssetDocumentsQueryKey(client.project, assetIdentifier);
 
   return useQuery({
     queryKey: [...listKey, limit],
-    queryFn: () => documentService.listAssetDocuments(assetIdentifier, limit),
+    queryFn: () => loadDocuments(client, assetIdentifier, limit),
     staleTime: DOCUMENT_QUERY_STALE_TIME_MS,
     refetchInterval: (query) => getDocumentRefetchInterval(query.state.data?.items),
     placeholderData: (previousData, previousQuery) =>

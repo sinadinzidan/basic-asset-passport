@@ -7,8 +7,10 @@ import { makeInstanceDetails } from '../../../../__mocks__/assets';
 import { makeMockClient } from '../../../../__mocks__/cogniteClient';
 import { makeQueryClientWrapper } from '../../../../__mocks__/QueryClientWrapper';
 import { AssetContext } from '../../../../hooks/assets/useAssetContext';
-import { UseAssetDetailsContext } from '../../../../hooks/assets/useAssetDetails';
-import type { AssetDetailsService } from '../../../../services/assets/assetDetails';
+import {
+  UseAssetDetailsContext,
+  type UseAssetDetailsContextType,
+} from '../../../../hooks/assets/useAssetDetails';
 import { LinkedAssetPopover } from '../LinkedAssetPopover';
 
 const assetContext = makeMockClient();
@@ -16,7 +18,7 @@ const assetContext = makeMockClient();
 const linkedAsset = { space: 'asset-space', externalId: 'FLOC-9' };
 
 describe(LinkedAssetPopover.name, () => {
-  let context: AssetDetailsService;
+  let context: UseAssetDetailsContextType;
   let wrapper: ComponentType<{ children: ReactNode }>;
   let anchor: HTMLElement;
 
@@ -45,7 +47,7 @@ describe(LinkedAssetPopover.name, () => {
     };
     const QueryWrapper = makeQueryClientWrapper();
     wrapper = ({ children }) => (
-      <UseAssetDetailsContext.Provider value={{ createAssetDetailsService: () => context }}>
+      <UseAssetDetailsContext.Provider value={context}>
         <QueryWrapper>
           <AssetContext.Provider value={assetContext}>{children}</AssetContext.Provider>
         </QueryWrapper>
@@ -84,7 +86,7 @@ describe(LinkedAssetPopover.name, () => {
     expect(screen.getByText('Feeds the boiler')).toBeInTheDocument();
     expect(screen.getByText('South Plant')).toBeInTheDocument();
     expect(screen.getByText('FLOC-9')).toBeInTheDocument();
-    expect(context.getAssetDetails).toHaveBeenCalledWith(linkedAsset);
+    expect(context.getAssetDetails).toHaveBeenCalledWith(expect.anything(), linkedAsset);
   });
 
   it('says it is loading while the asset is read', () => {

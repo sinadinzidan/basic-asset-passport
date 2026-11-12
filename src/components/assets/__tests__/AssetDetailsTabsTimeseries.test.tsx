@@ -12,13 +12,15 @@ import { makeNavigationStore } from '../../../__mocks__/navigation';
 import { makeQueryClientWrapper } from '../../../__mocks__/QueryClientWrapper';
 import { TIMESERIES_QUERY_LIMIT } from '../../../constants/timeseries';
 import { AssetTab } from '../../../enums/assetTab';
-import { UseAssetTimeseriesContext } from '../../../hooks/assets/timeseries/useAssetTimeseries';
+import {
+  UseAssetTimeseriesContext,
+  type UseAssetTimeseriesContextType,
+} from '../../../hooks/assets/timeseries/useAssetTimeseries';
 import { UseTimeseriesChartViewModelContext } from '../../../hooks/assets/timeseries/useTimeseriesChartViewModel';
 import { TimeseriesContext } from '../../../hooks/assets/timeseries/useTimeseriesContext';
 import { UseTimeseriesTrendsContext } from '../../../hooks/assets/timeseries/useTimeseriesTrends';
 import { AssetContext } from '../../../hooks/assets/useAssetContext';
 import { NavigationStoreContext } from '../../../hooks/general/useNavigationState';
-import type { AssetTimeseriesService } from '../../../services/assets/timeseries/assetTimeseries';
 import type { NavigationStore } from '../../../types/navigation';
 import { AssetDetailsTabs } from '../AssetDetailsTabs';
 
@@ -33,7 +35,7 @@ const datapoints = {
 };
 
 describe(`${AssetDetailsTabs.name} timeseries`, () => {
-  let listContext: AssetTimeseriesService;
+  let listContext: UseAssetTimeseriesContextType;
   let wrapper: ComponentType<{ children: ReactNode }>;
   let store: StoreApi<NavigationStore>;
 
@@ -61,9 +63,7 @@ describe(`${AssetDetailsTabs.name} timeseries`, () => {
     const QueryWrapper = makeQueryClientWrapper();
     wrapper = ({ children }) => (
       <NavigationStoreContext.Provider value={store}>
-        <UseAssetTimeseriesContext.Provider
-          value={{ createAssetTimeseriesService: () => listContext }}
-        >
+        <UseAssetTimeseriesContext.Provider value={listContext}>
           <UseTimeseriesChartViewModelContext.Provider
             value={{
               now: () => 10_000,
@@ -92,6 +92,7 @@ describe(`${AssetDetailsTabs.name} timeseries`, () => {
 
     expect(await screen.findByRole('heading', { name: 'Discharge pressure' })).toBeInTheDocument();
     expect(listContext.listAssetTimeseries).toHaveBeenCalledWith(
+      expect.anything(),
       { space: 'asset-space', externalId: 'FLOC-7' },
       TIMESERIES_QUERY_LIMIT,
     );

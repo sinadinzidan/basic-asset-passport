@@ -17,14 +17,13 @@ type NavigationProviderProps = {
 };
 
 export function NavigationProvider({ api, initialState, children }: NavigationProviderProps) {
-  const { logError, now } = useContext(NavigationContext);
+  const { logError } = useContext(NavigationContext);
 
   const [store] = useState(() => {
     const onChange = createHostSync(api, logError);
 
     return createNavigationStore({
       initialState: parseNavigationState(initialState),
-      timeseriesChartClockMs: now(),
       ...(onChange ? { onChange } : {}),
     });
   });

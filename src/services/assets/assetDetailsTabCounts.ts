@@ -16,52 +16,49 @@ import { matchAssetInList, matchAssetRelation } from './assetFilter';
 import { countNodes } from './nodeCount';
 import { findAssetPassportView } from './viewHelpers';
 
-export interface AssetDetailsTabCountService {
-  countAssetNotes(assetIdentifier: AssetIdentifier): Promise<number>;
-  countAssetEquipment(assetIdentifier: AssetIdentifier): Promise<number>;
-  countAssetDocuments(assetIdentifier: AssetIdentifier): Promise<number>;
-  countAssetTimeseries(assetIdentifier: AssetIdentifier): Promise<number>;
-  countAssetLinkedFiles(assetIdentifier: AssetIdentifier): Promise<number>;
-}
-
-class CdfAssetDetailsTabCountService implements AssetDetailsTabCountService {
-  constructor(private readonly client: AssetContextType) {}
-
-  countAssetNotes = (assetIdentifier: AssetIdentifier): Promise<number> => {
-    return countNodesOfAsset(this.client, NOTE_VIEW_EXTERNAL_ID, assetIdentifier);
-  };
-
-  countAssetEquipment = (assetIdentifier: AssetIdentifier): Promise<number> => {
-    return countNodesOfAsset(this.client, EQUIPMENT_VIEW_EXTERNAL_ID, assetIdentifier);
-  };
-
-  countAssetDocuments = (assetIdentifier: AssetIdentifier): Promise<number> => {
-    return countNodesOfAsset(this.client, DOCUMENT_VIEW_EXTERNAL_ID, assetIdentifier);
-  };
-
-  countAssetTimeseries = async (assetIdentifier: AssetIdentifier): Promise<number> => {
-    const timeseriesView = await findAssetPassportView(this.client, TIMESERIES_VIEW_EXTERNAL_ID);
-
-    return countNodes(
-      this.client,
-      timeseriesView,
-      matchAssetInList(timeseriesView, TIMESERIES_ASSETS_PROPERTY, assetIdentifier),
-    );
-  };
-
-  countAssetLinkedFiles = (assetIdentifier: AssetIdentifier): Promise<number> => {
-    return countNodes(
-      this.client,
-      FILES_VIEW,
-      matchAssetInList(FILES_VIEW, FILES_ASSETS_PROPERTY, assetIdentifier),
-    );
-  };
-}
-
-export function createAssetDetailsTabCountService(
+export function countAssetNotes(
   client: AssetContextType,
-): AssetDetailsTabCountService {
-  return new CdfAssetDetailsTabCountService(client);
+  assetIdentifier: AssetIdentifier,
+): Promise<number> {
+  return countNodesOfAsset(client, NOTE_VIEW_EXTERNAL_ID, assetIdentifier);
+}
+
+export function countAssetEquipment(
+  client: AssetContextType,
+  assetIdentifier: AssetIdentifier,
+): Promise<number> {
+  return countNodesOfAsset(client, EQUIPMENT_VIEW_EXTERNAL_ID, assetIdentifier);
+}
+
+export function countAssetDocuments(
+  client: AssetContextType,
+  assetIdentifier: AssetIdentifier,
+): Promise<number> {
+  return countNodesOfAsset(client, DOCUMENT_VIEW_EXTERNAL_ID, assetIdentifier);
+}
+
+export async function countAssetTimeseries(
+  client: AssetContextType,
+  assetIdentifier: AssetIdentifier,
+): Promise<number> {
+  const timeseriesView = await findAssetPassportView(client, TIMESERIES_VIEW_EXTERNAL_ID);
+
+  return countNodes(
+    client,
+    timeseriesView,
+    matchAssetInList(timeseriesView, TIMESERIES_ASSETS_PROPERTY, assetIdentifier),
+  );
+}
+
+export function countAssetLinkedFiles(
+  client: AssetContextType,
+  assetIdentifier: AssetIdentifier,
+): Promise<number> {
+  return countNodes(
+    client,
+    FILES_VIEW,
+    matchAssetInList(FILES_VIEW, FILES_ASSETS_PROPERTY, assetIdentifier),
+  );
 }
 
 async function countNodesOfAsset(

@@ -6,9 +6,8 @@ import { makeAssetDetailsTabCountsContext } from '../../../__mocks__/assetDetail
 import { makeInstanceDetails } from '../../../__mocks__/assets';
 import { makeMockClient } from '../../../__mocks__/cogniteClient';
 import { makeQueryClientWrapper } from '../../../__mocks__/QueryClientWrapper';
-import type { AssetDetailsService } from '../../../services/assets/assetDetails';
 import { AssetContext } from '../useAssetContext';
-import { UseAssetDetailsContext } from '../useAssetDetails';
+import { UseAssetDetailsContext, type UseAssetDetailsContextType } from '../useAssetDetails';
 import { UseAssetDetailsTabCountsContext } from '../useAssetDetailsTabCounts';
 import { useAssetDetailsViewModel } from '../useAssetDetailsViewModel';
 
@@ -16,7 +15,7 @@ const assetIdentifier = { space: 'asset-instance-space', externalId: 'FLOC-100' 
 
 describe(useAssetDetailsViewModel.name, () => {
   const client = makeMockClient();
-  let detailsService: AssetDetailsService;
+  let detailsService: UseAssetDetailsContextType;
   let wrapper: ComponentType<{ children: ReactNode }>;
 
   beforeEach(() => {
@@ -36,10 +35,8 @@ describe(useAssetDetailsViewModel.name, () => {
     const countService = makeAssetDetailsTabCountsContext();
     const QueryWrapper = makeQueryClientWrapper();
     wrapper = ({ children }) => (
-      <UseAssetDetailsContext.Provider value={{ createAssetDetailsService: () => detailsService }}>
-        <UseAssetDetailsTabCountsContext.Provider
-          value={{ createAssetDetailsTabCountService: () => countService }}
-        >
+      <UseAssetDetailsContext.Provider value={detailsService}>
+        <UseAssetDetailsTabCountsContext.Provider value={countService}>
           <QueryWrapper>
             <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
           </QueryWrapper>

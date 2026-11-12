@@ -7,17 +7,19 @@ import { makeLimitedList } from '../../../../__mocks__/lists';
 import { makeAssetNote } from '../../../../__mocks__/notes';
 import { makeQueryClientWrapper } from '../../../../__mocks__/QueryClientWrapper';
 import { NOTE_QUERY_LIMIT } from '../../../../constants/notes';
-import type { AssetNoteService } from '../../../../services/assets/notes/assetNote';
 import { AssetContext } from '../../useAssetContext';
 import { useAssetNoteListViewModel } from '../useAssetNoteListViewModel';
-import { UseAssetNotesContext } from '../useAssetNotes';
-import { UseDeleteAssetNoteContext } from '../useDeleteAssetNote';
+import { UseAssetNotesContext, type UseAssetNotesContextType } from '../useAssetNotes';
+import {
+  UseDeleteAssetNoteContext,
+  type UseDeleteAssetNoteContextType,
+} from '../useDeleteAssetNote';
 
 const assetIdentifier = { space: 'asset-space', externalId: 'FLOC-1' };
 
 describe(useAssetNoteListViewModel.name, () => {
   const client = makeMockClient();
-  let noteService: Pick<AssetNoteService, 'listAssetNotes' | 'deleteAssetNote'>;
+  let noteService: UseAssetNotesContextType & UseDeleteAssetNoteContextType;
   let wrapper: ComponentType<{ children: ReactNode }>;
 
   beforeEach(() => {
@@ -27,8 +29,8 @@ describe(useAssetNoteListViewModel.name, () => {
     };
     const QueryWrapper = makeQueryClientWrapper();
     wrapper = ({ children }) => (
-      <UseAssetNotesContext.Provider value={{ createAssetNoteService: () => noteService }}>
-        <UseDeleteAssetNoteContext.Provider value={{ createAssetNoteService: () => noteService }}>
+      <UseAssetNotesContext.Provider value={noteService}>
+        <UseDeleteAssetNoteContext.Provider value={noteService}>
           <QueryWrapper>
             <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
           </QueryWrapper>
@@ -65,6 +67,7 @@ describe(useAssetNoteListViewModel.name, () => {
 
     await waitFor(() =>
       expect(noteService.listAssetNotes).toHaveBeenLastCalledWith(
+        client,
         assetIdentifier,
         NOTE_QUERY_LIMIT * 2,
       ),
@@ -77,7 +80,7 @@ describe(useAssetNoteListViewModel.name, () => {
 
     await act(() => result.current.deleteNote(makeAssetNote()));
 
-    expect(noteService.deleteAssetNote).toHaveBeenCalledWith({
+    expect(noteService.deleteAssetNote).toHaveBeenCalledWith(client, {
       space: 'sp-asset-passport-data',
       externalId: 'note-1',
     });

@@ -21,61 +21,51 @@ import {
   type NodeInstance,
 } from './viewHelpers';
 
-export interface AssetService {
-  listAssets(cursor?: string): Promise<AssetPage>;
-  searchAssets(searchText: string): Promise<AssetPage>;
+export async function listAssets(client: AssetContextType, cursor?: string): Promise<AssetPage> {
+  const assetView = await findAssetPassportView(client, ASSET_VIEW_EXTERNAL_ID);
+  const viewReference = toViewReference(assetView);
+  const response = await client.instances.query({
+    ...(cursor ? { cursors: { assets: cursor } } : {}),
+    with: {
+      assets: {
+        nodes: { filter: { hasData: [viewReference] } },
+        limit: ASSET_QUERY_LIMIT,
+      },
+    },
+    select: {
+      assets: {
+        sources: [{ source: viewReference, properties: [...ASSET_LIST_PROPERTIES] }],
+      },
+    },
+  });
+
+  const items = (response.items.assets ?? [])
+    .filter(isNodeInstance)
+    .map((node) => toAssetListItem(node, assetView));
+
+  const nextCursor = response.nextCursor.assets ?? null;
+
+  return { items, nextCursor, hasMore: nextCursor !== null };
 }
 
-class CdfAssetService implements AssetService {
-  constructor(private readonly client: AssetContextType) {}
+export async function searchAssets(
+  client: AssetContextType,
+  searchText: string,
+): Promise<AssetPage> {
+  const assetView = await findAssetPassportView(client, ASSET_VIEW_EXTERNAL_ID);
+  const response = await client.instances.search({
+    view: toViewReference(assetView),
+    query: searchText,
+    instanceType: INSTANCE_TYPE_NODE,
+    properties: [...ASSET_SEARCH_PROPERTIES],
+    limit: getRequestLimit(ASSET_SEARCH_LIMIT),
+  });
 
-  listAssets = async (cursor?: string): Promise<AssetPage> => {
-    const assetView = await findAssetPassportView(this.client, ASSET_VIEW_EXTERNAL_ID);
-    const viewReference = toViewReference(assetView);
-    const response = await this.client.instances.query({
-      ...(cursor ? { cursors: { assets: cursor } } : {}),
-      with: {
-        assets: {
-          nodes: { filter: { hasData: [viewReference] } },
-          limit: ASSET_QUERY_LIMIT,
-        },
-      },
-      select: {
-        assets: {
-          sources: [{ source: viewReference, properties: [...ASSET_LIST_PROPERTIES] }],
-        },
-      },
-    });
+  const matches = response.items
+    .filter(isNodeInstance)
+    .map((node) => toAssetListItem(node, assetView));
 
-    const items = (response.items.assets ?? [])
-      .filter(isNodeInstance)
-      .map((node) => toAssetListItem(node, assetView));
-
-    const nextCursor = response.nextCursor.assets ?? null;
-
-    return { items, nextCursor, hasMore: nextCursor !== null };
-  };
-
-  searchAssets = async (searchText: string): Promise<AssetPage> => {
-    const assetView = await findAssetPassportView(this.client, ASSET_VIEW_EXTERNAL_ID);
-    const response = await this.client.instances.search({
-      view: toViewReference(assetView),
-      query: searchText,
-      instanceType: INSTANCE_TYPE_NODE,
-      properties: [...ASSET_SEARCH_PROPERTIES],
-      limit: getRequestLimit(ASSET_SEARCH_LIMIT),
-    });
-
-    const matches = response.items
-      .filter(isNodeInstance)
-      .map((node) => toAssetListItem(node, assetView));
-
-    return { ...toLimitedList(matches, ASSET_SEARCH_LIMIT), nextCursor: null };
-  };
-}
-
-export function createAssetService(client: AssetContextType): AssetService {
-  return new CdfAssetService(client);
+  return { ...toLimitedList(matches, ASSET_SEARCH_LIMIT), nextCursor: null };
 }
 
 function toAssetListItem(node: NodeInstance, assetView: ViewDefinition): AssetListItem {

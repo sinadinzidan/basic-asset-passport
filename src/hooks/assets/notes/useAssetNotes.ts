@@ -12,17 +12,11 @@ import {
   NOTE_VIEW_EXTERNAL_ID,
 } from '../../../constants/notes';
 import { isKeyOfList } from '../../../lib/queryKeys';
-import {
-  createAssetNoteService,
-  type AssetNoteService,
-} from '../../../services/assets/notes/assetNote';
+import { listAssetNotes } from '../../../services/assets/notes/assetNote';
 import type { AssetIdentifier } from '../../../types/asset';
-import type { AssetContextType } from '../../../types/assetContext';
 import { useAssetContext } from '../useAssetContext';
 
-const defaultDeps: {
-  createAssetNoteService: (client: AssetContextType) => Pick<AssetNoteService, 'listAssetNotes'>;
-} = { createAssetNoteService };
+const defaultDeps = { listAssetNotes };
 
 export type UseAssetNotesContextType = typeof defaultDeps;
 export const UseAssetNotesContext = createContext<UseAssetNotesContextType>(defaultDeps);
@@ -41,15 +35,14 @@ export function getAssetNotesQueryKey(project: string, assetIdentifier: AssetIde
 }
 
 export function useAssetNotes(assetIdentifier: AssetIdentifier, limit: number = NOTE_QUERY_LIMIT) {
-  const { createAssetNoteService } = useContext(UseAssetNotesContext);
+  const { listAssetNotes: loadNotes } = useContext(UseAssetNotesContext);
   const client = useAssetContext();
-  const noteService = createAssetNoteService(client);
 
   const listKey = getAssetNotesQueryKey(client.project, assetIdentifier);
 
   return useQuery({
     queryKey: [...listKey, limit],
-    queryFn: () => noteService.listAssetNotes(assetIdentifier, limit),
+    queryFn: () => loadNotes(client, assetIdentifier, limit),
     staleTime: NOTE_QUERY_STALE_TIME_MS,
     placeholderData: (previousData, previousQuery) =>
       isKeyOfList(previousQuery?.queryKey, listKey) ? previousData : undefined,

@@ -1,6 +1,6 @@
-import type { AssetsKPICountService } from '../services/assets/assetsKPICounts';
+import type { UseAssetsKPICountsContextType } from '../hooks/assets/useAssetsKPICounts';
 
-export function makeAssetsKPICountsContext(): AssetsKPICountService {
+export function makeAssetsKPICountsContext(): UseAssetsKPICountsContextType {
   return {
     countAllAssets: vi.fn(() => Promise.resolve(4210)),
     countOperatingAssets: vi.fn(() => Promise.resolve(3800)),

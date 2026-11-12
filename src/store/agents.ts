@@ -12,9 +12,6 @@ export const EMPTY_CONVERSATION: AgentConversation = {
 
 export const INITIAL_AGENT_CHAT_STATE: AgentChatState = {
   conversations: {},
-  draft: '',
-  isMascotPointedAt: false,
-  isPanelClosing: false,
 };
 
 export function getConversation(state: AgentChatState, agentExternalId: string): AgentConversation {
@@ -67,9 +64,6 @@ export function createAgentChatStore(
         })),
       resetConversation: (agentExternalId) =>
         updateConversation(agentExternalId, () => EMPTY_CONVERSATION),
-      changeDraft: (draft) => set({ draft }),
-      changeMascotPointedAt: (isPointedAt) => set({ isMascotPointedAt: isPointedAt }),
-      changePanelClosing: (isClosing) => set({ isPanelClosing: isClosing }),
     };
   });
 }

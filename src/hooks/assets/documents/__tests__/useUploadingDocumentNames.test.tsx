@@ -4,7 +4,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { makeMockClient } from '../../../../__mocks__/cogniteClient';
 import { makeQueryClientWrapper } from '../../../../__mocks__/QueryClientWrapper';
-import type { AssetDocumentService } from '../../../../services/assets/documents/assetDocument';
 import type { DocumentFileContextType } from '../../../../types/documentFileContext';
 import { AssetContext } from '../../useAssetContext';
 import { DocumentFileContext } from '../useDocumentFileContext';
@@ -21,8 +20,7 @@ const otherAsset = { space: 'asset-space', externalId: 'FLOC-2' };
 describe(useUploadingDocumentNames.name, () => {
   const client = makeMockClient();
   const documentFileContext = {} as Partial<DocumentFileContextType> as DocumentFileContextType;
-  let uploadContext: Pick<UseUploadAssetDocumentsContextType, 'useSuccessToast'> &
-    Pick<AssetDocumentService, 'uploadAssetDocument'>;
+  let uploadContext: UseUploadAssetDocumentsContextType;
   let wrapper: ComponentType<{ children: ReactNode }>;
 
   beforeEach(() => {
@@ -32,12 +30,7 @@ describe(useUploadingDocumentNames.name, () => {
     };
     const QueryWrapper = makeQueryClientWrapper();
     wrapper = ({ children }) => (
-      <UseUploadAssetDocumentsContext.Provider
-        value={{
-          useSuccessToast: uploadContext.useSuccessToast,
-          createAssetDocumentService: () => uploadContext,
-        }}
-      >
+      <UseUploadAssetDocumentsContext.Provider value={uploadContext}>
         <QueryWrapper>
           <AssetContext.Provider value={client}>
             <DocumentFileContext.Provider value={documentFileContext}>

@@ -4,7 +4,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { makeViewDefinition } from '../../../__mocks__/cdf';
 import { makeOfflineSdkClient, stubModelViews } from '../../../__mocks__/cogniteClient';
 import { TestPropertyType } from '../../../enums/testPropertyType';
-import { createAssetDetailsTabCountService } from '../assetDetailsTabCounts';
+import {
+  countAssetDocuments,
+  countAssetEquipment,
+  countAssetLinkedFiles,
+  countAssetNotes,
+  countAssetTimeseries,
+} from '../assetDetailsTabCounts';
 
 const assetIdentifier = { space: 'asset-space', externalId: 'FLOC-1' };
 const asset = { space: 'asset-space', externalId: 'FLOC-1' };
@@ -42,7 +48,7 @@ describe('asset count service', () => {
     stubModelViews(client, [noteView, documentView, timeseriesView, equipmentView]);
   });
 
-  describe('countAssetNotes', () => {
+  describe(countAssetNotes.name, () => {
     it('counts the Note nodes whose asset relation is the asset, without reading them or any property', async () => {
       // Arrange
       const aggregate = vi
@@ -51,8 +57,7 @@ describe('asset count service', () => {
       const query = vi.spyOn(client.instances, 'query');
 
       // Act
-      const count =
-        await createAssetDetailsTabCountService(client).countAssetNotes(assetIdentifier);
+      const count = await countAssetNotes(client, assetIdentifier);
 
       // Assert
       const reference = {
@@ -79,36 +84,31 @@ describe('asset count service', () => {
     it('counts none when the answer holds no count', async () => {
       vi.spyOn(client.instances, 'aggregate').mockResolvedValue({ items: [] });
 
-      await expect(
-        createAssetDetailsTabCountService(client).countAssetNotes(assetIdentifier),
-      ).resolves.toBe(0);
+      await expect(countAssetNotes(client, assetIdentifier)).resolves.toBe(0);
     });
 
     it('fails with a readable message when the model has no Note view', async () => {
       stubModelViews(client, []);
 
-      await expect(
-        createAssetDetailsTabCountService(client).countAssetNotes(assetIdentifier),
-      ).rejects.toThrow('The Note view was not found in the Asset_Passport data model.');
+      await expect(countAssetNotes(client, assetIdentifier)).rejects.toThrow(
+        'The Note view was not found in the Asset_Passport data model.',
+      );
     });
 
     it('passes on a failure of the aggregate request', async () => {
       vi.spyOn(client.instances, 'aggregate').mockRejectedValue(new Error('Forbidden'));
 
-      await expect(
-        createAssetDetailsTabCountService(client).countAssetNotes(assetIdentifier),
-      ).rejects.toThrow('Forbidden');
+      await expect(countAssetNotes(client, assetIdentifier)).rejects.toThrow('Forbidden');
     });
   });
 
-  describe('countAssetDocuments', () => {
+  describe(countAssetDocuments.name, () => {
     it('counts the Document nodes whose asset relation is the asset', async () => {
       const aggregate = vi
         .spyOn(client.instances, 'aggregate')
         .mockResolvedValue(makeCountResponse(2));
 
-      const count =
-        await createAssetDetailsTabCountService(client).countAssetDocuments(assetIdentifier);
+      const count = await countAssetDocuments(client, assetIdentifier);
 
       const reference = {
         type: 'view',
@@ -131,14 +131,13 @@ describe('asset count service', () => {
     });
   });
 
-  describe('countAssetEquipment', () => {
+  describe(countAssetEquipment.name, () => {
     it('counts the Equipment nodes whose asset relation is the asset', async () => {
       const aggregate = vi
         .spyOn(client.instances, 'aggregate')
         .mockResolvedValue(makeCountResponse(1500));
 
-      const count =
-        await createAssetDetailsTabCountService(client).countAssetEquipment(assetIdentifier);
+      const count = await countAssetEquipment(client, assetIdentifier);
 
       const reference = {
         type: 'view',
@@ -161,14 +160,13 @@ describe('asset count service', () => {
     });
   });
 
-  describe('countAssetTimeseries', () => {
+  describe(countAssetTimeseries.name, () => {
     it('counts the PI_Timeseries nodes whose assets include the asset', async () => {
       const aggregate = vi
         .spyOn(client.instances, 'aggregate')
         .mockResolvedValue(makeCountResponse(312));
 
-      const count =
-        await createAssetDetailsTabCountService(client).countAssetTimeseries(assetIdentifier);
+      const count = await countAssetTimeseries(client, assetIdentifier);
 
       const reference = {
         type: 'view',
@@ -191,15 +189,14 @@ describe('asset count service', () => {
     });
   });
 
-  describe('countAssetLinkedFiles', () => {
+  describe(countAssetLinkedFiles.name, () => {
     it('counts the Files nodes whose assets include the asset, by the view reference', async () => {
       const aggregate = vi
         .spyOn(client.instances, 'aggregate')
         .mockResolvedValue(makeCountResponse(9));
       const retrieve = vi.spyOn(client.dataModels, 'retrieve');
 
-      const count =
-        await createAssetDetailsTabCountService(client).countAssetLinkedFiles(assetIdentifier);
+      const count = await countAssetLinkedFiles(client, assetIdentifier);
 
       const reference = {
         type: 'view',

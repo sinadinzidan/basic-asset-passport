@@ -5,7 +5,7 @@ import { makeNodeInstance, makeQueryResponse, makeViewDefinition } from '../../.
 import { makeOfflineSdkClient, stubModelViews } from '../../../../__mocks__/cogniteClient';
 import { TIMESERIES_QUERY_LIMIT } from '../../../../constants/timeseries';
 import { TestPropertyType } from '../../../../enums/testPropertyType';
-import { createAssetTimeseriesService } from '../assetTimeseries';
+import { listAssetTimeseries } from '../assetTimeseries';
 
 const timeseriesView = makeViewDefinition(
   'PI_Timeseries',
@@ -20,7 +20,7 @@ const timeseriesView = makeViewDefinition(
 const assetIdentifier = { space: 'asset-space', externalId: 'FLOC-1' };
 const pressureSeries = makeSeries('PI.2', { name: 'Pressure', engunits: 'bar' });
 
-describe('listAssetTimeseries', () => {
+describe(listAssetTimeseries.name, () => {
   let client: CogniteClient;
 
   beforeEach(() => {
@@ -35,7 +35,7 @@ describe('listAssetTimeseries', () => {
       .mockResolvedValue(makeQueryResponse({ timeseries: [] }));
 
     // Act
-    await createAssetTimeseriesService(client).listAssetTimeseries(assetIdentifier);
+    await listAssetTimeseries(client, assetIdentifier);
 
     // Assert
     const reference = {
@@ -95,7 +95,7 @@ describe('listAssetTimeseries', () => {
       .spyOn(client.instances, 'query')
       .mockResolvedValue(makeQueryResponse({ timeseries: [] }));
 
-    await createAssetTimeseriesService(client).listAssetTimeseries(assetIdentifier);
+    await listAssetTimeseries(client, assetIdentifier);
 
     expect(query.mock.calls[0]?.[0].with.timeseries).toMatchObject({
       sort: [
@@ -116,8 +116,7 @@ describe('listAssetTimeseries', () => {
       }),
     );
 
-    const timeseries =
-      await createAssetTimeseriesService(client).listAssetTimeseries(assetIdentifier);
+    const timeseries = await listAssetTimeseries(client, assetIdentifier);
 
     expect(timeseries.hasMore).toBe(false);
     expect(timeseries.items.map((series) => series.externalId)).toEqual(['PI.1', 'PI.2']);
@@ -139,10 +138,7 @@ describe('listAssetTimeseries', () => {
       }),
     );
 
-    const timeseries = await createAssetTimeseriesService(client).listAssetTimeseries(
-      assetIdentifier,
-      2,
-    );
+    const timeseries = await listAssetTimeseries(client, assetIdentifier, 2);
 
     expect(query.mock.calls[0]?.[0].with.timeseries?.limit).toBe(3);
     expect(timeseries.hasMore).toBe(true);
@@ -152,9 +148,9 @@ describe('listAssetTimeseries', () => {
   it('fails when the data model has no PI_Timeseries view', async () => {
     stubModelViews(client, []);
 
-    await expect(
-      createAssetTimeseriesService(client).listAssetTimeseries(assetIdentifier),
-    ).rejects.toThrow('The PI_Timeseries view was not found in the Asset_Passport data model.');
+    await expect(listAssetTimeseries(client, assetIdentifier)).rejects.toThrow(
+      'The PI_Timeseries view was not found in the Asset_Passport data model.',
+    );
   });
 });
 

@@ -3,12 +3,20 @@ import { createContext, useContext } from 'react';
 
 import { COUNT_QUERY_KEY_PART, COUNT_QUERY_STALE_TIME_MS } from '../../constants/assets';
 import { toCountState } from '../../lib/countBadge';
-import { createAssetsKPICountService } from '../../services/assets/assetsKPICounts';
+import {
+  countAllAssets,
+  countAllEquipment,
+  countOperatingAssets,
+} from '../../services/assets/assetsKPICounts';
 import type { CountState } from '../../types/countState';
 
 import { useAssetContext } from './useAssetContext';
 
-const defaultDeps = { createAssetsKPICountService };
+const defaultDeps = {
+  countAllAssets,
+  countOperatingAssets,
+  countAllEquipment,
+};
 
 export type UseAssetsKPICountsContextType = typeof defaultDeps;
 export const UseAssetsKPICountsContext = createContext<UseAssetsKPICountsContextType>(defaultDeps);
@@ -23,23 +31,26 @@ type AssetsKPICounts = {
 };
 
 export function useAssetsKPICounts(): AssetsKPICounts {
-  const { createAssetsKPICountService } = useContext(UseAssetsKPICountsContext);
+  const {
+    countAllAssets: countAssets,
+    countOperatingAssets: countOperating,
+    countAllEquipment: countEquipment,
+  } = useContext(UseAssetsKPICountsContext);
   const client = useAssetContext();
-  const countService = createAssetsKPICountService(client);
 
   const assets = useQuery({
     queryKey: getAssetsKPICountQueryKey(client.project, 'assets'),
-    queryFn: () => countService.countAllAssets(),
+    queryFn: () => countAssets(client),
     staleTime: COUNT_QUERY_STALE_TIME_MS,
   });
   const operating = useQuery({
     queryKey: getAssetsKPICountQueryKey(client.project, 'operating'),
-    queryFn: () => countService.countOperatingAssets(),
+    queryFn: () => countOperating(client),
     staleTime: COUNT_QUERY_STALE_TIME_MS,
   });
   const equipment = useQuery({
     queryKey: getAssetsKPICountQueryKey(client.project, 'equipment'),
-    queryFn: () => countService.countAllEquipment(),
+    queryFn: () => countEquipment(client),
     staleTime: COUNT_QUERY_STALE_TIME_MS,
   });
 
