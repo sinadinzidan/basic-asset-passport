@@ -165,7 +165,9 @@ the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines
   the instance space `sp-asset-passport-data` with a generated external ID
   (`note-<uuid>`). Its `asset` property is a direct relation to the asset
   node. Missing target nodes are never auto-created, so a wrong asset
-  reference fails instead of creating an empty asset.
+  reference fails instead of creating an empty asset. A note saved without text
+  is written with an empty text, the same as a note whose text was emptied in
+  an edit.
 - The author and author ID come from the signed-in user's profile. If the
   profile cannot be read the note is still saved, without an author.
 - Each note has an Edit and a Delete icon button, named "Edit <title>" and "Delete <title>".
@@ -280,14 +282,18 @@ the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines
   than the window). The mascot flies up into the panel's header corner, small,
   so the panel uses the space it took; closing (the mascot, the close button or
   Escape) shrinks the panel away and the mascot flies back. Animations are
-  skipped with reduced motion.
+  skipped with reduced motion. The panel is a dialog that does not block the
+  page behind it: keyboard focus moves into it when it is opened and returns to
+  the mascot's button when it is closed. A panel that a reload or a shared link
+  brings back open does not take focus.
 - Whether the panel is open is host-synced with the rest of the screen
   (`isAssistantOpen`): a reload or a shared link brings back the panel open, and
   it stays open while the reader moves between assets and tabs. The chat inside
   it starts fresh after a reload (see below).
 - The helper talks to one CDF agent only, the one with external ID
   `FOCUSED_AGENT_EXTERNAL_ID` (`src/constants/agents.ts`); other agents of the
-  project are neither listed nor fetched. The panel looks up just that agent (`POST /ai/agents/byids`): loading
+  project are neither listed nor fetched. The panel looks up just that agent (`POST /ai/agents/byids`) when it
+  is first opened, and keeps what it found while the app is open: loading
   shows "Loading assistant..."; a failed load shows "The assistant could not be
   loaded" with Retry and, under "Check access to the agents of this project,
   then try again.", the reason CDF gave (for example "Reason: Insufficient
@@ -296,7 +302,8 @@ the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines
   not available in this project.". Once found, the chat opens by itself.
 - The chat is shown in the same panel. It is not handed over to the Atlas panel in Fusion and works the same
   outside Fusion. A message box with the button shape (cut corners, lit bottom line;
-  Enter sends, Shift+Enter adds a line) and a
+  Enter sends, Shift+Enter adds a line, and the Enter that confirms a character
+  being composed with an input method does not send), labelled "Message" above it, and a
   Send button sit under the conversation; while the agent answers the box
   cannot send and a thinking line shows: a spinner and a playful plant-floor phrase that
   changes every couple of seconds ("Reading the gauges...", "Checking the valves...").
@@ -332,8 +339,8 @@ the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines
   (the robot at rest, the same robot with its arm raised up to the wrist, the
   raised hand by itself so it can turn at the wrist, its smiling
   eyes and its round thinking eyes), bundled with the app and served from the app itself,
-  so `manifest.json` keeps `permissions.network` empty. Mock mode has a dummy
-  agent with that ID that gives a fixed dummy reply.
+  so `manifest.json` keeps `permissions.network` empty. Mock mode has no
+  agent (see Mock mode).
 
 ## Shared state and look
 

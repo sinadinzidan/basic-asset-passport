@@ -245,6 +245,24 @@ export function AssetList({ page, search }: AssetListProps) {
   for every operation. This supersedes the template's blanket class and
   ViewModel requirements, without weakening dependency injection.
 - Keep mocks separate from real CDF services. Do not add empty abstractions.
+- Every list of an asset (notes, documents, existing files, timeseries,
+  equipment, search matches) is read with a limit and sorted on the server,
+  never sorted or cut in the browser. The service asks for one row more than
+  it returns (`getRequestLimit`) and reports `hasMore` (`toLimitedList`), so
+  "there are more" is known rather than guessed from a full page. A list the
+  user can extend offers "Show more" (`ShowMoreButton` with `useListLimit`),
+  which reads a longer list while the rows on screen stay; a list that cannot
+  be extended says that it is cut short.
+- A count is taken by the server (`countNodes`, an aggregate request), never
+  by reading rows. The asset filters and the view property path each have one
+  builder (`matchAssetRelation`, `matchAssetInList`, `toViewPropertyPath`);
+  use them instead of writing the filter out again.
+- The data-model lookup (`listAssetPassportViews`) is cached per client, so
+  every service of one session shares one request; a failed lookup is not
+  kept. Do not add a second cache or look the model up outside it.
+- A dependency a single component needs injected for its tests, and that no
+  provider supplies (the document viewer), sits in a context file beside that
+  component (`documentViewerContext.ts`), not under `src/hooks/`.
 
 ## UI states, forms and layout
 
@@ -261,6 +279,27 @@ export function AssetList({ page, search }: AssetListProps) {
   local version inside a page or component; change the shared one for everyone.
   If none exists yet, create it once as the shared version. State messages are
   named constants.
+- An error state says why it failed: pass `reason={getErrorReason(error)}` to
+  `RetryAlert`, so the message CDF gave shows under the hint. A hook or
+  ViewModel that wraps a query exposes its `error` for this.
+- A failed action is never a dead end. A failed load or count offers **Retry**
+  through `RetryAlert` (a count that failed is not shown as a dash alone); a
+  failed action on something the user already chose (an upload, a chat
+  question) offers **Try again** or **Retry** that repeats it with the same
+  input, without asking the user to choose or type it again.
+- State messages (loading, error, empty, truncated and status texts, dialog
+  titles and hints) live in `src/constants/<feature>.ts`. A message with a
+  variable part is built by a small function in `src/lib/` (`assetMessage.ts`,
+  `documentUploadMessage.ts`). Button labels, `aria-label`s and headings may
+  stay inline in the component.
+- A refetch in the background never replaces content that is already on
+  screen: show skeletons or a loading notice only while there is no data yet
+  (`isPending`), not on every `isFetching`.
+- A dialog that leaves the page usable (the assistant's panel) is
+  `role="dialog"` with `aria-modal="false"`, takes focus when the user opens
+  it and gives focus back to its trigger when it closes. A text box that sends
+  on Enter ignores the Enter that confirms a composed character
+  (`event.nativeEvent.isComposing`).
 - All forms look and behave the same: field layout, spacing, label position,
   input sizing, validation message style and button placement. Use the shared
   form components and do not style a field one-off.
