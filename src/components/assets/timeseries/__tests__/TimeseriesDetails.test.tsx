@@ -37,7 +37,7 @@ describe(TimeseriesDetails.name, () => {
     const onOpenChart = vi.fn();
     render(<TimeseriesDetails item={makeItem()} onOpenChart={onOpenChart} />);
 
-    await user.click(screen.getByRole('button', { name: 'Open Pressure in the chart' }));
+    await user.click(screen.getByRole('button', { name: /^Pressure:.*Open chart$/ }));
 
     expect(onOpenChart).toHaveBeenCalledWith(pressure);
   });
@@ -45,7 +45,7 @@ describe(TimeseriesDetails.name, () => {
   it('makes the preview an Aura button', () => {
     render(<TimeseriesDetails item={makeItem()} onOpenChart={vi.fn()} />);
 
-    expect(screen.getByRole('button', { name: 'Open Pressure in the chart' })).toHaveAttribute(
+    expect(screen.getByRole('button', { name: /^Pressure:.*Open chart$/ })).toHaveAttribute(
       'data-slot',
       'button',
     );

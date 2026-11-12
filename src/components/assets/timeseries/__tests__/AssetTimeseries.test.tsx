@@ -170,7 +170,7 @@ describe(AssetTimeseries.name, () => {
 
     await user.click(
       await screen.findByRole('button', {
-        name: 'Open Discharge pressure in the chart',
+        name: /^Discharge pressure:.*Open chart$/,
       }),
     );
 

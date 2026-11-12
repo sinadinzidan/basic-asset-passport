@@ -13,12 +13,22 @@ type AssetTableEmptyStateProps = {
 export function AssetTableEmptyState({ searchQuery }: AssetTableEmptyStateProps) {
   if (searchQuery !== '') {
     return (
-      <EmptyStateMessage
-        title={ASSETS_NO_MATCH_TITLE}
-        description={formatNoMatchingAssetsMessage(searchQuery)}
-      />
+      <div role="row">
+        <div role="gridcell">
+          <EmptyStateMessage
+            title={ASSETS_NO_MATCH_TITLE}
+            description={formatNoMatchingAssetsMessage(searchQuery)}
+          />
+        </div>
+      </div>
     );
   }
 
-  return <EmptyStateMessage title={ASSETS_EMPTY_TITLE} description={ASSETS_EMPTY_DESCRIPTION} />;
+  return (
+    <div role="row">
+      <div role="gridcell">
+        <EmptyStateMessage title={ASSETS_EMPTY_TITLE} description={ASSETS_EMPTY_DESCRIPTION} />
+      </div>
+    </div>
+  );
 }

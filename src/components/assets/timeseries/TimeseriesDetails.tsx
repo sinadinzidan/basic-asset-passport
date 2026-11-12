@@ -43,15 +43,11 @@ export function TimeseriesDetails({ item, onOpenChart }: TimeseriesDetailsProps)
         </div>
       </header>
       {onOpenChart && preview.kind !== TimeseriesPreviewKind.NON_NUMERIC ? (
-        <Button
-          aria-label={`Open ${name} in the chart`}
-          className="timeseries-open"
-          onClick={handleOpenChartClick}
-          variant="ghost"
-        >
+        <Button className="timeseries-open" onClick={handleOpenChartClick} variant="ghost">
+          <span className="sr-only">{name}: </span>
           <TimeseriesPreview preview={preview} unit={unit} />
-          <span aria-hidden className="timeseries-open__hint">
-            <IconArrowsMaximize className="size-4" />
+          <span className="timeseries-open__hint">
+            <IconArrowsMaximize aria-hidden className="size-4" />
             Open chart
           </span>
         </Button>

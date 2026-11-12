@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -22,5 +22,16 @@ describe(AssetTableEmptyState.name, () => {
 
     expect(screen.getByText(ASSETS_NO_MATCH_TITLE)).toBeInTheDocument();
     expect(screen.getByText(formatNoMatchingAssetsMessage('pump'))).toBeInTheDocument();
+  });
+
+  it('sits in a grid cell, so the heading is allowed inside the grid', () => {
+    render(
+      <div role="grid">
+        <AssetTableEmptyState searchQuery="pump" />
+      </div>,
+    );
+
+    const cell = within(screen.getByRole('row')).getByRole('gridcell');
+    expect(within(cell).getByText(ASSETS_NO_MATCH_TITLE)).toBeInTheDocument();
   });
 });
