@@ -1,5 +1,6 @@
 import type { ComponentType, ReactNode } from 'react';
 
+import { getAgentQueryKey } from '../../../hooks/agents/useAgent';
 import { AgentChatStoreContext } from '../../../hooks/agents/useAgentChatState';
 import { UseAgentChatViewModelContext } from '../../../hooks/agents/useAgentChatViewModel';
 import { AgentContext } from '../../../hooks/agents/useAgentContext';
@@ -7,20 +8,21 @@ import {
   UseAgentGreetingContext,
   type UseAgentGreetingContextType,
 } from '../../../hooks/agents/useAgentGreeting';
-import { UseAgentStatusViewModelContext } from '../../../hooks/agents/useAgentStatusViewModel';
+import { UseFocusedAgentContext } from '../../../hooks/agents/useFocusedAgent';
 import { UseCopyToClipboardContext } from '../../../hooks/general/useCopyToClipboard';
 import { UseSpeechDictationContext } from '../../../hooks/general/useSpeechDictation';
 import { makeCdfAgent } from '../../../mocks/agents';
-import { makeQueryClientWrapper } from '../../../mocks/QueryClientWrapper';
+import { makeQueryClientWrapper, makeTestQueryClient } from '../../../mocks/QueryClientWrapper';
 import { NavigationProvider } from '../../../providers/general/NavigationProvider';
-import { createAgentChatStore, INITIAL_AGENT_CHAT_STATE } from '../../../store/agents';
+import { createAgentChatStore } from '../../../store/agents';
 import type { AgentContextType, CdfAgent } from '../../../types/agent';
 import type { StateSyncApi } from '../../../types/host';
 import type { DictationEngine } from '../../../types/speech';
 
 type HarnessOptions = {
   client: AgentContextType;
-  selectedAgent?: CdfAgent | null;
+  /** The agent that was already looked up; none by default, so the helper looks it up. */
+  loadedAgent?: CdfAgent | null;
   /** The speech engine; none by default, so the browser has no dictation. */
   dictationEngine?: DictationEngine | null;
   /** What copying does; by default it succeeds and the confirmation never goes away. */
@@ -36,16 +38,20 @@ type HarnessOptions = {
 /** Wraps agent components with a fake agent client and the shared chat state. */
 export function makeAgentWrapper({
   client,
-  selectedAgent = null,
+  loadedAgent = null,
   dictationEngine = null,
   copyText = () => Promise.resolve(),
   startGreetingTimeout = () => () => {},
   hostApi = null,
   hostInitialState,
 }: HarnessOptions): ComponentType<{ children: ReactNode }> {
-  const QueryWrapper = makeQueryClientWrapper();
+  const queryClient = makeTestQueryClient();
+  if (loadedAgent !== null) {
+    queryClient.setQueryData(getAgentQueryKey(client.project, loadedAgent.externalId), loadedAgent);
+  }
+  const QueryWrapper = makeQueryClientWrapper(queryClient);
   let idCount = 0;
-  const chatStore = createAgentChatStore({ ...INITIAL_AGENT_CHAT_STATE, selectedAgent });
+  const chatStore = createAgentChatStore();
   const chatContext = {
     createMessageId: () => `message-${++idCount}`,
   };
@@ -53,7 +59,7 @@ export function makeAgentWrapper({
   return function AgentWrapper({ children }) {
     return (
       <AgentContext.Provider value={client}>
-        <UseAgentStatusViewModelContext.Provider
+        <UseFocusedAgentContext.Provider
           value={{ focusedAgentExternalId: makeCdfAgent().externalId }}
         >
           <UseAgentChatViewModelContext.Provider value={chatContext}>
@@ -75,7 +81,7 @@ export function makeAgentWrapper({
               </UseSpeechDictationContext.Provider>
             </AgentChatStoreContext.Provider>
           </UseAgentChatViewModelContext.Provider>
-        </UseAgentStatusViewModelContext.Provider>
+        </UseFocusedAgentContext.Provider>
       </AgentContext.Provider>
     );
   };

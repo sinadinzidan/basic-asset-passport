@@ -7,6 +7,7 @@ import type { CdfAgent, ChatMessage } from '../../types/agent';
 
 import { useAgentChatState } from './useAgentChatState';
 import { useAgentContext } from './useAgentContext';
+import { useFocusedAgent } from './useFocusedAgent';
 
 const defaultDeps = {
   createMessageId: (): string => crypto.randomUUID(),
@@ -29,15 +30,17 @@ export type AgentChatViewModel = {
 export function useAgentChatViewModel(): AgentChatViewModel {
   const { createMessageId } = useContext(UseAgentChatViewModelContext);
   const client = useAgentContext();
-  const agent = useAgentChatState((store) => store.selectedAgent);
+  const { data: focusedAgent } = useFocusedAgent(false);
   const conversation = useAgentChatState((store) =>
-    getConversation(store, store.selectedAgent?.externalId ?? ''),
+    getConversation(store, focusedAgent?.externalId ?? ''),
   );
   const addUserMessage = useAgentChatState((store) => store.addUserMessage);
   const receiveReply = useAgentChatState((store) => store.receiveReply);
   const failSend = useAgentChatState((store) => store.failSend);
   const retrySend = useAgentChatState((store) => store.retrySend);
   const resetConversation = useAgentChatState((store) => store.resetConversation);
+
+  const agent = focusedAgent ?? null;
 
   const ask = useCallback(
     async (agentExternalId: string, question: string): Promise<void> => {

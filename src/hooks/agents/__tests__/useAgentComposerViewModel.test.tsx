@@ -18,7 +18,7 @@ describe(useAgentComposerViewModel.name, () => {
     return renderHook(() => useAgentComposerViewModel(), {
       wrapper: makeAgentWrapper({
         client: makeAgentContext({ chat }),
-        selectedAgent: makeCdfAgent(),
+        loadedAgent: makeCdfAgent(),
         dictationEngine,
       }),
     });

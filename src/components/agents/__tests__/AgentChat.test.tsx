@@ -27,7 +27,7 @@ describe(AgentChat.name, () => {
     return render(<AgentChat onClose={onClose} />, {
       wrapper: makeAgentWrapper({
         client: makeAgentContext({ chat }),
-        selectedAgent: makeCdfAgent(),
+        loadedAgent: makeCdfAgent(),
         dictationEngine,
         copyText,
       }),

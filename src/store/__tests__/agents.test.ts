@@ -2,48 +2,33 @@ import { describe, expect, it } from 'vitest';
 
 import { ChatMessageRole } from '../../enums/chatMessageRole';
 import { makeCdfAgent } from '../../mocks/agents';
-import {
-  createAgentChatStore,
-  EMPTY_CONVERSATION,
-  getConversation,
-  INITIAL_AGENT_CHAT_STATE,
-} from '../agents';
+import { createAgentChatStore, EMPTY_CONVERSATION, getConversation } from '../agents';
 
 const agent = makeCdfAgent();
 const userMessage = { id: 'm1', role: ChatMessageRole.USER, text: 'Hi' };
 const agentMessage = { id: 'm2', role: ChatMessageRole.AGENT, text: 'Hello' };
 
 describe(createAgentChatStore.name, () => {
-  it('starts with no agent chosen and no conversations', () => {
+  it('starts with no conversations', () => {
     const store = createAgentChatStore();
 
-    expect(store.getState().selectedAgent).toBeNull();
     expect(getConversation(store.getState(), agent.externalId)).toEqual(EMPTY_CONVERSATION);
   });
 
   it('starts from the state it is given', () => {
-    const store = createAgentChatStore({ ...INITIAL_AGENT_CHAT_STATE, selectedAgent: agent });
+    const conversation = { ...EMPTY_CONVERSATION, messages: [userMessage] };
+    const store = createAgentChatStore({ conversations: { [agent.externalId]: conversation } });
 
-    expect(store.getState().selectedAgent).toEqual(agent);
+    expect(getConversation(store.getState(), agent.externalId)).toEqual(conversation);
   });
 
   it('keeps one store apart from another', () => {
     const first = createAgentChatStore();
     const second = createAgentChatStore();
 
-    first.getState().selectAgent(agent);
+    first.getState().addUserMessage(agent.externalId, userMessage);
 
-    expect(second.getState().selectedAgent).toBeNull();
-  });
-
-  it('chooses an agent and can go back to none', () => {
-    const store = createAgentChatStore();
-
-    store.getState().selectAgent(agent);
-    expect(store.getState().selectedAgent).toEqual(agent);
-
-    store.getState().selectAgent(null);
-    expect(store.getState().selectedAgent).toBeNull();
+    expect(getConversation(second.getState(), agent.externalId)).toEqual(EMPTY_CONVERSATION);
   });
 
   it('adds the question and marks the conversation as waiting', () => {

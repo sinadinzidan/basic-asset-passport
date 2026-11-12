@@ -42,6 +42,13 @@ describe(useAgent.name, () => {
     expect(getAgent).toHaveBeenCalledWith('cooling-expert');
   });
 
+  it('looks nothing up when told not to', () => {
+    const { result } = renderHook(() => useAgent('cooling-expert', false), { wrapper });
+
+    expect(result.current.fetchStatus).toBe('idle');
+    expect(getAgent).not.toHaveBeenCalled();
+  });
+
   it('returns null when the project has no such agent', async () => {
     vi.mocked(getAgent).mockResolvedValue(null);
 

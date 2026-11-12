@@ -1,11 +1,14 @@
+import type { QueryClient } from '@tanstack/react-query';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import type { ComponentType, ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ChatMessageRole } from '../../../enums/chatMessageRole';
 import { makeAgentContext, makeCdfAgent } from '../../../mocks/agents';
-import { createAgentChatStore, INITIAL_AGENT_CHAT_STATE } from '../../../store/agents';
+import { makeQueryClientWrapper, makeTestQueryClient } from '../../../mocks/QueryClientWrapper';
+import { createAgentChatStore } from '../../../store/agents';
 import type { AgentContextType } from '../../../types/agent';
+import { getAgentQueryKey } from '../useAgent';
 import { AgentChatStoreContext } from '../useAgentChatState';
 import {
   UseAgentChatViewModelContext,
@@ -13,31 +16,53 @@ import {
   useAgentChatViewModel,
 } from '../useAgentChatViewModel';
 import { AgentContext } from '../useAgentContext';
+import { UseFocusedAgentContext } from '../useFocusedAgent';
 
 describe(useAgentChatViewModel.name, () => {
   let chat: AgentContextType['chat'];
+  let getAgent: AgentContextType['getAgent'];
+  let queryClient: QueryClient;
   let context: UseAgentChatViewModelContextType;
   let wrapper: ComponentType<{ children: ReactNode }>;
   let idCount: number;
 
   beforeEach(() => {
     idCount = 0;
-    const chatStore = createAgentChatStore({
-      ...INITIAL_AGENT_CHAT_STATE,
-      selectedAgent: makeCdfAgent(),
-    });
+    const chatStore = createAgentChatStore();
     chat = vi.fn(() => Promise.resolve({ text: 'It is fouled.', cursor: 'c1' }));
-    const agentContext = makeAgentContext({ chat });
+    getAgent = vi.fn(() => Promise.resolve(makeCdfAgent()));
+    const agentContext = makeAgentContext({ chat, getAgent });
+    queryClient = makeTestQueryClient();
+    queryClient.setQueryData(
+      getAgentQueryKey(agentContext.project, makeCdfAgent().externalId),
+      makeCdfAgent(),
+    );
+    const QueryWrapper = makeQueryClientWrapper(queryClient);
     context = {
       createMessageId: () => `message-${++idCount}`,
     };
     wrapper = ({ children }) => (
       <UseAgentChatViewModelContext.Provider value={context}>
-        <AgentChatStoreContext.Provider value={chatStore}>
-          <AgentContext.Provider value={agentContext}>{children}</AgentContext.Provider>
-        </AgentChatStoreContext.Provider>
+        <UseFocusedAgentContext.Provider
+          value={{ focusedAgentExternalId: makeCdfAgent().externalId }}
+        >
+          <AgentChatStoreContext.Provider value={chatStore}>
+            <QueryWrapper>
+              <AgentContext.Provider value={agentContext}>{children}</AgentContext.Provider>
+            </QueryWrapper>
+          </AgentChatStoreContext.Provider>
+        </UseFocusedAgentContext.Provider>
       </UseAgentChatViewModelContext.Provider>
     );
+  });
+
+  it('has no agent before the assistant is looked up, and does not look it up itself', () => {
+    queryClient.clear();
+
+    const { result } = renderHook(() => useAgentChatViewModel(), { wrapper });
+
+    expect(result.current.agent).toBeNull();
+    expect(getAgent).not.toHaveBeenCalled();
   });
 
   it('chats with the chosen agent and starts with no messages', () => {

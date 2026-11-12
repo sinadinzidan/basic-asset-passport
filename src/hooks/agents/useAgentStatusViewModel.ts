@@ -1,21 +1,10 @@
-import { createContext, useCallback, useContext, useEffect } from 'react';
-
-import { FOCUSED_AGENT_EXTERNAL_ID } from '../../constants/agents';
 import { getErrorReason } from '../../lib/errorReason';
 
-import { useAgent } from './useAgent';
-import { useAgentChatState } from './useAgentChatState';
-
-const defaultDeps = { focusedAgentExternalId: FOCUSED_AGENT_EXTERNAL_ID };
-
-export type UseAgentStatusViewModelContextType = typeof defaultDeps;
-export const UseAgentStatusViewModelContext =
-  createContext<UseAgentStatusViewModelContextType>(defaultDeps);
+import { useFocusedAgent } from './useFocusedAgent';
 
 export type AgentStatusViewModel = {
   isLoading: boolean;
   isError: boolean;
-
   errorReason: string | null;
   isRetrying: boolean;
   isMissing: boolean;
@@ -23,21 +12,11 @@ export type AgentStatusViewModel = {
 };
 
 export function useAgentStatusViewModel(): AgentStatusViewModel {
-  const { focusedAgentExternalId } = useContext(UseAgentStatusViewModelContext);
-  const { data, error, isPending, isError, isFetching, refetch } = useAgent(focusedAgentExternalId);
-  const selectAgent = useAgentChatState((store) => store.selectAgent);
+  const { data, error, isPending, isError, isFetching, refetch } = useFocusedAgent(true);
 
-  const focusedAgent = data ?? null;
-
-  const retry = useCallback(() => {
+  function retry(): void {
     void refetch();
-  }, [refetch]);
-
-  useEffect(() => {
-    if (focusedAgent !== null) {
-      selectAgent(focusedAgent);
-    }
-  }, [selectAgent, focusedAgent]);
+  }
 
   return {
     isLoading: isPending,

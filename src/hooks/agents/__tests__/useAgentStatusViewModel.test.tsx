@@ -4,14 +4,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { makeAgentContext, makeCdfAgent } from '../../../mocks/agents';
 import { makeQueryClientWrapper } from '../../../mocks/QueryClientWrapper';
-import { createAgentChatStore } from '../../../store/agents';
 import type { AgentContextType } from '../../../types/agent';
-import { AgentChatStoreContext, useAgentChatState } from '../useAgentChatState';
 import { AgentContext } from '../useAgentContext';
-import {
-  UseAgentStatusViewModelContext,
-  useAgentStatusViewModel,
-} from '../useAgentStatusViewModel';
+import { useAgentStatusViewModel } from '../useAgentStatusViewModel';
+import { UseFocusedAgentContext, useFocusedAgent } from '../useFocusedAgent';
 
 describe(useAgentStatusViewModel.name, () => {
   let getAgent: AgentContextType['getAgent'];
@@ -23,13 +19,11 @@ describe(useAgentStatusViewModel.name, () => {
     const QueryWrapper = makeQueryClientWrapper();
     wrapper = ({ children }) => (
       <AgentContext.Provider value={agentContext}>
-        <UseAgentStatusViewModelContext.Provider
+        <UseFocusedAgentContext.Provider
           value={{ focusedAgentExternalId: makeCdfAgent().externalId }}
         >
-          <AgentChatStoreContext.Provider value={createAgentChatStore()}>
-            <QueryWrapper>{children}</QueryWrapper>
-          </AgentChatStoreContext.Provider>
-        </UseAgentStatusViewModelContext.Provider>
+          <QueryWrapper>{children}</QueryWrapper>
+        </UseFocusedAgentContext.Provider>
       </AgentContext.Provider>
     );
   });
@@ -42,16 +36,16 @@ describe(useAgentStatusViewModel.name, () => {
     await waitFor(() => expect(result.current.isLoading).toBe(false));
   });
 
-  it('looks up and selects only the focused agent', async () => {
+  it('looks up only the focused agent and hands it to its followers', async () => {
     const { result } = renderHook(
       () => ({
         picker: useAgentStatusViewModel(),
-        selectedAgent: useAgentChatState((store) => store.selectedAgent),
+        followedAgent: useFocusedAgent(false).data ?? null,
       }),
       { wrapper },
     );
 
-    await waitFor(() => expect(result.current.selectedAgent).toEqual(makeCdfAgent()));
+    await waitFor(() => expect(result.current.followedAgent).toEqual(makeCdfAgent()));
     expect(getAgent).toHaveBeenCalledWith(makeCdfAgent().externalId);
     expect(result.current.picker.isMissing).toBe(false);
   });
@@ -62,13 +56,13 @@ describe(useAgentStatusViewModel.name, () => {
     const { result } = renderHook(
       () => ({
         picker: useAgentStatusViewModel(),
-        selectedAgent: useAgentChatState((store) => store.selectedAgent),
+        followedAgent: useFocusedAgent(false).data ?? null,
       }),
       { wrapper },
     );
 
     await waitFor(() => expect(result.current.picker.isMissing).toBe(true));
-    expect(result.current.selectedAgent).toBeNull();
+    expect(result.current.followedAgent).toBeNull();
   });
 
   it('reports an error when the agent cannot be looked up', async () => {
@@ -100,7 +94,7 @@ describe(useAgentStatusViewModel.name, () => {
     const { result } = renderHook(
       () => ({
         picker: useAgentStatusViewModel(),
-        selectedAgent: useAgentChatState((store) => store.selectedAgent),
+        followedAgent: useFocusedAgent(false).data ?? null,
       }),
       { wrapper },
     );
@@ -108,6 +102,6 @@ describe(useAgentStatusViewModel.name, () => {
 
     act(() => result.current.picker.retry());
 
-    await waitFor(() => expect(result.current.selectedAgent).toEqual(makeCdfAgent()));
+    await waitFor(() => expect(result.current.followedAgent).toEqual(makeCdfAgent()));
   });
 });

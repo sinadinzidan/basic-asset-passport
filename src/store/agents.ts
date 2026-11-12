@@ -11,7 +11,6 @@ export const EMPTY_CONVERSATION: AgentConversation = {
 };
 
 export const INITIAL_AGENT_CHAT_STATE: AgentChatState = {
-  selectedAgent: null,
   conversations: {},
 };
 
@@ -37,7 +36,6 @@ export function createAgentChatStore(
 
     return {
       ...initialState,
-      selectAgent: (agent) => set({ selectedAgent: agent }),
       addUserMessage: (agentExternalId, message) =>
         updateConversation(agentExternalId, (current) => ({
           ...current,

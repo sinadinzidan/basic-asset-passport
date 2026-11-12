@@ -8,12 +8,13 @@ export function getAgentQueryKey(project: string, externalId: string) {
   return ['agent', project, externalId];
 }
 
-export function useAgent(externalId: string) {
+export function useAgent(externalId: string, shouldLookUp: boolean = true) {
   const { project, getAgent } = useAgentContext();
 
   return useQuery({
     queryKey: getAgentQueryKey(project, externalId),
     queryFn: () => getAgent(externalId),
     staleTime: AGENT_QUERY_STALE_TIME_MS,
+    enabled: shouldLookUp,
   });
 }
