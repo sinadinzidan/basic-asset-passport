@@ -28,7 +28,7 @@ export function useTimeseriesTrends(identifiers: TimeseriesIdentifier[]) {
       TREND_GRANULARITY,
       identifiers.map(getTimeseriesKey).sort(),
     ],
-    queryFn: async (): Promise<Map<string, TimeseriesTrend['points']>> => {
+    queryFn: async (): Promise<Map<string, TimeseriesTrend>> => {
       const to = now();
       const trends = await client.getTrends(identifiers, {
         from: to - TREND_WINDOW_MS,
@@ -36,7 +36,7 @@ export function useTimeseriesTrends(identifiers: TimeseriesIdentifier[]) {
         granularity: TREND_GRANULARITY,
       });
 
-      return new Map(trends.map((trend) => [getTimeseriesKey(trend), trend.points]));
+      return new Map(trends.map((trend) => [getTimeseriesKey(trend), trend]));
     },
     enabled: identifiers.length > 0,
     staleTime: TREND_QUERY_STALE_TIME_MS,

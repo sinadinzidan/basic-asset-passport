@@ -1,6 +1,6 @@
 import type { CogniteClient } from '@cognite/sdk';
 
-import { FULFILLED_PROMISE_STATUS } from '../../../constants/cdfApi';
+import { AVERAGE_AGGREGATE, FULFILLED_PROMISE_STATUS } from '../../../constants/cdfApi';
 import { TREND_REQUEST_CHUNK_SIZE } from '../../../constants/timeseries';
 import { isRecord } from '../../../lib/isRecord';
 import type {
@@ -24,10 +24,9 @@ export function createTimeseriesContext(sdk: DatapointsSdk): TimeseriesContextTy
         items: identifiers.map(({ space, externalId }) => ({
           instanceId: { space, externalId },
         })),
-
         start: Math.round(window.from),
         end: Math.round(window.to),
-        aggregates: ['average'],
+        aggregates: [AVERAGE_AGGREGATE],
         granularity: window.granularity,
         ...(window.limit === undefined ? {} : { limit: window.limit }),
       },
@@ -51,11 +50,17 @@ export function createTimeseriesContext(sdk: DatapointsSdk): TimeseriesContextTy
 
       const results = await Promise.allSettled(chunks.map((chunk) => requestChunk(chunk, window)));
 
-      return results.flatMap((result) =>
-        result.status === FULFILLED_PROMISE_STATUS ? result.value : [],
+      return results.flatMap((result, chunkIndex) =>
+        result.status === FULFILLED_PROMISE_STATUS
+          ? result.value
+          : (chunks[chunkIndex] ?? []).map(toFailedTrend),
       );
     },
   };
+}
+
+function toFailedTrend({ space, externalId }: TimeseriesIdentifier): TimeseriesTrend {
+  return { space, externalId, points: [], hasFailed: true };
 }
 
 function readTrends(data: unknown): TimeseriesTrend[] {
@@ -72,8 +77,8 @@ function readTrends(data: unknown): TimeseriesTrend[] {
       .flatMap((datapoint): TimeseriesPoint[] =>
         isRecord(datapoint) &&
         typeof datapoint.timestamp === 'number' &&
-        typeof datapoint.average === 'number'
-          ? [{ timestamp: datapoint.timestamp, value: datapoint.average }]
+        typeof datapoint[AVERAGE_AGGREGATE] === 'number'
+          ? [{ timestamp: datapoint.timestamp, value: datapoint[AVERAGE_AGGREGATE] }]
           : [],
       )
       .sort((first, second) => first.timestamp - second.timestamp);

@@ -5,6 +5,7 @@ export const NODE_SPACE_PROPERTY = 'space';
 export const NODE_CREATED_TIME_PROPERTY = 'createdTime';
 export const VIEW_SOURCE_TYPE = 'view';
 export const COUNT_AGGREGATE = 'count';
+export const AVERAGE_AGGREGATE = 'average';
 
 export const COUNT_PROPERTY = 'externalId';
 export const DESCENDING_SORT_DIRECTION = 'descending';

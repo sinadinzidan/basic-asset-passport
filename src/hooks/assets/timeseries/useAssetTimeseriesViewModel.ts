@@ -57,14 +57,12 @@ export function useAssetTimeseriesViewModel(assetIdentifier: AssetIdentifier, li
 
   return {
     items,
-
     timeseries: allTimeseries,
-
     hasMore: series.data?.hasMore ?? false,
-
     isLoadingMore: series.isPlaceholderData,
     isPending: series.isPending,
     isError: series.isError,
+    error: series.error,
     isFetching: series.isFetching,
     retry: () => void series.refetch(),
   };
@@ -78,7 +76,10 @@ function getPreview(
   if (trends.isError) return { kind: TimeseriesPreviewKind.UNAVAILABLE };
   if (trends.isPending) return { kind: TimeseriesPreviewKind.LOADING };
 
-  const points = trends.data?.get(getTimeseriesKey(timeseries)) ?? [];
+  const trend = trends.data?.get(getTimeseriesKey(timeseries));
+  if (trend?.hasFailed) return { kind: TimeseriesPreviewKind.UNAVAILABLE };
+
+  const points = trend?.points ?? [];
   return points.length > 0
     ? { kind: TimeseriesPreviewKind.READY, points }
     : { kind: TimeseriesPreviewKind.EMPTY };

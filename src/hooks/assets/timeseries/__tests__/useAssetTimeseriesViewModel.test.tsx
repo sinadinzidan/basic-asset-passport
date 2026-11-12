@@ -153,6 +153,26 @@ describe(useAssetTimeseriesViewModel.name, () => {
     );
   });
 
+  it('shows an unavailable preview for a series whose readings failed while the rest loaded', async () => {
+    const flow = makeInstanceDetails({ space: 'ts', externalId: 'PI.3', properties: [] });
+    vi.mocked(listContext.listAssetTimeseries).mockResolvedValue(makeLimitedList([pressure, flow]));
+    vi.mocked(datapoints.getTrends).mockResolvedValue([
+      { space: 'ts', externalId: 'PI.1', points: [], hasFailed: true },
+      { space: 'ts', externalId: 'PI.3', points: POINTS },
+    ]);
+
+    const { result } = renderHook(() => useAssetTimeseriesViewModel(assetIdentifier), {
+      wrapper,
+    });
+
+    await waitFor(() =>
+      expect(result.current.items.map((item) => item.preview)).toEqual([
+        { kind: TimeseriesPreviewKind.UNAVAILABLE },
+        { kind: TimeseriesPreviewKind.READY, points: POINTS },
+      ]),
+    );
+  });
+
   it('hands out the same series and items while nothing changed', async () => {
     const { result, rerender } = renderHook(() => useAssetTimeseriesViewModel(assetIdentifier), {
       wrapper,
@@ -210,6 +230,7 @@ describe(useAssetTimeseriesViewModel.name, () => {
     });
 
     await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(result.current.error).toEqual(new Error('no'));
     expect(getTimeseriesKey(pressure)).toBe('ts:PI.1');
   });
 });

@@ -6,7 +6,10 @@ export type TimeseriesIdentifier = Pick<AssetInstanceDetails, 'space' | 'externa
 
 export type TimeseriesPoint = { timestamp: number; value: number };
 
-export type TimeseriesTrend = TimeseriesIdentifier & { points: TimeseriesPoint[] };
+export type TimeseriesTrend = TimeseriesIdentifier & {
+  points: TimeseriesPoint[];
+  hasFailed?: boolean;
+};
 
 export type TimeseriesTrendWindow = {
   from: number;

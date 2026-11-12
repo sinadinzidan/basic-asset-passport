@@ -48,15 +48,16 @@ describe(useTimeseriesTrends.name, () => {
     });
   });
 
-  it('keys the points by series', async () => {
+  it('keys the trends by series', async () => {
     const { result } = renderHook(() => useTimeseriesTrends([first, second]), {
       wrapper,
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(result.current.data?.get(getTimeseriesKey(first))).toEqual([
-      { timestamp: NOW - 1000, value: 4 },
-    ]);
+    expect(result.current.data?.get(getTimeseriesKey(first))).toEqual({
+      ...first,
+      points: [{ timestamp: NOW - 1000, value: 4 }],
+    });
     expect(result.current.data?.has(getTimeseriesKey(second))).toBe(false);
   });
 

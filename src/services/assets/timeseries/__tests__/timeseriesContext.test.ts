@@ -111,7 +111,7 @@ describe(createTimeseriesContext.name, () => {
     expect(post).toHaveBeenCalledTimes(2);
   });
 
-  it('leaves out the series of a request that failed and keeps the rest', async () => {
+  it('marks the series of a request that failed and keeps the rest', async () => {
     const many = Array.from({ length: TREND_REQUEST_CHUNK_SIZE + 1 }, (_item, index) => ({
       space: 'ts',
       externalId: `PI.${index}`,
@@ -129,7 +129,13 @@ describe(createTimeseriesContext.name, () => {
 
     const trends = await createTimeseriesContext(sdk).getTrends(many, window);
 
-    expect(trends.map((trend) => trend.externalId)).toEqual([`PI.${TREND_REQUEST_CHUNK_SIZE}`]);
+    expect(trends).toHaveLength(many.length);
+    expect(trends[0]).toEqual({ ...many[0], points: [], hasFailed: true });
+    expect(trends.filter((trend) => trend.hasFailed)).toHaveLength(TREND_REQUEST_CHUNK_SIZE);
+    expect(trends[TREND_REQUEST_CHUNK_SIZE]).toEqual({
+      ...many[TREND_REQUEST_CHUNK_SIZE],
+      points: [{ timestamp: 1000, value: 1 }],
+    });
   });
 
   it('rejects when a request failed, if asked to be strict', async () => {
