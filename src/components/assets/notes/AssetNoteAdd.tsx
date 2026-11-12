@@ -7,8 +7,7 @@ import {
   NOTE_SAVE_ERROR_TITLE,
 } from '../../../constants/notes';
 import { AppAlertVariant } from '../../../enums/appAlertVariant';
-import { useAddAssetNote } from '../../../hooks/assets/notes/useAddAssetNote';
-import { isNewAssetNoteValid } from '../../../lib/noteInput';
+import { useAssetNoteAddViewModel } from '../../../hooks/assets/notes/useAssetNoteAddViewModel';
 import type { AssetIdentifier } from '../../../types/asset';
 import { AppAlert } from '../../general/AppAlert';
 import { GeneralButton } from '../../general/GeneralButton';
@@ -23,13 +22,14 @@ type AssetNoteAddProps = {
 };
 
 export function AssetNoteAdd({ assetIdentifier }: AssetNoteAddProps) {
-  const { mutate, reset, isPending, isError, error } = useAddAssetNote(assetIdentifier);
+  const { isSaving, saveErrorMessage, canSave, save, discardSaveError } =
+    useAssetNoteAddViewModel(assetIdentifier);
 
   const [isOpen, setIsOpen] = useState(false);
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
 
-  const canSubmit = isNewAssetNoteValid({ title, body }) && !isPending;
+  const canSubmit = canSave({ title, body });
 
   function handleOpenChange(isNextOpen: boolean): void {
     setIsOpen(isNextOpen);
@@ -37,7 +37,7 @@ export function AssetNoteAdd({ assetIdentifier }: AssetNoteAddProps) {
 
     setTitle('');
     setBody('');
-    reset();
+    discardSaveError();
   }
 
   function handleAddClick(): void {
@@ -50,9 +50,7 @@ export function AssetNoteAdd({ assetIdentifier }: AssetNoteAddProps) {
 
   function handleSubmit(event: FormEvent<HTMLFormElement>): void {
     event.preventDefault();
-    if (!canSubmit) return;
-
-    mutate({ title, body }, { onSuccess: () => handleOpenChange(false) });
+    save({ title, body }, () => handleOpenChange(false));
   }
 
   return (
@@ -70,11 +68,11 @@ export function AssetNoteAdd({ assetIdentifier }: AssetNoteAddProps) {
         title={NOTE_ADD_DIALOG_TITLE}
         footer={
           <>
-            <GeneralButton disabled={isPending} onClick={handleCancelClick} variant="outline">
+            <GeneralButton disabled={isSaving} onClick={handleCancelClick} variant="outline">
               Cancel
             </GeneralButton>
             <GeneralButton disabled={!canSubmit} form={ADD_NOTE_FORM_ID} type="submit">
-              {isPending ? 'Saving...' : 'Save note'}
+              {isSaving ? 'Saving...' : 'Save note'}
             </GeneralButton>
           </>
         }
@@ -87,9 +85,9 @@ export function AssetNoteAdd({ assetIdentifier }: AssetNoteAddProps) {
             onTitleChange={setTitle}
             onBodyChange={setBody}
           />
-          {isError ? (
+          {saveErrorMessage !== null ? (
             <AppAlert variant={AppAlertVariant.ERROR} title={NOTE_SAVE_ERROR_TITLE}>
-              {error.message}
+              {saveErrorMessage}
             </AppAlert>
           ) : null}
         </form>

@@ -7,26 +7,16 @@ import {
 } from '@cognite/aura/components/popover';
 
 import {
-  CRITICALITY_PROPERTY_IDENTIFIER,
-  DESCRIPTION_PROPERTY_IDENTIFIER,
-  NAME_PROPERTY_IDENTIFIER,
-  PLANT_PROPERTY_IDENTIFIER,
-  STATUS_PROPERTY_IDENTIFIER,
-} from '../../../constants/assets';
-import { NODE_EXTERNAL_ID_PROPERTY } from '../../../constants/cdfApi';
-import {
   LINKED_ASSET_ERROR_DESCRIPTION,
   LINKED_ASSET_ERROR_TITLE,
   LINKED_ASSET_LOADING_MESSAGE,
   LINKED_ASSET_PENDING_TITLE,
 } from '../../../constants/documents';
-import { FUNCTIONAL_LOCATION_LABEL } from '../../../constants/labels';
 import { LoadingNoticeVariant } from '../../../enums/loadingNoticeVariant';
-import { useAssetDetails } from '../../../hooks/assets/useAssetDetails';
-import { getPropertyValue } from '../../../lib/assetProperties';
+import { useLinkedAssetViewModel } from '../../../hooks/assets/documents/useLinkedAssetViewModel';
 import { getStatusTone } from '../../../lib/assetStatus';
 import { getErrorReason } from '../../../lib/errorReason';
-import type { AssetIdentifier, AssetPropertyDisplay } from '../../../types/asset';
+import type { AssetIdentifier } from '../../../types/asset';
 import { CriticalityPill } from '../../general/CriticalityPill';
 import { GeneralButton } from '../../general/GeneralButton';
 import { LoadingNotice } from '../../general/LoadingNotice';
@@ -59,22 +49,8 @@ type OpenLinkedAssetPopoverProps = Omit<LinkedAssetPopoverProps, 'target'> & {
 
 function OpenLinkedAssetPopover({ target, onClose, onOpenAsset }: OpenLinkedAssetPopoverProps) {
   const { asset, anchor } = target;
-  const { data, error, isError, isFetching, isPending, refetch } = useAssetDetails(asset);
-
-  const name = getPropertyValue(data, NAME_PROPERTY_IDENTIFIER);
-  const status = getPropertyValue(data, STATUS_PROPERTY_IDENTIFIER);
-  const criticality = getPropertyValue(data, CRITICALITY_PROPERTY_IDENTIFIER);
-  const details: AssetPropertyDisplay[] = [
-    {
-      identifier: NODE_EXTERNAL_ID_PROPERTY,
-      label: FUNCTIONAL_LOCATION_LABEL,
-      value: asset.externalId,
-    },
-    ...[PLANT_PROPERTY_IDENTIFIER, DESCRIPTION_PROPERTY_IDENTIFIER].flatMap(
-      (identifier) =>
-        data?.properties.filter((property) => property.identifier === identifier) ?? [],
-    ),
-  ];
+  const { title, status, criticality, details, error, isError, isFetching, isPending, retry } =
+    useLinkedAssetViewModel(asset);
 
   function handleOpenChange(isOpen: boolean, eventDetails: { reason: string; event: Event }): void {
     if (isOpen) return;
@@ -88,9 +64,6 @@ function OpenLinkedAssetPopover({ target, onClose, onOpenAsset }: OpenLinkedAsse
   function handleOpenAsset(): void {
     onOpenAsset(asset);
   }
-  function handleRetry(): void {
-    void refetch();
-  }
 
   return (
     <Popover open onOpenChange={handleOpenChange}>
@@ -101,7 +74,7 @@ function OpenLinkedAssetPopover({ target, onClose, onOpenAsset }: OpenLinkedAsse
       >
         <PopoverHeaderContent>
           <PopoverTitle className="min-w-0 whitespace-normal break-words font-display tracking-wide">
-            {isPending || isError ? LINKED_ASSET_PENDING_TITLE : (name ?? asset.externalId)}
+            {isPending || isError ? LINKED_ASSET_PENDING_TITLE : title}
           </PopoverTitle>
           <PopoverClose className="hud-button" />
         </PopoverHeaderContent>
@@ -116,7 +89,7 @@ function OpenLinkedAssetPopover({ target, onClose, onOpenAsset }: OpenLinkedAsse
             description={LINKED_ASSET_ERROR_DESCRIPTION}
             reason={getErrorReason(error)}
             isRetrying={isFetching}
-            onRetry={handleRetry}
+            onRetry={retry}
           />
         ) : (
           <>

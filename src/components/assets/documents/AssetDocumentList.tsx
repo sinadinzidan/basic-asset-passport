@@ -1,6 +1,5 @@
 import {
   DOCUMENT_DELETE_ERROR_TITLE,
-  DOCUMENT_QUERY_LIMIT,
   DOCUMENTS_EMPTY_DESCRIPTION,
   DOCUMENTS_EMPTY_TITLE,
   DOCUMENTS_ERROR_DESCRIPTION,
@@ -13,15 +12,10 @@ import {
 } from '../../../constants/documents';
 import { AppAlertVariant } from '../../../enums/appAlertVariant';
 import { LoadingNoticeVariant } from '../../../enums/loadingNoticeVariant';
-import { useAssetDocuments } from '../../../hooks/assets/documents/useAssetDocuments';
-import { useAssetLinkedFiles } from '../../../hooks/assets/documents/useAssetLinkedFiles';
-import { useDeleteAssetDocument } from '../../../hooks/assets/documents/useDeleteAssetDocument';
-import { useUploadingDocumentNames } from '../../../hooks/assets/documents/useUploadingDocumentNames';
-import { useListLimit } from '../../../hooks/general/useListLimit';
+import { useAssetDocumentListViewModel } from '../../../hooks/assets/documents/useAssetDocumentListViewModel';
 import { getErrorReason } from '../../../lib/errorReason';
-import { getInstanceKey, isSameInstance } from '../../../lib/instanceKey';
+import { getInstanceKey } from '../../../lib/instanceKey';
 import type { AssetIdentifier } from '../../../types/asset';
-import type { AssetDocument } from '../../../types/document';
 import { AppAlert } from '../../general/AppAlert';
 import { EmptyStateMessage } from '../../general/EmptyStateMessage';
 import { LoadingNotice } from '../../general/LoadingNotice';
@@ -36,23 +30,30 @@ type AssetDocumentListProps = {
 };
 
 export function AssetDocumentList({ assetIdentifier }: AssetDocumentListProps) {
-  const documentLimit = useListLimit(DOCUMENT_QUERY_LIMIT);
-  const linkedFileLimit = useListLimit(DOCUMENT_QUERY_LIMIT);
-  const { data, error, isError, isFetching, isPending, isPlaceholderData, refetch } =
-    useAssetDocuments(assetIdentifier, documentLimit.limit);
-  const linkedFiles = useAssetLinkedFiles(assetIdentifier, linkedFileLimit.limit);
-  const deleteMutation = useDeleteAssetDocument(assetIdentifier);
-  const uploadingNames = useUploadingDocumentNames(assetIdentifier);
-
-  function handleRetry(): void {
-    void refetch();
-  }
-  function handleLinkedFilesRetry(): void {
-    void linkedFiles.refetch();
-  }
-  async function handleDelete(document: AssetDocument): Promise<void> {
-    await deleteMutation.mutateAsync(document).catch(() => undefined);
-  }
+  const {
+    uploadingNames,
+    documents,
+    hasMoreDocuments,
+    isLoadingMoreDocuments,
+    existingFiles,
+    hasMoreExistingFiles,
+    isLoadingMoreExistingFiles,
+    isPending,
+    isError,
+    error,
+    isFetching,
+    isEmpty,
+    hasExistingFilesError,
+    existingFilesError,
+    isFetchingExistingFiles,
+    deleteErrorMessage,
+    retry,
+    retryExistingFiles,
+    showMoreDocuments,
+    showMoreExistingFiles,
+    deleteDocument,
+    isDeleting,
+  } = useAssetDocumentListViewModel(assetIdentifier);
 
   if (isPending) {
     return (
@@ -71,27 +72,12 @@ export function AssetDocumentList({ assetIdentifier }: AssetDocumentListProps) {
         description={DOCUMENTS_ERROR_DESCRIPTION}
         reason={getErrorReason(error)}
         isRetrying={isFetching}
-        onRetry={handleRetry}
+        onRetry={retry}
       />
     );
   }
 
-  const documents = data.items;
-  const existingFiles = linkedFiles.data?.items ?? [];
-  const hasNothingToShow =
-    documents.length === 0 && uploadingNames.length === 0 && existingFiles.length === 0;
-
-  if (hasNothingToShow && linkedFiles.isPending) {
-    return (
-      <LoadingNotice
-        className="p-6"
-        message={DOCUMENTS_LOADING_MESSAGE}
-        variant={LoadingNoticeVariant.CARD}
-      />
-    );
-  }
-
-  if (hasNothingToShow && !linkedFiles.isError) {
+  if (isEmpty) {
     return (
       <EmptyStateMessage title={DOCUMENTS_EMPTY_TITLE} description={DOCUMENTS_EMPTY_DESCRIPTION} />
     );
@@ -99,18 +85,18 @@ export function AssetDocumentList({ assetIdentifier }: AssetDocumentListProps) {
 
   return (
     <div className="flex flex-col gap-5">
-      {deleteMutation.isError ? (
+      {deleteErrorMessage !== null ? (
         <AppAlert variant={AppAlertVariant.ERROR} title={DOCUMENT_DELETE_ERROR_TITLE}>
-          {deleteMutation.error.message}
+          {deleteErrorMessage}
         </AppAlert>
       ) : null}
-      {linkedFiles.isError ? (
+      {hasExistingFilesError ? (
         <RetryAlert
           title={LINKED_FILES_ERROR_TITLE}
           description={LINKED_FILES_ERROR_DESCRIPTION}
-          reason={getErrorReason(linkedFiles.error)}
-          isRetrying={linkedFiles.isFetching}
-          onRetry={handleLinkedFilesRetry}
+          reason={getErrorReason(existingFilesError)}
+          isRetrying={isFetchingExistingFiles}
+          onRetry={retryExistingFiles}
         />
       ) : null}
       {uploadingNames.map((name, index) => (
@@ -120,17 +106,15 @@ export function AssetDocumentList({ assetIdentifier }: AssetDocumentListProps) {
         <AssetDocumentItem
           key={getInstanceKey(document)}
           document={document}
-          isDeleting={
-            deleteMutation.isPending && isSameInstance(document, deleteMutation.variables)
-          }
-          onDelete={handleDelete}
+          isDeleting={isDeleting(document)}
+          onDelete={deleteDocument}
         />
       ))}
-      {data.hasMore ? (
+      {hasMoreDocuments ? (
         <ShowMoreButton
           label={SHOW_MORE_DOCUMENTS_LABEL}
-          isLoading={isPlaceholderData}
-          onShowMore={documentLimit.showMore}
+          isLoading={isLoadingMoreDocuments}
+          onShowMore={showMoreDocuments}
         />
       ) : null}
       {existingFiles.map((file) => (
@@ -138,14 +122,14 @@ export function AssetDocumentList({ assetIdentifier }: AssetDocumentListProps) {
           key={getInstanceKey(file)}
           document={file}
           isDeleting={false}
-          onDelete={handleDelete}
+          onDelete={deleteDocument}
         />
       ))}
-      {linkedFiles.data?.hasMore ? (
+      {hasMoreExistingFiles ? (
         <ShowMoreButton
           label={SHOW_MORE_LINKED_FILES_LABEL}
-          isLoading={linkedFiles.isPlaceholderData}
-          onShowMore={linkedFileLimit.showMore}
+          isLoading={isLoadingMoreExistingFiles}
+          onShowMore={showMoreExistingFiles}
         />
       ) : null}
     </div>

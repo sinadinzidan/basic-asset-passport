@@ -1,6 +1,5 @@
 import {
   NOTE_DELETE_ERROR_TITLE,
-  NOTE_QUERY_LIMIT,
   NOTES_EMPTY_DESCRIPTION,
   NOTES_EMPTY_TITLE,
   NOTES_ERROR_DESCRIPTION,
@@ -10,13 +9,10 @@ import {
 } from '../../../constants/notes';
 import { AppAlertVariant } from '../../../enums/appAlertVariant';
 import { LoadingNoticeVariant } from '../../../enums/loadingNoticeVariant';
-import { useAssetNotes } from '../../../hooks/assets/notes/useAssetNotes';
-import { useDeleteAssetNote } from '../../../hooks/assets/notes/useDeleteAssetNote';
-import { useListLimit } from '../../../hooks/general/useListLimit';
+import { useAssetNoteListViewModel } from '../../../hooks/assets/notes/useAssetNoteListViewModel';
 import { getErrorReason } from '../../../lib/errorReason';
-import { getInstanceKey, isSameInstance } from '../../../lib/instanceKey';
+import { getInstanceKey } from '../../../lib/instanceKey';
 import type { AssetIdentifier } from '../../../types/asset';
-import type { AssetNote } from '../../../types/note';
 import { AppAlert } from '../../general/AppAlert';
 import { EmptyStateMessage } from '../../general/EmptyStateMessage';
 import { LoadingNotice } from '../../general/LoadingNotice';
@@ -30,21 +26,20 @@ type AssetNoteListProps = {
 };
 
 export function AssetNoteList({ assetIdentifier }: AssetNoteListProps) {
-  const { limit, showMore } = useListLimit(NOTE_QUERY_LIMIT);
-  const { data, error, isError, isFetching, isPending, isPlaceholderData, refetch } = useAssetNotes(
-    assetIdentifier,
-    limit,
-  );
-  const deleteMutation = useDeleteAssetNote(assetIdentifier);
-
-  function handleRetry(): void {
-    void refetch();
-  }
-  async function handleDelete(note: AssetNote): Promise<void> {
-    await deleteMutation
-      .mutateAsync({ space: note.space, externalId: note.externalId })
-      .catch(() => undefined);
-  }
+  const {
+    notes,
+    hasMore,
+    isLoadingMore,
+    error,
+    isError,
+    isFetching,
+    isPending,
+    deleteErrorMessage,
+    retry,
+    showMore,
+    deleteNote,
+    isDeleting,
+  } = useAssetNoteListViewModel(assetIdentifier);
 
   if (isPending) {
     return (
@@ -63,35 +58,35 @@ export function AssetNoteList({ assetIdentifier }: AssetNoteListProps) {
         description={NOTES_ERROR_DESCRIPTION}
         reason={getErrorReason(error)}
         isRetrying={isFetching}
-        onRetry={handleRetry}
+        onRetry={retry}
       />
     );
   }
 
-  if (data.items.length === 0) {
+  if (notes.length === 0) {
     return <EmptyStateMessage title={NOTES_EMPTY_TITLE} description={NOTES_EMPTY_DESCRIPTION} />;
   }
 
   return (
     <div className="flex flex-col gap-5">
-      {deleteMutation.isError ? (
+      {deleteErrorMessage !== null ? (
         <AppAlert variant={AppAlertVariant.ERROR} title={NOTE_DELETE_ERROR_TITLE}>
-          {deleteMutation.error.message}
+          {deleteErrorMessage}
         </AppAlert>
       ) : null}
-      {data.items.map((note) => (
+      {notes.map((note) => (
         <AssetNoteItem
           key={getInstanceKey(note)}
           assetIdentifier={assetIdentifier}
           note={note}
-          isDeleting={deleteMutation.isPending && isSameInstance(note, deleteMutation.variables)}
-          onDelete={handleDelete}
+          isDeleting={isDeleting(note)}
+          onDelete={deleteNote}
         />
       ))}
-      {data.hasMore ? (
+      {hasMore ? (
         <ShowMoreButton
           label={SHOW_MORE_NOTES_LABEL}
-          isLoading={isPlaceholderData}
+          isLoading={isLoadingMore}
           onShowMore={showMore}
         />
       ) : null}

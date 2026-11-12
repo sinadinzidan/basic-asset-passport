@@ -7,7 +7,7 @@ import {
   UNKNOWN_AUTHOR_LABEL,
 } from '../../../constants/notes';
 import { IconActionVariant } from '../../../enums/iconActionVariant';
-import { useUpdateAssetNote } from '../../../hooks/assets/notes/useUpdateAssetNote';
+import { useAssetNoteItemViewModel } from '../../../hooks/assets/notes/useAssetNoteItemViewModel';
 import { formatNoteDate } from '../../../lib/formatNoteDate';
 import type { AssetIdentifier } from '../../../types/asset';
 import type { AssetNote, NewAssetNote } from '../../../types/note';
@@ -24,7 +24,10 @@ type AssetNoteItemProps = {
 };
 
 export function AssetNoteItem({ assetIdentifier, note, isDeleting, onDelete }: AssetNoteItemProps) {
-  const updateMutation = useUpdateAssetNote(assetIdentifier);
+  const { isSaving, saveErrorMessage, save, discardSaveError } = useAssetNoteItemViewModel(
+    assetIdentifier,
+    note,
+  );
 
   const [isEditing, setIsEditing] = useState(false);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
@@ -34,13 +37,10 @@ export function AssetNoteItem({ assetIdentifier, note, isDeleting, onDelete }: A
   }
   function handleEditCancel(): void {
     setIsEditing(false);
-    updateMutation.reset();
+    discardSaveError();
   }
   function handleSave(input: NewAssetNote): void {
-    updateMutation.mutate(
-      { note: { space: note.space, externalId: note.externalId }, input },
-      { onSuccess: () => setIsEditing(false) },
-    );
+    save(input, () => setIsEditing(false));
   }
   function handleDeleteClick(): void {
     setIsConfirmingDelete(true);
@@ -57,8 +57,8 @@ export function AssetNoteItem({ assetIdentifier, note, isDeleting, onDelete }: A
       <article className="data-card">
         <AssetNoteEditForm
           note={note}
-          isSaving={updateMutation.isPending}
-          errorMessage={updateMutation.isError ? updateMutation.error.message : null}
+          isSaving={isSaving}
+          errorMessage={saveErrorMessage}
           onSave={handleSave}
           onCancel={handleEditCancel}
         />

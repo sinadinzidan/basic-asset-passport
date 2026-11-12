@@ -7,7 +7,7 @@ import {
 } from '../../../constants/assets';
 import { AppAlertVariant } from '../../../enums/appAlertVariant';
 import { LoadingNoticeVariant } from '../../../enums/loadingNoticeVariant';
-import { useAssetEquipment } from '../../../hooks/assets/equipment/useAssetEquipment';
+import { useAssetEquipmentViewModel } from '../../../hooks/assets/equipment/useAssetEquipmentViewModel';
 import { formatEquipmentTruncatedMessage } from '../../../lib/assetMessage';
 import { getErrorReason } from '../../../lib/errorReason';
 import { getInstanceKey } from '../../../lib/instanceKey';
@@ -23,12 +23,8 @@ type AssetEquipmentProps = {
 };
 
 export function AssetEquipment({ assetIdentifier }: AssetEquipmentProps) {
-  const { data, error, isError, isFetching, isPending, refetch } =
-    useAssetEquipment(assetIdentifier);
-
-  function handleRetry(): void {
-    void refetch();
-  }
+  const { equipment, hasMore, error, isError, isFetching, isPending, retry } =
+    useAssetEquipmentViewModel(assetIdentifier);
 
   if (isPending) {
     return (
@@ -47,12 +43,12 @@ export function AssetEquipment({ assetIdentifier }: AssetEquipmentProps) {
         description={EQUIPMENT_ERROR_DESCRIPTION}
         reason={getErrorReason(error)}
         isRetrying={isFetching}
-        onRetry={handleRetry}
+        onRetry={retry}
       />
     );
   }
 
-  if (data.items.length === 0) {
+  if (equipment.length === 0) {
     return (
       <EmptyStateMessage title={EQUIPMENT_EMPTY_TITLE} description={EQUIPMENT_EMPTY_DESCRIPTION} />
     );
@@ -60,13 +56,13 @@ export function AssetEquipment({ assetIdentifier }: AssetEquipmentProps) {
 
   return (
     <div className="flex flex-col gap-5">
-      {data.hasMore ? (
+      {hasMore ? (
         <AppAlert variant={AppAlertVariant.INFO}>
-          {formatEquipmentTruncatedMessage(data.items.length)}
+          {formatEquipmentTruncatedMessage(equipment.length)}
         </AppAlert>
       ) : null}
-      {data.items.map((equipment) => (
-        <EquipmentDetails key={getInstanceKey(equipment)} equipment={equipment} />
+      {equipment.map((item) => (
+        <EquipmentDetails key={getInstanceKey(item)} equipment={item} />
       ))}
     </div>
   );

@@ -13,8 +13,7 @@ import {
   ASSETS_NO_MATCH_TITLE,
 } from '../../constants/assets';
 import { HudShape } from '../../enums/hudShape';
-import { useAssets } from '../../hooks/assets/useAssets';
-import { useNavigationState } from '../../hooks/general/useNavigationState';
+import { useAssetTableViewModel } from '../../hooks/assets/useAssetTableViewModel';
 import { formatNoMatchingAssetsMessage } from '../../lib/assetMessage';
 import { getErrorReason } from '../../lib/errorReason';
 import { getInstanceKey } from '../../lib/instanceKey';
@@ -45,43 +44,28 @@ const ASSET_GRID_CLASS_NAME = [
 ].join(' ');
 
 export function AssetTable() {
-  const searchQuery = useNavigationState((store) => store.navigationState.searchQuery ?? '');
-  const registerCursors = useNavigationState((store) => store.navigationState.registerCursors);
   const {
-    changeSearchQuery,
-    goToNextRegisterPage,
-    goToPreviousRegisterPage,
-    goToFirstRegisterPage,
-    selectAsset,
-  } = useNavigationState((store) => store.actions);
-
-  const {
-    data: assetPage,
+    assets,
+    searchQuery,
+    isSearching,
+    isSearchTruncated,
+    pageNumber,
+    isOnLaterPage,
+    hasNextPage,
     error,
     isError,
     isFetching,
     isPending,
-    refetch,
-  } = useAssets(registerCursors?.[registerCursors.length - 1], searchQuery);
+    retry,
+    changeSearchQuery,
+    goToNextPage,
+    goToPreviousPage,
+    goToFirstPage,
+    openAsset,
+  } = useAssetTableViewModel();
 
-  const pageCursors = registerCursors ?? [];
-  const isOnLaterPage = pageCursors.length > 0;
-  const isSearching = searchQuery !== '';
-  const assets = assetPage?.items ?? [];
-  const nextCursor = assetPage?.nextCursor ?? null;
-  const isSearchTruncated = isSearching && assetPage?.hasMore === true;
-
-  function handleRetry(): void {
-    void refetch();
-  }
-  function handleNextPage(): void {
-    if (nextCursor) goToNextRegisterPage(nextCursor);
-  }
   function handleAssetRowClick(row: Row<AssetListItem>): void {
-    selectAsset({
-      space: row.original.space,
-      externalId: row.original.externalId,
-    });
+    openAsset(row.original);
   }
 
   return (
@@ -114,11 +98,11 @@ export function AssetTable() {
                 }
                 reason={getErrorReason(error)}
                 isRetrying={isFetching}
-                onRetry={handleRetry}
+                onRetry={retry}
               />
             </div>
             {isOnLaterPage ? (
-              <GeneralButton onClick={goToFirstRegisterPage} variant="outline">
+              <GeneralButton onClick={goToFirstPage} variant="outline">
                 Go to first page
               </GeneralButton>
             ) : null}
@@ -162,12 +146,12 @@ export function AssetTable() {
             ) : (
               <CursorPagination
                 label="Asset table pagination"
-                pageNumber={pageCursors.length + 1}
+                pageNumber={pageNumber}
                 hasPreviousPage={isOnLaterPage}
-                hasNextPage={nextCursor !== null}
+                hasNextPage={hasNextPage}
                 isFetching={isFetching}
-                onPreviousPage={goToPreviousRegisterPage}
-                onNextPage={handleNextPage}
+                onPreviousPage={goToPreviousPage}
+                onNextPage={goToNextPage}
               />
             )}
           </>

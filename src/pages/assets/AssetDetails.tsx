@@ -5,16 +5,8 @@ import { PageHeader } from '../../components/general/PageHeader';
 import { PageShell } from '../../components/general/PageShell';
 import { RetryAlert } from '../../components/general/RetryAlert';
 import { StatusPill } from '../../components/general/StatusPill';
-import {
-  ASSET_DETAILS_ERROR_DESCRIPTION,
-  ASSET_DETAILS_ERROR_TITLE,
-  CRITICALITY_PROPERTY_IDENTIFIER,
-  NAME_PROPERTY_IDENTIFIER,
-  STATUS_PROPERTY_IDENTIFIER,
-} from '../../constants/assets';
-import { useAssetDetails } from '../../hooks/assets/useAssetDetails';
-import { useAssetDetailsTabCounts } from '../../hooks/assets/useAssetDetailsTabCounts';
-import { getPropertyValue } from '../../lib/assetProperties';
+import { ASSET_DETAILS_ERROR_DESCRIPTION, ASSET_DETAILS_ERROR_TITLE } from '../../constants/assets';
+import { useAssetDetailsViewModel } from '../../hooks/assets/useAssetDetailsViewModel';
 import { getStatusTone } from '../../lib/assetStatus';
 import { getErrorReason } from '../../lib/errorReason';
 import type { AssetIdentifier } from '../../types/asset';
@@ -24,16 +16,18 @@ type AssetDetailsProps = {
 };
 
 export function AssetDetails({ assetIdentifier }: AssetDetailsProps) {
-  const { data, error, isError, isFetching, isPending, refetch } = useAssetDetails(assetIdentifier);
-  const tabCounts = useAssetDetailsTabCounts(assetIdentifier);
-
-  const assetName = getPropertyValue(data, NAME_PROPERTY_IDENTIFIER);
-  const assetStatus = getPropertyValue(data, STATUS_PROPERTY_IDENTIFIER);
-  const assetCriticality = getPropertyValue(data, CRITICALITY_PROPERTY_IDENTIFIER);
-
-  function handleRetry(): void {
-    void refetch();
-  }
+  const {
+    asset,
+    title,
+    status,
+    criticality,
+    tabCounts,
+    error,
+    isError,
+    isFetching,
+    isPending,
+    retry,
+  } = useAssetDetailsViewModel(assetIdentifier);
 
   if (isPending) {
     return (
@@ -43,7 +37,7 @@ export function AssetDetails({ assetIdentifier }: AssetDetailsProps) {
     );
   }
 
-  if (isError) {
+  if (isError || asset === undefined) {
     return (
       <PageShell>
         <RetryAlert
@@ -51,7 +45,7 @@ export function AssetDetails({ assetIdentifier }: AssetDetailsProps) {
           description={ASSET_DETAILS_ERROR_DESCRIPTION}
           reason={getErrorReason(error)}
           isRetrying={isFetching}
-          onRetry={handleRetry}
+          onRetry={retry}
         />
       </PageShell>
     );
@@ -61,17 +55,15 @@ export function AssetDetails({ assetIdentifier }: AssetDetailsProps) {
     <PageShell>
       <PageHeader
         kicker="Asset passport"
-        title={assetName ?? data.externalId}
+        title={title}
         badges={
           <>
-            {assetStatus ? (
-              <StatusPill status={assetStatus} tone={getStatusTone(assetStatus)} />
-            ) : null}
-            {assetCriticality ? <CriticalityPill criticality={assetCriticality} /> : null}
+            {status ? <StatusPill status={status} tone={getStatusTone(status)} /> : null}
+            {criticality ? <CriticalityPill criticality={criticality} /> : null}
           </>
         }
       />
-      <AssetDetailsTabs asset={data} tabCounts={tabCounts} />
+      <AssetDetailsTabs asset={asset} tabCounts={tabCounts} />
     </PageShell>
   );
 }

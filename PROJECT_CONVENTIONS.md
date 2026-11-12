@@ -243,6 +243,12 @@ export function AssetList({ page, search }: AssetListProps) {
   Methods are arrow properties, so one can be passed on without losing `this`.
   A clock, ID generator or `fetch` the service needs goes into its constructor
   through the factory's `overrides`, not into each call.
+- Business logic lives in a `use<Name>ViewModel` hook, as the Flows template
+  says: a component that loads data, runs a mutation or derives what to show
+  takes the data, flags and commands from its ViewModel and only renders
+  (`useAssetTableViewModel`, `useAssetNoteListViewModel`). A ViewModel exposes
+  commands (`retry`, `deleteNote`, `showMore`), not the raw query or mutation.
+  Local view state stays in the component: form input, an open dialog, zoom.
 - A hook gets the factory through its deps context and builds the service from
   the signed-in client (`createAssetNoteService(client)`), typed to the methods
   it uses (`Pick<AssetNoteService, 'listAssetNotes'>`). A test supplies
