@@ -23,7 +23,6 @@ export default defineConfig({
         'dist/',
         '.claude/',
         '.agents/',
-        'src/cognite-file-viewer/',
         'vitest.setup.ts',
         '**/*.config.ts',
         '**/*.d.ts',
