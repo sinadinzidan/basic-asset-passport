@@ -149,6 +149,29 @@ describe(AgentHelper.name, () => {
     expect(screen.getByRole('dialog', { name: 'Dalil AI assistant' })).toBeVisible();
   });
 
+  it('is a dialog that leaves the page behind it usable', async () => {
+    await openPanel();
+
+    expect(screen.getByRole('dialog', { name: 'Dalil AI assistant' })).toHaveAttribute(
+      'aria-modal',
+      'false',
+    );
+  });
+
+  it('moves focus into the panel when it opens', async () => {
+    await openPanel();
+
+    expect(screen.getByRole('dialog', { name: 'Dalil AI assistant' })).toHaveFocus();
+  });
+
+  it('gives focus back to the mascot button when the panel closes', async () => {
+    const user = await openPanel();
+
+    await user.click(screen.getByRole('button', { name: 'Close assistant' }));
+
+    expect(screen.getByRole('button', { name: 'Dalil AI assistant' })).toHaveFocus();
+  });
+
   it.each([
     [
       'the mascot button',
@@ -256,6 +279,7 @@ describe(AgentHelper.name, () => {
       });
 
       expect(screen.getByRole('dialog', { name: 'Dalil AI assistant' })).toBeVisible();
+      expect(screen.getByRole('dialog', { name: 'Dalil AI assistant' })).not.toHaveFocus();
       expect(screen.getByRole('button', { name: 'Dalil AI assistant' })).toHaveAttribute(
         'aria-expanded',
         'true',

@@ -42,6 +42,15 @@ export const GREETING_INTRO_DURATION_MS = 5000;
 
 export const GREETING_HOVER_DELAY_MS = 150;
 
+export const ASSISTANT_LOADING_MESSAGE = 'Loading assistant...';
+export const ASSISTANT_ERROR_TITLE = 'The assistant could not be loaded';
+export const ASSISTANT_ERROR_DESCRIPTION =
+  'Check access to the agents of this project, then try again.';
+export const ASSISTANT_MISSING_MESSAGE = 'The assistant is not available in this project.';
+export const CHAT_EMPTY_MESSAGE = `Ask ${ASSISTANT_NAME} something.`;
+export const THINKING_MESSAGE = 'Thinking...';
+export const DICTATION_ERROR_TITLE = 'Dictation stopped';
+
 export const ANSWER_ERROR_TITLE = 'The agent could not answer';
 export const SEND_FAILED_FALLBACK_MESSAGE = 'Try again in a moment.';
 

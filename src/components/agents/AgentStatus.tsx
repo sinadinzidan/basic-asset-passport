@@ -1,3 +1,9 @@
+import {
+  ASSISTANT_ERROR_DESCRIPTION,
+  ASSISTANT_ERROR_TITLE,
+  ASSISTANT_LOADING_MESSAGE,
+  ASSISTANT_MISSING_MESSAGE,
+} from '../../constants/agents';
 import { useAgentStatusViewModel } from '../../hooks/agents/useAgentStatusViewModel';
 import { LoadingNotice } from '../general/LoadingNotice';
 import { RetryAlert } from '../general/RetryAlert';
@@ -17,17 +23,17 @@ export function AgentStatus({ onClose }: AgentStatusProps) {
       <AgentPanelHeader onClose={onClose} />
       <div className="agent-panel__body">
         {isLoading ? (
-          <LoadingNotice className="p-4" message="Loading assistant..." />
+          <LoadingNotice className="p-4" message={ASSISTANT_LOADING_MESSAGE} />
         ) : isError ? (
           <RetryAlert
-            title="The assistant could not be loaded"
-            description="Check access to the agents of this project, then try again."
+            title={ASSISTANT_ERROR_TITLE}
+            description={ASSISTANT_ERROR_DESCRIPTION}
             reason={errorReason}
             isRetrying={isRetrying}
             onRetry={retry}
           />
         ) : isMissing ? (
-          <p className="agent-panel__empty">The assistant is not available in this project.</p>
+          <p className="agent-panel__empty">{ASSISTANT_MISSING_MESSAGE}</p>
         ) : null}
       </div>
     </>

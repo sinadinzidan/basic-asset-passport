@@ -1,10 +1,12 @@
+import { Label } from '@cognite/aura/components/label';
 import { Textarea } from '@cognite/aura/components/textarea';
 import { IconMicrophone, IconPlayerStopFilled, IconSend } from '@tabler/icons-react';
-import type { ChangeEvent, FormEvent, KeyboardEvent } from 'react';
+import { useId, type ChangeEvent, type FormEvent, type KeyboardEvent } from 'react';
 
 import {
   ANSWER_ERROR_TITLE,
-  ASSISTANT_NAME,
+  CHAT_EMPTY_MESSAGE,
+  DICTATION_ERROR_TITLE,
   DICTATION_FAILURE_MESSAGES,
   SAMPLE_QUESTIONS,
 } from '../../constants/agents';
@@ -41,6 +43,7 @@ export function AgentChat({ onClose }: AgentChatProps) {
     startNewChat,
   } = useAgentComposerViewModel();
   const logReference = useScrollToEnd<HTMLDivElement>(messages.length, isSending);
+  const messageId = useId();
 
   function handleSubmit(event: FormEvent<HTMLFormElement>): void {
     event.preventDefault();
@@ -50,10 +53,9 @@ export function AgentChat({ onClose }: AgentChatProps) {
     changeDraft(event.target.value);
   }
   function handleKeyDown(event: KeyboardEvent<HTMLTextAreaElement>): void {
-    if (event.key === ENTER_KEY && !event.shiftKey) {
-      event.preventDefault();
-      submit();
-    }
+    if (event.key !== ENTER_KEY || event.shiftKey || event.nativeEvent.isComposing) return;
+    event.preventDefault();
+    submit();
   }
 
   return (
@@ -72,7 +74,7 @@ export function AgentChat({ onClose }: AgentChatProps) {
         <div ref={logReference} role="log" aria-label="Conversation" className="agent-chat__log">
           {messages.length === 0 ? (
             <div className="agent-chat__welcome">
-              <p className="agent-panel__empty">Ask {ASSISTANT_NAME} something.</p>
+              <p className="agent-panel__empty">{CHAT_EMPTY_MESSAGE}</p>
               <ul className="agent-chat__samples" aria-label="Sample questions">
                 {SAMPLE_QUESTIONS.map((question) => (
                   <li key={question}>
@@ -106,14 +108,17 @@ export function AgentChat({ onClose }: AgentChatProps) {
           </AppAlert>
         ) : null}
         {dictation.failure !== null ? (
-          <AppAlert variant={AppAlertVariant.ERROR} title="Dictation stopped">
+          <AppAlert variant={AppAlertVariant.ERROR} title={DICTATION_ERROR_TITLE}>
             {DICTATION_FAILURE_MESSAGES[dictation.failure]}
           </AppAlert>
         ) : null}
+        <Label className="agent-chat__label" htmlFor={messageId}>
+          Message
+        </Label>
         <form className="agent-chat__form" onSubmit={handleSubmit}>
           <Textarea
-            aria-label="Message"
             className="agent-chat__input"
+            id={messageId}
             onChange={handleChange}
             onKeyDown={handleKeyDown}
             placeholder="Ask a question"

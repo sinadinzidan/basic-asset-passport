@@ -1,4 +1,4 @@
-import { act, render, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -104,6 +104,25 @@ describe(AgentChat.name, () => {
     await user.keyboard('{Enter}');
 
     expect(chat).toHaveBeenCalledWith(expect.objectContaining({ text: 'Line one\nLine two' }));
+  });
+
+  it('does not send on the Enter that confirms a composed character', async () => {
+    const user = userEvent.setup();
+    renderChat();
+    const box = screen.getByRole('textbox', { name: 'Message' });
+    await user.type(box, 'にほん');
+
+    fireEvent.keyDown(box, { key: 'Enter', isComposing: true });
+
+    expect(chat).not.toHaveBeenCalled();
+    expect(box).toHaveValue('にほん');
+  });
+
+  it('labels the message box with a visible label', () => {
+    renderChat();
+
+    expect(screen.getByText('Message', { selector: 'label' })).toBeVisible();
+    expect(screen.getByLabelText('Message')).toBe(screen.getByRole('textbox'));
   });
 
   it('cannot send an empty question', () => {
