@@ -39,8 +39,13 @@ describe(AssetProvider.name, () => {
       { wrapper: makeCogniteSdkWrapper(client) },
     );
 
+    const query = vi
+      .spyOn(client.instances, 'query')
+      .mockResolvedValue({ items: {}, nextCursor: {} });
+
     expect(await screen.findByText('Assets of my-project')).toBeInTheDocument();
-    expect(assetContext).toBe(client);
+    await assetContext?.instances.query({ with: {}, select: {} });
+    expect(query).toHaveBeenCalledExactlyOnceWith({ with: {}, select: {} });
   });
 
   it('gives its children the datapoints of the signed-in project', async () => {
