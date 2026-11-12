@@ -7,3 +7,7 @@ rounds describe the old setup. Code review round 8 and design review round 7 are
 count for certification. Round 8 re-checks the 1.0.0 production release (Zod validation at the trust
 boundaries, the navigation refactor and the bundle split); design round 7 covers the UI (with a walkthrough on real CDF data); it has not
 changed visually since (rounds 5 and 4 were the first reviews on the current template).
+
+Code review rounds 11 and 12 score the current app (notes, documents, timeseries, the assistant) against the
+certification checks pulled on the day. Round 11 found two blocking items; round 12 re-checks after the fixes and
+reports none. Round 12 is the latest code review. The design review has not been re-run since round 7.
