@@ -7,10 +7,6 @@ import type {
   CogniteFileViewerProps as CogniteFileViewerProperties,
   DocumentAnnotation,
 } from '../../../../cognite-file-viewer/types';
-import {
-  DocumentPreviewDepsContext,
-  type DocumentPreviewDepsContextType,
-} from '../../../../hooks/assets/documents/documentPreviewDepsContext';
 import { AssetContext } from '../../../../hooks/assets/useAssetContext';
 import {
   UseAssetDetailsContext,
@@ -19,33 +15,38 @@ import {
 import { useNavigationState } from '../../../../hooks/general/useNavigationState';
 import { makeInstanceDetails } from '../../../../mocks/assets';
 import { makeMockClient } from '../../../../mocks/cogniteClient';
+import { makeCogniteSdkWrapper } from '../../../../mocks/CogniteSdkWrapper';
 import { makeQueryClientWrapper } from '../../../../mocks/QueryClientWrapper';
 import { NavigationProvider } from '../../../../providers/general/NavigationProvider';
 import { DocumentPreview } from '../DocumentPreview';
+import { DocumentViewerContext, type DocumentViewerContextType } from '../documentViewerContext';
 
 const document = { space: 'sp-asset-passport-data', externalId: 'doc-1' };
 
 describe(DocumentPreview.name, () => {
   let viewer: Mock<typeof CogniteFileViewer>;
-  let context: DocumentPreviewDepsContextType;
+  let context: DocumentViewerContextType;
   const client = makeMockClient();
+  const SdkWrapper = makeCogniteSdkWrapper(client);
 
   beforeEach(() => {
     viewer = vi.fn<typeof CogniteFileViewer>(() => null);
-    context = {
-      useCogniteSdk: vi.fn(() => client),
-      CogniteFileViewer: viewer,
-    };
+    context = { CogniteFileViewer: viewer };
   });
 
-  function renderPreview() {
-    return render(
-      <NavigationProvider api={null}>
-        <DocumentPreviewDepsContext.Provider value={context}>
-          <DocumentPreview document={document} />
-        </DocumentPreviewDepsContext.Provider>
-      </NavigationProvider>,
+  async function renderPreview() {
+    const view = render(
+      <SdkWrapper>
+        <NavigationProvider api={null}>
+          <DocumentViewerContext.Provider value={context}>
+            <DocumentPreview document={document} />
+          </DocumentViewerContext.Provider>
+        </NavigationProvider>
+      </SdkWrapper>,
     );
+    await screen.findByRole('button', { name: 'Zoom in' });
+
+    return view;
   }
 
   function viewerProperties(): CogniteFileViewerProperties {
@@ -61,8 +62,8 @@ describe(DocumentPreview.name, () => {
     });
   }
 
-  it('views the document node by its instance ID with the signed-in client', () => {
-    renderPreview();
+  it('views the document node by its instance ID with the signed-in client', async () => {
+    await renderPreview();
 
     expect(viewerProperties()).toEqual(
       expect.objectContaining({
@@ -76,14 +77,14 @@ describe(DocumentPreview.name, () => {
     );
   });
 
-  it('highlights the diagram annotations, such as P&ID boxes, on the page', () => {
-    renderPreview();
+  it('highlights the diagram annotations, such as P&ID boxes, on the page', async () => {
+    await renderPreview();
 
     expect(viewerProperties().showAnnotations).toBe(true);
   });
 
-  it('starts at 100% and lets the viewer zoom between 25% and 500%', () => {
-    renderPreview();
+  it('starts at 100% and lets the viewer zoom between 25% and 500%', async () => {
+    await renderPreview();
 
     expect(viewerProperties()).toEqual(
       expect.objectContaining({ zoom: 1, minZoom: 0.25, maxZoom: 5 }),
@@ -94,7 +95,7 @@ describe(DocumentPreview.name, () => {
   it('zooms in and out in steps of 25%', async () => {
     // Arrange
     const user = userEvent.setup();
-    renderPreview();
+    await renderPreview();
 
     // Act
     await user.click(screen.getByRole('button', { name: 'Zoom in' }));
@@ -110,7 +111,7 @@ describe(DocumentPreview.name, () => {
 
   it('returns to 100% from the percentage button', async () => {
     const user = userEvent.setup();
-    renderPreview();
+    await renderPreview();
     await user.click(screen.getByRole('button', { name: 'Zoom in' }));
 
     await user.click(screen.getByRole('button', { name: 'Reset zoom' }));
@@ -118,8 +119,8 @@ describe(DocumentPreview.name, () => {
     expect(viewerProperties().zoom).toBe(1);
   });
 
-  it('follows the zoom the viewer reports from a pinch or Ctrl-wheel', () => {
-    renderPreview();
+  it('follows the zoom the viewer reports from a pinch or Ctrl-wheel', async () => {
+    await renderPreview();
 
     act(() => {
       viewerProperties().onZoomChange?.(2.4);
@@ -129,8 +130,8 @@ describe(DocumentPreview.name, () => {
     expect(screen.getByRole('button', { name: 'Reset zoom' })).toHaveTextContent('240%');
   });
 
-  it('cannot zoom out past the smallest zoom', () => {
-    renderPreview();
+  it('cannot zoom out past the smallest zoom', async () => {
+    await renderPreview();
 
     act(() => {
       viewerProperties().onZoomChange?.(0.25);
@@ -140,8 +141,8 @@ describe(DocumentPreview.name, () => {
     expect(screen.getByRole('button', { name: 'Zoom in' })).toBeEnabled();
   });
 
-  it('cannot zoom in past the largest zoom', () => {
-    renderPreview();
+  it('cannot zoom in past the largest zoom', async () => {
+    await renderPreview();
 
     act(() => {
       viewerProperties().onZoomChange?.(5);
@@ -151,30 +152,30 @@ describe(DocumentPreview.name, () => {
     expect(screen.getByRole('button', { name: 'Zoom out' })).toBeEnabled();
   });
 
-  it('keeps the zoom controls for a one-page document', () => {
-    renderPreview();
+  it('keeps the zoom controls for a one-page document', async () => {
+    await renderPreview();
 
     loadDocument(1);
 
     expect(screen.getByRole('button', { name: 'Zoom in' })).toBeInTheDocument();
   });
 
-  it('shows no page controls before the document has loaded', () => {
-    renderPreview();
+  it('shows no page controls before the document has loaded', async () => {
+    await renderPreview();
 
     expect(screen.queryByRole('button', { name: 'Next page' })).not.toBeInTheDocument();
   });
 
-  it('shows no page controls for a one-page document', () => {
-    renderPreview();
+  it('shows no page controls for a one-page document', async () => {
+    await renderPreview();
 
     loadDocument(1);
 
     expect(screen.queryByRole('button', { name: 'Next page' })).not.toBeInTheDocument();
   });
 
-  it('starts on the first page of a multi-page document', () => {
-    renderPreview();
+  it('starts on the first page of a multi-page document', async () => {
+    await renderPreview();
 
     loadDocument(3);
 
@@ -187,7 +188,7 @@ describe(DocumentPreview.name, () => {
   it('goes to the next and the previous page', async () => {
     // Arrange
     const user = userEvent.setup();
-    renderPreview();
+    await renderPreview();
     loadDocument(3);
 
     // Act
@@ -203,7 +204,7 @@ describe(DocumentPreview.name, () => {
 
   it('cannot go past the last page', async () => {
     const user = userEvent.setup();
-    renderPreview();
+    await renderPreview();
     loadDocument(2);
 
     await user.click(screen.getByRole('button', { name: 'Next page' }));
@@ -212,8 +213,8 @@ describe(DocumentPreview.name, () => {
     expect(screen.getByRole('button', { name: 'Next page' })).toBeDisabled();
   });
 
-  it('follows the page when the viewer changes it', () => {
-    renderPreview();
+  it('follows the page when the viewer changes it', async () => {
+    await renderPreview();
     loadDocument(4);
 
     act(() => {
@@ -236,7 +237,7 @@ describe(DocumentPreview.name, () => {
       globalThis.document.body.appendChild(anchor);
     });
 
-    function renderWithAssets() {
+    async function renderWithAssets() {
       const detailsContext: UseAssetDetailsContextType = {
         getAssetDetails: vi.fn(() =>
           Promise.resolve(
@@ -249,20 +250,25 @@ describe(DocumentPreview.name, () => {
       };
       const QueryWrapper = makeQueryClientWrapper();
 
-      return render(
-        <QueryWrapper>
-          <AssetContext.Provider value={client}>
-            <UseAssetDetailsContext.Provider value={detailsContext}>
-              <NavigationProvider api={null}>
-                <DocumentPreviewDepsContext.Provider value={context}>
-                  <DocumentPreview document={document} />
-                </DocumentPreviewDepsContext.Provider>
-                <SelectedAssetProbe />
-              </NavigationProvider>
-            </UseAssetDetailsContext.Provider>
-          </AssetContext.Provider>
-        </QueryWrapper>,
+      const view = render(
+        <SdkWrapper>
+          <QueryWrapper>
+            <AssetContext.Provider value={client}>
+              <UseAssetDetailsContext.Provider value={detailsContext}>
+                <NavigationProvider api={null}>
+                  <DocumentViewerContext.Provider value={context}>
+                    <DocumentPreview document={document} />
+                  </DocumentViewerContext.Provider>
+                  <SelectedAssetProbe />
+                </NavigationProvider>
+              </UseAssetDetailsContext.Provider>
+            </AssetContext.Provider>
+          </QueryWrapper>
+        </SdkWrapper>,
       );
+      await screen.findByRole('button', { name: 'Zoom in' });
+
+      return view;
     }
 
     function click(annotation: Partial<DocumentAnnotation>): void {
@@ -286,7 +292,7 @@ describe(DocumentPreview.name, () => {
     }
 
     it('shows the linked asset in a popover at the clicked box', async () => {
-      renderWithAssets();
+      await renderWithAssets();
 
       click({});
 
@@ -295,7 +301,7 @@ describe(DocumentPreview.name, () => {
 
     it('opens the asset in the app from that dialog', async () => {
       const user = userEvent.setup();
-      renderWithAssets();
+      await renderWithAssets();
       click({});
 
       await user.click(await screen.findByRole('button', { name: 'Open asset' }));
@@ -305,7 +311,7 @@ describe(DocumentPreview.name, () => {
 
     it('closes the popover and stays on the document', async () => {
       const user = userEvent.setup();
-      renderWithAssets();
+      await renderWithAssets();
       click({});
       await screen.findByRole('heading', { name: 'Feed Pump 9' });
 
@@ -317,7 +323,7 @@ describe(DocumentPreview.name, () => {
 
     it('closes the popover when the zoom changes, because the box moves', async () => {
       const user = userEvent.setup();
-      renderWithAssets();
+      await renderWithAssets();
       click({});
       await screen.findByRole('heading', { name: 'Feed Pump 9' });
 
@@ -327,7 +333,7 @@ describe(DocumentPreview.name, () => {
     });
 
     it('closes the popover when the page changes', async () => {
-      renderWithAssets();
+      await renderWithAssets();
       loadDocument(3);
       click({});
       await screen.findByRole('heading', { name: 'Feed Pump 9' });
@@ -339,16 +345,16 @@ describe(DocumentPreview.name, () => {
       expect(screen.queryByRole('heading', { name: 'Feed Pump 9' })).not.toBeInTheDocument();
     });
 
-    it('does nothing for an annotation that links to something other than an asset', () => {
-      renderWithAssets();
+    it('does nothing for an annotation that links to something other than an asset', async () => {
+      await renderWithAssets();
 
       click({ resourceType: 'file', annotationType: 'diagrams.FileLink' });
 
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     });
 
-    it('does nothing for an annotation with no linked resource', () => {
-      renderWithAssets();
+    it('does nothing for an annotation with no linked resource', async () => {
+      await renderWithAssets();
 
       click({ linkedResource: undefined });
 

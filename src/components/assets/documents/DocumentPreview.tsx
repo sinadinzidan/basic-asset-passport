@@ -1,3 +1,4 @@
+import { useCogniteSdk } from '@cognite/app-sdk/react';
 import { IconChevronLeft, IconChevronRight, IconZoomIn, IconZoomOut } from '@tabler/icons-react';
 import { useContext, useState } from 'react';
 
@@ -10,24 +11,25 @@ import {
   PREVIEW_ZOOM_STEP,
 } from '../../../constants/documents';
 import { PERCENT_FACTOR } from '../../../constants/number';
-import { DocumentPreviewDepsContext } from '../../../hooks/assets/documents/documentPreviewDepsContext';
 import type { DocumentPreviewProps } from '../../../hooks/assets/documents/useDocumentPreview';
 import { useNavigationState } from '../../../hooks/general/useNavigationState';
 import { GeneralButton } from '../../general/GeneralButton';
 import { IconActionButton } from '../../general/IconActionButton';
 
+import { DocumentViewerContext } from './documentViewerContext';
 import { LinkedAssetPopover, type LinkedAssetTarget } from './LinkedAssetPopover';
 
 const FIRST_PAGE = 1;
 
 export function DocumentPreview({ document }: DocumentPreviewProps) {
-  const { useCogniteSdk, CogniteFileViewer } = useContext(DocumentPreviewDepsContext);
   const client = useCogniteSdk();
+  const { CogniteFileViewer } = useContext(DocumentViewerContext);
+  const openAsset = useNavigationState((store) => store.actions.selectAsset);
+
   const [page, setPage] = useState(FIRST_PAGE);
   const [pageCount, setPageCount] = useState(0);
   const [zoom, setZoom] = useState(PREVIEW_DEFAULT_ZOOM);
   const [linkedTarget, setLinkedTarget] = useState<LinkedAssetTarget | null>(null);
-  const openAsset = useNavigationState((store) => store.actions.selectAsset);
 
   const hasSeveralPages = pageCount > FIRST_PAGE;
   const canGoToPrevious = page > FIRST_PAGE;
