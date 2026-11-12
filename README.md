@@ -77,10 +77,23 @@ Tests use mocked CDF responses and never call live services. They sit in
 - `src/services/assets/`: CDF `instances.query` calls.
 - `src/lib/`, `src/enums/`, `src/types/`, `src/constants/`: helpers, shared
   enums, data contracts and named limits.
+- `src/schemas/`: Zod schemas that check what CDF and the host return.
+- `src/config/model.ts`: the space, model, view and property names.
 - `src/__mocks__/`: dummy data and test factories.
 - `public/`: the ADNOC Gas logos for the light and dark themes.
 
 Read `AGENTS.md` and `PROJECT_CONVENTIONS.md` before changing code.
+
+## Dependencies held back
+
+- `react-pdf` stays on `^9` (latest is 11). The vendored document viewer in
+  `src/cognite-file-viewer/` comes from Cognite's `integrate-file-viewer`
+  skill, which pins `react-pdf@^9.1.1` and the matching `pdfjs-dist` worker.
+  Plan: when that skill moves to a newer major, pull the skill again, copy the
+  updated viewer and raise `react-pdf` in the same change. Do not raise it on
+  its own.
+- `react`, `react-dom` and `@tanstack/react-table` stay one major behind until
+  `@cognite/aura` and the Flows scaffold support React 19 and table v9.
 
 ## Deployment
 

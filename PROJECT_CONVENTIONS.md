@@ -32,7 +32,9 @@ before deviating.
   `src/pages/dashboard/Settings.tsx`. A page file composes components; it must
   not define nested components or hold their markup. Pages outside the main
   flow (login, sign up, not found, permission denied) go in
-  `src/pages/general/`, for example `src/pages/general/NotFound.tsx`.
+  `src/pages/general/`, for example `src/pages/general/NotFound.tsx`. Add such
+  a page only together with the code that shows it; a page nothing renders is
+  dead code.
 - Page UI belongs in `src/components/`, in a folder path that mirrors the
   page's path, with a folder named after the page file in kebab-case:
   `src/pages/dashboard/Users.tsx` has its components in
@@ -269,6 +271,11 @@ export function AssetList({ page, search }: AssetListProps) {
   `src/schemas/<area>.ts`. A value of the wrong shape fails the query, so it
   shows as an error with Retry and never as wrong or missing data. Code past
   the seam receives typed values and does not re-check them.
+- Every CDF call goes through `cdfTaskRunner` (`src/lib/queuedTaskRunner.ts`),
+  which runs at most `CDF_MAX_CONCURRENT_REQUESTS` at once. The providers wrap
+  the signed-in client with `limitCdfCalls`, so a service that takes its
+  client from a provider is already covered; do not call the SDK from
+  anywhere else.
 - Every space, model, view and property identifier comes from `MODEL` in
   `src/config/model.ts`. Do not write one as a string literal anywhere else.
 - Keep mocks separate from real CDF services. Do not add empty abstractions.
@@ -371,6 +378,13 @@ export function AssetList({ page, search }: AssetListProps) {
 - Follow ESLint import grouping and ordering. Use `import type` for types.
 - Prefer named exports, retaining defaults required by existing tooling.
   Avoid circular imports and new path aliases.
+- Each folder under `src/components/` has an `index.ts` that re-exports what
+  other folders use from it. Import across folders through it
+  (`import { RetryAlert } from '../general'`); inside a folder, and from a
+  sub-folder up to its parent, import the file directly so no cycle forms.
+  A component that is loaded with `lazy()` (`DocumentPreview`,
+  `TimeseriesChartDialog`) and the context that pulls in its heavy library are
+  left out of the barrel, so they stay in their own chunk.
 - Never store tokens or credentials in `localStorage`, `sessionStorage` or any
   place script can read; get them from the host. Never use
   `dangerouslySetInnerHTML` with user data. Keep `manifest.json` network

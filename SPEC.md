@@ -381,16 +381,6 @@ the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines
     vent. The topbar itself stays navy in both
     modes, because the logo is white.
 
-## Pages outside the main flow
-
-- `src/pages/general/` holds the pages that are not part of the asset register:
-  `PageNotFound` ("Page not found", with the note that the page does not exist)
-  and `NoPermission` ("No permission", with the note to ask the project
-  administrator for access). Each shows a kicker (404 or 403), a title and an
-  empty-state card.
-- The app has no routing, so nothing shows these pages yet; a later change that
-  adds routing, or that turns a CDF 403 into a page, shows them.
-
 ## Mock mode
 
 - `VITE_MOCK_MODE=true` (default `false`; see `.env.example`) serves dummy data
@@ -513,6 +503,7 @@ the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines
   listed property that is not of the expected type fails the load, which shows the usual error with Retry,
   rather than appearing as a missing value. A note is checked the same way before it is written. The space,
   model, view and property names are kept in one place, `src/config/model.ts`.
+- At most 15 requests to CDF run at once; further ones wait their turn in the order they were made.
 - Throttled (429) and temporary gateway (502, 503, 504) responses are retried
   up to 3 times with exponential backoff and jitter, capped at 15 seconds;
   other errors are shown at once.
