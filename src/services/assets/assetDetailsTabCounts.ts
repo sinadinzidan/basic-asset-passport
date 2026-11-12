@@ -1,13 +1,8 @@
-import type { AggregationResponse, FilterDefinition } from '@cognite/sdk';
-
 import { EQUIPMENT_VIEW_EXTERNAL_ID } from '../../constants/assets';
-import { COUNT_AGGREGATE, COUNT_PROPERTY } from '../../constants/cdfApi';
 import {
   DOCUMENT_VIEW_EXTERNAL_ID,
   FILES_ASSETS_PROPERTY,
-  FILES_VIEW_EXTERNAL_ID,
-  FILES_VIEW_SPACE,
-  FILES_VIEW_VERSION,
+  FILES_VIEW,
 } from '../../constants/documents';
 import { NOTE_VIEW_EXTERNAL_ID } from '../../constants/notes';
 import {
@@ -17,60 +12,29 @@ import {
 import type { AssetIdentifier } from '../../types/asset';
 import type { AssetContextType } from '../../types/assetContext';
 
-import { findAssetPassportView, toViewReference, type ViewIdentity } from './viewHelpers';
+import { matchAssetInList, matchAssetRelation } from './assetFilter';
+import { countNodes } from './nodeCount';
+import { findAssetPassportView } from './viewHelpers';
 
-const filesView: ViewIdentity = {
-  space: FILES_VIEW_SPACE,
-  externalId: FILES_VIEW_EXTERNAL_ID,
-  version: FILES_VIEW_VERSION,
-};
-
-export async function countAssetNotes(
+export function countAssetNotes(
   client: AssetContextType,
   assetIdentifier: AssetIdentifier,
 ): Promise<number> {
-  const noteView = await findAssetPassportView(client, NOTE_VIEW_EXTERNAL_ID);
-
-  return countNodes(
-    client,
-    noteView,
-    (property) => ({
-      equals: { property, value: toAssetReference(assetIdentifier) },
-    }),
-    'asset',
-  );
+  return countNodesOfAsset(client, NOTE_VIEW_EXTERNAL_ID, assetIdentifier);
 }
 
-export async function countAssetEquipment(
+export function countAssetEquipment(
   client: AssetContextType,
   assetIdentifier: AssetIdentifier,
 ): Promise<number> {
-  const equipmentView = await findAssetPassportView(client, EQUIPMENT_VIEW_EXTERNAL_ID);
-
-  return countNodes(
-    client,
-    equipmentView,
-    (property) => ({
-      equals: { property, value: toAssetReference(assetIdentifier) },
-    }),
-    'asset',
-  );
+  return countNodesOfAsset(client, EQUIPMENT_VIEW_EXTERNAL_ID, assetIdentifier);
 }
 
-export async function countAssetDocuments(
+export function countAssetDocuments(
   client: AssetContextType,
   assetIdentifier: AssetIdentifier,
 ): Promise<number> {
-  const documentView = await findAssetPassportView(client, DOCUMENT_VIEW_EXTERNAL_ID);
-
-  return countNodes(
-    client,
-    documentView,
-    (property) => ({
-      equals: { property, value: toAssetReference(assetIdentifier) },
-    }),
-    'asset',
-  );
+  return countNodesOfAsset(client, DOCUMENT_VIEW_EXTERNAL_ID, assetIdentifier);
 }
 
 export async function countAssetTimeseries(
@@ -82,10 +46,7 @@ export async function countAssetTimeseries(
   return countNodes(
     client,
     timeseriesView,
-    (property) => ({
-      containsAny: { property, values: [toAssetReference(assetIdentifier)] },
-    }),
-    TIMESERIES_ASSETS_PROPERTY,
+    matchAssetInList(timeseriesView, TIMESERIES_ASSETS_PROPERTY, assetIdentifier),
   );
 }
 
@@ -95,47 +56,17 @@ export function countAssetLinkedFiles(
 ): Promise<number> {
   return countNodes(
     client,
-    filesView,
-    (property) => ({
-      containsAny: { property, values: [toAssetReference(assetIdentifier)] },
-    }),
-    FILES_ASSETS_PROPERTY,
+    FILES_VIEW,
+    matchAssetInList(FILES_VIEW, FILES_ASSETS_PROPERTY, assetIdentifier),
   );
 }
 
-async function countNodes(
+async function countNodesOfAsset(
   client: AssetContextType,
-  view: ViewIdentity,
-  makeRelationFilter: (property: [string, string, string]) => FilterDefinition,
-  relationProperty: string,
+  viewExternalId: string,
+  assetIdentifier: AssetIdentifier,
 ): Promise<number> {
-  const viewReference = toViewReference(view);
-  const response = await client.instances.aggregate({
-    view: viewReference,
-    instanceType: 'node',
+  const view = await findAssetPassportView(client, viewExternalId);
 
-    aggregates: [{ count: { property: COUNT_PROPERTY } }],
-    filter: makeRelationFilter([
-      view.space,
-      `${view.externalId}/${view.version}`,
-      relationProperty,
-    ]),
-  });
-
-  return readCount(response);
-}
-
-export function readCount(response: AggregationResponse): number {
-  const [result] = response.items;
-  const countValue = result?.aggregates.find(
-    (aggregate) => aggregate.aggregate === COUNT_AGGREGATE,
-  );
-
-  return countValue && 'value' in countValue && countValue.value !== undefined
-    ? countValue.value
-    : 0;
-}
-
-function toAssetReference({ space, externalId }: AssetIdentifier) {
-  return { space, externalId };
+  return countNodes(client, view, matchAssetRelation(view, assetIdentifier));
 }

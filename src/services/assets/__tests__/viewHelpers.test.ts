@@ -15,6 +15,7 @@ import {
   isNodeInstance,
   listAssetPassportViews,
   toViewReference,
+  toViewPropertyPath,
 } from '../viewHelpers';
 
 describe(listAssetPassportViews.name, () => {
@@ -154,6 +155,14 @@ describe(toViewReference.name, () => {
       externalId: 'Asset',
       version: view.version,
     });
+  });
+});
+
+describe(toViewPropertyPath.name, () => {
+  it('addresses a property of the view by space, view and version', () => {
+    const view = { space: 'sp-model', externalId: 'Note', version: 'v1' };
+
+    expect(toViewPropertyPath(view, 'asset')).toEqual(['sp-model', 'Note/v1', 'asset']);
   });
 });
 

@@ -5,7 +5,7 @@ import {
   ASSET_PASSPORT_MODEL_SPACE,
   ASSET_PASSPORT_MODEL_VERSION,
 } from '../../constants/assets';
-import { INSTANCE_TYPE_NODE } from '../../constants/cdfApi';
+import { INSTANCE_TYPE_NODE, VIEW_SOURCE_TYPE } from '../../constants/cdfApi';
 import type { AssetContextType } from '../../types/assetContext';
 
 export type NodeInstance = Extract<NodeOrEdge, { instanceType: 'node' }>;
@@ -72,11 +72,18 @@ export type ViewIdentity = Pick<ViewDefinition, 'space' | 'externalId' | 'versio
 
 export function toViewReference(view: ViewIdentity): ViewReference {
   return {
-    type: 'view',
+    type: VIEW_SOURCE_TYPE,
     space: view.space,
     externalId: view.externalId,
     version: view.version,
   };
+}
+
+export function toViewPropertyPath(
+  view: ViewIdentity,
+  propertyIdentifier: string,
+): [string, string, string] {
+  return [view.space, `${view.externalId}/${view.version}`, propertyIdentifier];
 }
 
 export function isNodeInstance(item: NodeOrEdge): item is NodeInstance {

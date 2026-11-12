@@ -14,7 +14,7 @@ import {
 import { isRecord } from '../../lib/isRecord';
 import type { AgentChatRequest, AgentContextType, AgentReply, CdfAgent } from '../../types/agent';
 
-type AgentSdkClient = Pick<CogniteClient, 'project' | 'get' | 'post'>;
+type AgentSdkClient = Pick<CogniteClient, 'project' | 'post'>;
 
 export function createAgentContext(sdk: AgentSdkClient): AgentContextType {
   const agentsPath = `/api/v1/projects/${encodeURIComponent(sdk.project)}/ai/agents`;

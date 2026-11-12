@@ -8,7 +8,7 @@ import {
   NODE_EXTERNAL_ID_PROPERTY,
 } from '../../constants/cdfApi';
 
-import type { ViewIdentity } from './viewHelpers';
+import { toViewPropertyPath, type ViewIdentity } from './viewHelpers';
 
 type SortOrder = Pick<PropertySortV3, 'direction' | 'nullsFirst'>;
 
@@ -31,7 +31,7 @@ export function sortByViewProperty(
   order: SortOrder = ASCENDING,
 ): PropertySortV3 {
   return {
-    property: [view.space, `${view.externalId}/${view.version}`, propertyIdentifier],
+    property: toViewPropertyPath(view, propertyIdentifier),
     ...order,
   };
 }

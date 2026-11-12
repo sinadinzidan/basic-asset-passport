@@ -7,6 +7,7 @@ import { getRequestLimit, toLimitedList } from '../../../lib/limitedList';
 import type { AssetIdentifier, AssetInstanceDetails } from '../../../types/asset';
 import type { AssetContextType } from '../../../types/assetContext';
 import type { LimitedList } from '../../../types/list';
+import { matchAssetInList } from '../assetFilter';
 import { getMappedProperties, toInstanceDetails } from '../instanceDetails';
 import { sortByName } from '../querySort';
 import { findAssetPassportView, isNodeInstance, toViewReference } from '../viewHelpers';
@@ -17,7 +18,6 @@ export async function listAssetTimeseries(
   limit: number = TIMESERIES_QUERY_LIMIT,
 ): Promise<LimitedList<AssetInstanceDetails>> {
   const timeseriesView = await findAssetPassportView(client, TIMESERIES_VIEW_EXTERNAL_ID);
-
   const viewReference = toViewReference(timeseriesView);
   const mappedProperties = getMappedProperties(timeseriesView);
   const response = await client.instances.query({
@@ -27,21 +27,7 @@ export async function listAssetTimeseries(
           filter: {
             and: [
               { hasData: [viewReference] },
-              {
-                containsAny: {
-                  property: [
-                    timeseriesView.space,
-                    `${timeseriesView.externalId}/${timeseriesView.version}`,
-                    TIMESERIES_ASSETS_PROPERTY,
-                  ],
-                  values: [
-                    {
-                      space: assetIdentifier.space,
-                      externalId: assetIdentifier.externalId,
-                    },
-                  ],
-                },
-              },
+              matchAssetInList(timeseriesView, TIMESERIES_ASSETS_PROPERTY, assetIdentifier),
             ],
           },
         },

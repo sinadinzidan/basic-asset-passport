@@ -1,3 +1,10 @@
+import type { FilterDefinition } from '@cognite/sdk';
+
+import {
+  ASSET_RELATION_PROPERTY_IDENTIFIER,
+  DESCENDING_SORT_DIRECTION,
+  INSTANCE_TYPE_NODE,
+} from '../../../constants/cdfApi';
 import {
   DEFAULT_DOCUMENT_MIME_TYPE,
   DOCUMENT_EXTERNAL_ID_PREFIX,
@@ -5,9 +12,7 @@ import {
   DOCUMENT_QUERY_LIMIT,
   DOCUMENT_VIEW_EXTERNAL_ID,
   FILES_ASSETS_PROPERTY,
-  FILES_VIEW_EXTERNAL_ID,
-  FILES_VIEW_SPACE,
-  FILES_VIEW_VERSION,
+  FILES_VIEW,
 } from '../../../constants/documents';
 import { DocumentOrigin } from '../../../enums/documentOrigin';
 import { getDocumentFileProblem } from '../../../lib/documentInput';
@@ -18,6 +23,7 @@ import type { AssetContextType } from '../../../types/assetContext';
 import type { AssetDocument, DocumentIdentifier } from '../../../types/document';
 import type { DocumentFileContextType } from '../../../types/documentFileContext';
 import type { LimitedList } from '../../../types/list';
+import { matchAssetInList, matchAssetRelation } from '../assetFilter';
 import { SORT_BY_EXTERNAL_ID, sortByViewProperty } from '../querySort';
 import {
   findAssetPassportView,
@@ -29,8 +35,18 @@ import {
   type ViewIdentity,
 } from '../viewHelpers';
 
-const DOCUMENT_PROPERTIES = ['name', 'mimeType', 'isUploaded', 'uploadedTime'];
 const UPLOADED_TIME_PROPERTY = 'uploadedTime';
+const DOCUMENT_PROPERTIES = ['name', 'mimeType', 'isUploaded', UPLOADED_TIME_PROPERTY];
+const DOCUMENTS_RESULT_SET = 'documents';
+const FILES_RESULT_SET = 'files';
+
+type DocumentListSource = {
+  resultSetName: string;
+  view: ViewIdentity;
+  assetFilter: FilterDefinition;
+  origin: DocumentOrigin;
+  nullsFirst: boolean;
+};
 
 type UploadDocumentDeps = { generateId: () => string; now: () => number };
 
@@ -48,104 +64,58 @@ export async function listAssetDocuments(
   const { now } = { ...defaultDeps, ...overrides };
   const currentTime = now();
   const documentView = await findAssetPassportView(client, DOCUMENT_VIEW_EXTERNAL_ID);
-  const viewReference = toViewReference(documentView);
-  const response = await client.instances.query({
-    with: {
-      documents: {
-        nodes: {
-          filter: {
-            and: [
-              { hasData: [viewReference] },
-              {
-                equals: {
-                  property: [
-                    documentView.space,
-                    `${documentView.externalId}/${documentView.version}`,
-                    'asset',
-                  ],
-                  value: {
-                    space: assetIdentifier.space,
-                    externalId: assetIdentifier.externalId,
-                  },
-                },
-              },
-            ],
-          },
-        },
-        sort: [
-          sortByViewProperty(documentView, UPLOADED_TIME_PROPERTY, {
-            direction: 'descending',
-            nullsFirst: true,
-          }),
-          SORT_BY_EXTERNAL_ID,
-        ],
-        limit: getRequestLimit(limit),
-      },
-    },
-    select: {
-      documents: {
-        sources: [
-          {
-            source: viewReference,
-            properties: DOCUMENT_PROPERTIES,
-          },
-        ],
-      },
-    },
-  });
 
-  return toLimitedList(
-    (response.items.documents ?? [])
-      .filter(isNodeInstance)
-      .map((node) => toAssetDocument(node, documentView, DocumentOrigin.APP, currentTime)),
+  return listDocumentNodes(
+    client,
+    {
+      resultSetName: DOCUMENTS_RESULT_SET,
+      view: documentView,
+      assetFilter: matchAssetRelation(documentView, assetIdentifier),
+      origin: DocumentOrigin.APP,
+      nullsFirst: true,
+    },
     limit,
+    currentTime,
   );
 }
 
-const filesView: ViewIdentity = {
-  space: FILES_VIEW_SPACE,
-  externalId: FILES_VIEW_EXTERNAL_ID,
-  version: FILES_VIEW_VERSION,
-};
-
-export async function listAssetLinkedFiles(
+export function listAssetLinkedFiles(
   client: AssetContextType,
   assetIdentifier: AssetIdentifier,
   limit: number = DOCUMENT_QUERY_LIMIT,
   overrides?: Partial<Pick<UploadDocumentDeps, 'now'>>,
 ): Promise<LimitedList<AssetDocument>> {
   const { now } = { ...defaultDeps, ...overrides };
-  const currentTime = now();
-  const viewReference = toViewReference(filesView);
+
+  return listDocumentNodes(
+    client,
+    {
+      resultSetName: FILES_RESULT_SET,
+      view: FILES_VIEW,
+      assetFilter: matchAssetInList(FILES_VIEW, FILES_ASSETS_PROPERTY, assetIdentifier),
+      origin: DocumentOrigin.RMDM,
+      nullsFirst: false,
+    },
+    limit,
+    now(),
+  );
+}
+
+async function listDocumentNodes(
+  client: AssetContextType,
+  { resultSetName, view, assetFilter, origin, nullsFirst }: DocumentListSource,
+  limit: number,
+  currentTime: number,
+): Promise<LimitedList<AssetDocument>> {
+  const viewReference = toViewReference(view);
   const response = await client.instances.query({
     with: {
-      files: {
-        nodes: {
-          filter: {
-            and: [
-              { hasData: [viewReference] },
-              {
-                containsAny: {
-                  property: [
-                    filesView.space,
-                    `${filesView.externalId}/${filesView.version}`,
-                    FILES_ASSETS_PROPERTY,
-                  ],
-                  values: [
-                    {
-                      space: assetIdentifier.space,
-                      externalId: assetIdentifier.externalId,
-                    },
-                  ],
-                },
-              },
-            ],
-          },
-        },
+      [resultSetName]: {
+        nodes: { filter: { and: [{ hasData: [viewReference] }, assetFilter] } },
         sort: [
-          sortByViewProperty(filesView, UPLOADED_TIME_PROPERTY, {
-            direction: 'descending',
-            nullsFirst: false,
+          sortByViewProperty(view, UPLOADED_TIME_PROPERTY, {
+            direction: DESCENDING_SORT_DIRECTION,
+            nullsFirst,
           }),
           SORT_BY_EXTERNAL_ID,
         ],
@@ -153,21 +123,16 @@ export async function listAssetLinkedFiles(
       },
     },
     select: {
-      files: {
-        sources: [
-          {
-            source: viewReference,
-            properties: DOCUMENT_PROPERTIES,
-          },
-        ],
+      [resultSetName]: {
+        sources: [{ source: viewReference, properties: DOCUMENT_PROPERTIES }],
       },
     },
   });
 
   return toLimitedList(
-    (response.items.files ?? [])
+    (response.items[resultSetName] ?? [])
       .filter(isNodeInstance)
-      .map((node) => toAssetDocument(node, filesView, DocumentOrigin.RMDM, currentTime)),
+      .map((node) => toAssetDocument(node, view, origin, currentTime)),
     limit,
   );
 }
@@ -192,7 +157,7 @@ function toAssetDocument(
       currentTime,
     ),
     origin,
-    uploadedTime: getTimestampProperty(properties, 'uploadedTime'),
+    uploadedTime: getTimestampProperty(properties, UPLOADED_TIME_PROPERTY),
     createdTime: node.createdTime,
   };
 }
@@ -217,7 +182,7 @@ export async function uploadAssetDocument(
   await client.instances.upsert({
     items: [
       {
-        instanceType: 'node',
+        instanceType: INSTANCE_TYPE_NODE,
         space: document.space,
         externalId: document.externalId,
         sources: [
@@ -226,7 +191,7 @@ export async function uploadAssetDocument(
             properties: {
               name: file.name,
               mimeType: file.type || DEFAULT_DOCUMENT_MIME_TYPE,
-              asset: {
+              [ASSET_RELATION_PROPERTY_IDENTIFIER]: {
                 space: assetIdentifier.space,
                 externalId: assetIdentifier.externalId,
               },
@@ -255,7 +220,7 @@ export async function deleteAssetDocument(
 ): Promise<void> {
   await client.instances.delete([
     {
-      instanceType: 'node',
+      instanceType: INSTANCE_TYPE_NODE,
       space: document.space,
       externalId: document.externalId,
     },

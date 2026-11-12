@@ -203,15 +203,14 @@ describe(createAssetNote.name, () => {
     });
   });
 
-  it('omits an empty body', async () => {
+  it('saves a note without text with an empty text, as an edit does', async () => {
     const upsert = vi.spyOn(client.instances, 'upsert').mockResolvedValue({ items: [] });
 
     await createAssetNote(client, assetIdentifier, { title: 'Title', body: '  ' }, { generateId });
 
-    const [request] = upsert.mock.calls[0];
-    const [item] = request.items;
-    expect(item).toBeDefined();
-    expect(JSON.stringify(item)).not.toContain('"body"');
+    expect(upsert.mock.calls[0]?.[0].items[0]).toMatchObject({
+      sources: [{ properties: { title: 'Title', body: '' } }],
+    });
   });
 
   it('saves the note without an author when the profile cannot be read', async () => {

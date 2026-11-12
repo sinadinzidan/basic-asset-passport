@@ -5,13 +5,26 @@ import {
   type ChartThreshold,
 } from '@flows/trend-chart';
 
+import {
+  DLE_HIGH_LABEL,
+  DLE_LIMIT_MAX_PROPERTY,
+  DLE_LIMIT_MIN_PROPERTY,
+  DLE_LOW_LABEL,
+  OWE_HIGH_LABEL,
+  OWE_LIMIT_MAX_PROPERTY,
+  OWE_LIMIT_MIN_PROPERTY,
+  OWE_LOW_LABEL,
+  TRIP_HIGH_LABEL,
+  TRIP_LIMIT_MAX_PROPERTY,
+  TRIP_LIMIT_MIN_PROPERTY,
+  TRIP_LOW_LABEL,
+} from '../../../constants/timeseries';
 import { getPropertyValue } from '../../../lib/assetProperties';
 import { getTimeseriesKey, getTimeseriesUnit } from '../../../lib/timeseriesProperties';
 import type { AssetInstanceDetails } from '../../../types/asset';
 
 type LimitProperty = {
   identifier: string;
-
   label: string;
   level: ThresholdLevel;
   side: ThresholdSide;
@@ -19,38 +32,38 @@ type LimitProperty = {
 
 const LIMIT_PROPERTIES: readonly LimitProperty[] = [
   {
-    identifier: 'oweLimitMax',
-    label: 'OWE high',
+    identifier: OWE_LIMIT_MAX_PROPERTY,
+    label: OWE_HIGH_LABEL,
     level: ThresholdLevel.ALERT,
     side: ThresholdSide.UPPER,
   },
   {
-    identifier: 'oweLimitMin',
-    label: 'OWE low',
+    identifier: OWE_LIMIT_MIN_PROPERTY,
+    label: OWE_LOW_LABEL,
     level: ThresholdLevel.ALERT,
     side: ThresholdSide.LOWER,
   },
   {
-    identifier: 'dleLimitMax',
-    label: 'DLE high',
+    identifier: DLE_LIMIT_MAX_PROPERTY,
+    label: DLE_HIGH_LABEL,
     level: ThresholdLevel.ALERT,
     side: ThresholdSide.UPPER,
   },
   {
-    identifier: 'dleLimitMin',
-    label: 'DLE low',
+    identifier: DLE_LIMIT_MIN_PROPERTY,
+    label: DLE_LOW_LABEL,
     level: ThresholdLevel.ALERT,
     side: ThresholdSide.LOWER,
   },
   {
-    identifier: 'tripLimitMax',
-    label: 'Trip high',
+    identifier: TRIP_LIMIT_MAX_PROPERTY,
+    label: TRIP_HIGH_LABEL,
     level: ThresholdLevel.DANGER,
     side: ThresholdSide.UPPER,
   },
   {
-    identifier: 'tripLimitMin',
-    label: 'Trip low',
+    identifier: TRIP_LIMIT_MIN_PROPERTY,
+    label: TRIP_LOW_LABEL,
     level: ThresholdLevel.DANGER,
     side: ThresholdSide.LOWER,
   },

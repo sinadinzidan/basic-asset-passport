@@ -4,6 +4,7 @@ import type { AssetIdentifier, AssetInstanceDetails } from '../../types/asset';
 import type { AssetContextType } from '../../types/assetContext';
 import type { LimitedList } from '../../types/list';
 
+import { matchAssetRelation } from './assetFilter';
 import { getMappedProperties, toInstanceDetails } from './instanceDetails';
 import { sortByName } from './querySort';
 import { findAssetPassportView, isNodeInstance, toViewReference } from './viewHelpers';
@@ -21,22 +22,7 @@ export async function listAssetEquipment(
       equipment: {
         nodes: {
           filter: {
-            and: [
-              { hasData: [viewReference] },
-              {
-                equals: {
-                  property: [
-                    equipmentView.space,
-                    `${equipmentView.externalId}/${equipmentView.version}`,
-                    'asset',
-                  ],
-                  value: {
-                    space: assetIdentifier.space,
-                    externalId: assetIdentifier.externalId,
-                  },
-                },
-              },
-            ],
+            and: [{ hasData: [viewReference] }, matchAssetRelation(equipmentView, assetIdentifier)],
           },
         },
         sort: sortByName(equipmentView),

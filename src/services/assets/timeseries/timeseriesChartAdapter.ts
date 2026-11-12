@@ -1,6 +1,11 @@
 import type { ChartDataAdapter, TimeSeriesData, TimeSeriesDefinition } from '@flows/trend-chart';
 
-import { CHART_QUERY_LIMIT_FACTOR, CHART_MAX_POINTS } from '../../../constants/timeseries';
+import { DESCRIPTION_PROPERTY_IDENTIFIER } from '../../../constants/assets';
+import {
+  CHART_MAX_POINTS,
+  CHART_NUMERIC_DATA_TYPE,
+  CHART_QUERY_LIMIT_FACTOR,
+} from '../../../constants/timeseries';
 import { getPropertyValue } from '../../../lib/assetProperties';
 import { chooseChartGranularity } from '../../../lib/timeseriesGranularity';
 import {
@@ -16,7 +21,6 @@ import { getTimeseriesThresholds } from './timeseriesThresholds';
 
 type TimeseriesChartAdapterOptions = {
   sourceName: string;
-
   isSimulated: boolean;
 };
 
@@ -36,9 +40,9 @@ export function createTimeseriesChartAdapter(
     id: getTimeseriesKey(timeseries),
     name: getTimeseriesName(timeseries),
     tag: timeseries.externalId,
-    description: getPropertyValue(timeseries, 'description') ?? '',
+    description: getPropertyValue(timeseries, DESCRIPTION_PROPERTY_IDENTIFIER) ?? '',
     unit: getTimeseriesUnit(timeseries) ?? undefined,
-    dataType: 'Numeric',
+    dataType: CHART_NUMERIC_DATA_TYPE,
     sourceName,
     isSimulated,
   }));
