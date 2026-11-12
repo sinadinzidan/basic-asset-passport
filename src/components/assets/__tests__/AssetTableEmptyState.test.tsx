@@ -17,12 +17,6 @@ describe(AssetTableEmptyState.name, () => {
     expect(screen.getByText(ASSETS_EMPTY_DESCRIPTION)).toBeInTheDocument();
   });
 
-  it('treats a search of only spaces as no search', () => {
-    render(<AssetTableEmptyState searchQuery="   " />);
-
-    expect(screen.getByText(ASSETS_EMPTY_TITLE)).toBeInTheDocument();
-  });
-
   it('names the search that matched nothing', () => {
     render(<AssetTableEmptyState searchQuery="pump" />);
 

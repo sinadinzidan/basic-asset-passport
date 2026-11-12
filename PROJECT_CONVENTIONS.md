@@ -250,11 +250,12 @@ export function AssetList({ page, search }: AssetListProps) {
 - Use host integration for project context and credentials. Never hardcode
   credentials, tokens, or deployment-specific runtime project context.
 - Include project and relevant filters in query keys.
-- Keep data access thin, as Cognite's architecture reference says: a typed
-  service function that takes the client (`listAssetNotes(client, asset)`) and
-  a query hook that calls it. Do not wrap a read in an interface and a class.
-  Promote a function to a class only when it has grown real logic that needs
-  swapping, and say why.
+- Every service is an interface implemented by a private class and created
+  by a `create<Name>` factory that takes the client
+  (`createAssetNoteService(client).listAssetNotes(asset)`), as the
+  certification review asks. Nothing outside the file names the class. A hook
+  gets the factory from its deps context, typed to the methods it calls
+  (`Pick<AssetNoteService, 'listAssetNotes'>`). Pure helpers stay functions.
 - A hook returns a narrow state and named commands, never the TanStack Query
   object: a query hook returns `toQueryState(query)` (`data`, `error`,
   `isPending`, `isError`, `isFetching`, `isLoadingMore`, `retry`); a mutation

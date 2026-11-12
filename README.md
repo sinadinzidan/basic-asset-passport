@@ -86,14 +86,14 @@ Read `AGENTS.md` and `PROJECT_CONVENTIONS.md` before changing code.
 
 ## Dependencies held back
 
-- `react-pdf` stays on `^9` (latest is 11). The vendored document viewer in
-  `src/cognite-file-viewer/` comes from Cognite's `integrate-file-viewer`
-  skill, which pins `react-pdf@^9.1.1` and the matching `pdfjs-dist` worker.
-  Plan: when that skill moves to a newer major, pull the skill again, copy the
-  updated viewer and raise `react-pdf` in the same change. Do not raise it on
-  its own.
-- `react`, `react-dom` and `@tanstack/react-table` stay one major behind until
-  `@cognite/aura` and the Flows scaffold support React 19 and table v9.
+- `@cognite/app-sdk` stays on `^0.9`, the version the Flows scaffold pins.
+  Later releases need Vite 8, and the scaffold holds Vite below 8.
+- `react`, `react-dom` and `@tanstack/react-table` stay one major behind:
+  `@cognite/aura` only accepts React 18 and table v8.
+- `react-pdf` is on `^10`, the last major that runs on React 18 (11 needs
+  React 19). The vendored viewer in `src/cognite-file-viewer/` was checked
+  against it with a real multi-page PDF. Raise all four together once Aura
+  supports React 19.
 
 ## Deployment
 

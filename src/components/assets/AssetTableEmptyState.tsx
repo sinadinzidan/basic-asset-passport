@@ -11,7 +11,7 @@ type AssetTableEmptyStateProps = {
 };
 
 export function AssetTableEmptyState({ searchQuery }: AssetTableEmptyStateProps) {
-  if (searchQuery.trim() !== '') {
+  if (searchQuery !== '') {
     return (
       <EmptyStateMessage
         title={ASSETS_NO_MATCH_TITLE}

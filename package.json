@@ -28,8 +28,8 @@
   "dependencies": {
     "@adnoc/agent-mascot": "*",
     "@cognite/app-sdk": "^0.9.0",
-    "@cognite/aura": "^1.46104.0",
-    "@cognite/sdk": "^10.10.0",
+    "@cognite/aura": "^1.49537.0",
+    "@cognite/sdk": "^10.20.0",
     "@flows/trend-chart": "*",
     "@tabler/icons-react": "^3.35.0",
     "@tanstack/react-query": "^5.90.10",
@@ -39,7 +39,7 @@
     "dayjs": "^1.11.13",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-pdf": "^9.2.1",
+    "react-pdf": "^10.5.0",
     "tailwind-merge": "^3.7.0",
     "zod": "^4.6.7",
     "zustand": "^5.1.0"
@@ -54,8 +54,8 @@
     "@types/react": "^18.3.1",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": ">=5.1.1 <6.0.0",
-    "@vitest/coverage-v8": "4.1.10",
-    "@vitest/ui": "4.1.10",
+    "@vitest/coverage-v8": "^4.1.12",
+    "@vitest/ui": "^4.1.12",
     "eslint": "9.39.4",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-check-file": "^3.3.2",
@@ -66,14 +66,20 @@
     "eslint-plugin-unicorn": "^63.0.0",
     "globals": "^17.0.0",
     "happy-dom": "^21.0.4",
-    "prettier": "^3.9.10",
+    "prettier": "^3.10.0",
     "tailwindcss": "^4.1.17",
     "typescript": "^5.4.0",
-    "typescript-eslint": "^8.46.4",
+    "typescript-eslint": "^8.72.2",
     "vite": ">=7.3.5 <8.0.0",
-    "vitest": "4.1.10"
+    "vitest": "^4.1.12"
   },
   "workspaces": [
     "packages/*"
-  ]
+  ],
+  "overrides": {
+    "katex": "^0.18.2",
+    "@typescript-eslint/typescript-estree": {
+      "minimatch": "^11.0.1"
+    }
+  }
 }
