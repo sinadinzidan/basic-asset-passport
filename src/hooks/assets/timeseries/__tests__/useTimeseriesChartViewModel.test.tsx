@@ -4,9 +4,9 @@ import type { ComponentType, ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { StoreApi } from 'zustand';
 
+import { makeInstanceDetails } from '../../../../__mocks__/assets';
 import { CHART_OPEN_WINDOW_MS } from '../../../../constants/timeseries';
 import { DEFAULT_NAVIGATION_STATE } from '../../../../lib/navigationState';
-import { makeInstanceDetails } from '../../../../mocks/assets';
 import { createNavigationStore } from '../../../../store/navigation';
 import type { NavigationStore } from '../../../../types/navigation';
 import type { TimeseriesContextType } from '../../../../types/timeseries';

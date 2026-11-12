@@ -1,10 +1,10 @@
 import type { CogniteClient } from '@cognite/sdk';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { makeNodeInstance, makeQueryResponse, makeViewDefinition } from '../../../__mocks__/cdf';
+import { makeOfflineSdkClient, stubModelViews } from '../../../__mocks__/cogniteClient';
 import { ASSET_EQUIPMENT_QUERY_LIMIT } from '../../../constants/assets';
 import { TestPropertyType } from '../../../enums/testPropertyType';
-import { makeNodeInstance, makeQueryResponse, makeViewDefinition } from '../../../mocks/cdf';
-import { makeOfflineSdkClient, stubModelViews } from '../../../mocks/cogniteClient';
 import { listAssetEquipment } from '../assetEquipment';
 
 const equipmentView = makeViewDefinition('Equipment', {

@@ -1,10 +1,10 @@
 import type { CogniteClient } from '@cognite/sdk';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { makeNodeInstance, makeQueryResponse, makeViewDefinition } from '../../../../__mocks__/cdf';
+import { makeOfflineSdkClient, stubModelViews } from '../../../../__mocks__/cogniteClient';
 import { NOTE_INSTANCE_SPACE, NOTE_QUERY_LIMIT } from '../../../../constants/notes';
 import { TestPropertyType } from '../../../../enums/testPropertyType';
-import { makeNodeInstance, makeQueryResponse, makeViewDefinition } from '../../../../mocks/cdf';
-import { makeOfflineSdkClient, stubModelViews } from '../../../../mocks/cogniteClient';
 import { SORT_BY_EXTERNAL_ID, SORT_BY_NEWEST } from '../../querySort';
 import { createAssetNote, deleteAssetNote, listAssetNotes, updateAssetNote } from '../assetNote';
 

@@ -3,8 +3,11 @@ import { act, renderHook } from '@testing-library/react';
 import type { ComponentType, ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 
-import { makeMockClient } from '../../../../mocks/cogniteClient';
-import { makeQueryClientWrapper, makeTestQueryClient } from '../../../../mocks/QueryClientWrapper';
+import { makeMockClient } from '../../../../__mocks__/cogniteClient';
+import {
+  makeQueryClientWrapper,
+  makeTestQueryClient,
+} from '../../../../__mocks__/QueryClientWrapper';
 import type { DocumentFileContextType } from '../../../../types/documentFileContext';
 import type { ShowSuccessToast } from '../../../general/useSuccessToast';
 import { AssetContext } from '../../useAssetContext';

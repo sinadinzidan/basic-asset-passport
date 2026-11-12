@@ -2,9 +2,9 @@ import { renderHook, waitFor } from '@testing-library/react';
 import type { ComponentType, ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { makeQueryClientWrapper } from '../../../../__mocks__/QueryClientWrapper';
 import { TREND_GRANULARITY, TREND_WINDOW_MS } from '../../../../constants/timeseries';
 import { getTimeseriesKey } from '../../../../lib/timeseriesProperties';
-import { makeQueryClientWrapper } from '../../../../mocks/QueryClientWrapper';
 import type { TimeseriesContextType } from '../../../../types/timeseries';
 import { TimeseriesContext } from '../useTimeseriesContext';
 import { useTimeseriesTrends, UseTimeseriesTrendsContext } from '../useTimeseriesTrends';

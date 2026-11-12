@@ -2,7 +2,7 @@ import { renderHook } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
-import { makeMockClient } from '../../../mocks/cogniteClient';
+import { makeMockClient } from '../../../__mocks__/cogniteClient';
 import { AssetContext, useAssetContext } from '../useAssetContext';
 
 describe(useAssetContext.name, () => {

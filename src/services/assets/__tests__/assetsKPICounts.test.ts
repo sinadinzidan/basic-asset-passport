@@ -1,9 +1,9 @@
 import type { AggregationResponse, CogniteClient } from '@cognite/sdk';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { makeViewDefinition } from '../../../__mocks__/cdf';
+import { makeOfflineSdkClient, stubModelViews } from '../../../__mocks__/cogniteClient';
 import { TestPropertyType } from '../../../enums/testPropertyType';
-import { makeViewDefinition } from '../../../mocks/cdf';
-import { makeOfflineSdkClient, stubModelViews } from '../../../mocks/cogniteClient';
 import { countAllAssets, countAllEquipment, countOperatingAssets } from '../assetsKPICounts';
 
 const assetView = makeViewDefinition('Asset', { flocStatus: {} }, 'v1', 'sp-model');

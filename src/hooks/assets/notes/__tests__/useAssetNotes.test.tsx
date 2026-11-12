@@ -2,11 +2,11 @@ import { renderHook, waitFor } from '@testing-library/react';
 import type { ComponentType, ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { makeMockClient } from '../../../../__mocks__/cogniteClient';
+import { makeLimitedList } from '../../../../__mocks__/lists';
+import { makeAssetNote } from '../../../../__mocks__/notes';
+import { makeQueryClientWrapper } from '../../../../__mocks__/QueryClientWrapper';
 import { NOTE_QUERY_LIMIT } from '../../../../constants/notes';
-import { makeMockClient } from '../../../../mocks/cogniteClient';
-import { makeLimitedList } from '../../../../mocks/lists';
-import { makeAssetNote } from '../../../../mocks/notes';
-import { makeQueryClientWrapper } from '../../../../mocks/QueryClientWrapper';
 import type { LimitedList } from '../../../../types/list';
 import type { AssetNote } from '../../../../types/note';
 import { AssetContext } from '../../useAssetContext';

@@ -4,6 +4,12 @@ import type { ComponentType, ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { StoreApi } from 'zustand';
 
+import { makeAssetDetailsTabCountsContext } from '../../../__mocks__/assetDetailsTabCounts';
+import { makeInstanceDetails } from '../../../__mocks__/assets';
+import { makeMockClient } from '../../../__mocks__/cogniteClient';
+import { makeLimitedList } from '../../../__mocks__/lists';
+import { makeNavigationStore } from '../../../__mocks__/navigation';
+import { makeQueryClientWrapper } from '../../../__mocks__/QueryClientWrapper';
 import { STATUS_PROPERTY_IDENTIFIER } from '../../../constants/assets';
 import { AssetTab } from '../../../enums/assetTab';
 import { UseAssetEquipmentContext } from '../../../hooks/assets/equipment/useAssetEquipment';
@@ -17,12 +23,6 @@ import {
   type UseAssetDetailsTabCountsContextType,
 } from '../../../hooks/assets/useAssetDetailsTabCounts';
 import { NavigationStoreContext } from '../../../hooks/general/useNavigationState';
-import { makeAssetDetailsTabCountsContext } from '../../../mocks/assetDetailsTabCounts';
-import { makeInstanceDetails } from '../../../mocks/assets';
-import { makeMockClient } from '../../../mocks/cogniteClient';
-import { makeLimitedList } from '../../../mocks/lists';
-import { makeNavigationStore } from '../../../mocks/navigation';
-import { makeQueryClientWrapper } from '../../../mocks/QueryClientWrapper';
 import type { AssetInstanceDetails } from '../../../types/asset';
 import type { NavigationStore } from '../../../types/navigation';
 import { AssetDetails } from '../AssetDetails';

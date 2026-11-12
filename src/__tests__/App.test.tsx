@@ -4,21 +4,21 @@ import userEvent from '@testing-library/user-event';
 import type { ComponentProps } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import App from '../App';
-import { ASSISTANT_LABEL } from '../constants/agents';
-import { APP_LOGO_SOURCE } from '../constants/branding';
-import { AssetTab } from '../enums/assetTab';
 import {
   makeNodeInstance,
   makeQueryResponse,
   makeViewDefinition,
   TEST_VIEW_SPACE,
-} from '../mocks/cdf';
-import { makeOfflineSdkClient, stubModelViews } from '../mocks/cogniteClient';
-import { makeMockAgentContext } from '../mocks/mockAgentContext';
-import { makeMockAssetContext, makeMockDocumentFileContext } from '../mocks/mockAssetContext';
-import { makeMockTimeseriesContext } from '../mocks/mockTimeseriesContext';
-import { makeQueryClientWrapper } from '../mocks/QueryClientWrapper';
+} from '../__mocks__/cdf';
+import { makeOfflineSdkClient, stubModelViews } from '../__mocks__/cogniteClient';
+import { makeMockAgentContext } from '../__mocks__/mockAgentContext';
+import { makeMockAssetContext, makeMockDocumentFileContext } from '../__mocks__/mockAssetContext';
+import { makeMockTimeseriesContext } from '../__mocks__/mockTimeseriesContext';
+import { makeQueryClientWrapper } from '../__mocks__/QueryClientWrapper';
+import App from '../App';
+import { ASSISTANT_LABEL } from '../constants/agents';
+import { APP_LOGO_SOURCE } from '../constants/branding';
+import { AssetTab } from '../enums/assetTab';
 import type { MockContexts } from '../types/mockContext';
 
 type AppDeps = NonNullable<ComponentProps<typeof App>['deps']>;

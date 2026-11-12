@@ -4,6 +4,11 @@ import type { ComponentType, ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { StoreApi } from 'zustand';
 
+import { makeInstanceDetails } from '../../../__mocks__/assets';
+import { makeMockClient } from '../../../__mocks__/cogniteClient';
+import { makeNavigationStore } from '../../../__mocks__/navigation';
+import { makeQueryClientWrapper } from '../../../__mocks__/QueryClientWrapper';
+import { makeThemeModeStore } from '../../../__mocks__/themeMode';
 import { APP_LOGO_SOURCE } from '../../../constants/branding';
 import { AssetContext } from '../../../hooks/assets/useAssetContext';
 import {
@@ -12,11 +17,6 @@ import {
 } from '../../../hooks/assets/useAssetDetails';
 import { NavigationStoreContext } from '../../../hooks/general/useNavigationState';
 import { UseThemeModeViewModelContext } from '../../../hooks/general/useThemeModeViewModel';
-import { makeInstanceDetails } from '../../../mocks/assets';
-import { makeMockClient } from '../../../mocks/cogniteClient';
-import { makeNavigationStore } from '../../../mocks/navigation';
-import { makeQueryClientWrapper } from '../../../mocks/QueryClientWrapper';
-import { makeThemeModeStore } from '../../../mocks/themeMode';
 import type { NavigationStore } from '../../../types/navigation';
 import { AssetTopbar } from '../AssetTopbar';
 

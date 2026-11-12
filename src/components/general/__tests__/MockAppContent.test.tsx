@@ -2,11 +2,14 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 
+import { makeMockAgentContext } from '../../../__mocks__/mockAgentContext';
+import {
+  makeMockAssetContext,
+  makeMockDocumentFileContext,
+} from '../../../__mocks__/mockAssetContext';
+import { makeMockTimeseriesContext } from '../../../__mocks__/mockTimeseriesContext';
+import { makeQueryClientWrapper } from '../../../__mocks__/QueryClientWrapper';
 import { ASSISTANT_LABEL } from '../../../constants/agents';
-import { makeMockAgentContext } from '../../../mocks/mockAgentContext';
-import { makeMockAssetContext, makeMockDocumentFileContext } from '../../../mocks/mockAssetContext';
-import { makeMockTimeseriesContext } from '../../../mocks/mockTimeseriesContext';
-import { makeQueryClientWrapper } from '../../../mocks/QueryClientWrapper';
 import type { MockContexts } from '../../../types/mockContext';
 import { MockAppContent } from '../MockAppContent';
 

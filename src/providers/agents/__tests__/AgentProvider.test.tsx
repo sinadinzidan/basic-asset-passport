@@ -2,9 +2,9 @@ import type { CogniteClient } from '@cognite/sdk';
 import { render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { makeOfflineSdkClient } from '../../../__mocks__/cogniteClient';
+import { makeCogniteSdkWrapper } from '../../../__mocks__/CogniteSdkWrapper';
 import { useAgentContext } from '../../../hooks/agents/useAgentContext';
-import { makeOfflineSdkClient } from '../../../mocks/cogniteClient';
-import { makeCogniteSdkWrapper } from '../../../mocks/CogniteSdkWrapper';
 import type { AgentContextType } from '../../../types/agent';
 import { AgentProvider } from '../AgentProvider';
 

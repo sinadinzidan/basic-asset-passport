@@ -3,9 +3,9 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import type { ComponentType, ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { makeAgentContext, makeCdfAgent } from '../../../__mocks__/agents';
+import { makeQueryClientWrapper, makeTestQueryClient } from '../../../__mocks__/QueryClientWrapper';
 import { ChatMessageRole } from '../../../enums/chatMessageRole';
-import { makeAgentContext, makeCdfAgent } from '../../../mocks/agents';
-import { makeQueryClientWrapper, makeTestQueryClient } from '../../../mocks/QueryClientWrapper';
 import { createAgentChatStore } from '../../../store/agents';
 import type { AgentContextType } from '../../../types/agent';
 import { getAgentQueryKey } from '../useAgent';

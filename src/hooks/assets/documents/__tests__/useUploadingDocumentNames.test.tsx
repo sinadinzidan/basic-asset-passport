@@ -2,8 +2,8 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import type { ComponentType, ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { makeMockClient } from '../../../../mocks/cogniteClient';
-import { makeQueryClientWrapper } from '../../../../mocks/QueryClientWrapper';
+import { makeMockClient } from '../../../../__mocks__/cogniteClient';
+import { makeQueryClientWrapper } from '../../../../__mocks__/QueryClientWrapper';
 import type { DocumentFileContextType } from '../../../../types/documentFileContext';
 import { AssetContext } from '../../useAssetContext';
 import { DocumentFileContext } from '../useDocumentFileContext';

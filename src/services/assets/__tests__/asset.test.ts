@@ -1,9 +1,9 @@
 import type { CogniteClient } from '@cognite/sdk';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { makeNodeInstance, makeQueryResponse, makeViewDefinition } from '../../../__mocks__/cdf';
+import { makeOfflineSdkClient, stubModelViews } from '../../../__mocks__/cogniteClient';
 import { ASSET_QUERY_LIMIT, ASSET_SEARCH_LIMIT } from '../../../constants/assets';
-import { makeNodeInstance, makeQueryResponse, makeViewDefinition } from '../../../mocks/cdf';
-import { makeOfflineSdkClient, stubModelViews } from '../../../mocks/cogniteClient';
 import { listAssets, searchAssets } from '../asset';
 
 const assetView = makeViewDefinition('Asset', { name: {} });

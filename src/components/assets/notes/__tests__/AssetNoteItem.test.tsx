@@ -3,14 +3,14 @@ import userEvent from '@testing-library/user-event';
 import type { ComponentType, ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { makeMockClient } from '../../../../__mocks__/cogniteClient';
+import { makeAssetNote } from '../../../../__mocks__/notes';
+import { makeQueryClientWrapper } from '../../../../__mocks__/QueryClientWrapper';
 import {
   UseUpdateAssetNoteContext,
   type UseUpdateAssetNoteContextType,
 } from '../../../../hooks/assets/notes/useUpdateAssetNote';
 import { AssetContext } from '../../../../hooks/assets/useAssetContext';
-import { makeMockClient } from '../../../../mocks/cogniteClient';
-import { makeAssetNote } from '../../../../mocks/notes';
-import { makeQueryClientWrapper } from '../../../../mocks/QueryClientWrapper';
 import type { AssetNote } from '../../../../types/note';
 import { AssetNoteItem } from '../AssetNoteItem';
 

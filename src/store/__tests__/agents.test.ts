@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
+import { makeCdfAgent } from '../../__mocks__/agents';
 import { ChatMessageRole } from '../../enums/chatMessageRole';
-import { makeCdfAgent } from '../../mocks/agents';
 import { createAgentChatStore, EMPTY_CONVERSATION, getConversation } from '../agents';
 
 const agent = makeCdfAgent();

@@ -2,6 +2,8 @@ import type { CogniteClient } from '@cognite/sdk';
 import { render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { makeOfflineSdkClient } from '../../../__mocks__/cogniteClient';
+import { makeCogniteSdkWrapper } from '../../../__mocks__/CogniteSdkWrapper';
 import {
   DocumentViewerContext,
   type DocumentViewerContextType,
@@ -10,8 +12,6 @@ import { useDocumentFileContext } from '../../../hooks/assets/documents/useDocum
 import { useDocumentPreview } from '../../../hooks/assets/documents/useDocumentPreview';
 import { useTimeseriesContext } from '../../../hooks/assets/timeseries/useTimeseriesContext';
 import { useAssetContext } from '../../../hooks/assets/useAssetContext';
-import { makeOfflineSdkClient } from '../../../mocks/cogniteClient';
-import { makeCogniteSdkWrapper } from '../../../mocks/CogniteSdkWrapper';
 import { NavigationProvider } from '../../general/NavigationProvider';
 import { AssetProvider } from '../AssetProvider';
 

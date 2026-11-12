@@ -2,9 +2,9 @@ import { act, fireEvent, render, screen, waitFor, within } from '@testing-librar
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { makeAgentContext, makeCdfAgent } from '../../../__mocks__/agents';
 import { SAMPLE_QUESTIONS } from '../../../constants/agents';
 import { DictationFailure } from '../../../enums/dictationFailure';
-import { makeAgentContext, makeCdfAgent } from '../../../mocks/agents';
 import type { AgentContextType } from '../../../types/agent';
 import type { DictationCallbacks, DictationEngine } from '../../../types/speech';
 import { AgentChat } from '../AgentChat';

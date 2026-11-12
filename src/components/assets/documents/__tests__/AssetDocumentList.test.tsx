@@ -3,6 +3,10 @@ import userEvent from '@testing-library/user-event';
 import type { ComponentType, ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { makeMockClient } from '../../../../__mocks__/cogniteClient';
+import { makeAssetDocument } from '../../../../__mocks__/documents';
+import { makeLimitedList } from '../../../../__mocks__/lists';
+import { makeQueryClientWrapper } from '../../../../__mocks__/QueryClientWrapper';
 import { DOCUMENT_QUERY_LIMIT } from '../../../../constants/documents';
 import { DocumentOrigin } from '../../../../enums/documentOrigin';
 import { DocumentUploadStatus } from '../../../../enums/documentUploadStatus';
@@ -23,10 +27,6 @@ import {
   type RenderDocumentPreview,
 } from '../../../../hooks/assets/documents/useDocumentPreview';
 import { AssetContext } from '../../../../hooks/assets/useAssetContext';
-import { makeMockClient } from '../../../../mocks/cogniteClient';
-import { makeAssetDocument } from '../../../../mocks/documents';
-import { makeLimitedList } from '../../../../mocks/lists';
-import { makeQueryClientWrapper } from '../../../../mocks/QueryClientWrapper';
 import { AssetDocumentList } from '../AssetDocumentList';
 
 const assetIdentifier = { space: 'asset-space', externalId: 'FLOC-1' };

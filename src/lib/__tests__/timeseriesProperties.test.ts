@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { makeInstanceDetails } from '../../mocks/assets';
+import { makeInstanceDetails } from '../../__mocks__/assets';
 import {
   getTimeseriesDisplayProperties,
   getTimeseriesKey,

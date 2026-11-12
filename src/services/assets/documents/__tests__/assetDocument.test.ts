@@ -1,6 +1,8 @@
 import type { CogniteClient } from '@cognite/sdk';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { makeNodeInstance, makeQueryResponse, makeViewDefinition } from '../../../../__mocks__/cdf';
+import { makeOfflineSdkClient, stubModelViews } from '../../../../__mocks__/cogniteClient';
 import {
   DOCUMENT_INSTANCE_SPACE,
   DOCUMENT_PENDING_POLL_WINDOW_MS,
@@ -9,8 +11,6 @@ import {
 import { DocumentOrigin } from '../../../../enums/documentOrigin';
 import { DocumentUploadStatus } from '../../../../enums/documentUploadStatus';
 import { TestPropertyType } from '../../../../enums/testPropertyType';
-import { makeNodeInstance, makeQueryResponse, makeViewDefinition } from '../../../../mocks/cdf';
-import { makeOfflineSdkClient, stubModelViews } from '../../../../mocks/cogniteClient';
 import type { DocumentFileContextType } from '../../../../types/documentFileContext';
 import {
   deleteAssetDocument,

@@ -168,7 +168,10 @@ export default tseslint.config(
       ],
       'check-file/folder-naming-convention': [
         'error',
-        { 'src/**/!(__tests__)/': 'KEBAB_CASE', 'packages/*/src/**/!(__tests__)/': 'KEBAB_CASE' },
+        {
+          'src/**/!(__tests__|__mocks__)/': 'KEBAB_CASE',
+          'packages/*/src/**/!(__tests__|__mocks__)/': 'KEBAB_CASE',
+        },
       ],
       // Full-word names: no single letters, no abbreviations.
       'id-length': ['error', { min: 2, properties: 'never' }],
@@ -256,7 +259,7 @@ export default tseslint.config(
   },
   {
     // Numbers in test data and mock datasets are the data itself, not magic values.
-    files: ['**/__tests__/**', 'src/mocks/**'],
+    files: ['**/__tests__/**', 'src/__mocks__/**'],
     rules: { '@typescript-eslint/no-magic-numbers': 'off' },
   },
   {

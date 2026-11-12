@@ -3,14 +3,14 @@ import userEvent from '@testing-library/user-event';
 import type { ComponentType, ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { makeInstanceDetails } from '../../../../__mocks__/assets';
+import { makeMockClient } from '../../../../__mocks__/cogniteClient';
+import { makeQueryClientWrapper } from '../../../../__mocks__/QueryClientWrapper';
 import { AssetContext } from '../../../../hooks/assets/useAssetContext';
 import {
   UseAssetDetailsContext,
   type UseAssetDetailsContextType,
 } from '../../../../hooks/assets/useAssetDetails';
-import { makeInstanceDetails } from '../../../../mocks/assets';
-import { makeMockClient } from '../../../../mocks/cogniteClient';
-import { makeQueryClientWrapper } from '../../../../mocks/QueryClientWrapper';
 import { LinkedAssetPopover } from '../LinkedAssetPopover';
 
 const assetContext = makeMockClient();

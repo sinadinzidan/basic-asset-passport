@@ -2,7 +2,7 @@ import { renderHook } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
-import { makeAgentContext } from '../../../mocks/agents';
+import { makeAgentContext } from '../../../__mocks__/agents';
 import { AgentContext, useAgentContext } from '../useAgentContext';
 
 describe(useAgentContext.name, () => {

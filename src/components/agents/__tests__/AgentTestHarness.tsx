@@ -1,5 +1,7 @@
 import type { ComponentType, ReactNode } from 'react';
 
+import { makeCdfAgent } from '../../../__mocks__/agents';
+import { makeQueryClientWrapper, makeTestQueryClient } from '../../../__mocks__/QueryClientWrapper';
 import { getAgentQueryKey } from '../../../hooks/agents/useAgent';
 import { AgentChatStoreContext } from '../../../hooks/agents/useAgentChatState';
 import { UseAgentChatViewModelContext } from '../../../hooks/agents/useAgentChatViewModel';
@@ -11,8 +13,6 @@ import {
 import { UseFocusedAgentContext } from '../../../hooks/agents/useFocusedAgent';
 import { UseCopyToClipboardContext } from '../../../hooks/general/useCopyToClipboard';
 import { UseSpeechDictationContext } from '../../../hooks/general/useSpeechDictation';
-import { makeCdfAgent } from '../../../mocks/agents';
-import { makeQueryClientWrapper, makeTestQueryClient } from '../../../mocks/QueryClientWrapper';
 import { NavigationProvider } from '../../../providers/general/NavigationProvider';
 import { createAgentChatStore } from '../../../store/agents';
 import type { AgentContextType, CdfAgent } from '../../../types/agent';

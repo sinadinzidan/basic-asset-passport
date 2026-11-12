@@ -22,9 +22,9 @@ async function loadMockContexts(): Promise<MockContexts | undefined> {
   if (!isMockMode) return undefined;
 
   const { makeMockAssetContext, makeMockDocumentFileContext } =
-    await import('./mocks/mockAssetContext');
-  const { makeMockTimeseriesContext } = await import('./mocks/mockTimeseriesContext');
-  const { makeMockAgentContext } = await import('./mocks/mockAgentContext');
+    await import('./__mocks__/mockAssetContext');
+  const { makeMockTimeseriesContext } = await import('./__mocks__/mockTimeseriesContext');
+  const { makeMockAgentContext } = await import('./__mocks__/mockAgentContext');
   const assetContext = makeMockAssetContext();
   return {
     assetContext,

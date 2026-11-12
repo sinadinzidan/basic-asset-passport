@@ -3,6 +3,13 @@ import userEvent from '@testing-library/user-event';
 import type { ComponentType, ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { makeAssetDetailsTabCountsContext } from '../../../__mocks__/assetDetailsTabCounts';
+import { makeAssetListItem, makeAssetPage, makeInstanceDetails } from '../../../__mocks__/assets';
+import { makeAssetsKPICountsContext } from '../../../__mocks__/assetsKPICounts';
+import { makeMockClient } from '../../../__mocks__/cogniteClient';
+import { makeAssetDocument } from '../../../__mocks__/documents';
+import { makeLimitedList } from '../../../__mocks__/lists';
+import { makeQueryClientWrapper } from '../../../__mocks__/QueryClientWrapper';
 import { AssetTab } from '../../../enums/assetTab';
 import {
   UseAssetDocumentsContext,
@@ -20,13 +27,6 @@ import { UseAssetsContext, type UseAssetsContextType } from '../../../hooks/asse
 import { UseAssetsKPICountsContext } from '../../../hooks/assets/useAssetsKPICounts';
 import { DebounceContext, type DebounceDeps } from '../../../hooks/general/useDebouncedCallback';
 import { useNavigationState } from '../../../hooks/general/useNavigationState';
-import { makeAssetDetailsTabCountsContext } from '../../../mocks/assetDetailsTabCounts';
-import { makeAssetListItem, makeAssetPage, makeInstanceDetails } from '../../../mocks/assets';
-import { makeAssetsKPICountsContext } from '../../../mocks/assetsKPICounts';
-import { makeMockClient } from '../../../mocks/cogniteClient';
-import { makeAssetDocument } from '../../../mocks/documents';
-import { makeLimitedList } from '../../../mocks/lists';
-import { makeQueryClientWrapper } from '../../../mocks/QueryClientWrapper';
 import { NavigationProvider } from '../../../providers/general/NavigationProvider';
 import type { StateSyncApi } from '../../../types/host';
 import { Assets } from '../Assets';

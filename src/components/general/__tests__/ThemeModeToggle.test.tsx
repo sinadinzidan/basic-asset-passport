@@ -2,9 +2,9 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 
+import { makeThemeModeStore } from '../../../__mocks__/themeMode';
 import { ThemeMode } from '../../../enums/themeMode';
 import { UseThemeModeViewModelContext } from '../../../hooks/general/useThemeModeViewModel';
-import { makeThemeModeStore } from '../../../mocks/themeMode';
 import type { ThemeModeStore } from '../../../types/theme';
 import { ThemeModeToggle } from '../ThemeModeToggle';
 

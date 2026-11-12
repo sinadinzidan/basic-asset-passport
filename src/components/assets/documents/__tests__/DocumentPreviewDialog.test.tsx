@@ -1,11 +1,11 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
+import { makeAssetDocument } from '../../../../__mocks__/documents';
 import {
   DocumentPreviewContext,
   type RenderDocumentPreview,
 } from '../../../../hooks/assets/documents/useDocumentPreview';
-import { makeAssetDocument } from '../../../../mocks/documents';
 import { DocumentPreviewDialog } from '../DocumentPreviewDialog';
 
 describe(DocumentPreviewDialog.name, () => {

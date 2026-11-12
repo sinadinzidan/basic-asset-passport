@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
-import { makeAgentContext, makeCdfAgent } from '../../../mocks/agents';
+import { makeAgentContext, makeCdfAgent } from '../../../__mocks__/agents';
 import { AgentStatus } from '../AgentStatus';
 
 import { makeAgentWrapper } from './AgentTestHarness';

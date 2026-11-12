@@ -2,6 +2,10 @@ import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 
+import { makeInstanceDetails } from '../../../../__mocks__/assets';
+import { makeMockClient } from '../../../../__mocks__/cogniteClient';
+import { makeCogniteSdkWrapper } from '../../../../__mocks__/CogniteSdkWrapper';
+import { makeQueryClientWrapper } from '../../../../__mocks__/QueryClientWrapper';
 import type { CogniteFileViewer } from '../../../../cognite-file-viewer';
 import type {
   CogniteFileViewerProps as CogniteFileViewerProperties,
@@ -13,10 +17,6 @@ import {
   type UseAssetDetailsContextType,
 } from '../../../../hooks/assets/useAssetDetails';
 import { useNavigationState } from '../../../../hooks/general/useNavigationState';
-import { makeInstanceDetails } from '../../../../mocks/assets';
-import { makeMockClient } from '../../../../mocks/cogniteClient';
-import { makeCogniteSdkWrapper } from '../../../../mocks/CogniteSdkWrapper';
-import { makeQueryClientWrapper } from '../../../../mocks/QueryClientWrapper';
 import { NavigationProvider } from '../../../../providers/general/NavigationProvider';
 import { DocumentPreview } from '../DocumentPreview';
 import { DocumentViewerContext, type DocumentViewerContextType } from '../documentViewerContext';

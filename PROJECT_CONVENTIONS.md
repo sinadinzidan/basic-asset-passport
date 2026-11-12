@@ -16,7 +16,7 @@ before deviating.
 - Folders are kebab-case at every level (`user-profile/`, never
   `UserProfile/`). `.tsx` files are PascalCase and `.ts` files are camelCase,
   each named after its main export (`UserProfile.tsx`, `formatUserName.ts`).
-  `__tests__/` folders are the one folder exception.
+  `__tests__/` and `__mocks__/` folders are the folder exceptions.
 - A file whose name a tool requires keeps it: configuration files such as
   `vite.config.ts` and `vite-env.d.ts`, and generated code. Add no other
   exception for convenience.
@@ -44,8 +44,8 @@ before deviating.
   `src/types/equipment.ts` for data contracts,
   `src/enums/equipmentHealth.ts` for shared domain enums, and
   `src/constants/dashboard.ts` for meaningful configuration.
-- Keep mock datasets in `src/mocks/`, separate from real services and UI.
-  This also replaces the template's `src/__mocks__/` convention for factories.
+- Keep mock datasets and reusable test factories in `src/__mocks__/`, separate
+  from real services and UI, as the Flows template says.
 - Mirror feature folders where helpful. Create folders only when needed;
   do not scaffold empty modules or introduce routing before it is required.
 - Keep tests next to the code they cover, in a `__tests__/` folder inside the same
@@ -371,7 +371,7 @@ export function AssetList({ page, search }: AssetListProps) {
   bypass a rule to get a change through. If a rule is wrong, change the
   convention and the configuration.
 - The configuration in `eslint.config.mjs` adapts the reference to Flows:
-  `no-magic-numbers` does not apply to tests and `src/mocks/**` (the numbers are
+  `no-magic-numbers` does not apply to tests and `src/__mocks__/**` (the numbers are
   the data); boolean names an SDK, browser API or library dictates
   (`EXTERNAL_BOOLEAN_NAMES`) are exempt from the `is/has/can` prefix; `typeof`
   checks and unions inside `Pick`, `Omit` and `Exclude` are not string-literal

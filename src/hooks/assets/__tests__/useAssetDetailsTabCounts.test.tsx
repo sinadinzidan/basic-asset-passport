@@ -3,8 +3,8 @@ import { renderHook, waitFor } from '@testing-library/react';
 import type { ComponentType, ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { makeMockClient } from '../../../mocks/cogniteClient';
-import { makeQueryClientWrapper, makeTestQueryClient } from '../../../mocks/QueryClientWrapper';
+import { makeMockClient } from '../../../__mocks__/cogniteClient';
+import { makeQueryClientWrapper, makeTestQueryClient } from '../../../__mocks__/QueryClientWrapper';
 import { getAssetNotesQueryKey } from '../notes/useAssetNotes';
 import { AssetContext } from '../useAssetContext';
 import {

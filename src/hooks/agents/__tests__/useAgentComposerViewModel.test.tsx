@@ -1,8 +1,8 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { makeAgentContext, makeCdfAgent } from '../../../__mocks__/agents';
 import { makeAgentWrapper } from '../../../components/agents/__tests__/AgentTestHarness';
-import { makeAgentContext, makeCdfAgent } from '../../../mocks/agents';
 import type { AgentContextType } from '../../../types/agent';
 import type { DictationCallbacks, DictationEngine } from '../../../types/speech';
 import { useAgentComposerViewModel } from '../useAgentComposerViewModel';

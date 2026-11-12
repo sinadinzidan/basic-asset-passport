@@ -3,6 +3,8 @@ import userEvent from '@testing-library/user-event';
 import type { ComponentType, ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 
+import { makeMockClient } from '../../../../__mocks__/cogniteClient';
+import { makeQueryClientWrapper } from '../../../../__mocks__/QueryClientWrapper';
 import { DocumentFileContext } from '../../../../hooks/assets/documents/useDocumentFileContext';
 import {
   UseUploadAssetDocumentsContext,
@@ -10,8 +12,6 @@ import {
 } from '../../../../hooks/assets/documents/useUploadAssetDocuments';
 import { AssetContext } from '../../../../hooks/assets/useAssetContext';
 import type { ShowSuccessToast } from '../../../../hooks/general/useSuccessToast';
-import { makeMockClient } from '../../../../mocks/cogniteClient';
-import { makeQueryClientWrapper } from '../../../../mocks/QueryClientWrapper';
 import { AssetDocumentUpload } from '../AssetDocumentUpload';
 
 const assetContext = makeMockClient();

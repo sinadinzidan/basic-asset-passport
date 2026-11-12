@@ -3,8 +3,8 @@ import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { makeAgentContext } from '../../../__mocks__/agents';
 import { PanelPhase } from '../../../enums/panelPhase';
-import { makeAgentContext } from '../../../mocks/agents';
 import type { AgentContextType } from '../../../types/agent';
 import type { StateSyncApi } from '../../../types/host';
 import { AgentHelper } from '../AgentHelper';

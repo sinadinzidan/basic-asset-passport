@@ -3,15 +3,15 @@ import userEvent from '@testing-library/user-event';
 import type { ComponentType, ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { makeInstanceDetails } from '../../../../__mocks__/assets';
+import { makeMockClient } from '../../../../__mocks__/cogniteClient';
+import { makeLimitedList } from '../../../../__mocks__/lists';
+import { makeQueryClientWrapper } from '../../../../__mocks__/QueryClientWrapper';
 import {
   UseAssetEquipmentContext,
   type UseAssetEquipmentContextType,
 } from '../../../../hooks/assets/equipment/useAssetEquipment';
 import { AssetContext } from '../../../../hooks/assets/useAssetContext';
-import { makeInstanceDetails } from '../../../../mocks/assets';
-import { makeMockClient } from '../../../../mocks/cogniteClient';
-import { makeLimitedList } from '../../../../mocks/lists';
-import { makeQueryClientWrapper } from '../../../../mocks/QueryClientWrapper';
 import { AssetEquipment } from '../AssetEquipment';
 
 const assetContext = makeMockClient();

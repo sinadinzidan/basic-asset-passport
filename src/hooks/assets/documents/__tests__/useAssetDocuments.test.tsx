@@ -2,12 +2,12 @@ import { renderHook, waitFor } from '@testing-library/react';
 import type { ComponentType, ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { makeMockClient } from '../../../../__mocks__/cogniteClient';
+import { makeAssetDocument } from '../../../../__mocks__/documents';
+import { makeLimitedList } from '../../../../__mocks__/lists';
+import { makeQueryClientWrapper } from '../../../../__mocks__/QueryClientWrapper';
 import { DOCUMENT_QUERY_LIMIT } from '../../../../constants/documents';
 import { DocumentUploadStatus } from '../../../../enums/documentUploadStatus';
-import { makeMockClient } from '../../../../mocks/cogniteClient';
-import { makeAssetDocument } from '../../../../mocks/documents';
-import { makeLimitedList } from '../../../../mocks/lists';
-import { makeQueryClientWrapper } from '../../../../mocks/QueryClientWrapper';
 import type { AssetDocument } from '../../../../types/document';
 import type { LimitedList } from '../../../../types/list';
 import { AssetContext } from '../../useAssetContext';

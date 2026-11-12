@@ -1,8 +1,8 @@
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
+import { makeCdfAgent } from '../../../__mocks__/agents';
 import { ChatMessageRole } from '../../../enums/chatMessageRole';
-import { makeCdfAgent } from '../../../mocks/agents';
 import {
   agentChatStore,
   createAgentChatStore,

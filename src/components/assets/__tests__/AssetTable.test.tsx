@@ -5,6 +5,11 @@ import type { ComponentType, ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { StoreApi } from 'zustand';
 
+import { makeAssetListItem, makeAssetPage } from '../../../__mocks__/assets';
+import { makeAssetsKPICountsContext } from '../../../__mocks__/assetsKPICounts';
+import { makeMockClient } from '../../../__mocks__/cogniteClient';
+import { makeNavigationStore } from '../../../__mocks__/navigation';
+import { makeQueryClientWrapper } from '../../../__mocks__/QueryClientWrapper';
 import { ASSET_SEARCH_LIMIT } from '../../../constants/assets';
 import { AssetContext } from '../../../hooks/assets/useAssetContext';
 import { UseAssetsContext, type UseAssetsContextType } from '../../../hooks/assets/useAssets';
@@ -14,11 +19,6 @@ import {
 } from '../../../hooks/assets/useAssetsKPICounts';
 import { DebounceContext, type DebounceDeps } from '../../../hooks/general/useDebouncedCallback';
 import { NavigationStoreContext } from '../../../hooks/general/useNavigationState';
-import { makeAssetListItem, makeAssetPage } from '../../../mocks/assets';
-import { makeAssetsKPICountsContext } from '../../../mocks/assetsKPICounts';
-import { makeMockClient } from '../../../mocks/cogniteClient';
-import { makeNavigationStore } from '../../../mocks/navigation';
-import { makeQueryClientWrapper } from '../../../mocks/QueryClientWrapper';
 import type { NavigationState, NavigationStore } from '../../../types/navigation';
 import { AssetTable } from '../AssetTable';
 

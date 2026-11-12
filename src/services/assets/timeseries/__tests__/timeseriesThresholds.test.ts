@@ -1,7 +1,7 @@
 import { ThresholdLevel, ThresholdSide } from '@flows/trend-chart';
 import { describe, expect, it } from 'vitest';
 
-import { makeInstanceDetails } from '../../../../mocks/assets';
+import { makeInstanceDetails } from '../../../../__mocks__/assets';
 import { getTimeseriesThresholds } from '../timeseriesThresholds';
 
 function makeSeries(limits: Record<string, string>) {

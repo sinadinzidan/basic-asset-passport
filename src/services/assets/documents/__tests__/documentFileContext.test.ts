@@ -1,7 +1,7 @@
 import type { CogniteClient } from '@cognite/sdk';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { makeOfflineSdkClient } from '../../../../mocks/cogniteClient';
+import { makeOfflineSdkClient } from '../../../../__mocks__/cogniteClient';
 import { createDocumentFileContext } from '../documentFileContext';
 
 const document = { space: 'data', externalId: 'doc-1' };

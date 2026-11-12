@@ -77,7 +77,7 @@ Tests use mocked CDF responses and never call live services. They sit in
 - `src/services/assets/`: CDF `instances.query` calls.
 - `src/lib/`, `src/enums/`, `src/types/`, `src/constants/`: helpers, shared
   enums, data contracts and named limits.
-- `src/mocks/`: dummy data and test factories.
+- `src/__mocks__/`: dummy data and test factories.
 - `public/`: the ADNOC Gas logos for the light and dark themes.
 
 Read `AGENTS.md` and `PROJECT_CONVENTIONS.md` before changing code.

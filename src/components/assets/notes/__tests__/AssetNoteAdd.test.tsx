@@ -3,13 +3,13 @@ import userEvent from '@testing-library/user-event';
 import type { ComponentType, ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { makeMockClient } from '../../../../__mocks__/cogniteClient';
+import { makeQueryClientWrapper } from '../../../../__mocks__/QueryClientWrapper';
 import {
   UseAddAssetNoteContext,
   type UseAddAssetNoteContextType,
 } from '../../../../hooks/assets/notes/useAddAssetNote';
 import { AssetContext } from '../../../../hooks/assets/useAssetContext';
-import { makeMockClient } from '../../../../mocks/cogniteClient';
-import { makeQueryClientWrapper } from '../../../../mocks/QueryClientWrapper';
 import { AssetNoteAdd } from '../AssetNoteAdd';
 
 const assetIdentifier = { space: 'asset-space', externalId: 'FLOC-1' };

@@ -3,7 +3,7 @@ import { flexRender } from '@tanstack/react-table';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
-import { makeAssetListItem } from '../../../mocks/assets';
+import { makeAssetListItem } from '../../../__mocks__/assets';
 import type { AssetListItem } from '../../../types/asset';
 import { ASSET_COLUMNS } from '../AssetColumns';
 

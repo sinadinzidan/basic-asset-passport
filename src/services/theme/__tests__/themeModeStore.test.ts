@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 
+import { makeThemeModeStorage } from '../../../__mocks__/themeMode';
 import { DARK_THEME_CLASS_NAME, THEME_MODE_STORAGE_KEY } from '../../../constants/theme';
 import { ThemeMode } from '../../../enums/themeMode';
-import { makeThemeModeStorage } from '../../../mocks/themeMode';
 import type { ThemeModeStorage } from '../../../types/theme';
 import { createThemeModeStore } from '../themeModeStore';
 

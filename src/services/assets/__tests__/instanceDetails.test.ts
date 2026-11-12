@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
+import { makeNodeInstance, makeViewDefinition } from '../../../__mocks__/cdf';
 import { TestPropertyType } from '../../../enums/testPropertyType';
-import { makeNodeInstance, makeViewDefinition } from '../../../mocks/cdf';
 import { getMappedProperties, toInstanceDetails } from '../instanceDetails';
 
 const identifier = { space: 'instances', externalId: 'P-1' };

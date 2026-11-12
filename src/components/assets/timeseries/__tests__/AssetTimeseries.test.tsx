@@ -4,6 +4,10 @@ import type { ComponentType, ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { StoreApi } from 'zustand';
 
+import { makeInstanceDetails } from '../../../../__mocks__/assets';
+import { makeMockClient } from '../../../../__mocks__/cogniteClient';
+import { makeLimitedList } from '../../../../__mocks__/lists';
+import { makeQueryClientWrapper } from '../../../../__mocks__/QueryClientWrapper';
 import { TIMESERIES_QUERY_LIMIT } from '../../../../constants/timeseries';
 import {
   UseAssetTimeseriesContext,
@@ -18,10 +22,6 @@ import { UseTimeseriesTrendsContext } from '../../../../hooks/assets/timeseries/
 import { AssetContext } from '../../../../hooks/assets/useAssetContext';
 import { NavigationStoreContext } from '../../../../hooks/general/useNavigationState';
 import { DEFAULT_NAVIGATION_STATE } from '../../../../lib/navigationState';
-import { makeInstanceDetails } from '../../../../mocks/assets';
-import { makeMockClient } from '../../../../mocks/cogniteClient';
-import { makeLimitedList } from '../../../../mocks/lists';
-import { makeQueryClientWrapper } from '../../../../mocks/QueryClientWrapper';
 import { createNavigationStore } from '../../../../store/navigation';
 import type { NavigationStore } from '../../../../types/navigation';
 import type { TimeseriesContextType, TimeseriesIdentifier } from '../../../../types/timeseries';

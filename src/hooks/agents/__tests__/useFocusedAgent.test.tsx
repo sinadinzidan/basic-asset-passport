@@ -2,9 +2,9 @@ import { renderHook, waitFor } from '@testing-library/react';
 import type { ComponentType, ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { makeAgentContext, makeCdfAgent } from '../../../__mocks__/agents';
+import { makeQueryClientWrapper } from '../../../__mocks__/QueryClientWrapper';
 import { FOCUSED_AGENT_EXTERNAL_ID } from '../../../constants/agents';
-import { makeAgentContext, makeCdfAgent } from '../../../mocks/agents';
-import { makeQueryClientWrapper } from '../../../mocks/QueryClientWrapper';
 import type { AgentContextType } from '../../../types/agent';
 import { AgentContext } from '../useAgentContext';
 import { UseFocusedAgentContext, useFocusedAgent } from '../useFocusedAgent';

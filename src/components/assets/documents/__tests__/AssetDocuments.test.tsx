@@ -2,6 +2,10 @@ import { render, screen } from '@testing-library/react';
 import type { ComponentType, ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { makeMockClient } from '../../../../__mocks__/cogniteClient';
+import { makeAssetDocument } from '../../../../__mocks__/documents';
+import { makeLimitedList } from '../../../../__mocks__/lists';
+import { makeQueryClientWrapper } from '../../../../__mocks__/QueryClientWrapper';
 import {
   UseAssetDocumentsContext,
   type UseAssetDocumentsContextType,
@@ -12,10 +16,6 @@ import {
 } from '../../../../hooks/assets/documents/useAssetLinkedFiles';
 import { DocumentFileContext } from '../../../../hooks/assets/documents/useDocumentFileContext';
 import { AssetContext } from '../../../../hooks/assets/useAssetContext';
-import { makeMockClient } from '../../../../mocks/cogniteClient';
-import { makeAssetDocument } from '../../../../mocks/documents';
-import { makeLimitedList } from '../../../../mocks/lists';
-import { makeQueryClientWrapper } from '../../../../mocks/QueryClientWrapper';
 import type { DocumentFileContextType } from '../../../../types/documentFileContext';
 import { AssetDocuments } from '../AssetDocuments';
 

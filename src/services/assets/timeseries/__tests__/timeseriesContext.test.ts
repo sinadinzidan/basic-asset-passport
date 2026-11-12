@@ -1,8 +1,8 @@
 import type { CogniteClient } from '@cognite/sdk';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { makeOfflineSdkClient } from '../../../../__mocks__/cogniteClient';
 import { TREND_REQUEST_CHUNK_SIZE } from '../../../../constants/timeseries';
-import { makeOfflineSdkClient } from '../../../../mocks/cogniteClient';
 import { createTimeseriesContext } from '../timeseriesContext';
 
 const window = { from: 1000, to: 5000, granularity: '6h' };

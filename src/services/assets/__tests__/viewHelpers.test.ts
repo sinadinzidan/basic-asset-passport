@@ -1,13 +1,13 @@
 import type { DataModel } from '@cognite/sdk';
 import { describe, expect, it, vi } from 'vitest';
 
+import { makeNodeInstance, makeViewDefinition } from '../../../__mocks__/cdf';
+import { makeOfflineSdkClient, stubModelViews } from '../../../__mocks__/cogniteClient';
 import {
   ASSET_PASSPORT_MODEL_EXTERNAL_ID,
   ASSET_PASSPORT_MODEL_SPACE,
   ASSET_PASSPORT_MODEL_VERSION,
 } from '../../../constants/assets';
-import { makeNodeInstance, makeViewDefinition } from '../../../mocks/cdf';
-import { makeOfflineSdkClient, stubModelViews } from '../../../mocks/cogniteClient';
 import {
   findAssetPassportView,
   getNodeViewProperties,

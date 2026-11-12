@@ -1,9 +1,9 @@
 import type { CogniteClient } from '@cognite/sdk';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { makeNodeInstance, makeQueryResponse, makeViewDefinition } from '../../../__mocks__/cdf';
+import { makeOfflineSdkClient, stubModelViews } from '../../../__mocks__/cogniteClient';
 import { TestPropertyType } from '../../../enums/testPropertyType';
-import { makeNodeInstance, makeQueryResponse, makeViewDefinition } from '../../../mocks/cdf';
-import { makeOfflineSdkClient, stubModelViews } from '../../../mocks/cogniteClient';
 import { getAssetDetails } from '../assetDetails';
 
 const assetView = makeViewDefinition('Asset', {

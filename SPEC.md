@@ -397,7 +397,7 @@ the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines
   instead of calling CDF, for local development outside Fusion. It skips the
   Fusion host connection, so no authentication is needed and the selected
   asset and tab are not synced to the URL.
-- The dummy data lives in `src/mocks/` and answers the same requests the app
+- The dummy data lives in `src/__mocks__/` and answers the same requests the app
   sends (data model lookup, the paged `assets` query, the `asset` details query, the
   `equipment` list query, the `notes`, `documents` and `timeseries` queries, the counts of
   those lists (aggregate requests), the

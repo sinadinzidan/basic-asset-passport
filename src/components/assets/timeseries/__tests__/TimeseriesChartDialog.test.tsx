@@ -7,8 +7,8 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { makeInstanceDetails } from '../../../../mocks/assets';
-import { makeQueryClientWrapper } from '../../../../mocks/QueryClientWrapper';
+import { makeInstanceDetails } from '../../../../__mocks__/assets';
+import { makeQueryClientWrapper } from '../../../../__mocks__/QueryClientWrapper';
 import { createTimeseriesChartAdapter } from '../../../../services/assets/timeseries/timeseriesChartAdapter';
 import type { TimeseriesContextType } from '../../../../types/timeseries';
 import { TimeseriesChartDialog } from '../TimeseriesChartDialog';

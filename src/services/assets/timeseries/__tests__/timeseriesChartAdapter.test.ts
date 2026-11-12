@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { makeInstanceDetails } from '../../../../mocks/assets';
+import { makeInstanceDetails } from '../../../../__mocks__/assets';
 import type { TimeseriesContextType } from '../../../../types/timeseries';
 import { createTimeseriesChartAdapter, getChartableTimeseries } from '../timeseriesChartAdapter';
 

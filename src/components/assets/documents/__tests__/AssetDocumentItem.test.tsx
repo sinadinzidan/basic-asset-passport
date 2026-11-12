@@ -3,13 +3,13 @@ import userEvent from '@testing-library/user-event';
 import type { ComponentType, ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { makeAssetDocument } from '../../../../__mocks__/documents';
 import { DocumentOrigin } from '../../../../enums/documentOrigin';
 import { DocumentUploadStatus } from '../../../../enums/documentUploadStatus';
 import {
   DocumentPreviewContext,
   type RenderDocumentPreview,
 } from '../../../../hooks/assets/documents/useDocumentPreview';
-import { makeAssetDocument } from '../../../../mocks/documents';
 import type { AssetDocument } from '../../../../types/document';
 import { AssetDocumentItem } from '../AssetDocumentItem';
 

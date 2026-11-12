@@ -2,9 +2,9 @@ import { renderHook, waitFor } from '@testing-library/react';
 import type { ComponentType, ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { makeAssetListItem, makeAssetPage } from '../../../mocks/assets';
-import { makeMockClient } from '../../../mocks/cogniteClient';
-import { makeQueryClientWrapper } from '../../../mocks/QueryClientWrapper';
+import { makeAssetListItem, makeAssetPage } from '../../../__mocks__/assets';
+import { makeMockClient } from '../../../__mocks__/cogniteClient';
+import { makeQueryClientWrapper } from '../../../__mocks__/QueryClientWrapper';
 import { AssetContext } from '../useAssetContext';
 import { useAssets, UseAssetsContext, type UseAssetsContextType } from '../useAssets';
 

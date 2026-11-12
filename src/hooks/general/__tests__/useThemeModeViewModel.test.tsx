@@ -2,8 +2,8 @@ import { act, renderHook } from '@testing-library/react';
 import type { ComponentType, ReactNode } from 'react';
 import { beforeEach, describe, expect, it } from 'vitest';
 
+import { makeThemeModeStore } from '../../../__mocks__/themeMode';
 import { ThemeMode } from '../../../enums/themeMode';
-import { makeThemeModeStore } from '../../../mocks/themeMode';
 import type { ThemeModeStore } from '../../../types/theme';
 import { UseThemeModeViewModelContext, useThemeModeViewModel } from '../useThemeModeViewModel';
 

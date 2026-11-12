@@ -3,6 +3,10 @@ import userEvent from '@testing-library/user-event';
 import type { ComponentType, ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { makeMockClient } from '../../../../__mocks__/cogniteClient';
+import { makeLimitedList } from '../../../../__mocks__/lists';
+import { makeAssetNote } from '../../../../__mocks__/notes';
+import { makeQueryClientWrapper } from '../../../../__mocks__/QueryClientWrapper';
 import { NOTE_QUERY_LIMIT } from '../../../../constants/notes';
 import {
   UseAssetNotesContext,
@@ -17,10 +21,6 @@ import {
   type UseUpdateAssetNoteContextType,
 } from '../../../../hooks/assets/notes/useUpdateAssetNote';
 import { AssetContext } from '../../../../hooks/assets/useAssetContext';
-import { makeMockClient } from '../../../../mocks/cogniteClient';
-import { makeLimitedList } from '../../../../mocks/lists';
-import { makeAssetNote } from '../../../../mocks/notes';
-import { makeQueryClientWrapper } from '../../../../mocks/QueryClientWrapper';
 import { AssetNoteList } from '../AssetNoteList';
 
 const assetIdentifier = { space: 'asset-space', externalId: 'FLOC-1' };

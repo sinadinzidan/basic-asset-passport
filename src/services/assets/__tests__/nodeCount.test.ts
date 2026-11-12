@@ -1,7 +1,7 @@
 import type { AggregationResponse, CogniteClient } from '@cognite/sdk';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { makeOfflineSdkClient } from '../../../mocks/cogniteClient';
+import { makeOfflineSdkClient } from '../../../__mocks__/cogniteClient';
 import { countNodes, readCount } from '../nodeCount';
 
 const view = { space: 'sp-model', externalId: 'Note', version: 'v1' };

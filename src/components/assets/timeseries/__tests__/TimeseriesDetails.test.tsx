@@ -2,9 +2,9 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
+import { makeInstanceDetails } from '../../../../__mocks__/assets';
 import { TimeseriesPreviewKind } from '../../../../enums/timeseriesPreviewKind';
 import type { AssetTimeseriesItem } from '../../../../hooks/assets/timeseries/useAssetTimeseriesViewModel';
-import { makeInstanceDetails } from '../../../../mocks/assets';
 import { TimeseriesDetails } from '../TimeseriesDetails';
 
 const pressure = makeInstanceDetails({

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { makeViewDefinition } from '../../../mocks/cdf';
+import { makeViewDefinition } from '../../../__mocks__/cdf';
 import { SORT_BY_EXTERNAL_ID, SORT_BY_NEWEST, sortByName, sortByViewProperty } from '../querySort';
 
 const view = makeViewDefinition('Equipment', { name: {} }, 'v1', 'sp-model');

@@ -1,9 +1,9 @@
 import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { makeAgentContext } from '../../../__mocks__/agents';
 import { makeAgentWrapper } from '../../../components/agents/__tests__/AgentTestHarness';
 import { PanelPhase } from '../../../enums/panelPhase';
-import { makeAgentContext } from '../../../mocks/agents';
 import type { StateSyncApi } from '../../../types/host';
 import { useAgentHelperViewModel } from '../useAgentHelperViewModel';
 

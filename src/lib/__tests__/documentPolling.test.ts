@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
+import { makeAssetDocument } from '../../__mocks__/documents';
 import { DOCUMENT_PENDING_POLL_MS } from '../../constants/documents';
 import { DocumentUploadStatus } from '../../enums/documentUploadStatus';
-import { makeAssetDocument } from '../../mocks/documents';
 import { getDocumentRefetchInterval } from '../documentPolling';
 
 describe(getDocumentRefetchInterval.name, () => {

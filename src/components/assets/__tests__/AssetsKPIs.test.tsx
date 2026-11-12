@@ -3,14 +3,14 @@ import userEvent from '@testing-library/user-event';
 import type { ComponentType, ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { makeAssetsKPICountsContext } from '../../../__mocks__/assetsKPICounts';
+import { makeMockClient } from '../../../__mocks__/cogniteClient';
+import { makeQueryClientWrapper } from '../../../__mocks__/QueryClientWrapper';
 import { AssetContext } from '../../../hooks/assets/useAssetContext';
 import {
   UseAssetsKPICountsContext,
   type UseAssetsKPICountsContextType,
 } from '../../../hooks/assets/useAssetsKPICounts';
-import { makeAssetsKPICountsContext } from '../../../mocks/assetsKPICounts';
-import { makeMockClient } from '../../../mocks/cogniteClient';
-import { makeQueryClientWrapper } from '../../../mocks/QueryClientWrapper';
 import { AssetsKPIs } from '../AssetsKPIs';
 
 describe(AssetsKPIs.name, () => {
