@@ -3,6 +3,7 @@ import { INSTANCE_TYPE_NODE } from '../../../constants/cdfApi';
 import { NOTE_EXTERNAL_ID_PREFIX, NOTE_QUERY_LIMIT } from '../../../constants/notes';
 import { getRequestLimit, toLimitedList } from '../../../lib/limitedList';
 import { normalizeNewAssetNote } from '../../../lib/noteInput';
+import { NotePropertiesSchema } from '../../../schemas/note';
 import type { AssetIdentifier } from '../../../types/asset';
 import type { AssetContextType } from '../../../types/assetContext';
 import type { LimitedList } from '../../../types/list';
@@ -12,7 +13,6 @@ import { SORT_BY_EXTERNAL_ID, SORT_BY_NEWEST } from '../querySort';
 import {
   findAssetPassportView,
   getNodeViewProperties,
-  getStringProperty,
   isNodeInstance,
   toViewReference,
   type NodeInstance,
@@ -63,14 +63,16 @@ export async function listAssetNotes(
 }
 
 function toAssetNote(node: NodeInstance, view: ViewIdentity): AssetNote {
-  const properties = getNodeViewProperties(node, view);
+  const { title, body, author } = NotePropertiesSchema.parse(
+    getNodeViewProperties(node, view) ?? {},
+  );
 
   return {
     space: node.space,
     externalId: node.externalId,
-    title: getStringProperty(properties, MODEL.properties.note.title) ?? node.externalId,
-    body: getStringProperty(properties, MODEL.properties.note.body),
-    author: getStringProperty(properties, MODEL.properties.note.author),
+    title: title ?? node.externalId,
+    body,
+    author,
     createdTime: node.createdTime,
   };
 }

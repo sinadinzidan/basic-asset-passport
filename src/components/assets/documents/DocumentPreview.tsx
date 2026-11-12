@@ -83,6 +83,7 @@ export function DocumentPreview({ document }: DocumentPreviewProps) {
   return (
     <div className="flex flex-col gap-3">
       <CogniteFileViewer
+        className="h-[65vh] w-full"
         client={client}
         fitMode="width"
         maxZoom={PREVIEW_MAX_ZOOM}
@@ -98,7 +99,6 @@ export function DocumentPreview({ document }: DocumentPreviewProps) {
           space: document.space,
           externalId: document.externalId,
         }}
-        style={{ width: '100%', height: '65vh' }}
         zoom={zoom}
       />
       <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3">

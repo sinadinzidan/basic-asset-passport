@@ -1,13 +1,15 @@
 import type { CogniteClient } from '@cognite/sdk';
 
 import { DEFAULT_DOCUMENT_MIME_TYPE } from '../../../constants/documents';
-import { isRecord } from '../../../lib/isRecord';
+import { UploadLinkResponseSchema } from '../../../schemas/document';
 import type { DocumentIdentifier } from '../../../types/document';
 import type { DocumentFileContextType } from '../../../types/documentFileContext';
 
 type DocumentFileSdk = Pick<CogniteClient, 'project' | 'post'>;
 
 type DocumentFileDeps = { sendContent: typeof fetch };
+
+const UPLOAD_LINK_MISSING_MESSAGE = 'CDF did not return an upload link.';
 
 const defaultDeps: DocumentFileDeps = {
   sendContent: (input, init) => fetch(input, init),
@@ -24,12 +26,12 @@ export function createDocumentFileContext(
       const response = await sdk.post(`/api/v1/projects/${sdk.project}/files/uploadlink`, {
         data: { items: [{ instanceId: toInstanceId(document) }] },
       });
-      const uploadUrl = readFirstItemString(response.data, 'uploadUrl');
-      if (uploadUrl === null) {
-        throw new Error('CDF did not return an upload link.');
+      const parsed = UploadLinkResponseSchema.safeParse(response.data);
+      if (!parsed.success) {
+        throw new Error(UPLOAD_LINK_MISSING_MESSAGE);
       }
 
-      return uploadUrl;
+      return parsed.data.items[0].uploadUrl;
     },
 
     async uploadContent(uploadUrl: string, file: File): Promise<void> {
@@ -48,14 +50,4 @@ export function createDocumentFileContext(
 
 function toInstanceId(document: DocumentIdentifier): DocumentIdentifier {
   return { space: document.space, externalId: document.externalId };
-}
-
-function readFirstItemString(data: unknown, key: string): string | null {
-  if (!isRecord(data) || !Array.isArray(data.items)) return null;
-
-  const [item]: unknown[] = data.items;
-  if (!isRecord(item)) return null;
-
-  const value = item[key];
-  return typeof value === 'string' && value.length > 0 ? value : null;
 }

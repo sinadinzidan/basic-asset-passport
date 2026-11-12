@@ -7,7 +7,6 @@ import { MODEL } from '../../../config/model';
 import {
   findAssetPassportView,
   getNodeViewProperties,
-  getStringProperty,
   isNodeInstance,
   listAssetPassportViews,
   toViewReference,
@@ -120,24 +119,6 @@ describe(findAssetPassportView.name, () => {
     await expect(findAssetPassportView(client, 'Note')).rejects.toThrow(
       `The Note view was not found in the ${MODEL.externalId} data model.`,
     );
-  });
-});
-
-describe(getStringProperty.name, () => {
-  it('returns the text of a property', () => {
-    expect(getStringProperty({ name: 'Pump' }, 'name')).toBe('Pump');
-  });
-
-  it.each([
-    ['missing', {}],
-    ['blank', { name: '   ' }],
-    ['not text', { name: 12 }],
-  ])('returns null for a %s property', (_case, properties) => {
-    expect(getStringProperty(properties, 'name')).toBeNull();
-  });
-
-  it('returns null when there are no properties', () => {
-    expect(getStringProperty(undefined, 'name')).toBeNull();
   });
 });
 

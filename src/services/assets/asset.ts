@@ -9,13 +9,13 @@ import {
 } from '../../constants/assets';
 import { INSTANCE_TYPE_NODE } from '../../constants/cdfApi';
 import { getRequestLimit, toLimitedList } from '../../lib/limitedList';
+import { AssetListPropertiesSchema } from '../../schemas/asset';
 import type { AssetListItem, AssetPage } from '../../types/asset';
 import type { AssetContextType } from '../../types/assetContext';
 
 import {
   findAssetPassportView,
   getNodeViewProperties,
-  getStringProperty,
   isNodeInstance,
   toViewReference,
   type NodeInstance,
@@ -69,15 +69,9 @@ export async function searchAssets(
 }
 
 function toAssetListItem(node: NodeInstance, assetView: ViewDefinition): AssetListItem {
-  const properties = getNodeViewProperties(node, assetView);
-
   return {
     space: node.space,
     externalId: node.externalId,
-    name: getStringProperty(properties, 'name'),
-    description: getStringProperty(properties, 'description'),
-    plantName: getStringProperty(properties, 'plantName'),
-    flocStatus: getStringProperty(properties, 'flocStatus'),
-    abcIndicatorName: getStringProperty(properties, 'abcIndicatorName'),
+    ...AssetListPropertiesSchema.parse(getNodeViewProperties(node, assetView) ?? {}),
   };
 }

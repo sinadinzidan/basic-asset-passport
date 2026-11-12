@@ -90,11 +90,3 @@ export function getNodeViewProperties(
 ): Record<string, unknown> | undefined {
   return node.properties?.[view.space]?.[`${view.externalId}/${view.version}`];
 }
-
-export function getStringProperty(
-  properties: Record<string, unknown> | undefined,
-  propertyName: string,
-): string | null {
-  const value = properties?.[propertyName];
-  return typeof value === 'string' && value.trim().length > 0 ? value : null;
-}

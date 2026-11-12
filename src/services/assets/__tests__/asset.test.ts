@@ -63,6 +63,18 @@ describe(listAssets.name, () => {
     expect(query).toHaveBeenCalledWith(expect.objectContaining({ cursors: { assets: 'page-2' } }));
   });
 
+  it('fails the load when a property is not text, instead of showing it as missing', async () => {
+    stubModelViews(client, [assetView]);
+    const node = makeNodeInstance(
+      assetView,
+      { space: 'instances', externalId: 'FLOC-1' },
+      { name: 'Cooling Water Pump', abcIndicatorName: 42 },
+    );
+    vi.spyOn(client.instances, 'query').mockResolvedValue(makeQueryResponse({ assets: [node] }));
+
+    await expect(listAssets(client)).rejects.toThrow(/abcIndicatorName/);
+  });
+
   it('maps nodes to list items and exposes the next cursor', async () => {
     // Arrange
     stubModelViews(client, [assetView]);
@@ -74,7 +86,6 @@ describe(listAssets.name, () => {
         description: '   ',
         plantName: 'North Plant',
         flocStatus: 'Operating',
-        abcIndicatorName: 42,
       },
     );
     vi.spyOn(client.instances, 'query').mockResolvedValue(

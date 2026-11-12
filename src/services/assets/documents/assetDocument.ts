@@ -11,6 +11,7 @@ import { DocumentOrigin } from '../../../enums/documentOrigin';
 import { getDocumentFileProblem } from '../../../lib/documentInput';
 import { getDocumentUploadStatus } from '../../../lib/documentUploadStatus';
 import { getRequestLimit, toLimitedList } from '../../../lib/limitedList';
+import { DocumentPropertiesSchema } from '../../../schemas/document';
 import type { AssetIdentifier } from '../../../types/asset';
 import type { AssetContextType } from '../../../types/assetContext';
 import type { AssetDocument, DocumentIdentifier } from '../../../types/document';
@@ -21,7 +22,6 @@ import { SORT_BY_EXTERNAL_ID, sortByViewProperty } from '../querySort';
 import {
   findAssetPassportView,
   getNodeViewProperties,
-  getStringProperty,
   isNodeInstance,
   toViewReference,
   type NodeInstance,
@@ -140,21 +140,22 @@ function toAssetDocument(
   origin: DocumentOrigin,
   currentTime: number,
 ): AssetDocument {
-  const properties = getNodeViewProperties(node, view);
-  const isUploaded = properties?.isUploaded === true;
+  const { name, mimeType, isUploaded, uploadedTime } = DocumentPropertiesSchema.parse(
+    getNodeViewProperties(node, view) ?? {},
+  );
 
   return {
     space: node.space,
     externalId: node.externalId,
-    name: getStringProperty(properties, MODEL.properties.document.name) ?? node.externalId,
-    mimeType: getStringProperty(properties, MODEL.properties.document.mimeType),
+    name: name ?? node.externalId,
+    mimeType,
     isUploaded,
     uploadStatus: getDocumentUploadStatus(
       { isUploaded, createdTime: node.createdTime },
       currentTime,
     ),
     origin,
-    uploadedTime: getTimestampProperty(properties, UPLOADED_TIME_PROPERTY),
+    uploadedTime,
     createdTime: node.createdTime,
   };
 }
@@ -222,15 +223,4 @@ export async function deleteAssetDocument(
       externalId: document.externalId,
     },
   ]);
-}
-
-function getTimestampProperty(
-  properties: Record<string, unknown> | undefined,
-  propertyName: string,
-): number | null {
-  const value = getStringProperty(properties, propertyName);
-  if (value === null) return null;
-
-  const milliseconds = Date.parse(value);
-  return Number.isNaN(milliseconds) ? null : milliseconds;
 }

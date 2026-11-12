@@ -11,7 +11,12 @@ import {
   TEXT_MESSAGE_CONTENT_TYPE,
   USER_MESSAGE_ROLE,
 } from '../../constants/cdfApi';
-import { isRecord } from '../../lib/isRecord';
+import {
+  AgentListResponseSchema,
+  AgentMessageSchema,
+  AgentReplyResponseSchema,
+  AgentSchema,
+} from '../../schemas/agent';
 import type { AgentChatRequest, AgentContextType, AgentReply, CdfAgent } from '../../types/agent';
 
 type AgentSdkClient = Pick<CogniteClient, 'project' | 'post'>;
@@ -47,59 +52,54 @@ export function createAgentContext(sdk: AgentSdkClient): AgentContextType {
 }
 
 function parseReply(data: unknown): AgentReply {
-  if (!isRecord(data) || !isRecord(data.response) || !Array.isArray(data.response.messages)) {
+  const reply = AgentReplyResponseSchema.safeParse(data);
+  if (!reply.success) {
     throw new Error(UNEXPECTED_REPLY_MESSAGE);
   }
 
-  const agentMessages = data.response.messages.filter(
-    (message): message is Record<string, unknown> =>
-      isRecord(message) && message.role !== USER_MESSAGE_ROLE,
-  );
+  const agentMessages = reply.data.response.messages.flatMap((message) => {
+    const parsed = AgentMessageSchema.safeParse(message);
+    return parsed.success && parsed.data.role !== USER_MESSAGE_ROLE ? [parsed.data] : [];
+  });
   const text = agentMessages
-    .map((message) => (isRecord(message.content) ? nonBlankText(message.content.text) : null))
+    .map((message) => nonBlankText(message.content?.text))
     .filter((part): part is string => part !== null)
     .join('\n\n');
 
   if (text === '') {
     throw new Error(
-      agentMessages.some(asksForAction) ? APPROVAL_NOT_SUPPORTED_MESSAGE : NO_REPLY_MESSAGE,
+      agentMessages.some((message) => (message.actions?.length ?? 0) > 0)
+        ? APPROVAL_NOT_SUPPORTED_MESSAGE
+        : NO_REPLY_MESSAGE,
     );
   }
 
-  const { cursor } = data.response;
+  const { cursor } = reply.data.response;
   return {
     text,
     cursor: typeof cursor === 'string' && cursor !== '' ? cursor : null,
   };
 }
 
-function asksForAction(message: Record<string, unknown>): boolean {
-  return Array.isArray(message.actions) && message.actions.length > 0;
-}
-
 function parseFoundAgent(data: unknown): CdfAgent | null {
-  if (!isRecord(data) || !Array.isArray(data.items)) {
+  const response = AgentListResponseSchema.safeParse(data);
+  if (!response.success) {
     throw new Error(UNEXPECTED_AGENT_MESSAGE);
   }
 
-  for (const item of data.items) {
-    const agent = parseAgent(item);
-    if (agent !== null) return agent;
+  for (const item of response.data.items) {
+    const agent = AgentSchema.safeParse(item);
+    if (agent.success) {
+      const { externalId, name, description } = agent.data;
+
+      return {
+        externalId,
+        name: nonBlankText(name) ?? externalId,
+        description: nonBlankText(description),
+      };
+    }
   }
   return null;
-}
-
-function parseAgent(item: unknown): CdfAgent | null {
-  if (!isRecord(item)) return null;
-
-  const { externalId, name, description } = item;
-  if (typeof externalId !== 'string' || externalId === '') return null;
-
-  return {
-    externalId,
-    name: nonBlankText(name) ?? externalId,
-    description: nonBlankText(description),
-  };
 }
 
 function nonBlankText(value: unknown): string | null {

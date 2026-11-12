@@ -2,7 +2,11 @@ import type { CogniteClient } from '@cognite/sdk';
 
 import { AVERAGE_AGGREGATE, FULFILLED_PROMISE_STATUS } from '../../../constants/cdfApi';
 import { TREND_REQUEST_CHUNK_SIZE } from '../../../constants/timeseries';
-import { isRecord } from '../../../lib/isRecord';
+import {
+  AverageDatapointSchema,
+  DatapointsItemSchema,
+  DatapointsResponseSchema,
+} from '../../../schemas/timeseries';
 import type {
   TimeseriesContextType,
   TimeseriesIdentifier,
@@ -64,25 +68,22 @@ function toFailedTrend({ space, externalId }: TimeseriesIdentifier): TimeseriesT
 }
 
 function readTrends(data: unknown): TimeseriesTrend[] {
-  if (!isRecord(data) || !Array.isArray(data.items)) return [];
+  const response = DatapointsResponseSchema.safeParse(data);
+  if (!response.success) return [];
 
-  return data.items.flatMap((item: unknown): TimeseriesTrend[] => {
-    if (!isRecord(item) || !isRecord(item.instanceId)) return [];
+  return response.data.items.flatMap((item): TimeseriesTrend[] => {
+    const parsed = DatapointsItemSchema.safeParse(item);
+    if (!parsed.success) return [];
 
-    const { space, externalId } = item.instanceId;
-    if (typeof space !== 'string' || typeof externalId !== 'string') return [];
-
-    const datapoints: unknown[] = Array.isArray(item.datapoints) ? item.datapoints : [];
-    const points = datapoints
-      .flatMap((datapoint): TimeseriesPoint[] =>
-        isRecord(datapoint) &&
-        typeof datapoint.timestamp === 'number' &&
-        typeof datapoint[AVERAGE_AGGREGATE] === 'number'
-          ? [{ timestamp: datapoint.timestamp, value: datapoint[AVERAGE_AGGREGATE] }]
-          : [],
-      )
+    const points = parsed.data.datapoints
+      .flatMap((datapoint): TimeseriesPoint[] => {
+        const reading = AverageDatapointSchema.safeParse(datapoint);
+        return reading.success
+          ? [{ timestamp: reading.data.timestamp, value: reading.data.average }]
+          : [];
+      })
       .sort((first, second) => first.timestamp - second.timestamp);
 
-    return [{ space, externalId, points }];
+    return [{ ...parsed.data.instanceId, points }];
   });
 }
