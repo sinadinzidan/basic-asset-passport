@@ -10,16 +10,24 @@ import { IconChevronDown } from '@tabler/icons-react';
 
 import { ReadingKind } from '../../enums/timeSeriesChart';
 
-interface MarkerReadingMenuProps {
+interface MarkerReadingMenuProperties {
   isInterpolated: boolean;
   onChange: (isInterpolated: boolean) => void;
 }
 
-export function MarkerReadingMenu({ isInterpolated, onChange }: MarkerReadingMenuProps) {
+export function MarkerReadingMenu({ isInterpolated, onChange }: MarkerReadingMenuProperties) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        render={<Button type="button" variant="outline" size="sm" className="h-8" aria-label="Marker readings" />}
+        render={
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-8"
+            aria-label="Marker readings"
+          />
+        }
       >
         {isInterpolated ? 'Interpolated' : 'Nearest reading'}
         <IconChevronDown size={14} aria-hidden />
@@ -30,7 +38,9 @@ export function MarkerReadingMenu({ isInterpolated, onChange }: MarkerReadingMen
           onValueChange={(value) => onChange(value === ReadingKind.INTERPOLATED)}
         >
           <DropdownMenuRadioItem value={ReadingKind.NEAREST}>Nearest reading</DropdownMenuRadioItem>
-          <DropdownMenuRadioItem value={ReadingKind.INTERPOLATED}>Interpolated</DropdownMenuRadioItem>
+          <DropdownMenuRadioItem value={ReadingKind.INTERPOLATED}>
+            Interpolated
+          </DropdownMenuRadioItem>
         </DropdownMenuRadioGroup>
       </DropdownMenuContent>
     </DropdownMenu>

@@ -10,7 +10,7 @@ import { IconDots } from '@tabler/icons-react';
 
 import { TooltipTarget } from './TooltipTarget';
 
-interface SeriesMoreMenuProps {
+interface SeriesMoreMenuProperties {
   seriesName: string;
   canMoveUp: boolean;
   canMoveDown: boolean;
@@ -30,7 +30,7 @@ export function SeriesMoreMenu({
   onMove,
   onShowOnly,
   onShowAll,
-}: SeriesMoreMenuProps) {
+}: SeriesMoreMenuProperties) {
   const label = `More actions for ${seriesName}`;
   return (
     <DropdownMenu>

@@ -2,17 +2,27 @@ import type { InputHTMLAttributes } from 'react';
 import { useId } from 'react';
 
 import type { FieldOrientation } from '../../../enums/display';
+import { InputType } from '../../../enums/inputType';
 import { cn } from '../../../lib/utils';
 
-import type { BaseFieldProps } from './fieldProps';
+import type { BaseFieldProperties } from './fieldProps';
 import { FIELD_CONTROL_CLASSES } from './fieldStyles';
 import { CharacterCount, FormField } from './FormField';
 
-interface InputFieldProps extends BaseFieldProps {
+const HTML_TYPE_BY_TYPE = {
+  [InputType.TEXT]: 'text',
+  [InputType.EMAIL]: 'email',
+  [InputType.NUMBER]: 'number',
+  [InputType.DATE]: 'date',
+  [InputType.DATETIME_LOCAL]: 'datetime-local',
+  [InputType.TIME]: 'time',
+} as const;
+
+interface InputFieldProperties extends BaseFieldProperties {
   value: string;
   onChange: (value: string) => void;
   onBlur?: () => void;
-  type?: 'text' | 'email' | 'number' | 'date' | 'datetime-local' | 'time';
+  type?: InputType;
   placeholder?: string;
   maxLength?: number;
   min?: string;
@@ -29,8 +39,14 @@ function useSafeId(): string {
   return useId().replace(/[^a-zA-Z0-9_-]/g, '');
 }
 
-export function FieldInput({ className, ...props }: InputHTMLAttributes<HTMLInputElement>) {
-  return <input data-slot="input-field" className={cn(FIELD_CONTROL_CLASSES, className)} {...props} />;
+export function FieldInput({ className, ...properties }: InputHTMLAttributes<HTMLInputElement>) {
+  return (
+    <input
+      data-slot="input-field"
+      className={cn(FIELD_CONTROL_CLASSES, className)}
+      {...properties}
+    />
+  );
 }
 
 export function InputField({
@@ -38,7 +54,7 @@ export function InputField({
   value,
   onChange,
   onBlur,
-  type = 'text',
+  type = InputType.TEXT,
   placeholder,
   maxLength,
   min,
@@ -52,7 +68,7 @@ export function InputField({
   isReadOnly,
   orientation,
   className,
-}: InputFieldProps) {
+}: InputFieldProperties) {
   const listId = `${useSafeId()}-suggestions`;
   return (
     <FormField
@@ -61,7 +77,9 @@ export function InputField({
       description={description}
       errorMessage={errorMessage}
       orientation={orientation}
-      labelAccessory={maxLength ? <CharacterCount length={value.length} maxLength={maxLength} /> : undefined}
+      labelAccessory={
+        maxLength ? <CharacterCount length={value.length} maxLength={maxLength} /> : undefined
+      }
       className={className}
     >
       {(control) => (
@@ -70,12 +88,12 @@ export function InputField({
             {...control}
             className="flex-1"
             list={suggestions ? listId : undefined}
-            type={type}
+            type={HTML_TYPE_BY_TYPE[type]}
             value={value}
             min={min}
             max={max}
             maxLength={maxLength}
-            inputMode={type === 'number' ? 'decimal' : undefined}
+            inputMode={type === InputType.NUMBER ? 'decimal' : undefined}
             placeholder={placeholder}
             disabled={isDisabled}
             readOnly={isReadOnly}

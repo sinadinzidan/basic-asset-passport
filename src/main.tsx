@@ -4,12 +4,9 @@ import ReactDOM from 'react-dom/client';
 
 import App from './App.tsx';
 import { ErrorBoundary } from './components/general/ErrorBoundary';
-import { IS_MOCK_MODE } from './constants/env';
+import { isMockMode } from './constants/env';
 import { createAppQueryClient } from './lib/queryClient';
-import type { AgentClient } from './types/agent';
-import type { AssetDataClient } from './types/assetDataClient';
-import type { DocumentFileClient } from './types/documentFileClient';
-import type { TimeseriesDatapointsClient } from './types/timeseries';
+import type { MockContexts } from './types/mockContext';
 
 import './styles.css';
 
@@ -21,48 +18,30 @@ if (!rootElement) {
 
 const queryClient = createAppQueryClient();
 
-// The dummy data is imported on demand, so it is left out of the bundle
-// unless VITE_MOCK_MODE is "true" at build time.
-type MockClients = {
-  agentClient: AgentClient;
-  dataClient: AssetDataClient;
-  documentFileClient: DocumentFileClient;
-  timeseriesDatapointsClient: TimeseriesDatapointsClient;
-};
+async function loadMockContexts(): Promise<MockContexts | undefined> {
+  if (!isMockMode) return undefined;
 
-async function loadMockClients(): Promise<MockClients | undefined> {
-  if (!IS_MOCK_MODE) return undefined;
-
-  const { makeMockAssetDataClient, makeMockDocumentFileClient } =
-    await import('./mocks/mockAssetDataClient');
-  const { makeMockAgentClient } = await import('./mocks/mockAgentClient');
-  const { makeMockTimeseriesDatapointsClient } = await import(
-    './mocks/mockTimeseriesDatapointsClient'
-  );
-  const dataClient = makeMockAssetDataClient();
+  const { makeMockAssetContext, makeMockDocumentFileContext } =
+    await import('./mocks/mockAssetContext');
+  const { makeMockTimeseriesContext } = await import('./mocks/mockTimeseriesContext');
+  const { makeMockAgentContext } = await import('./mocks/mockAgentContext');
+  const assetContext = makeMockAssetContext();
   return {
-    agentClient: makeMockAgentClient(),
-    dataClient,
-    documentFileClient: makeMockDocumentFileClient(dataClient),
-    timeseriesDatapointsClient: makeMockTimeseriesDatapointsClient(),
+    assetContext,
+    documentFileContext: makeMockDocumentFileContext(assetContext),
+    timeseriesContext: makeMockTimeseriesContext(),
+    agentContext: makeMockAgentContext(),
   };
 }
 
 async function bootstrap(container: HTMLElement): Promise<void> {
-  const mockClients = await loadMockClients();
+  const mockContexts = await loadMockContexts();
 
   ReactDOM.createRoot(container).render(
     <React.StrictMode>
       <QueryClientProvider client={queryClient}>
         <ErrorBoundary>
-          <App
-            mockDataClient={mockClients?.dataClient}
-            mockDocumentFileClient={mockClients?.documentFileClient}
-            mockTimeseriesDatapointsClient={
-              mockClients?.timeseriesDatapointsClient
-            }
-            mockAgentClient={mockClients?.agentClient}
-          />
+          <App mockContexts={mockContexts} />
         </ErrorBoundary>
       </QueryClientProvider>
     </React.StrictMode>,

@@ -7,12 +7,11 @@ import {
   ASSET_PASSPORT_MODEL_VERSION,
 } from '../../../constants/assets';
 import { makeNodeInstance, makeViewDefinition } from '../../../mocks/cdf';
+import { makeOfflineSdkClient, stubModelViews } from '../../../mocks/cogniteClient';
 import {
-  makeOfflineSdkClient,
-  stubModelViews,
-} from '../../../mocks/cogniteClient';
-import {
+  findAssetPassportView,
   getNodeViewProperties,
+  getStringProperty,
   isNodeInstance,
   listAssetPassportViews,
   toViewReference,
@@ -48,10 +47,7 @@ describe(listAssetPassportViews.name, () => {
     vi.spyOn(client.dataModels, 'retrieve').mockResolvedValue({
       items: [
         {
-          views: [
-            { type: 'view', space: 's', externalId: 'Other', version: 'v1' },
-            view,
-          ],
+          views: [{ type: 'view', space: 's', externalId: 'Other', version: 'v1' }, view],
         } as Partial<DataModel> as DataModel,
       ],
     });
@@ -70,13 +66,81 @@ describe(listAssetPassportViews.name, () => {
 
   it('propagates a failed lookup', async () => {
     const client = makeOfflineSdkClient();
-    vi.spyOn(client.dataModels, 'retrieve').mockRejectedValue(
-      new Error('model unavailable'),
-    );
+    vi.spyOn(client.dataModels, 'retrieve').mockRejectedValue(new Error('model unavailable'));
 
-    await expect(listAssetPassportViews(client)).rejects.toThrow(
-      'model unavailable',
+    await expect(listAssetPassportViews(client)).rejects.toThrow('model unavailable');
+  });
+
+  it('asks for the data model once per client', async () => {
+    const client = makeOfflineSdkClient();
+    const retrieve = stubModelViews(client, [makeViewDefinition('Asset')]);
+
+    await Promise.all([listAssetPassportViews(client), listAssetPassportViews(client)]);
+    await listAssetPassportViews(client);
+
+    expect(retrieve).toHaveBeenCalledTimes(1);
+  });
+
+  it('asks again for another client', async () => {
+    const firstClient = makeOfflineSdkClient();
+    const secondClient = makeOfflineSdkClient();
+    const noteView = makeViewDefinition('Note');
+    stubModelViews(firstClient, [makeViewDefinition('Asset')]);
+    stubModelViews(secondClient, [noteView]);
+
+    await listAssetPassportViews(firstClient);
+
+    await expect(listAssetPassportViews(secondClient)).resolves.toEqual([noteView]);
+  });
+
+  it('asks again after a failed lookup', async () => {
+    const client = makeOfflineSdkClient();
+    const views = [makeViewDefinition('Asset')];
+    const retrieve = vi
+      .spyOn(client.dataModels, 'retrieve')
+      .mockRejectedValueOnce(new Error('model unavailable'));
+    await expect(listAssetPassportViews(client)).rejects.toThrow('model unavailable');
+    stubModelViews(client, views);
+
+    await expect(listAssetPassportViews(client)).resolves.toEqual(views);
+    expect(retrieve).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe(findAssetPassportView.name, () => {
+  it('finds a view of the data model by its external id', async () => {
+    const client = makeOfflineSdkClient();
+    const noteView = makeViewDefinition('Note');
+    stubModelViews(client, [makeViewDefinition('Asset'), noteView]);
+
+    await expect(findAssetPassportView(client, 'Note')).resolves.toEqual(noteView);
+  });
+
+  it('fails when the data model has no such view', async () => {
+    const client = makeOfflineSdkClient();
+    stubModelViews(client, [makeViewDefinition('Asset')]);
+
+    await expect(findAssetPassportView(client, 'Note')).rejects.toThrow(
+      `The Note view was not found in the ${ASSET_PASSPORT_MODEL_EXTERNAL_ID} data model.`,
     );
+  });
+});
+
+describe(getStringProperty.name, () => {
+  it('returns the text of a property', () => {
+    expect(getStringProperty({ name: 'Pump' }, 'name')).toBe('Pump');
+  });
+
+  it.each([
+    ['missing', {}],
+    ['blank', { name: '   ' }],
+    ['not text', { name: 12 }],
+  ])('returns null for a %s property', (_case, properties) => {
+    expect(getStringProperty(properties, 'name')).toBeNull();
+  });
+
+  it('returns null when there are no properties', () => {
+    expect(getStringProperty(undefined, 'name')).toBeNull();
   });
 });
 
@@ -118,11 +182,7 @@ describe(isNodeInstance.name, () => {
 describe(getNodeViewProperties.name, () => {
   it('returns the properties stored for the view', () => {
     const view = makeViewDefinition('Asset');
-    const node = makeNodeInstance(
-      view,
-      { space: 's', externalId: 'n' },
-      { name: 'Pump' },
-    );
+    const node = makeNodeInstance(view, { space: 's', externalId: 'n' }, { name: 'Pump' });
 
     expect(getNodeViewProperties(node, view)).toEqual({ name: 'Pump' });
   });
@@ -130,11 +190,7 @@ describe(getNodeViewProperties.name, () => {
   it('returns undefined when the node has no data for the view', () => {
     const view = makeViewDefinition('Asset');
     const otherView = makeViewDefinition('Equipment');
-    const node = makeNodeInstance(
-      otherView,
-      { space: 's', externalId: 'n' },
-      { name: 'Pump' },
-    );
+    const node = makeNodeInstance(otherView, { space: 's', externalId: 'n' }, { name: 'Pump' });
 
     expect(getNodeViewProperties(node, view)).toBeUndefined();
   });

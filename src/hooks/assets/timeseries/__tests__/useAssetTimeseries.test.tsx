@@ -2,9 +2,12 @@ import { renderHook, waitFor } from '@testing-library/react';
 import type { ComponentType, ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { TIMESERIES_QUERY_LIMIT } from '../../../../constants/timeseries';
 import { makeInstanceDetails } from '../../../../mocks/assets';
 import { makeMockClient } from '../../../../mocks/cogniteClient';
-import { makeQueryClientWrapper } from '../../../../mocks/queryClientWrapper';
+import { makeLimitedList } from '../../../../mocks/lists';
+import { makeQueryClientWrapper } from '../../../../mocks/QueryClientWrapper';
+import { AssetContext } from '../../useAssetContext';
 import {
   useAssetTimeseries,
   UseAssetTimeseriesContext,
@@ -20,15 +23,16 @@ describe(useAssetTimeseries.name, () => {
 
   beforeEach(() => {
     mockContext = {
-      useAssetDataClient: vi.fn(() => client),
       listAssetTimeseries: vi.fn(() =>
-        Promise.resolve([makeInstanceDetails({ externalId: 'PI.1' })]),
+        Promise.resolve(makeLimitedList([makeInstanceDetails({ externalId: 'PI.1' })])),
       ),
     };
     const QueryWrapper = makeQueryClientWrapper();
     wrapper = ({ children }) => (
       <UseAssetTimeseriesContext.Provider value={mockContext}>
-        <QueryWrapper>{children}</QueryWrapper>
+        <QueryWrapper>
+          <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
+        </QueryWrapper>
       </UseAssetTimeseriesContext.Provider>
     );
   });
@@ -47,17 +51,23 @@ describe(useAssetTimeseries.name, () => {
       wrapper,
     });
 
-    await waitFor(() => expect(result.current.data).toHaveLength(1));
+    await waitFor(() => expect(result.current.data?.items).toHaveLength(1));
     expect(mockContext.listAssetTimeseries).toHaveBeenCalledWith(
       client,
       assetIdentifier,
+      TIMESERIES_QUERY_LIMIT,
     );
   });
 
+  it('reads the series to the limit asked for', async () => {
+    const { result } = renderHook(() => useAssetTimeseries(assetIdentifier, 400), { wrapper });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(mockContext.listAssetTimeseries).toHaveBeenCalledWith(client, assetIdentifier, 400);
+  });
+
   it('reports a failed load', async () => {
-    vi.mocked(mockContext.listAssetTimeseries).mockRejectedValue(
-      new Error('no access'),
-    );
+    vi.mocked(mockContext.listAssetTimeseries).mockRejectedValue(new Error('no access'));
 
     const { result } = renderHook(() => useAssetTimeseries(assetIdentifier), {
       wrapper,

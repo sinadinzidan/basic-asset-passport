@@ -1,18 +1,18 @@
 import type { ViewDefinition } from '@cognite/sdk';
 
 import { INTERNAL_DETAIL_PROPERTY_IDENTIFIERS } from '../../constants/assets';
+import { DIRECT_PROPERTY_TYPE, JSON_PROPERTY_TYPE } from '../../constants/cdfApi';
 import type { AssetInstanceDetails } from '../../types/asset';
 
 import { getNodeViewProperties, type NodeInstance } from './viewHelpers';
 
-export type MappedProperty = { identifier: string; label: string };
+type MappedProperty = { identifier: string; label: string };
 
-/** The properties of a view worth showing: plain values, not relations, JSON or system fields. */
 export function getMappedProperties(view: ViewDefinition): MappedProperty[] {
   return Object.entries(view.properties).flatMap(([identifier, property]) => {
     if (!('containerPropertyIdentifier' in property)) return [];
     if (INTERNAL_DETAIL_PROPERTY_IDENTIFIERS.has(identifier)) return [];
-    if (property.type.type === 'direct' || property.type.type === 'json') {
+    if (property.type.type === DIRECT_PROPERTY_TYPE || property.type.type === JSON_PROPERTY_TYPE) {
       return [];
     }
 
@@ -20,7 +20,6 @@ export function getMappedProperties(view: ViewDefinition): MappedProperty[] {
   });
 }
 
-/** One node as a list of labelled, readable values. */
 export function toInstanceDetails(
   node: NodeInstance,
   view: ViewDefinition,

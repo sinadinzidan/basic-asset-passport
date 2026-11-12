@@ -7,8 +7,9 @@ import {
   UseAddAssetNoteContext,
   type UseAddAssetNoteContextType,
 } from '../../../../hooks/assets/notes/useAddAssetNote';
+import { AssetContext } from '../../../../hooks/assets/useAssetContext';
 import { makeMockClient } from '../../../../mocks/cogniteClient';
-import { makeQueryClientWrapper } from '../../../../mocks/queryClientWrapper';
+import { makeQueryClientWrapper } from '../../../../mocks/QueryClientWrapper';
 import { AssetNoteAdd } from '../AssetNoteAdd';
 
 const assetIdentifier = { space: 'asset-space', externalId: 'FLOC-1' };
@@ -20,13 +21,14 @@ describe(AssetNoteAdd.name, () => {
 
   beforeEach(() => {
     mockContext = {
-      useAssetDataClient: vi.fn(() => client),
       createAssetNote: vi.fn(() => Promise.resolve()),
     };
     const QueryWrapper = makeQueryClientWrapper();
     wrapper = ({ children }) => (
       <UseAddAssetNoteContext.Provider value={mockContext}>
-        <QueryWrapper>{children}</QueryWrapper>
+        <QueryWrapper>
+          <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
+        </QueryWrapper>
       </UseAddAssetNoteContext.Provider>
     );
   });
@@ -71,23 +73,18 @@ describe(AssetNoteAdd.name, () => {
     await user.type(screen.getByLabelText('Note'), 'All good');
     await user.click(screen.getByRole('button', { name: 'Save note' }));
 
-    expect(mockContext.createAssetNote).toHaveBeenCalledWith(
-      client,
-      assetIdentifier,
-      { title: '  Inspection ', body: 'All good' },
-    );
-    await vi.waitFor(() =>
-      expect(screen.queryByRole('dialog')).not.toBeInTheDocument(),
-    );
+    expect(mockContext.createAssetNote).toHaveBeenCalledWith(client, assetIdentifier, {
+      title: '  Inspection ',
+      body: 'All good',
+    });
+    await vi.waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
   });
 
   it('starts empty the next time the dialog opens', async () => {
     const user = await openDialog();
     await user.type(await screen.findByLabelText('Title'), 'Inspection');
     await user.click(screen.getByRole('button', { name: 'Save note' }));
-    await vi.waitFor(() =>
-      expect(screen.queryByRole('dialog')).not.toBeInTheDocument(),
-    );
+    await vi.waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
 
     await user.click(screen.getByRole('button', { name: 'Add note' }));
 

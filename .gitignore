@@ -16,10 +16,13 @@ certificates
 .env.local
 
 # Editor directories
-.vscode
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
 .idea
 
 # OS files
 .DS_Store
 Thumbs.db
 
+*.tsbuildinfo

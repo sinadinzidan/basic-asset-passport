@@ -2,11 +2,11 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 async function loadIsMockMode(): Promise<boolean> {
   vi.resetModules();
-  const { IS_MOCK_MODE } = await import('../env');
-  return IS_MOCK_MODE;
+  const { isMockMode } = await import('../env');
+  return isMockMode;
 }
 
-describe('IS_MOCK_MODE', () => {
+describe('isMockMode', () => {
   afterEach(() => {
     vi.unstubAllEnvs();
   });

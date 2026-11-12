@@ -1,60 +1,36 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-} from 'react';
+import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 
-import {
-  GREETING_INTRO_DELAY_MS,
-  GREETING_INTRO_DURATION_MS,
-} from '../../constants/agents';
+import { GREETING_INTRO_DELAY_MS, GREETING_INTRO_DURATION_MS } from '../../constants/agents';
+import { IntroPhase } from '../../enums/introPhase';
+import { startTimeout } from '../../lib/startTimeout';
 
-const defaultDeps = {
-  /** Calls `onDone` after `delayMs`; returns a function that cancels it. */
-  startTimeout: (onDone: () => void, delayMs: number): (() => void) => {
-    const id = setTimeout(onDone, delayMs);
-    return () => clearTimeout(id);
-  },
-};
+const defaultDeps = { startTimeout };
 
 export type UseAgentGreetingContextType = typeof defaultDeps;
-export const UseAgentGreetingContext =
-  createContext<UseAgentGreetingContextType>(defaultDeps);
-
-type IntroPhase = 'WAITING' | 'SHOWN' | 'DONE';
+export const UseAgentGreetingContext = createContext<UseAgentGreetingContextType>(defaultDeps);
 
 export type AgentGreeting = {
-  /** True while the mascot greets by itself, once, shortly after the app opens. */
   isIntroShown: boolean;
-  /** Ends that greeting for good, also when it has not started yet. */
+
   dismissIntro: () => void;
 };
 
-/** Times the greeting the mascot gives by itself when the app opens. */
 export function useAgentGreeting(): AgentGreeting {
-  const { startTimeout } = useContext(UseAgentGreetingContext);
+  const { startTimeout: startTimer } = useContext(UseAgentGreetingContext);
 
-  const [introPhase, setIntroPhase] = useState<IntroPhase>('WAITING');
+  const [introPhase, setIntroPhase] = useState<IntroPhase>(IntroPhase.WAITING);
 
-  const dismissIntro = useCallback((): void => setIntroPhase('DONE'), []);
+  const dismissIntro = useCallback((): void => setIntroPhase(IntroPhase.DONE), []);
 
   useEffect(() => {
-    if (introPhase === 'WAITING') {
-      return startTimeout(
-        () => setIntroPhase('SHOWN'),
-        GREETING_INTRO_DELAY_MS,
-      );
+    if (introPhase === IntroPhase.WAITING) {
+      return startTimer(() => setIntroPhase(IntroPhase.SHOWN), GREETING_INTRO_DELAY_MS);
     }
-    if (introPhase === 'SHOWN') {
-      return startTimeout(
-        () => setIntroPhase('DONE'),
-        GREETING_INTRO_DURATION_MS,
-      );
+    if (introPhase === IntroPhase.SHOWN) {
+      return startTimer(() => setIntroPhase(IntroPhase.DONE), GREETING_INTRO_DURATION_MS);
     }
     return undefined;
-  }, [introPhase, startTimeout]);
+  }, [introPhase, startTimer]);
 
-  return { isIntroShown: introPhase === 'SHOWN', dismissIntro };
+  return { isIntroShown: introPhase === IntroPhase.SHOWN, dismissIntro };
 }

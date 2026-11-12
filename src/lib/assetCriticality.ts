@@ -1,18 +1,13 @@
-export type CriticalityTone = 'error' | 'warning' | 'success' | 'neutral';
-
+import { CriticalityTone } from '../enums/criticalityTone';
 const CRITICALITY_CLASS_PATTERN = /^\s*([abc])\b/i;
 
 const TONE_BY_CRITICALITY_CLASS: Record<string, CriticalityTone> = {
-  a: 'error',
-  b: 'warning',
-  c: 'success',
+  a: CriticalityTone.ERROR,
+  b: CriticalityTone.WARNING,
+  c: CriticalityTone.SUCCESS,
 };
 
-// CDF stores criticality as free text that starts with its class letter,
-// for example "A - High criticality".
 export function getCriticalityTone(criticality: string): CriticalityTone {
   const letter = CRITICALITY_CLASS_PATTERN.exec(criticality)?.[1];
-  return (
-    (letter && TONE_BY_CRITICALITY_CLASS[letter.toLowerCase()]) || 'neutral'
-  );
+  return (letter && TONE_BY_CRITICALITY_CLASS[letter.toLowerCase()]) || CriticalityTone.NEUTRAL;
 }

@@ -11,14 +11,8 @@ describe(formatDocumentType.name, () => {
     ['text/plain', 'Text'],
     ['text/csv', 'CSV'],
     ['application/msword', 'Word'],
-    [
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      'Word',
-    ],
-    [
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      'Excel',
-    ],
+    ['application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'Word'],
+    ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'Excel'],
   ])('names %s as %s', (mimeType, label) => {
     expect(formatDocumentType(mimeType)).toBe(label);
   });
@@ -41,10 +35,7 @@ describe(getDocumentKind.name, () => {
     ['image/svg+xml', DocumentKind.IMAGE],
     ['text/csv', DocumentKind.SPREADSHEET],
     ['application/vnd.ms-excel', DocumentKind.SPREADSHEET],
-    [
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      DocumentKind.SPREADSHEET,
-    ],
+    ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', DocumentKind.SPREADSHEET],
     ['text/plain', DocumentKind.DOCUMENT],
     ['application/msword', DocumentKind.DOCUMENT],
     [
@@ -58,9 +49,7 @@ describe(getDocumentKind.name, () => {
   });
 
   it('is case-insensitive and ignores parameters', () => {
-    expect(getDocumentKind('Image/PNG; charset=binary')).toBe(
-      DocumentKind.IMAGE,
-    );
+    expect(getDocumentKind('Image/PNG; charset=binary')).toBe(DocumentKind.IMAGE);
   });
 
   it('treats unknown or missing types as a generic file', () => {

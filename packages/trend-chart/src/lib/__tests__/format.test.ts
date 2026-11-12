@@ -1,6 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { formatDate, formatDateTime, formatNumber, formatShortDateTime, MISSING_VALUE } from '../format';
+import {
+  formatDate,
+  formatDateTime,
+  formatNumber,
+  formatShortDateTime,
+  MISSING_VALUE,
+} from '../format';
 import { setChartTimeZone } from '../timeZone';
 
 // The host app may have set its own zone; these tests start from the chart's default.

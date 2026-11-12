@@ -17,11 +17,12 @@ import { useState } from 'react';
 import { DocumentKind } from '../../../enums/documentKind';
 import { DocumentOrigin } from '../../../enums/documentOrigin';
 import { DocumentUploadStatus } from '../../../enums/documentUploadStatus';
+import { IconActionVariant } from '../../../enums/iconActionVariant';
+import { StatusTone } from '../../../enums/statusTone';
 import { formatDocumentType, getDocumentKind } from '../../../lib/documentType';
 import { formatNoteDate } from '../../../lib/formatNoteDate';
 import type { AssetDocument } from '../../../types/document';
-import { GeneralButton } from '../../general/GeneralButton';
-import { GeneralDialog } from '../../general/GeneralDialog';
+import { ConfirmDeleteDialog } from '../../general/ConfirmDeleteDialog';
 import { IconActionButton } from '../../general/IconActionButton';
 import { StatusPill } from '../../general/StatusPill';
 
@@ -40,57 +41,36 @@ const DOCUMENT_KIND_ICONS: Record<DocumentKind, Icon> = {
 type AssetDocumentItemProps = {
   document: AssetDocument;
   isDeleting: boolean;
-  /** Resolves when the delete is over, whether it worked or not. */
+
   onDelete: (document: AssetDocument) => Promise<void>;
 };
 
-export function AssetDocumentItem({
-  document,
-  isDeleting,
-  onDelete,
-}: AssetDocumentItemProps) {
+export function AssetDocumentItem({ document, isDeleting, onDelete }: AssetDocumentItemProps) {
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   const [isPreviewing, setIsPreviewing] = useState(false);
-  const [isDeleteRunning, setIsDeleteRunning] = useState(false);
 
   const canDelete = document.origin === DocumentOrigin.APP;
   const typeLabel = formatDocumentType(document.mimeType);
   const KindIcon = DOCUMENT_KIND_ICONS[getDocumentKind(document.mimeType)];
   const uploadedLabel =
-    document.uploadStatus === DocumentUploadStatus.UPLOADED &&
-    document.uploadedTime !== null
+    document.uploadStatus === DocumentUploadStatus.UPLOADED && document.uploadedTime !== null
       ? `Uploaded ${formatNoteDate(document.uploadedTime)}`
       : null;
 
   function handleViewClick(): void {
     setIsPreviewing(true);
   }
-
   function handlePreviewOpenChange(isOpen: boolean): void {
     setIsPreviewing(isOpen);
   }
-
   function handleDeleteClick(): void {
     setIsConfirmingDelete(true);
   }
-
-  async function handleDeleteConfirm(): Promise<void> {
-    setIsDeleteRunning(true);
-    try {
-      await onDelete(document);
-    } finally {
-      setIsDeleteRunning(false);
-      setIsConfirmingDelete(false);
-    }
+  function handleDeleteConfirm(): Promise<void> {
+    return onDelete(document);
   }
-
-  function handleDeleteCancel(): void {
+  function handleDeleteClose(): void {
     setIsConfirmingDelete(false);
-  }
-
-  function handleConfirmOpenChange(isOpen: boolean): void {
-    // The dialog stays until the delete is over.
-    if (!isDeleteRunning) setIsConfirmingDelete(isOpen);
   }
 
   return (
@@ -112,7 +92,7 @@ export function AssetDocumentItem({
               {document.uploadStatus === DocumentUploadStatus.PROCESSING ? (
                 <StatusPill status="Processing..." />
               ) : uploadedLabel === null ? (
-                <StatusPill status="Upload incomplete" tone="warning" />
+                <StatusPill status="Upload incomplete" tone={StatusTone.WARNING} />
               ) : (
                 <span className="text-muted-foreground inline-flex items-center gap-1.5 text-sm">
                   <IconClockHour4 aria-hidden className="size-4" />
@@ -135,7 +115,7 @@ export function AssetDocumentItem({
               isDisabled={isDeleting}
               label={`Delete ${document.name}`}
               onClick={handleDeleteClick}
-              variant="destructive"
+              variant={IconActionVariant.DESTRUCTIVE}
             />
           ) : null}
         </div>
@@ -145,32 +125,15 @@ export function AssetDocumentItem({
         isOpen={isPreviewing}
         onOpenChange={handlePreviewOpenChange}
       />
-      <GeneralDialog
+      <ConfirmDeleteDialog
         isOpen={isConfirmingDelete}
-        onOpenChange={handleConfirmOpenChange}
         title="Delete document?"
-        footer={
-          <>
-            <GeneralButton
-              disabled={isDeleteRunning}
-              onClick={handleDeleteCancel}
-              variant="outline"
-            >
-              Cancel
-            </GeneralButton>
-            <GeneralButton
-              disabled={isDeleteRunning}
-              onClick={() => void handleDeleteConfirm()}
-              variant="destructive"
-            >
-              {isDeleteRunning ? 'Deleting...' : 'Delete document'}
-            </GeneralButton>
-          </>
-        }
+        confirmLabel="Delete document"
+        onConfirm={handleDeleteConfirm}
+        onClose={handleDeleteClose}
       >
-        {document.name} and its file will be deleted permanently. This cannot
-        be undone.
-      </GeneralDialog>
+        {document.name} and its file will be deleted permanently. This cannot be undone.
+      </ConfirmDeleteDialog>
     </article>
   );
 }

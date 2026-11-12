@@ -1,5 +1,6 @@
 import { Loader } from '@cognite/aura/components/loader';
 
+import { LoadingNoticeVariant } from '../../enums/loadingNoticeVariant';
 import { cn } from '../../lib/utils';
 
 import { HudPanel } from './HudPanel';
@@ -7,21 +8,20 @@ import { HudPanel } from './HudPanel';
 type LoadingNoticeProps = {
   message: string;
   className?: string;
-  /** PANEL is the glowing hero panel; CARD is a plain data card for loading inside a tab. */
-  variant?: 'PANEL' | 'CARD';
+  variant?: LoadingNoticeVariant;
 };
 
 export function LoadingNotice({
   message,
   className,
-  variant = 'PANEL',
+  variant = LoadingNoticeVariant.PANEL,
 }: LoadingNoticeProps) {
   const content = (
     <div
       role="status"
       className={cn(
         'flex items-center gap-3 font-mono text-muted-foreground',
-        variant === 'CARD' && 'data-card',
+        variant === LoadingNoticeVariant.CARD && 'data-card',
         className,
       )}
     >
@@ -30,5 +30,5 @@ export function LoadingNotice({
     </div>
   );
 
-  return variant === 'CARD' ? content : <HudPanel>{content}</HudPanel>;
+  return variant === LoadingNoticeVariant.CARD ? content : <HudPanel>{content}</HudPanel>;
 }

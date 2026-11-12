@@ -7,24 +7,24 @@ import {
 import { PillSize } from '../../../enums/display';
 import { AlertStatus } from '../../../enums/timeSeriesChart';
 import type { ChartAlert, ChartSeriesView } from '../../../types/timeSeriesChart';
+import { PlainButton } from '../../general/PlainButton';
 import { StatusPill } from '../../general/StatusPill';
 
 import { formatChartInstant, formatChartInstantShort } from './panelFormat';
 import { SeriesLabel } from './SeriesLabel';
 
-interface AlertRowProps {
+interface AlertRowProperties {
   alert: ChartAlert;
   labelledSeries?: ChartSeriesView;
   onSelect: (alert: ChartAlert) => void;
 }
 
-export function AlertRow({ alert, labelledSeries, onSelect }: AlertRowProps) {
+export function AlertRow({ alert, labelledSeries, onSelect }: AlertRowProperties) {
   return (
     <li>
-      <button
-        type="button"
+      <PlainButton
         onClick={() => onSelect(alert)}
-        className="flex w-full min-w-0 flex-col gap-1 px-4 py-2.5 text-left transition-colors hover:bg-muted-background/50 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
+        className="flex w-full min-w-0 flex-col items-stretch gap-1 rounded-none px-4 py-2.5 hover:bg-muted-background/50 focus-visible:-outline-offset-2"
       >
         <span className="flex items-center gap-1.5">
           <StatusPill
@@ -49,7 +49,7 @@ export function AlertRow({ alert, labelledSeries, onSelect }: AlertRowProps) {
         </span>
         <span className="text-sm text-foreground">{alert.message}</span>
         {labelledSeries ? <SeriesLabel series={labelledSeries} isQuiet /> : null}
-      </button>
+      </PlainButton>
     </li>
   );
 }

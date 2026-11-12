@@ -1,17 +1,10 @@
-import {
-  CogniteClient,
-  type DataModel,
-  type ViewDefinition,
-} from '@cognite/sdk';
+import { CogniteClient, type DataModel, type ViewDefinition } from '@cognite/sdk';
 
 export function makeMockClient(project = 'asset-passport-test'): CogniteClient {
   return { project } as Partial<CogniteClient> as CogniteClient;
 }
 
-/** A real SDK client that never reaches the network; tests spy on its methods. */
-export function makeOfflineSdkClient(
-  project = 'asset-passport-test',
-): CogniteClient {
+export function makeOfflineSdkClient(project = 'asset-passport-test'): CogniteClient {
   return new CogniteClient({
     appId: 'asset-passport-test',
     project,
@@ -19,11 +12,8 @@ export function makeOfflineSdkClient(
   });
 }
 
-/** Makes the data model lookup return a model that contains the given views. */
 export function stubModelViews(client: CogniteClient, views: ViewDefinition[]) {
   const model = { views } as Partial<DataModel> as DataModel;
 
-  return vi
-    .spyOn(client.dataModels, 'retrieve')
-    .mockResolvedValue({ items: [model] });
+  return vi.spyOn(client.dataModels, 'retrieve').mockResolvedValue({ items: [model] });
 }

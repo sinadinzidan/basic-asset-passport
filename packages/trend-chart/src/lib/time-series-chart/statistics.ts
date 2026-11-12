@@ -1,7 +1,14 @@
-import type { ChartTimeRange, SeriesStatistics, TimeSeriesPoint } from '../../types/timeSeriesChart';
+import { HALF, PARITY_DIVISOR } from '../../constants/mathConstants';
+import type {
+  ChartTimeRange,
+  SeriesStatistics,
+  TimeSeriesPoint,
+} from '../../types/timeSeriesChart';
 
 /** A reading that can take part in a calculation: a finite number not flagged as bad quality. A missing value is never zero. */
-export function isValidReading(point: TimeSeriesPoint): point is TimeSeriesPoint & { value: number } {
+export function isValidReading(
+  point: TimeSeriesPoint,
+): point is TimeSeriesPoint & { value: number } {
   return point.value !== null && Number.isFinite(point.value) && point.isBadQuality !== true;
 }
 
@@ -9,10 +16,15 @@ export function pointsInRange(
   points: readonly TimeSeriesPoint[],
   range: ChartTimeRange | undefined,
 ): TimeSeriesPoint[] {
-  return range ? points.filter((point) => point.timestamp >= range.start && point.timestamp <= range.end) : [...points];
+  return range
+    ? points.filter((point) => point.timestamp >= range.start && point.timestamp <= range.end)
+    : [...points];
 }
 
-export function computeStatistics(points: readonly TimeSeriesPoint[], range?: ChartTimeRange): SeriesStatistics {
+export function computeStatistics(
+  points: readonly TimeSeriesPoint[],
+  range?: ChartTimeRange,
+): SeriesStatistics {
   let min = Number.POSITIVE_INFINITY;
   let max = Number.NEGATIVE_INFINITY;
   let sum = 0;
@@ -54,9 +66,9 @@ export function typicalStepMs(points: readonly TimeSeriesPoint[]): number | unde
   }
   if (steps.length === 0) return undefined;
   steps.sort((first, second) => first - second);
-  const middle = Math.floor(steps.length / 2);
+  const middle = Math.floor(steps.length * HALF);
   const low = steps[middle - 1];
   const high = steps[middle];
   if (high === undefined) return undefined;
-  return steps.length % 2 === 1 || low === undefined ? high : (low + high) / 2;
+  return steps.length % PARITY_DIVISOR === 1 || low === undefined ? high : (low + high) * HALF;
 }

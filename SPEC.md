@@ -21,20 +21,40 @@ the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines
   location (external ID), Asset name, Description, Status and Criticality.
   Missing values show an explicit label ("Not provided", "Unnamed asset",
   "No description") rather than a blank cell.
-- Two summary tiles count assets with an Operating status and all other
-  statuses on the current page. They show a placeholder while the page loads.
-  Operating is matched case-insensitively on the trimmed status text.
+- Three summary cards above the table give the whole register: **Assets** (all
+  assets), **Operating** (assets with an Operating status) and **Equipment**
+  (all equipment). Each is counted by the server in a request of its own (an
+  aggregate over the `Asset` or `Equipment` view, not by reading rows), so the
+  figures ignore the page and the search, and the table never waits for them.
+  A card shows a dash while its count loads and when it could not be read, and
+  the others still show. When a count could not be read, "Some counts could not
+  be loaded" shows above the cards with the reason and Retry, which reads the
+  failed counts again. Counts are kept for 30 seconds. Each card's figure is
+  grouped under its label for assistive technology. Operating is the sum of the
+  per-status counts (the server groups by status) whose status reads Operating,
+  matched case-insensitively on the trimmed text. A count may trail a
+  just-made change slightly (the server indexes with a short lag), and the
+  per-status grouping reads up to 1,000 distinct statuses.
 - Columns can be sorted. Selecting a row opens that asset.
 - Previous and Next controls page through the results using the cursors
   returned by CDF (never inferred from item counts). Both are disabled while a
   page loads, and Previous is disabled on the first page.
+- The page is host-synced as the trail of cursors that leads to it (one cursor
+  for each page after the first, nothing on the first page), so a reload or a
+  shared link opens the same page, Previous still works from there, and the
+  page is kept when an asset is opened and the user returns to the register.
+  When a page after the first cannot be loaded (for example a link whose
+  cursor is no longer valid), the error reads "This page may no longer exist.
+  Try again, or go back to the first page." and offers "Go to first page"
+  beside Retry; the reason CDF gave shows under it, as for any failed load of
+  the register.
 - A search box above the table searches the Asset view's name, description and
   plant with CDF's full-text search. What is typed shows at once and is applied
   after a short pause (300 ms), on Enter, or when cleared with the clear button;
   a blank search lists every asset again. A search is one page of at most 100
   matches with no paging; when it hits that limit the table says "Showing the
   first 100 matches. Refine the search to narrow them." Changing the search
-  returns to the first page. The summary tiles count the matches shown. The
+  returns to the first page. The summary cards keep counting the whole register. The
   applied search is host-synced with the rest of the navigation state, so a
   reload or shared link restores it, and it is kept when an asset is opened and
   the user returns to the register.
@@ -42,37 +62,42 @@ the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines
   search without matches shows "No matching assets" with the text searched for.
   A failed load shows "Assets could not be loaded" with a Retry action inside
   the table panel (the search box stays usable); it is never shown as an empty
-  list.
+  list. Under "Check access to the Asset view, then try again." the alert gives
+  the reason the load failed, as "Reason: ..." (see "Load errors" below), for
+  example "Reason: The Asset_Passport data model was not found in
+  sp-asset-passport."
 
 ## Asset details
 
 - Opening an asset shows its name (or external ID when unnamed) as the page
-  title with a back button, plus status and criticality badges when present.
+  title, plus status and criticality badges when present.
   Pill colours follow the data: an Operating status is blue with a check
   icon, a maintenance status is amber and any other status is grey.
   Criticality is shown as its own value (for example "A - High criticality")
   with a colour by class: A red, B amber, C green, anything else grey.
 - Five tabs: Properties ("Asset ID: <external ID>", exactly as stored, then the
   asset's properties in the same grid of label and value cells as each equipment), Equipments (the
-  `Equipment` nodes whose `asset` relation points to the asset, up to 1000,
-  with a count badge on the tab), Timeseries (see below), Notes and Documents (see below). Each equipment is a card with its name,
+  `Equipment` nodes whose `asset` relation points to the asset, sorted by name on the server, the first 1000,
+  loaded when the tab opens, with a count badge on the tab; when the asset has more than 1,000, the tab says "Showing the
+  first 1,000 equipment, sorted by name. This asset has more."), Timeseries (see below), Notes and Documents (see below). Each equipment is a card with its name,
   "Equipment ID: <external ID>" and its properties as a grid of label and value
   cells. With no linked equipment the tab shows
-  "No equipment linked".
+  "No equipment linked". The Timeseries, Notes and Documents tabs carry a count badge too. The server counts all four lists (an aggregate request per list, with the same filter the list uses and no row read), so each badge is the whole number, with a thousands separator and no "+": the equipment of the asset, the series linked to it, the notes, and the uploaded documents plus the files already linked to the asset. The counts start together with the request for the asset itself, without waiting for it. While a tab's list is being counted the tab is disabled and shows no badge, except the tab that is open (Properties is never disabled). A list that could not be counted shows no badge and its tab stays open; a list with nothing in it shows "0". Adding, editing or deleting a note or document counts again.
+- The asset request reads only the asset. Each tab loads its own list when it is opened (or on load, when a shared link restores that tab).
 - Properties are every non-relation, non-JSON property the view defines and
   that has a value, labelled with the view property name. System and
   source-tracking properties (for example `source`, `sourceId`, `uid`,
   `createdByUser`) are hidden.
 - Loading shows a skeleton of the page (kicker, title with badges, tab bar and a card of property cells,
-  announced as "Loading asset and equipment properties..."), with no back button. A failed
-  load shows "Asset details could not be loaded" with Retry and the back
-  button; the page is never shown with partial or fabricated data.
+  announced as "Loading asset and equipment properties..."). A failed
+  load shows "Asset details could not be loaded" with Retry; the page is never shown with partial or fabricated data.
 
 ## Asset timeseries
 
 - The Timeseries tab, between Equipments and Notes, lists the time series linked to the open asset: the
   `PI_Timeseries` nodes (`sp-dm-idi-rmdm`, `v1`, referenced by the `Asset_Passport` model) whose `assets`
-  relation list contains the asset, up to 200, sorted by name.
+  relation list contains the asset, sorted by name on the server, 200 at a time: when the asset has more, a
+  "Show more timeseries" button under the cards reads the next 200 while the cards already shown stay.
 - The cards are laid out two to a row (one on a narrow screen). Each series is a card with its name (or its
   external ID if it has none), a preview of its last 6 months, and its properties
   as a grid of label and value cells, labelled with the view property name. The published view carries
@@ -113,15 +138,18 @@ the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines
 
 ## Asset notes
 
-- The Notes tab lists the notes written against the open asset, newest first,
-  up to 50. Each note shows its title, text, author (or "Unknown author") and
+- The Notes tab lists the notes written against the open asset, newest first.
+  The list is sorted on the server and read 100 at a time: when the asset has
+  more, a "Show more notes" button under the list reads the next 100 while the
+  notes already shown stay. Each note shows its title, text, author (or "Unknown author") and
   the date it was added. Loading shows a status message; a failed load shows
-  "Notes could not be loaded" with Retry; no notes shows "No notes yet".
+  "Notes could not be loaded" with the reason and Retry; no notes shows "No notes yet".
 - An "Add note" bar sits above the list, laid out like the document upload bar:
   a short hint on the left and an "Add note" button on the right. The button
   opens an "Add note" dialog with a required Title (up to 100 characters) and
   an optional Note text (up to 2000 characters), and Cancel and "Save note"
-  buttons. "Save note" is disabled while the title is empty or while saving.
+  buttons. While empty, the Title field hints "Give the note a short title" and the Note field "Write what you found",
+  in the same faint ink as the other fields' hints; the edit form has the same hints. "Save note" is disabled while the title is empty or while saving.
   A saved note closes the dialog and appears in the list at once. A failed
   save shows "The note could not be saved" with the reason inside the dialog,
   keeps what was typed, and never shows the note in the list. Cancelling or
@@ -148,9 +176,11 @@ the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines
 ## Asset documents
 
 - The Documents tab lists the documents uploaded against the open asset, newest
-  first, up to 100, and after them the files that already exist for the asset in RMDM (the `Files` view, matched
-  through its `assets` relation, newest first, up to 100; the app reads RMDM's `Files` view `sp-dm-idi-rmdm` `v1`
-  directly by reference, it is not part of the `Asset_Passport` model). An existing file shows an "Existing file" pill and can
+  upload first (a document whose upload has not finished stands above them), and after them the files that already
+  exist for the asset in RMDM (the `Files` view, matched through its `assets` relation, newest upload first). Both
+  lists are sorted on the server and read 100 at a time: when the asset has more, a "Show more uploaded documents"
+  or "Show more existing files" button under that list reads the next 100 while the rows already shown stay. The app reads RMDM's `Files` view `sp-dm-idi-rmdm` `v1`
+  directly by reference; it is not part of the `Asset_Passport` model. An existing file shows an "Existing file" pill and can
   be viewed but not deleted, and it cannot be replaced or renamed here; uploads always create a `Document`. A
   file linked to equipment only, not to the asset, is not listed. The existing files are read separately: if they
   cannot be read, "Existing files could not be loaded" with Retry shows above the list and the uploaded
@@ -163,7 +193,8 @@ the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines
   chosen at once, each up to 50 MB and not empty. Files are uploaded in
   parallel; afterwards a toast confirms "N document(s) uploaded." and the tab
   lists each file that failed with the reason ("Some documents could not be
-  uploaded"), which stays on screen until the next upload. The list refreshes
+  uploaded"), which stays on screen until the next upload. "Try again" beside
+  that list uploads only the files that failed. The list refreshes
   whether or not every file succeeded. While files are uploading, each one shows
   at the top of the list as a card with its name and an "Uploading..." status; it
   is replaced by the real document once the list has been re-read, and it stays
@@ -194,7 +225,7 @@ the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines
   file that has them, such as the P&ID boxes of a contextualised drawing
   (read from `CogniteDiagramAnnotation` edges); a file without them shows no
   boxes. Clicking anywhere inside a box that links to an asset opens a popover
-  pointing at that box, in the same chamfered glass style as the dialogs. It shows the asset's name, status and
+  pointing at that box, in chamfered glass with a lit edge. It shows the asset's name, status and
   criticality, functional location, plant and description, and an "Open asset" button that closes the preview and
   opens that asset in the register. Pressing the box again keeps it open; the close button, Escape, a press elsewhere,
   a zoom or a page change closes it. While the asset loads it says so, and a failed load offers Retry. A box that
@@ -208,7 +239,8 @@ the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines
   shows "The document could not be deleted" with the reason and keeps the row.
 - Documents cannot be renamed or edited. In mock mode there is no CDF client
   to read files with, so the preview dialog says "Preview is not available
-  here."; the document list, upload and delete still work.
+  here.", centred in a padded section of its own under a crossed-out eye
+  icon; the document list, upload and delete still work.
 
 ## Agent helper
 
@@ -223,13 +255,13 @@ the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines
   holds the hand up until the pointer or focus leaves and lowers it just as
   softly; with reduced motion the arm stays down. While an agent is answering its eyes turn round and look from
   side to side. It is decoration for assistive technology; the button around it
-  is named "Dalil, AI assistant".
-- The assistant is called Dalil (`ASSISTANT_NAME` in `src/constants/agents.ts`).
+  is named "Dalil AI assistant".
+- The assistant is called Dalil AI (`ASSISTANT_NAME` in `src/constants/agents.ts`).
   The helper uses that name everywhere: the button and the panel are named
-  "Dalil, AI assistant", the panel's header reads "Dalil" (not the name the
-  agent has in CDF) and an empty chat says "Ask Dalil something.".
+  "Dalil AI assistant", the panel's header reads "Dalil AI" (not the name the
+  agent has in CDF) and an empty chat says "Ask Dalil AI something.".
 - The mascot introduces itself in a small speech bubble beside it, with a tail
-  pointing at it: "Hi, I'm Dalil, your assistant". The bubble shows while the
+  pointing at it: "Hi, I'm Dalil AI, your assistant". The bubble shows while the
   mascot is hovered or has keyboard focus, together with the wave, and goes when
   the pointer or focus leaves. It also shows once by itself, with the wave, about
   a second after the app opens, for about five seconds (longer if the pointer is
@@ -243,11 +275,18 @@ the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines
   so the panel uses the space it took; closing (the mascot, the close button or
   Escape) shrinks the panel away and the mascot flies back. Animations are
   skipped with reduced motion.
+- Whether the panel is open is host-synced with the rest of the screen
+  (`isAssistantOpen`): a reload or a shared link brings back the panel open, and
+  it stays open while the reader moves between assets and tabs. The chat inside
+  it starts fresh after a reload (see below).
 - The helper talks to one CDF agent only, the one with external ID
   `FOCUSED_AGENT_EXTERNAL_ID` (`src/constants/agents.ts`); other agents of the
   project are neither listed nor fetched. The panel looks up just that agent (`POST /ai/agents/byids`): loading
   shows "Loading assistant..."; a failed load shows "The assistant could not be
-  loaded" with Retry; if the project has no such agent it says "The assistant is
+  loaded" with Retry and, under "Check access to the agents of this project,
+  then try again.", the reason CDF gave (for example "Reason: Insufficient
+  access rights. Required capabilities groupsAcl:LIST, projectsAcl:LIST not
+  present on token (HTTP 403)"); if the project has no such agent it says "The assistant is
   not available in this project.". Once found, the chat opens by itself.
 - The chat is shown in the same panel. It is not handed over to the Atlas panel in Fusion and works the same
   outside Fusion. A message box with the button shape (cut corners, lit bottom line;
@@ -261,14 +300,16 @@ the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines
   they disappear once the conversation has started. A microphone button next to
   Send dictates the question: while it is on it shows a stop sign instead of the microphone ("Stop dictation", pressed, with a light running around its outline)
   the spoken words are typed into the message box as they are recognised, after
-  anything already typed, and can be edited before sending; pressing it again or
-  sending stops it. It uses the browser's speech recognition in the browser's
+  anything already typed; pressing it again or sending stops it, and so does
+  editing the message by hand (the recogniser would otherwise overwrite the edit
+  with its next words), after which the text can be changed freely before sending. It uses the browser's speech recognition in the browser's
   language, so it is hidden where the browser has none (for example Firefox),
   and in Chrome and Edge the audio is sent to the browser vendor's speech service.
   A blocked microphone shows "Microphone access is blocked. Allow it in the
   browser to dictate."; Fusion must allow the microphone for the app's frame. A failed answer shows "The agent could not
-  answer" with the reason and keeps the question.
-- Each agent reply ends with a small copy icon ("Copy response"). It copies the reply's text, then shows a check
+  answer" with the reason and keeps the question; "Retry" asks that question
+  again without adding it to the conversation a second time.
+- Each agent reply ends with a small copy icon button (its tooltip reads "Copy response"). It copies the reply's text, then shows a check
   ("Copied") for about two seconds; if the browser refuses the clipboard it shows "Could not copy". Your own
   questions have no copy icon.
 - The conversation is kept while the app is open (it is not synced
@@ -279,10 +320,9 @@ the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines
 - The agent is looked up and asked through the Agents API (`POST /ai/agents/byids`
   and `POST /ai/agents/chat`, beta) with the SDK client, following the conversation
   by the reply's cursor. The signed-in user needs access to the agents in the
-  project. The mascot is cut from its reference pictures
-  (`design/mascot/adnoc-mascot-reference.png`, and
-  `adnoc-mascot-wave-reference.webp` for the raised arm) by
-  `design/mascot/cut_sprites.py` into five PNG layers in `src/assets/agent`
+  project. The mascot is the reusable `@adnoc/agent-mascot` workspace package
+  (`packages/agent-mascot`, shared as source like `@flows/trend-chart`; its README
+  says how another app uses it). It is five PNG layers in the package's `src/assets`
   (the robot at rest, the same robot with its arm raised up to the wrist, the
   raised hand by itself so it can turn at the wrist, its smiling
   eyes and its round thinking eyes), bundled with the app and served from the app itself,
@@ -291,18 +331,52 @@ the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines
 
 ## Shared state and look
 
-- The selected asset and the active tab are host-synced: they are restored
+- The selected asset, the active tab, the register's search, the
+  register's page and whether the assistant's panel is open are host-synced: they are restored
   from the Fusion `initialState` and pushed with `syncInternalState` on every
   change, so reloads and shared links open the same screen. Tab values are
   `PROPERTIES`, `EQUIPMENTS`, `TIMESERIES`, `NOTES` and `DOCUMENTS`; unknown or malformed state falls back to the
   register on the Properties tab. A failed sync is logged and does not block
   navigation.
 - The topbar shows the white ADNOC Gas logo (the app name "Asset Passport" is
-  shown instead if the image cannot load) and a breadcrumb with the selected
-  asset name when one is open.
-- The app is dark only, with the control-room HUD look: electric blue on deep
-  navy, an engineering grid behind the page with a few short lights running along its lines, and a mono kicker
-  line above each page title. There is no light mode or theme switcher.
+  shown instead if the image cannot load) and, when an asset is open, a
+  breadcrumb: "Assets" (a button that returns to the register; it is the only
+  way back, there is no separate back button), a separator, then the asset name (or its external ID while the
+  name loads) as the current page, which is not clickable. The current page
+  reads in the header's plain ink, without a glow. On its right side is the theme switch: one
+  button that turns the app from dark to light and back, showing a sun in dark
+  mode and a moon in light mode, labelled "Switch to light mode" or "Switch to
+  dark mode".
+- The app has a dark mode and a light mode, both with the control-room HUD
+  look in the colours of the assistant's mascot. It opens in dark mode. The
+  chosen mode is saved in the browser, so it is kept across reloads on that
+  device; it is not part of the host-synced state, so a shared link opens in
+  the reader's own mode. If the browser cannot save it, the switch still works
+  for the visit.
+  - Dark mode: the mascot's own royal blue on a navy mixed from that blue,
+    with near-white text and blue-tinted quiet text and hairlines rather than
+    grey ones.
+  - Light mode: white panels on a page faintly tinted with the mascot's blue,
+    navy text mixed from that blue, and the mascot's royal blue itself for
+    lines, lit edges and primary buttons. Status and criticality pills keep
+    their meaning with darker inks on pale fills.
+  - In both modes: an engineering grid behind the page with a few short lights
+    running along its lines, a kicker line above each page title, and gold
+    trim like the band on the mascot's hat: a thin band under the topbar, the
+    diamond and hairline of the page kicker, the bar in the top notch of
+    the large panels and the dialogs, and the slanted bars of a dialog's
+    vent. The topbar itself stays navy in both
+    modes, because the logo is white.
+
+## Pages outside the main flow
+
+- `src/pages/general/` holds the pages that are not part of the asset register:
+  `PageNotFound` ("Page not found", with the note that the page does not exist)
+  and `NoPermission` ("No permission", with the note to ask the project
+  administrator for access). Each shows a kicker (404 or 403), a title and an
+  empty-state card.
+- The app has no routing, so nothing shows these pages yet; a later change that
+  adds routing, or that turns a CDF 403 into a page, shows them.
 
 ## Mock mode
 
@@ -311,29 +385,76 @@ the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines
   Fusion host connection, so no authentication is needed and the selected
   asset and tab are not synced to the URL.
 - The dummy data lives in `src/mocks/` and answers the same requests the app
-  sends (data model lookup, the paged `assets` query, the `asset` plus
-  `equipment` details query, the `notes`, `documents` and `timeseries` queries, the
+  sends (data model lookup, the paged `assets` query, the `asset` details query, the
+  `equipment` list query, the `notes`, `documents` and `timeseries` queries, the counts of
+  those lists (aggregate requests), the
   timeseries datapoints (smooth, deterministic dummy readings), note
   creation, document upload and deletion and the user profile) with CDF-shaped
   responses, so the real services and UI run unchanged. Notes and documents
   added in mock mode are kept in memory only; mock file links are local. With the flag off the app behaves exactly as before.
+- The assistant has no mock mode: it needs a CDF project and the Fusion host. The
+  mascot is still shown, and its panel says the assistant is not available.
 - A banner states that the data is dummy data. The dummy data is loaded on
   demand and is not part of a build made without the flag.
 
 ## Design
 
-- Build the UI from Aura components and Aura colour ramps (blue, amber, red,
-  mountain); no raw hex. The HUD theme lives in `src/styles.css`, and custom
-  components live in `src/components/general/`.
+- Build the UI from Aura components and Aura colour ramps (fjord, blue, sky,
+  amber, red, green, dusk, mountain); no raw hex, with one exception: the
+  mascot's royal blue, which no Aura ramp has, is defined once as
+  `--mascot-blue`. The HUD theme lives in `src/styles.css`, where the palette
+  tokens at the top carry the mascot's colours once for each mode: dark on
+  `:root` and `.dark`, light on `:root:not(.dark)`. The rules below read those
+  tokens (`--neon-*` for the palette, `--hud-*` for what a colour is used for:
+  ink, lines, fills, tone pills, primary buttons, shadows), so a rule is
+  written once and serves both modes. The mode is the `dark` class on `<html>`,
+  the same switch Aura's own tokens follow. The topbar carries `dark` itself,
+  which keeps it and everything in it on the dark palette.
+  - Dark: the mascot's blue as it is for primary fills and glows, mixed into
+    Aura's darkest fjord for the navy surfaces, and the same hue at a higher
+    lightness for the accent used by text and lines (the blue itself is too
+    dark to read on navy); sky for lit details, amber for the gold trim. The
+    blue stays rich but not bright: surfaces hold about half the mascot's blue
+    and the accent keeps at least 4.5:1 contrast on them.
+  - Light: white surfaces and a page tint holding a little of the mascot's
+    blue; the blue as it is for the accent, lines and primary fills (it reads
+    on white at about 9:1); text in navy mixed from the blue and the darkest
+    fjord; the deeper steps of sky, amber and red for coloured text and lines,
+    each at 4.5:1 or more on the page. Tone pills use pale fills with the
+    darkest inks of their ramp. The chart's series use the deeper steps of
+    their hues so each line reads on white.
+  - In both: Aura's neutral grey tokens for quiet text, hairlines and muted
+    backgrounds are remapped to tints of the same blue. Gold is trim only; in
+    the content amber still means a warning.
+
+  Custom components live in `src/components/general/`.
 - Panels (`HudPanel`) have cut corners, a lit gradient edge, a glow and a
   light that travels along the border. Tabs in a panel sit on a full-width
-  header strip with a lit active tab. Type is Chakra Petch throughout, with
+  header strip with a lit active tab. The register's table sits on a deeper
+  shade than its panel, with the header row a shade deeper again (darker navy in dark mode, a blue-tinted white
+  in light mode). The register's summary cards (`StatTile`) are
+  notched panels, a control panel's outline: the four corners cut, a notch dipping into the top edge with the lit
+  bar on its floor, and the lower left cut away, with a vent of four slanted bars standing in the gap. The tile's
+  label heads it as a kicker with a diamond, a hairline runs from the label to the icon, and the figure sits under
+  it, clear of the cut-away. Every other card takes the same outline, quietly. The large panels (the register's
+  table, the asset page's tabs) have a shallow notch and a narrow cut-away that takes only the foot of the left
+  side, with no vent. The cards inside them (properties, equipment, time series, notes, documents and their add
+  rows) have it smaller again, with a faint edge and nothing lit. An empty state ("No notes yet", "No assets
+  found") takes that same card outline, so it lines up with the cards it stands beside and follows its panel's
+  shape. The register's pager is the foot of its table: a band as wide as the table, in the header row's tint
+  and under the header row's line. On the band stands a console holding Previous, the page number and Next. Its
+  sides are the buttons' own, straight with the top left corner cut; its foot is the band's foot, with no line
+  or cut along the bottom. It is drawn on the band itself, as a hairline over a faint wash that both fade out
+  towards the foot, rather than as a separate darker plate. Notices have a
+  lit left bar and the buttons' own shape, two opposite corners cut (top left and bottom right); the chart's empty, error and no-access boxes do too. A page's kicker is a label row: a gold diamond, the label and a gold
+  hairline that fades out. Tabs, pills, buttons and fields keep their own shape, two opposite corners cut. Type is Chakra Petch
+  throughout, with
   Source Code Pro for IDs. Status and criticality pills use the same lit-tab look (cut
   corners, gradient fill, bright bottom line, capitals) with a colour taken
   from the data: Operating is blue, maintenance amber, other statuses grey;
   criticality A is red, B amber and C green. The register's Criticality column
   uses the same pill. Pills are small (22px high, 10px type). Text buttons (Add note, Retry, Previous, Next) have the pill look at
-  their normal size; the back button stays square. The page sits on
+  their normal size. The page sits on
   `NeonStage` (grid, rings and short lights that run along the grid lines from one crossing to another, slowly and
   one or two at a time; they are decoration and are hidden with reduced motion).
 - Every notice (load errors, the connection error, the mock-mode banner) uses
@@ -341,12 +462,22 @@ the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines
   optional title, a message and an optional action. Variants are error,
   warning, info and success, taken from Aura's semantic colour tokens. Errors
   and warnings are announced as alerts; info and success as status.
+- Load errors: the asset register and the assistant show why the load failed
+  on a second, muted line under the hint, as "Reason: ...". The reason is the
+  message of the failure: what CDF answered, followed by the HTTP status in
+  brackets when there is one (the request ID the SDK appends is left out), or
+  the app's own message when it could not find the data model or a view. When
+  the failure carries no message the line is left out. Tokens and other
+  credentials are never part of it.
 - Toasts (short confirmations such as "1 document uploaded.") use the same
   glass, chamfered look and appear bottom-right; errors stay inline.
-- The page back button is a square pill, like the other buttons.
-- Dialogs are chamfered glass panels with a lit cyan edge, like the cards,
-  split by full-width dividers into a header (title), a body and a footer of
-  actions. Their close button and action buttons use the same pill shape and
+- Dialogs take the KPI card's outline on the panels' own bright blue glass, with a lit cyan edge: four cut
+  corners, a shallow notch in the top edge with a gold bar on its floor, and the foot of the left side cut away
+  with the vent's four slanted bars, in gold, standing in the gap, however tall the dialog grows. Full-width
+  dividers split it into a header (title), a body and a footer of actions. The title and the content keep the
+  dialog's own padding, the same on the left as on the right; only what stands at the foot starts clear of the
+  cut-away: the actions, or the content of a dialog that has none.
+  Their close button and action buttons use the same pill shape and
   type as the rest of the app; a destructive action is the red pill.
 - Stack panels on small screens without page overflow.
 - Cards, tiles and page headers are still: they appear at once and nothing on them moves (no entrance, no sweeping
@@ -360,13 +491,16 @@ the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines
   project, base URL or token.
 - Resolve the `Asset`, `Equipment`, `PI_Timeseries`, `Note` and `Document` views from the `Asset_Passport`
   data model (`sp-asset-passport`, version `1`, views inlined) at run time and query
-  through `client.instances.query()` with TanStack Query. Query keys include
+  through `client.instances.query()` with TanStack Query. The tab badges are counted by the server
+  through `client.instances.aggregate()` (a `count` of the nodes the list's filter matches), with the
+  count's query key under the list's own so that whatever refreshes a list counts it again. Query keys include
   the project, data model, view and cursor or asset identity.
 - Throttled (429) and temporary gateway (502, 503, 504) responses are retried
   up to 3 times with exponential backoff and jitter, capped at 15 seconds;
   other errors are shown at once.
 - An unexpected rendering error shows "Something went wrong" with a Retry
-  action instead of a blank page.
+  action instead of a blank page, on the same themed background as the rest of
+  the app.
 - The only writes are note and document instances in `sp-asset-passport-data`
   (and the file content of documents); never create views, spaces or
   containers. Document content is sent to a temporary upload link on a

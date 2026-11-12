@@ -1,8 +1,10 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ComponentType, ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { StoreApi } from 'zustand';
 
+import { TIMESERIES_QUERY_LIMIT } from '../../../../constants/timeseries';
 import {
   UseAssetTimeseriesContext,
   type UseAssetTimeseriesContextType,
@@ -11,39 +13,44 @@ import {
   UseTimeseriesChartViewModelContext,
   type UseTimeseriesChartViewModelContextType,
 } from '../../../../hooks/assets/timeseries/useTimeseriesChartViewModel';
-import { UseTimeseriesTrendsContext } from '../../../../hooks/timeseries/useTimeseriesTrends';
+import { TimeseriesContext } from '../../../../hooks/assets/timeseries/useTimeseriesContext';
+import { UseTimeseriesTrendsContext } from '../../../../hooks/assets/timeseries/useTimeseriesTrends';
+import { AssetContext } from '../../../../hooks/assets/useAssetContext';
+import { NavigationStoreContext } from '../../../../hooks/general/useNavigationState';
+import { DEFAULT_NAVIGATION_STATE } from '../../../../lib/navigationState';
 import { makeInstanceDetails } from '../../../../mocks/assets';
 import { makeMockClient } from '../../../../mocks/cogniteClient';
-import { makeQueryClientWrapper } from '../../../../mocks/queryClientWrapper';
-import type {
-  TimeseriesDatapointsClient,
-  TimeseriesIdentifier,
-} from '../../../../types/timeseries';
+import { makeLimitedList } from '../../../../mocks/lists';
+import { makeQueryClientWrapper } from '../../../../mocks/QueryClientWrapper';
+import { createNavigationStore } from '../../../../store/navigation';
+import type { NavigationStore } from '../../../../types/navigation';
+import type { TimeseriesContextType, TimeseriesIdentifier } from '../../../../types/timeseries';
 import { AssetTimeseries } from '../AssetTimeseries';
 
 const assetIdentifier = { space: 'asset-space', externalId: 'FLOC-1' };
 
 describe(AssetTimeseries.name, () => {
   let mockContext: UseAssetTimeseriesContextType;
-  let datapoints: TimeseriesDatapointsClient;
+  let datapoints: TimeseriesContextType;
   let chartContext: UseTimeseriesChartViewModelContextType;
-  let onChartChange: ReturnType<typeof vi.fn<(options: Record<string, string> | null) => void>>;
+  let navigationStore: StoreApi<NavigationStore>;
   let wrapper: ComponentType<{ children: ReactNode }>;
 
   beforeEach(() => {
     const client = makeMockClient();
     mockContext = {
-      useAssetDataClient: vi.fn(() => client),
       listAssetTimeseries: vi.fn(() =>
-        Promise.resolve([
-          makeInstanceDetails({
-            externalId: 'PI.PT-101',
-            properties: [
-              { identifier: 'name', label: 'Name', value: 'Discharge pressure' },
-              { identifier: 'engunits', label: 'Unit', value: 'bar' },
-            ],
-          }),
-        ]),
+        Promise.resolve(
+          makeLimitedList([
+            makeInstanceDetails({
+              externalId: 'PI.PT-101',
+              properties: [
+                { identifier: 'name', label: 'Name', value: 'Discharge pressure' },
+                { identifier: 'engunits', label: 'Unit', value: 'bar' },
+              ],
+            }),
+          ]),
+        ),
       ),
     };
     datapoints = {
@@ -60,29 +67,29 @@ describe(AssetTimeseries.name, () => {
         ),
       ),
     };
-    onChartChange = vi.fn();
+    navigationStore = createNavigationStore();
     chartContext = {
-      useTimeseriesChartState: vi.fn(() => ({
-        options: null,
-        onChange: onChartChange,
-      })),
-      useTimeseriesDatapointsClient: () => datapoints,
       now: () => 10_000,
     };
     const QueryWrapper = makeQueryClientWrapper();
     wrapper = ({ children }) => (
-      <UseAssetTimeseriesContext.Provider value={mockContext}>
-        <UseTimeseriesChartViewModelContext.Provider value={chartContext}>
-          <UseTimeseriesTrendsContext.Provider
-            value={{
-              useTimeseriesDatapointsClient: () => datapoints,
-              now: () => 10_000,
-            }}
-          >
-            <QueryWrapper>{children}</QueryWrapper>
-          </UseTimeseriesTrendsContext.Provider>
-        </UseTimeseriesChartViewModelContext.Provider>
-      </UseAssetTimeseriesContext.Provider>
+      <NavigationStoreContext.Provider value={navigationStore}>
+        <UseAssetTimeseriesContext.Provider value={mockContext}>
+          <UseTimeseriesChartViewModelContext.Provider value={chartContext}>
+            <UseTimeseriesTrendsContext.Provider
+              value={{
+                now: () => 10_000,
+              }}
+            >
+              <QueryWrapper>
+                <TimeseriesContext.Provider value={datapoints}>
+                  <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
+                </TimeseriesContext.Provider>
+              </QueryWrapper>
+            </UseTimeseriesTrendsContext.Provider>
+          </UseTimeseriesChartViewModelContext.Provider>
+        </UseAssetTimeseriesContext.Provider>
+      </NavigationStoreContext.Provider>
     );
   });
 
@@ -93,23 +100,17 @@ describe(AssetTimeseries.name, () => {
   }
 
   it('shows a loading status while the series load', () => {
-    vi.mocked(mockContext.listAssetTimeseries).mockReturnValue(
-      new Promise(() => {}),
-    );
+    vi.mocked(mockContext.listAssetTimeseries).mockReturnValue(new Promise(() => {}));
 
     renderList();
 
-    expect(screen.getByRole('status')).toHaveTextContent(
-      'Loading timeseries...',
-    );
+    expect(screen.getByRole('status')).toHaveTextContent('Loading timeseries...');
   });
 
   it('shows each series with its name and properties, without a separate ID line', async () => {
     renderList();
 
-    expect(
-      await screen.findByRole('heading', { name: 'Discharge pressure' }),
-    ).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Discharge pressure' })).toBeInTheDocument();
     expect(screen.queryByText(/Timeseries ID/)).not.toBeInTheDocument();
     expect(screen.getByText('Unit')).toBeInTheDocument();
     expect(screen.getByText('bar')).toBeInTheDocument();
@@ -136,9 +137,7 @@ describe(AssetTimeseries.name, () => {
     renderList();
 
     expect(await screen.findByLabelText('Loading preview')).toBeInTheDocument();
-    expect(
-      screen.getByRole('heading', { name: 'Discharge pressure' }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Discharge pressure' })).toBeInTheDocument();
   });
 
   it('keeps the series visible when its readings cannot be loaded', async () => {
@@ -146,19 +145,17 @@ describe(AssetTimeseries.name, () => {
 
     renderList();
 
-    expect(
-      await screen.findByText('The preview could not be loaded.'),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole('heading', { name: 'Discharge pressure' }),
-    ).toBeInTheDocument();
+    expect(await screen.findByText('The preview could not be loaded.')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Discharge pressure' })).toBeInTheDocument();
   });
 
   it('lays the series out two to a row', async () => {
-    vi.mocked(mockContext.listAssetTimeseries).mockResolvedValue([
-      makeInstanceDetails({ externalId: 'PI.A' }),
-      makeInstanceDetails({ externalId: 'PI.B' }),
-    ]);
+    vi.mocked(mockContext.listAssetTimeseries).mockResolvedValue(
+      makeLimitedList([
+        makeInstanceDetails({ externalId: 'PI.A' }),
+        makeInstanceDetails({ externalId: 'PI.B' }),
+      ]),
+    );
 
     renderList();
 
@@ -177,8 +174,7 @@ describe(AssetTimeseries.name, () => {
       }),
     );
 
-    expect(onChartChange).toHaveBeenCalledTimes(1);
-    expect(onChartChange).toHaveBeenCalledWith(
+    expect(navigationStore.getState().navigationState.timeseriesChart).toEqual(
       expect.objectContaining({
         sig: 'asset-instance-space:PI.PT-101',
         title: 'Discharge pressure',
@@ -187,16 +183,16 @@ describe(AssetTimeseries.name, () => {
   });
 
   it('shows the chart while it is open', async () => {
-    vi.mocked(chartContext.useTimeseriesChartState).mockReturnValue({
-      options: { sig: 'asset-instance-space:PI.PT-101' },
-      onChange: onChartChange,
+    navigationStore = createNavigationStore({
+      initialState: {
+        ...DEFAULT_NAVIGATION_STATE,
+        timeseriesChart: { sig: 'asset-instance-space:PI.PT-101' },
+      },
     });
 
     renderList();
 
-    expect(
-      await screen.findByRole('dialog', { name: /chart/i }),
-    ).toBeInTheDocument();
+    expect(await screen.findByRole('dialog', { name: /chart/i })).toBeInTheDocument();
   });
 
   it('does not show the chart while it is closed', async () => {
@@ -206,8 +202,33 @@ describe(AssetTimeseries.name, () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
+  it('offers more series when the asset has more than were read', async () => {
+    const user = userEvent.setup();
+    vi.mocked(mockContext.listAssetTimeseries).mockResolvedValue(
+      makeLimitedList([makeInstanceDetails({ externalId: 'PI.A' })], true),
+    );
+    renderList();
+
+    await user.click(await screen.findByRole('button', { name: 'Show more timeseries' }));
+
+    await waitFor(() =>
+      expect(mockContext.listAssetTimeseries).toHaveBeenLastCalledWith(
+        expect.anything(),
+        assetIdentifier,
+        TIMESERIES_QUERY_LIMIT * 2,
+      ),
+    );
+  });
+
+  it('offers no more series once every series is read', async () => {
+    renderList();
+
+    await screen.findByRole('heading', { name: 'Discharge pressure' });
+    expect(screen.queryByRole('button', { name: 'Show more timeseries' })).not.toBeInTheDocument();
+  });
+
   it('shows an empty state when no series are linked', async () => {
-    vi.mocked(mockContext.listAssetTimeseries).mockResolvedValue([]);
+    vi.mocked(mockContext.listAssetTimeseries).mockResolvedValue(makeLimitedList([]));
 
     renderList();
 
@@ -216,18 +237,12 @@ describe(AssetTimeseries.name, () => {
 
   it('shows a readable error and retries the load', async () => {
     const user = userEvent.setup();
-    vi.mocked(mockContext.listAssetTimeseries).mockRejectedValueOnce(
-      new Error('no access'),
-    );
+    vi.mocked(mockContext.listAssetTimeseries).mockRejectedValueOnce(new Error('no access'));
     renderList();
 
-    expect(
-      await screen.findByText('Timeseries could not be loaded'),
-    ).toBeInTheDocument();
+    expect(await screen.findByText('Timeseries could not be loaded')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Retry' }));
 
-    expect(
-      await screen.findByRole('heading', { name: 'Discharge pressure' }),
-    ).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Discharge pressure' })).toBeInTheDocument();
   });
 });

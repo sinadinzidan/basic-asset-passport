@@ -3,10 +3,7 @@ import userEvent from '@testing-library/user-event';
 import type { ComponentType, ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import {
-  DebounceContext,
-  type DebounceDeps,
-} from '../../../hooks/general/useDebouncedCallback';
+import { DebounceContext, type DebounceDeps } from '../../../hooks/general/useDebouncedCallback';
 import { AssetSearchField } from '../AssetSearchField';
 
 describe(AssetSearchField.name, () => {
@@ -28,28 +25,21 @@ describe(AssetSearchField.name, () => {
       }),
     };
     wrapper = ({ children }) => (
-      <DebounceContext.Provider value={deps}>
-        {children}
-      </DebounceContext.Provider>
+      <DebounceContext.Provider value={deps}>{children}</DebounceContext.Provider>
     );
   });
 
   it('starts with the search that is applied', () => {
     render(<AssetSearchField value="pump" onChange={vi.fn()} />, { wrapper });
 
-    expect(
-      screen.getByRole('searchbox', { name: 'Search assets' }),
-    ).toHaveValue('pump');
+    expect(screen.getByRole('searchbox', { name: 'Search assets' })).toHaveValue('pump');
   });
 
   it('shows what is typed at once but applies it only after the pause', async () => {
     const onChange = vi.fn();
     render(<AssetSearchField value="" onChange={onChange} />, { wrapper });
 
-    await userEvent.type(
-      screen.getByRole('searchbox', { name: 'Search assets' }),
-      'pu',
-    );
+    await userEvent.type(screen.getByRole('searchbox', { name: 'Search assets' }), 'pu');
 
     expect(screen.getByRole('searchbox')).toHaveValue('pu');
     expect(onChange).not.toHaveBeenCalled();

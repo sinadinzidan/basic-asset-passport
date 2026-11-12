@@ -1,3 +1,4 @@
+import { HALF } from '../../constants/mathConstants';
 import { CHART_MAX_BUCKETS } from '../../constants/monitoring';
 import {
   CHART_GAP_STEP_FACTOR,
@@ -41,8 +42,8 @@ export interface PlotSeries {
 }
 
 export interface PlotSeriesOptions {
-  showMinMax: boolean;
-  showThresholds: boolean;
+  shouldShowMinMax: boolean;
+  shouldShowThresholds: boolean;
 }
 
 const FALLBACK_STEP_SHARE = 100;
@@ -60,7 +61,11 @@ export function plotBuckets(
   points: readonly TimeSeriesPoint[],
   window: ChartTimeRange,
 ): { buckets: ChartBucket[]; isAggregated: boolean } {
-  const buckets = aggregateReadings(points, { fromMs: window.start, toMs: window.end }, CHART_MAX_BUCKETS);
+  const buckets = aggregateReadings(
+    points,
+    { fromMs: window.start, toMs: window.end },
+    CHART_MAX_BUCKETS,
+  );
   const isAggregated = pointsInRange(points, window).length > CHART_MAX_BUCKETS;
   if (isAggregated) return { buckets, isAggregated };
   const step = typicalStepMs(points);
@@ -75,7 +80,7 @@ export function plotBuckets(
       bucket.atMs - previous.atMs > step * CHART_GAP_STEP_FACTOR
     ) {
       broken.push({
-        atMs: (previous.atMs + bucket.atMs) / 2,
+        atMs: (previous.atMs + bucket.atMs) * HALF,
         average: null,
         minimum: null,
         maximum: null,
@@ -88,10 +93,14 @@ export function plotBuckets(
   return { buckets: broken, isAggregated };
 }
 
-export function buildPlotSeries(view: ChartSeriesView, window: ChartTimeRange, options: PlotSeriesOptions): PlotSeries {
+export function buildPlotSeries(
+  view: ChartSeriesView,
+  window: ChartTimeRange,
+  options: PlotSeriesOptions,
+): PlotSeries {
   const { buckets, isAggregated } = plotBuckets(view.points, window);
-  const extremes = options.showMinMax ? findExtremes(view.points, window) : {};
-  const thresholds = options.showThresholds ? view.thresholds : [];
+  const extremes = options.shouldShowMinMax ? findExtremes(view.points, window) : {};
+  const thresholds = options.shouldShowThresholds ? view.thresholds : [];
   const span = window.end - window.start;
   return {
     id: view.definition.id,
@@ -103,7 +112,9 @@ export function buildPlotSeries(view: ChartSeriesView, window: ChartTimeRange, o
     buckets,
     isAggregated,
     hasValues: buckets.some((bucket) => bucket.average !== null),
-    stepMs: isAggregated ? span / CHART_MAX_BUCKETS : (typicalStepMs(view.points) ?? span / FALLBACK_STEP_SHARE),
+    stepMs: isAggregated
+      ? span / CHART_MAX_BUCKETS
+      : (typicalStepMs(view.points) ?? span / FALLBACK_STEP_SHARE),
     min: extremes.min,
     max: extremes.max,
     thresholds,
@@ -137,11 +148,19 @@ export function limitValuesOf(thresholds: readonly ChartThreshold[]): LimitValue
   return limits;
 }
 
-export function bucketsOfBreach(series: PlotSeries, breach: ThresholdBreach, window: ChartTimeRange): ChartBucket[] {
-  const tolerance = series.isAggregated ? (window.end - window.start) / CHART_MAX_BUCKETS / 2 : 0;
+export function bucketsOfBreach(
+  series: PlotSeries,
+  breach: ThresholdBreach,
+  window: ChartTimeRange,
+): ChartBucket[] {
+  const tolerance = series.isAggregated
+    ? ((window.end - window.start) / CHART_MAX_BUCKETS) * HALF
+    : 0;
   return series.buckets.filter(
     (bucket) =>
-      bucket.average !== null && bucket.atMs >= breach.from - tolerance && bucket.atMs <= breach.to + tolerance,
+      bucket.average !== null &&
+      bucket.atMs >= breach.from - tolerance &&
+      bucket.atMs <= breach.to + tolerance,
   );
 }
 
@@ -150,10 +169,20 @@ export function bucketAt(series: PlotSeries, atMs: number): ChartBucket | undefi
 }
 
 /** The height of a value inside its lane, or undefined when it falls outside the lane, as it can with manual axis limits; such a value is not marked. */
-export function laneYPosition(model: PlotModel, seriesId: string, value: number): number | undefined {
+export function laneYPosition(
+  model: PlotModel,
+  seriesId: string,
+  value: number,
+): number | undefined {
   const scale = model.scales.get(seriesId);
   const lane = scale ? model.lanes[scale.laneIndex] : undefined;
-  const y = yPosition(model, seriesId, value);
-  if (!lane || y === undefined || y < lane.top || y > lane.top + lane.height) return undefined;
-  return y;
+  const yCoordinate = yPosition(model, seriesId, value);
+  if (
+    !lane ||
+    yCoordinate === undefined ||
+    yCoordinate < lane.top ||
+    yCoordinate > lane.top + lane.height
+  )
+    return undefined;
+  return yCoordinate;
 }

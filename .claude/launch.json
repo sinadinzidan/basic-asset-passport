@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "asset-passport-real-cdf",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": ["-c", "VITE_MOCK_MODE=false npx vite --port 3011 --strictPort"],
+      "port": 3011
+    }
+  ]
+}

@@ -3,19 +3,22 @@ import userEvent from '@testing-library/user-event';
 import type { ComponentType, ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { AssetContext } from '../../../../hooks/assets/useAssetContext';
 import {
-  UseAssetEquipmentDetailsContext,
-  type UseAssetEquipmentDetailsContextType,
-} from '../../../../hooks/assets/useAssetEquipmentDetails';
+  UseAssetDetailsContext,
+  type UseAssetDetailsContextType,
+} from '../../../../hooks/assets/useAssetDetails';
 import { makeInstanceDetails } from '../../../../mocks/assets';
 import { makeMockClient } from '../../../../mocks/cogniteClient';
-import { makeQueryClientWrapper } from '../../../../mocks/queryClientWrapper';
+import { makeQueryClientWrapper } from '../../../../mocks/QueryClientWrapper';
 import { LinkedAssetPopover } from '../LinkedAssetPopover';
+
+const assetContext = makeMockClient();
 
 const linkedAsset = { space: 'asset-space', externalId: 'FLOC-9' };
 
 describe(LinkedAssetPopover.name, () => {
-  let context: UseAssetEquipmentDetailsContextType;
+  let context: UseAssetDetailsContextType;
   let wrapper: ComponentType<{ children: ReactNode }>;
   let anchor: HTMLElement;
 
@@ -23,28 +26,32 @@ describe(LinkedAssetPopover.name, () => {
     anchor = document.createElement('div');
     document.body.appendChild(anchor);
     context = {
-      useAssetDataClient: vi.fn(() => makeMockClient()),
-      getAssetEquipmentDetails: vi.fn(() =>
-        Promise.resolve({
-          asset: makeInstanceDetails({
+      getAssetDetails: vi.fn(() =>
+        Promise.resolve(
+          makeInstanceDetails({
             ...linkedAsset,
             properties: [
               { identifier: 'name', label: 'Name', value: 'Feed Pump 9' },
               { identifier: 'description', label: 'Description', value: 'Feeds the boiler' },
               { identifier: 'plantName', label: 'Plant', value: 'South Plant' },
               { identifier: 'flocStatus', label: 'Status', value: 'Operating' },
-              { identifier: 'abcIndicatorName', label: 'Criticality', value: 'A - High criticality' },
+              {
+                identifier: 'abcIndicatorName',
+                label: 'Criticality',
+                value: 'A - High criticality',
+              },
             ],
           }),
-          equipment: [],
-        }),
+        ),
       ),
     };
     const QueryWrapper = makeQueryClientWrapper();
     wrapper = ({ children }) => (
-      <UseAssetEquipmentDetailsContext.Provider value={context}>
-        <QueryWrapper>{children}</QueryWrapper>
-      </UseAssetEquipmentDetailsContext.Provider>
+      <UseAssetDetailsContext.Provider value={context}>
+        <QueryWrapper>
+          <AssetContext.Provider value={assetContext}>{children}</AssetContext.Provider>
+        </QueryWrapper>
+      </UseAssetDetailsContext.Provider>
     );
   });
 
@@ -52,24 +59,22 @@ describe(LinkedAssetPopover.name, () => {
     anchor.remove();
   });
 
-  function renderPopover(
-    overrides: Partial<React.ComponentProps<typeof LinkedAssetPopover>> = {},
-  ) {
-    const props = {
+  function renderPopover(overrides: Partial<React.ComponentProps<typeof LinkedAssetPopover>> = {}) {
+    const properties = {
       target: { asset: linkedAsset, anchor },
       onClose: vi.fn(),
       onOpenAsset: vi.fn(),
       ...overrides,
     };
-    render(<LinkedAssetPopover {...props} />, { wrapper });
-    return props;
+    render(<LinkedAssetPopover {...properties} />, { wrapper });
+    return properties;
   }
 
   it('shows nothing while no annotation has been clicked', () => {
     renderPopover({ target: null });
 
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-    expect(context.getAssetEquipmentDetails).not.toHaveBeenCalled();
+    expect(context.getAssetDetails).not.toHaveBeenCalled();
   });
 
   it('shows the linked asset with its status, criticality and description', async () => {
@@ -81,11 +86,11 @@ describe(LinkedAssetPopover.name, () => {
     expect(screen.getByText('Feeds the boiler')).toBeInTheDocument();
     expect(screen.getByText('South Plant')).toBeInTheDocument();
     expect(screen.getByText('FLOC-9')).toBeInTheDocument();
-    expect(context.getAssetEquipmentDetails).toHaveBeenCalledWith(expect.anything(), linkedAsset);
+    expect(context.getAssetDetails).toHaveBeenCalledWith(expect.anything(), linkedAsset);
   });
 
   it('says it is loading while the asset is read', () => {
-    vi.mocked(context.getAssetEquipmentDetails).mockReturnValue(new Promise(() => {}));
+    vi.mocked(context.getAssetDetails).mockReturnValue(new Promise(() => {}));
 
     renderPopover();
 
@@ -94,11 +99,12 @@ describe(LinkedAssetPopover.name, () => {
   });
 
   it('offers a retry when the asset cannot be read', async () => {
-    vi.mocked(context.getAssetEquipmentDetails).mockRejectedValue(new Error('not found'));
+    vi.mocked(context.getAssetDetails).mockRejectedValue(new Error('not found'));
 
     renderPopover();
 
     expect(await screen.findByText('Asset could not be loaded')).toBeInTheDocument();
+    expect(screen.getByText('Reason: not found')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Retry' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Open asset' })).not.toBeInTheDocument();
   });

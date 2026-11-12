@@ -4,10 +4,8 @@ import type { ComponentType, ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { makeMockClient } from '../../../../mocks/cogniteClient';
-import {
-  makeQueryClientWrapper,
-  makeTestQueryClient,
-} from '../../../../mocks/queryClientWrapper';
+import { makeQueryClientWrapper, makeTestQueryClient } from '../../../../mocks/QueryClientWrapper';
+import { AssetContext } from '../../useAssetContext';
 import {
   useAddAssetNote,
   UseAddAssetNoteContext,
@@ -27,13 +25,14 @@ describe(useAddAssetNote.name, () => {
   beforeEach(() => {
     queryClient = makeTestQueryClient();
     mockContext = {
-      useAssetDataClient: vi.fn(() => client),
       createAssetNote: vi.fn(() => Promise.resolve()),
     };
     const QueryWrapper = makeQueryClientWrapper(queryClient);
     wrapper = ({ children }) => (
       <UseAddAssetNoteContext.Provider value={mockContext}>
-        <QueryWrapper>{children}</QueryWrapper>
+        <QueryWrapper>
+          <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
+        </QueryWrapper>
       </UseAddAssetNoteContext.Provider>
     );
   });
@@ -47,11 +46,7 @@ describe(useAddAssetNote.name, () => {
       await result.current.mutateAsync(newNote);
     });
 
-    expect(mockContext.createAssetNote).toHaveBeenCalledWith(
-      client,
-      assetIdentifier,
-      newNote,
-    );
+    expect(mockContext.createAssetNote).toHaveBeenCalledWith(client, assetIdentifier, newNote);
   });
 
   it('refreshes the notes of that asset after a save', async () => {
@@ -70,9 +65,7 @@ describe(useAddAssetNote.name, () => {
   });
 
   it('reports a failed save and does not refresh the notes', async () => {
-    vi.mocked(mockContext.createAssetNote).mockRejectedValue(
-      new Error('Forbidden'),
-    );
+    vi.mocked(mockContext.createAssetNote).mockRejectedValue(new Error('Forbidden'));
     const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
     const { result } = renderHook(() => useAddAssetNote(assetIdentifier), {
       wrapper,

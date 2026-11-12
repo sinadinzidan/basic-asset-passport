@@ -1,11 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { makeInstanceDetails } from '../../../../mocks/assets';
-import type { TimeseriesDatapointsClient } from '../../../../types/timeseries';
-import {
-  createTimeseriesChartAdapter,
-  getChartableTimeseries,
-} from '../timeseriesChartAdapter';
+import type { TimeseriesContextType } from '../../../../types/timeseries';
+import { createTimeseriesChartAdapter, getChartableTimeseries } from '../timeseriesChartAdapter';
 
 const options = { sourceName: 'CDF time series', isSimulated: false };
 const pressure = makeInstanceDetails({
@@ -31,7 +28,7 @@ const status = makeInstanceDetails({
 const HOUR_MS = 3_600_000;
 
 describe(createTimeseriesChartAdapter.name, () => {
-  let client: TimeseriesDatapointsClient;
+  let client: TimeseriesContextType;
 
   beforeEach(() => {
     client = {
@@ -49,11 +46,7 @@ describe(createTimeseriesChartAdapter.name, () => {
   });
 
   function makeAdapter() {
-    return createTimeseriesChartAdapter(
-      client,
-      [pressure, temperature, status],
-      options,
-    );
+    return createTimeseriesChartAdapter(client, [pressure, temperature, status], options);
   }
 
   it('offers only the numeric series, described from their properties', async () => {
@@ -116,9 +109,7 @@ describe(createTimeseriesChartAdapter.name, () => {
       expect.objectContaining({ from: 0, to: 24 * HOUR_MS, granularity: '5m' }),
       { isStrict: true },
     );
-    expect(data).toEqual([
-      { seriesId: 'ts:PI.PT-101', points: [{ timestamp: 1000, value: 4 }] },
-    ]);
+    expect(data).toEqual([{ seriesId: 'ts:PI.PT-101', points: [{ timestamp: 1000, value: 4 }] }]);
   });
 
   it('passes a failed read on, so the chart shows the error and a retry', async () => {
@@ -142,9 +133,7 @@ describe(createTimeseriesChartAdapter.name, () => {
   it('looks up the details of one series', async () => {
     const adapter = makeAdapter();
 
-    expect((await adapter.getSeriesDetails('ts:PI.PT-101'))?.name).toBe(
-      'Discharge pressure',
-    );
+    expect((await adapter.getSeriesDetails('ts:PI.PT-101'))?.name).toBe('Discharge pressure');
     expect(await adapter.getSeriesDetails('ts:missing')).toBeUndefined();
   });
 
@@ -152,9 +141,7 @@ describe(createTimeseriesChartAdapter.name, () => {
     const limited = makeInstanceDetails({
       space: 'ts',
       externalId: 'PI.LIM',
-      properties: [
-        { identifier: 'tripLimitMax', label: 'Trip', value: '10' },
-      ],
+      properties: [{ identifier: 'tripLimitMax', label: 'Trip', value: '10' }],
     });
     const adapter = createTimeseriesChartAdapter(client, [pressure, limited], options);
 

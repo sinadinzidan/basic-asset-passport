@@ -19,5 +19,8 @@ export function chartWindowOf(configuration: ChartConfiguration, nowMs: number):
     ? { fromMs: configuration.window.start, toMs: configuration.window.end }
     : undefined;
   const resolved = resolveChartWindow(configuration.range, nowMs, custom);
-  return { from: new Date(resolved.fromMs).toISOString(), to: new Date(resolved.toMs).toISOString() };
+  return {
+    from: new Date(resolved.fromMs).toISOString(),
+    to: new Date(resolved.toMs).toISOString(),
+  };
 }

@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { DictationFailure } from '../../../enums/dictationFailure';
 import type { DictationCallbacks } from '../../../types/speech';
 import { createBrowserDictationEngine } from '../browserDictationEngine';
 
@@ -24,9 +25,7 @@ class FakeRecognition {
   hear(results: FakeResult[]): void {
     this.onresult?.({
       results: Object.assign(
-        results.map(({ isFinal, text }) =>
-          Object.assign([{ transcript: text }], { isFinal }),
-        ),
+        results.map(({ isFinal, text }) => Object.assign([{ transcript: text }], { isFinal })),
       ),
     });
   }
@@ -54,10 +53,7 @@ describe(createBrowserDictationEngine.name, () => {
   });
 
   it('listens continuously in the given language and shows words as they are heard', () => {
-    const engine = createBrowserDictationEngine(
-      { SpeechRecognition: FakeRecognition },
-      'nb-NO',
-    );
+    const engine = createBrowserDictationEngine({ SpeechRecognition: FakeRecognition }, 'nb-NO');
 
     engine?.start(callbacks);
 
@@ -69,10 +65,7 @@ describe(createBrowserDictationEngine.name, () => {
   });
 
   it('reports everything heard so far, final and not yet final', () => {
-    const engine = createBrowserDictationEngine(
-      { SpeechRecognition: FakeRecognition },
-      'en-GB',
-    );
+    const engine = createBrowserDictationEngine({ SpeechRecognition: FakeRecognition }, 'en-GB');
     engine?.start(callbacks);
 
     FakeRecognition.instances[0]?.hear([
@@ -80,16 +73,11 @@ describe(createBrowserDictationEngine.name, () => {
       { isFinal: false, text: ' are leaking' },
     ]);
 
-    expect(callbacks.onTranscript).toHaveBeenLastCalledWith(
-      'which pumps are leaking',
-    );
+    expect(callbacks.onTranscript).toHaveBeenLastCalledWith('which pumps are leaking');
   });
 
   it('stops the recognition when the session is stopped', () => {
-    const engine = createBrowserDictationEngine(
-      { SpeechRecognition: FakeRecognition },
-      'en-GB',
-    );
+    const engine = createBrowserDictationEngine({ SpeechRecognition: FakeRecognition }, 'en-GB');
     const session = engine?.start(callbacks);
 
     session?.stop();
@@ -98,10 +86,7 @@ describe(createBrowserDictationEngine.name, () => {
   });
 
   it('tells when the recognition has ended', () => {
-    const engine = createBrowserDictationEngine(
-      { SpeechRecognition: FakeRecognition },
-      'en-GB',
-    );
+    const engine = createBrowserDictationEngine({ SpeechRecognition: FakeRecognition }, 'en-GB');
     engine?.start(callbacks);
 
     FakeRecognition.instances[0]?.onend?.();
@@ -109,26 +94,17 @@ describe(createBrowserDictationEngine.name, () => {
     expect(callbacks.onEnd).toHaveBeenCalledTimes(1);
   });
 
-  it.each(['not-allowed', 'service-not-allowed'])(
-    'reports %s as a blocked microphone',
-    (error) => {
-      const engine = createBrowserDictationEngine(
-        { SpeechRecognition: FakeRecognition },
-        'en-GB',
-      );
-      engine?.start(callbacks);
+  it.each(['not-allowed', 'service-not-allowed'])('reports %s as a blocked microphone', (error) => {
+    const engine = createBrowserDictationEngine({ SpeechRecognition: FakeRecognition }, 'en-GB');
+    engine?.start(callbacks);
 
-      FakeRecognition.instances[0]?.onerror?.({ error });
+    FakeRecognition.instances[0]?.onerror?.({ error });
 
-      expect(callbacks.onError).toHaveBeenCalledWith('BLOCKED');
-    },
-  );
+    expect(callbacks.onError).toHaveBeenCalledWith(DictationFailure.BLOCKED);
+  });
 
   it('reports other errors as a failure but not silence or an abort', () => {
-    const engine = createBrowserDictationEngine(
-      { SpeechRecognition: FakeRecognition },
-      'en-GB',
-    );
+    const engine = createBrowserDictationEngine({ SpeechRecognition: FakeRecognition }, 'en-GB');
     engine?.start(callbacks);
     const recognition = FakeRecognition.instances[0];
 
@@ -137,7 +113,7 @@ describe(createBrowserDictationEngine.name, () => {
     expect(callbacks.onError).not.toHaveBeenCalled();
 
     recognition?.onerror?.({ error: 'network' });
-    expect(callbacks.onError).toHaveBeenCalledWith('FAILED');
+    expect(callbacks.onError).toHaveBeenCalledWith(DictationFailure.FAILED);
   });
 
   it('reports a failure and an end when the recognition cannot start', () => {
@@ -146,14 +122,11 @@ describe(createBrowserDictationEngine.name, () => {
         throw new Error('already started');
       });
     }
-    const engine = createBrowserDictationEngine(
-      { SpeechRecognition: BrokenRecognition },
-      'en-GB',
-    );
+    const engine = createBrowserDictationEngine({ SpeechRecognition: BrokenRecognition }, 'en-GB');
 
     engine?.start(callbacks);
 
-    expect(callbacks.onError).toHaveBeenCalledWith('FAILED');
+    expect(callbacks.onError).toHaveBeenCalledWith(DictationFailure.FAILED);
     expect(callbacks.onEnd).toHaveBeenCalledTimes(1);
   });
 });

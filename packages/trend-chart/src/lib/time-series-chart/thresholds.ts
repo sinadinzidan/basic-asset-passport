@@ -1,6 +1,11 @@
 import type { ThresholdSource } from '../../enums/timeSeriesChart';
 import { ThresholdLevel, ThresholdSide } from '../../enums/timeSeriesChart';
-import type { ChartThreshold, ChartTimeRange, ThresholdBreach, TimeSeriesPoint } from '../../types/timeSeriesChart';
+import type {
+  ChartThreshold,
+  ChartTimeRange,
+  ThresholdBreach,
+  TimeSeriesPoint,
+} from '../../types/timeSeriesChart';
 
 import { isValidReading, pointsInRange } from './statistics';
 
@@ -14,13 +19,17 @@ export interface LimitInput {
 }
 
 /** Thresholds exactly as supplied by the data source or configured; none are inferred from the observed minimum and maximum. */
-export function thresholdsFromLimits(limits: LimitInput, source: ThresholdSource): ChartThreshold[] {
-  const entries: Array<{ level: ThresholdLevel; side: ThresholdSide; value: number | undefined }> = [
-    { level: ThresholdLevel.ALERT, side: ThresholdSide.UPPER, value: limits.alertHigh },
-    { level: ThresholdLevel.DANGER, side: ThresholdSide.UPPER, value: limits.dangerHigh },
-    { level: ThresholdLevel.ALERT, side: ThresholdSide.LOWER, value: limits.alertLow },
-    { level: ThresholdLevel.DANGER, side: ThresholdSide.LOWER, value: limits.dangerLow },
-  ];
+export function thresholdsFromLimits(
+  limits: LimitInput,
+  source: ThresholdSource,
+): ChartThreshold[] {
+  const entries: Array<{ level: ThresholdLevel; side: ThresholdSide; value: number | undefined }> =
+    [
+      { level: ThresholdLevel.ALERT, side: ThresholdSide.UPPER, value: limits.alertHigh },
+      { level: ThresholdLevel.DANGER, side: ThresholdSide.UPPER, value: limits.dangerHigh },
+      { level: ThresholdLevel.ALERT, side: ThresholdSide.LOWER, value: limits.alertLow },
+      { level: ThresholdLevel.DANGER, side: ThresholdSide.LOWER, value: limits.dangerLow },
+    ];
   return entries.flatMap((entry) =>
     entry.value === undefined
       ? []
@@ -57,7 +66,9 @@ export function findBreaches(
       if (isBeyondThreshold(point.value, threshold)) {
         const isMoreExtreme =
           run === undefined ||
-          (threshold.side === ThresholdSide.UPPER ? point.value > run.peak : point.value < run.peak);
+          (threshold.side === ThresholdSide.UPPER
+            ? point.value > run.peak
+            : point.value < run.peak);
         run = run
           ? { from: run.from, to: point.timestamp, peak: isMoreExtreme ? point.value : run.peak }
           : { from: point.timestamp, to: point.timestamp, peak: point.value };

@@ -2,6 +2,8 @@ import { Button } from '@cognite/aura/components/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@cognite/aura/components/tooltip';
 import { IconChartLine } from '@tabler/icons-react';
 
+import { StateSize } from '../../../enums/stateSize';
+import { StateVariant } from '../../../enums/stateVariant';
 import { cn } from '../../../lib/utils';
 import type { ChartSeriesView } from '../../../types/timeSeriesChart';
 import { SectionCard } from '../../general/SectionCard';
@@ -11,7 +13,7 @@ import { TABLE_HEADER_CELL_CLASS, TABLE_HEAD_ROW_CLASS } from '../../monitoring/
 import { SeriesRow } from './SeriesRow';
 import type { SeriesRowActions } from './SeriesRow';
 
-export interface SeriesTableProps extends SeriesRowActions {
+export interface SeriesTableProperties extends SeriesRowActions {
   series: readonly ChartSeriesView[];
   statisticsScope: string;
 }
@@ -25,7 +27,10 @@ function StatisticHeader({ label, scope }: { label: string; scope: string }) {
       <Tooltip>
         <TooltipTrigger
           render={
-            <span tabIndex={0} className="cursor-help rounded-sm focus-visible:outline-2 focus-visible:outline-ring" />
+            <span
+              tabIndex={0}
+              className="cursor-help rounded-sm focus-visible:outline-2 focus-visible:outline-ring"
+            />
           }
         >
           {label}
@@ -36,15 +41,15 @@ function StatisticHeader({ label, scope }: { label: string; scope: string }) {
   );
 }
 
-export function SeriesTable({ series, statisticsScope, ...actions }: SeriesTableProps) {
+export function SeriesTable({ series, statisticsScope, ...actions }: SeriesTableProperties) {
   const hiddenCount = series.filter((entry) => !entry.configuration.isVisible).length;
 
   if (series.length === 0) {
     return (
       <SectionCard title="Series">
         <StateMessage
-          variant="empty"
-          size="panel"
+          variant={StateVariant.EMPTY}
+          size={StateSize.PANEL}
           icon={IconChartLine}
           title="No series on the chart"
           description="Use Add data to choose the time series to plot."
@@ -56,7 +61,11 @@ export function SeriesTable({ series, statisticsScope, ...actions }: SeriesTable
   return (
     <SectionCard
       title="Series"
-      aside={hiddenCount > 0 ? `${series.length} series, ${hiddenCount} hidden` : `${series.length} series`}
+      aside={
+        hiddenCount > 0
+          ? `${series.length} series, ${hiddenCount} hidden`
+          : `${series.length} series`
+      }
       actions={
         hiddenCount > 0 ? (
           <Button type="button" variant="outline" size="sm" onClick={actions.onShowAll}>

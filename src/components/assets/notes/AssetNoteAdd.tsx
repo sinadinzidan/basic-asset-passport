@@ -1,7 +1,8 @@
 import { IconPlus } from '@tabler/icons-react';
 import { useState, type FormEvent } from 'react';
 
-import { NOTE_BODY_MAX_LENGTH } from '../../../constants/notes';
+import { NOTE_BODY_MAX_LENGTH, NOTE_SAVE_ERROR_TITLE } from '../../../constants/notes';
+import { AppAlertVariant } from '../../../enums/appAlertVariant';
 import { useAddAssetNote } from '../../../hooks/assets/notes/useAddAssetNote';
 import { isNewAssetNoteValid } from '../../../lib/noteInput';
 import type { AssetIdentifier } from '../../../types/asset';
@@ -17,10 +18,8 @@ type AssetNoteAddProps = {
   assetIdentifier: AssetIdentifier;
 };
 
-/** A bar with the add button; the note itself is written in a dialog. */
 export function AssetNoteAdd({ assetIdentifier }: AssetNoteAddProps) {
-  const { mutate, reset, isPending, isError, error } =
-    useAddAssetNote(assetIdentifier);
+  const { mutate, reset, isPending, isError, error } = useAddAssetNote(assetIdentifier);
 
   const [isOpen, setIsOpen] = useState(false);
   const [title, setTitle] = useState('');
@@ -28,9 +27,9 @@ export function AssetNoteAdd({ assetIdentifier }: AssetNoteAddProps) {
 
   const canSubmit = isNewAssetNoteValid({ title, body }) && !isPending;
 
-  function handleOpenChange(nextIsOpen: boolean): void {
-    setIsOpen(nextIsOpen);
-    if (nextIsOpen) return;
+  function handleOpenChange(isNextOpen: boolean): void {
+    setIsOpen(isNextOpen);
+    if (isNextOpen) return;
 
     setTitle('');
     setBody('');
@@ -49,21 +48,14 @@ export function AssetNoteAdd({ assetIdentifier }: AssetNoteAddProps) {
     event.preventDefault();
     if (!canSubmit) return;
 
-    mutate(
-      { title, body },
-      { onSuccess: () => handleOpenChange(false) },
-    );
+    mutate({ title, body }, { onSuccess: () => handleOpenChange(false) });
   }
 
   return (
-    <section
-      aria-label="Add a note"
-      className="data-card flex flex-col gap-4 p-4"
-    >
+    <section aria-label="Add a note" className="data-card flex flex-col gap-4 p-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-muted-foreground">
-          Add a note with a title and up to {NOTE_BODY_MAX_LENGTH} characters of
-          text.
+          Add a note with a title and up to {NOTE_BODY_MAX_LENGTH} characters of text.
         </p>
         <GeneralButton onClick={handleAddClick}>
           <IconPlus aria-hidden className="size-4" />
@@ -76,28 +68,16 @@ export function AssetNoteAdd({ assetIdentifier }: AssetNoteAddProps) {
         title="Add note"
         footer={
           <>
-            <GeneralButton
-              disabled={isPending}
-              onClick={handleCancelClick}
-              variant="outline"
-            >
+            <GeneralButton disabled={isPending} onClick={handleCancelClick} variant="outline">
               Cancel
             </GeneralButton>
-            <GeneralButton
-              disabled={!canSubmit}
-              form={ADD_NOTE_FORM_ID}
-              type="submit"
-            >
+            <GeneralButton disabled={!canSubmit} form={ADD_NOTE_FORM_ID} type="submit">
               {isPending ? 'Saving...' : 'Save note'}
             </GeneralButton>
           </>
         }
       >
-        <form
-          className="flex flex-col gap-4"
-          id={ADD_NOTE_FORM_ID}
-          onSubmit={handleSubmit}
-        >
+        <form className="flex flex-col gap-4" id={ADD_NOTE_FORM_ID} onSubmit={handleSubmit}>
           <AssetNoteFields
             idPrefix="note"
             title={title}
@@ -106,8 +86,8 @@ export function AssetNoteAdd({ assetIdentifier }: AssetNoteAddProps) {
             onBodyChange={setBody}
           />
           {isError ? (
-            <AppAlert variant="error" title="The note could not be saved">
-              {error instanceof Error ? error.message : 'Try again.'}
+            <AppAlert variant={AppAlertVariant.ERROR} title={NOTE_SAVE_ERROR_TITLE}>
+              {error.message}
             </AppAlert>
           ) : null}
         </form>

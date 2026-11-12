@@ -19,8 +19,6 @@ describe(CriticalityPill.name, () => {
   ] as const)('marks "%s" with the %s tone', (criticality, tone) => {
     render(<CriticalityPill criticality={criticality} />);
 
-    expect(
-      screen.getByText(criticality).closest('[data-tone]'),
-    ).toHaveAttribute('data-tone', tone);
+    expect(screen.getByText(criticality).closest('[data-tone]')).toHaveAttribute('data-tone', tone);
   });
 });

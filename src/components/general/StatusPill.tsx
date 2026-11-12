@@ -2,14 +2,20 @@ import { Badge } from '@cognite/aura/components/badge';
 import { IconCircleCheck } from '@tabler/icons-react';
 
 import { NOT_PROVIDED_LABEL } from '../../constants/labels';
-import type { StatusTone } from '../../lib/assetStatus';
+import { StatusTone } from '../../enums/statusTone';
+
+const DATA_TONE_BY_TONE: Record<StatusTone, string> = {
+  [StatusTone.ACTIVE]: 'active',
+  [StatusTone.WARNING]: 'warning',
+  [StatusTone.NEUTRAL]: 'neutral',
+};
 
 type StatusPillProps = {
   status: string | null;
   tone?: StatusTone;
 };
 
-export function StatusPill({ status, tone = 'neutral' }: StatusPillProps) {
+export function StatusPill({ status, tone = StatusTone.NEUTRAL }: StatusPillProps) {
   const label = status?.trim();
 
   if (!label) {
@@ -17,8 +23,8 @@ export function StatusPill({ status, tone = 'neutral' }: StatusPillProps) {
   }
 
   return (
-    <Badge className="gap-2" data-tone={tone} variant="secondary">
-      {tone === 'active' ? (
+    <Badge className="gap-2" data-tone={DATA_TONE_BY_TONE[tone]} variant="secondary">
+      {tone === StatusTone.ACTIVE ? (
         <span aria-hidden className="flex size-4 items-center justify-center">
           <IconCircleCheck className="size-4" />
         </span>

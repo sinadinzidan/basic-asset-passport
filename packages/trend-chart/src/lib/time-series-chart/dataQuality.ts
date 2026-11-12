@@ -5,7 +5,12 @@ import {
   DATA_QUALITY_ISSUE_LABELS,
 } from '../../constants/timeSeriesChart';
 import { DataQualityIssue } from '../../enums/timeSeriesChart';
-import type { ChartTimeRange, DataProfile, GapInterval, TimeSeriesPoint } from '../../types/timeSeriesChart';
+import type {
+  ChartTimeRange,
+  DataProfile,
+  GapInterval,
+  TimeSeriesPoint,
+} from '../../types/timeSeriesChart';
 
 import { computeStatistics, isValidReading, pointsInRange, typicalStepMs } from './statistics';
 
@@ -19,7 +24,8 @@ export function findGaps(points: readonly TimeSeriesPoint[]): GapInterval[] {
   for (let index = 1; index < times.length; index++) {
     const from = times[index - 1];
     const to = times[index];
-    if (from !== undefined && to !== undefined && to - from > step * CHART_GAP_STEP_FACTOR) gaps.push({ from, to });
+    if (from !== undefined && to !== undefined && to - from > step * CHART_GAP_STEP_FACTOR)
+      gaps.push({ from, to });
   }
   return gaps;
 }
@@ -35,7 +41,9 @@ export function profileSeries(
   nowMs: number,
   staleAfterMs: number = CHART_STALE_AFTER_MS,
 ): DataProfile {
-  const points = pointsInRange(allPoints, range).sort((first, second) => first.timestamp - second.timestamp);
+  const points = pointsInRange(allPoints, range).sort(
+    (first, second) => first.timestamp - second.timestamp,
+  );
   let missingCount = 0;
   let invalidCount = 0;
   let badQualityCount = 0;
@@ -53,7 +61,8 @@ export function profileSeries(
   const latestAt = allPoints
     .filter(isValidReading)
     .reduce<number | undefined>(
-      (latest, point) => (latest === undefined || point.timestamp > latest ? point.timestamp : latest),
+      (latest, point) =>
+        latest === undefined || point.timestamp > latest ? point.timestamp : latest,
       undefined,
     );
   const isStale = latestAt === undefined || nowMs - latestAt > staleAfterMs;
@@ -65,7 +74,8 @@ export function profileSeries(
   if (missingCount > 0) warn(DataQualityIssue.MISSING_VALUE, missingCount);
   if (invalidCount > 0) warn(DataQualityIssue.INVALID_VALUE, invalidCount);
   if (badQualityCount > 0) warn(DataQualityIssue.BAD_QUALITY, badQualityCount);
-  if (duplicateTimestampCount > 0) warn(DataQualityIssue.DUPLICATE_TIMESTAMP, duplicateTimestampCount);
+  if (duplicateTimestampCount > 0)
+    warn(DataQualityIssue.DUPLICATE_TIMESTAMP, duplicateTimestampCount);
   if (gaps.length > 0) warn(DataQualityIssue.TIME_GAP, gaps.length);
   if (isStale)
     warnings.push({

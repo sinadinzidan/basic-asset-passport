@@ -2,11 +2,7 @@ import { renderHook } from '@testing-library/react';
 import type { ComponentType, ReactNode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
-import {
-  SuccessToastContext,
-  useSuccessToast,
-  type ShowSuccessToast,
-} from '../useSuccessToast';
+import { SuccessToastContext, useSuccessToast, type ShowSuccessToast } from '../useSuccessToast';
 
 describe(useSuccessToast.name, () => {
   it('returns the injected function so callers can show a success toast', () => {

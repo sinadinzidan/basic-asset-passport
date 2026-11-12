@@ -1,0 +1,162 @@
+/* Styles of the agent mascot; the component imports this file. The host sizes the mascot: it fills its parent. */
+/*
+ * The mascot is five pictures on one canvas: the robot at rest, the same robot with its arm raised, the
+ * raised hand, its smiling eyes and its round "thinking" eyes. Where the eyes and the wrist sit and how far
+ * the head leans are fixed by how the pictures were cut.
+ */
+.agent-mascot {
+  --agent-eyes-origin: 44.3% 34%;
+  --agent-eyes-lean: -8deg;
+  --agent-wrist-origin: 73.6% 53.4%;
+  --agent-raise: 320ms ease;
+
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform-origin: 50% 100%;
+  /* The body poses add up among themselves only, never with the page behind the mascot. */
+  isolation: isolate;
+  animation: agent-float 4s ease-in-out infinite;
+}
+
+.agent-mascot__layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  user-select: none;
+}
+
+/*
+ * The two body poses fade into each other. They are added together instead of laid over each other, so the
+ * robot keeps its full opacity through the fade: what the two share never thins out.
+ */
+.agent-mascot__body {
+  mix-blend-mode: plus-lighter;
+  transition: opacity var(--agent-raise);
+}
+
+.agent-mascot__hand {
+  transform-origin: var(--agent-wrist-origin);
+  transition: opacity var(--agent-raise);
+}
+
+.agent-mascot__body--wave,
+.agent-mascot__hand {
+  opacity: 0;
+}
+
+/*
+ * A quiet greeting while the mascot is told to wave (data-waving, set by the `isWaving` prop) and while a host
+ * that has the class `agent-mascot-wave-on-hover` is hovered or focused by keyboard: the arm fades up, the hand
+ * tilts from side to side at the wrist, a little less each time, and stays up until the greeting is over.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  :is(.agent-mascot[data-waving='true'], .agent-mascot-wave-on-hover:is(:hover, :focus-visible))
+    .agent-mascot__body--rest {
+    opacity: 0;
+  }
+
+  :is(.agent-mascot[data-waving='true'], .agent-mascot-wave-on-hover:is(:hover, :focus-visible))
+    :is(.agent-mascot__body--wave, .agent-mascot__hand) {
+    opacity: 1;
+  }
+
+  :is(.agent-mascot[data-waving='true'], .agent-mascot-wave-on-hover:is(:hover, :focus-visible))
+    .agent-mascot__hand {
+    animation: agent-wave 1.8s ease-in-out 140ms both;
+  }
+}
+
+/* Only the eyes of the current mood show; the other pair stays loaded so the swap never flickers. */
+.agent-mascot__eyes {
+  opacity: 0;
+  transform-origin: var(--agent-eyes-origin);
+  transition: opacity 160ms ease;
+}
+
+.agent-mascot[data-mood='IDLE'] .agent-mascot__eyes--idle,
+.agent-mascot[data-mood='THINKING'] .agent-mascot__eyes--think {
+  opacity: 1;
+}
+
+.agent-mascot__eyes--idle {
+  animation: agent-blink 5.6s ease-in-out infinite;
+}
+
+.agent-mascot__eyes--think {
+  animation: agent-ponder 2.6s ease-in-out infinite;
+}
+
+@keyframes agent-float {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -4px;
+  }
+}
+
+/* Each swing is smaller than the one before, so the hand comes to rest by itself. */
+@keyframes agent-wave {
+  0%,
+  100% {
+    rotate: 0deg;
+  }
+  22% {
+    rotate: 8deg;
+  }
+  48% {
+    rotate: -7deg;
+  }
+  74% {
+    rotate: 4deg;
+  }
+}
+
+/* The eyes close along the lean of the head: one blink, then a quick double blink. */
+@keyframes agent-blink {
+  0%,
+  41%,
+  47%,
+  84%,
+  89%,
+  94%,
+  100% {
+    transform: rotate(var(--agent-eyes-lean)) scaleY(1) rotate(calc(-1 * var(--agent-eyes-lean)));
+  }
+  44%,
+  86.5%,
+  91.5% {
+    transform: rotate(var(--agent-eyes-lean)) scaleY(0.08) rotate(calc(-1 * var(--agent-eyes-lean)));
+  }
+}
+
+/* Thinking: the round eyes look from one side to the other, with a blink on the way back. */
+@keyframes agent-ponder {
+  0%,
+  100% {
+    transform: translate(0, 0) scaleY(1);
+  }
+  35%,
+  55% {
+    transform: translate(-4.5%, 0.6%) scaleY(1);
+  }
+  78% {
+    transform: translate(-1%, 0.1%) scaleY(0.1);
+  }
+  88% {
+    transform: translate(0, 0) scaleY(1);
+  }
+}
+
+/* Reduced motion: no bobbing and no blinking; the arm and the eyes still swap, without moving. */
+@media (prefers-reduced-motion: reduce) {
+  .agent-mascot,
+  .agent-mascot__eyes {
+    animation: none;
+  }
+}

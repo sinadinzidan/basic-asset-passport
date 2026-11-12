@@ -21,7 +21,7 @@ const TODAY_SHORTCUT_ID = 'today';
 
 type PickerRange = [Dayjs | null, Dayjs | null];
 
-interface TimeRangeControlProps {
+interface TimeRangeControlProperties {
   window: ChartTimeRange;
   nowMs: number;
   onRangeChange: (range: ChartRange) => void;
@@ -38,7 +38,12 @@ function fromPickerDate(date: Dayjs | null): number | undefined {
 }
 
 /** A shortcut that follows now keeps following it; anything else is a window that stays put. The end cannot be after now and must come after the start. */
-export function TimeRangeControl({ window: chartWindow, nowMs, onRangeChange, onWindowChange }: TimeRangeControlProps) {
+export function TimeRangeControl({
+  window: chartWindow,
+  nowMs,
+  onRangeChange,
+  onWindowChange,
+}: TimeRangeControlProperties) {
   const value = useMemo<PickerRange>(
     () => [toPickerDate(chartWindow.start), toPickerDate(chartWindow.end)],
     [chartWindow.start, chartWindow.end],
@@ -53,7 +58,10 @@ export function TimeRangeControl({ window: chartWindow, nowMs, onRangeChange, on
       ...CHART_RANGE_PRESETS.map((preset) => ({
         id: preset.id,
         label: preset.label,
-        getValue: (): PickerRange => [toPickerDate(nowMs - preset.minutes * MILLISECONDS_PER_MINUTE), now],
+        getValue: (): PickerRange => [
+          toPickerDate(nowMs - preset.minutes * MILLISECONDS_PER_MINUTE),
+          now,
+        ],
       })),
     ];
   }, [nowMs]);
@@ -70,12 +78,13 @@ export function TimeRangeControl({ window: chartWindow, nowMs, onRangeChange, on
       toast.error('The start must precede the end.');
       return;
     }
-    const endsNow = Math.abs(end - nowMs) <= MATCH_TOLERANCE_MS;
-    const preset = endsNow
+    const isEndingNow = Math.abs(end - nowMs) <= MATCH_TOLERANCE_MS;
+    const preset = isEndingNow
       ? CHART_RANGE_PRESETS.find(
           (candidate) =>
             candidate.range !== undefined &&
-            Math.abs(end - start - candidate.minutes * MILLISECONDS_PER_MINUTE) <= MATCH_TOLERANCE_MS,
+            Math.abs(end - start - candidate.minutes * MILLISECONDS_PER_MINUTE) <=
+              MATCH_TOLERANCE_MS,
         )
       : undefined;
     if (preset?.range) onRangeChange(preset.range);

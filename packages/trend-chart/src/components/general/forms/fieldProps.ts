@@ -1,4 +1,4 @@
-export interface BaseFieldProps {
+export interface BaseFieldProperties {
   label: string;
   isRequired?: boolean;
   description?: string;

@@ -1,4 +1,4 @@
-import type { AgentClient, CdfAgent } from '../types/agent';
+import type { AgentContextType, CdfAgent } from '../types/agent';
 
 export function makeCdfAgent(overrides: Partial<CdfAgent> = {}): CdfAgent {
   return {
@@ -9,9 +9,7 @@ export function makeCdfAgent(overrides: Partial<CdfAgent> = {}): CdfAgent {
   };
 }
 
-export function makeAgentClient(
-  overrides: Partial<AgentClient> = {},
-): AgentClient {
+export function makeAgentContext(overrides: Partial<AgentContextType> = {}): AgentContextType {
   return {
     project: 'my-project',
     getAgent: () => Promise.resolve(makeCdfAgent()),

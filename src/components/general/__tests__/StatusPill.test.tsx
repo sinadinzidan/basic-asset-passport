@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
+import { StatusTone } from '../../../enums/statusTone';
 import { StatusPill } from '../StatusPill';
 
 describe(StatusPill.name, () => {
@@ -17,14 +18,13 @@ describe(StatusPill.name, () => {
   });
 
   it('marks an active status with a check icon', () => {
-    const { container } = render(
-      <StatusPill status="Operating" tone="active" />,
-    );
+    const { container } = render(<StatusPill status="Operating" tone={StatusTone.ACTIVE} />);
 
     expect(container.querySelector('svg')).toBeInTheDocument();
-    expect(
-      screen.getByText('Operating').closest('[data-tone]'),
-    ).toHaveAttribute('data-tone', 'active');
+    expect(screen.getByText('Operating').closest('[data-tone]')).toHaveAttribute(
+      'data-tone',
+      'active',
+    );
   });
 
   it('marks a neutral status with a dot instead of an icon', () => {
@@ -35,12 +35,13 @@ describe(StatusPill.name, () => {
 
   it('marks a warning status with a dot and its own tone', () => {
     const { container } = render(
-      <StatusPill status="Under maintenance" tone="warning" />,
+      <StatusPill status="Under maintenance" tone={StatusTone.WARNING} />,
     );
 
     expect(container.querySelector('svg')).not.toBeInTheDocument();
-    expect(
-      screen.getByText('Under maintenance').closest('[data-tone]'),
-    ).toHaveAttribute('data-tone', 'warning');
+    expect(screen.getByText('Under maintenance').closest('[data-tone]')).toHaveAttribute(
+      'data-tone',
+      'warning',
+    );
   });
 });

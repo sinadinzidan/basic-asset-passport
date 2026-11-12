@@ -1,6 +1,8 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
+import { StateSize } from '../../../enums/stateSize';
+import { StateVariant } from '../../../enums/stateVariant';
 import { StateMessage } from '../StateMessage';
 
 describe(StateMessage.name, () => {
@@ -14,26 +16,32 @@ describe(StateMessage.name, () => {
   it('gives a page-sized message its title as a heading, and an inline one plain text', () => {
     const { rerender } = render(<StateMessage title="No ARNs found" />);
     expect(screen.getByRole('heading', { name: 'No ARNs found' })).toBeInTheDocument();
-    rerender(<StateMessage title="No ARNs found" size="inline" />);
+    rerender(<StateMessage title="No ARNs found" size={StateSize.INLINE} />);
     expect(screen.queryByRole('heading')).not.toBeInTheDocument();
   });
 
   it('announces an error as an alert and offers its action', () => {
-    render(<StateMessage variant="error" title="Could not load" action={<button type="button">Retry</button>} />);
+    render(
+      <StateMessage
+        variant={StateVariant.ERROR}
+        title="Could not load"
+        action={<button type="button">Retry</button>}
+      />,
+    );
 
     expect(screen.getByRole('alert')).toHaveTextContent('Could not load');
     expect(screen.getByRole('button', { name: 'Retry' })).toBeInTheDocument();
   });
 
   it('leaves out the explanation and the action when there are none', () => {
-    render(<StateMessage title="Nothing here" size="inline" />);
+    render(<StateMessage title="Nothing here" size={StateSize.INLINE} />);
 
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
     expect(screen.getByText('Nothing here').closest('div')?.querySelectorAll('p')).toHaveLength(1);
   });
 
   it('marks the variant so a theme can tint it', () => {
-    render(<StateMessage variant="noAccess" title="Not allowed" />);
+    render(<StateMessage variant={StateVariant.NO_ACCESS} title="Not allowed" />);
 
     expect(screen.getByRole('status')).toHaveAttribute('data-variant', 'noAccess');
   });

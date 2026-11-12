@@ -1,10 +1,6 @@
 import path from 'node:path';
 
-import {
-  fusionOpenPlugin,
-  manifestCspPlugin,
-  mkcertPlugin,
-} from '@cognite/app-sdk/vite';
+import { fusionOpenPlugin, manifestCspPlugin, mkcertPlugin } from '@cognite/app-sdk/vite';
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';

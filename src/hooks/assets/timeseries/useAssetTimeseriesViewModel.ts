@@ -1,18 +1,16 @@
-import { createContext, useContext } from 'react';
+import { createContext, useContext, useMemo } from 'react';
 
+import { TimeseriesPreviewKind } from '../../../enums/timeseriesPreviewKind';
 import {
   getTimeseriesKey,
   getTimeseriesUnit,
   isNonNumericTimeseries,
 } from '../../../lib/timeseriesProperties';
-import type {
-  AssetIdentifier,
-  AssetInstanceDetails,
-} from '../../../types/asset';
+import type { AssetIdentifier, AssetInstanceDetails } from '../../../types/asset';
 import type { TimeseriesPreview } from '../../../types/timeseries';
-import { useTimeseriesTrends } from '../../timeseries/useTimeseriesTrends';
 
 import { useAssetTimeseries } from './useAssetTimeseries';
+import { useTimeseriesTrends } from './useTimeseriesTrends';
 
 const defaultDeps = { useAssetTimeseries, useTimeseriesTrends };
 
@@ -20,36 +18,51 @@ export type UseAssetTimeseriesViewModelContextType = typeof defaultDeps;
 export const UseAssetTimeseriesViewModelContext =
   createContext<UseAssetTimeseriesViewModelContextType>(defaultDeps);
 
+const NO_TIMESERIES: AssetInstanceDetails[] = [];
+
 export type AssetTimeseriesItem = {
   timeseries: AssetInstanceDetails;
   unit: string | null;
   preview: TimeseriesPreview;
 };
 
-/**
- * The series of an asset, each with what its preview should show. Non-numeric series
- * have no trend to draw, so only the numeric ones are read.
- */
-export function useAssetTimeseriesViewModel(assetIdentifier: AssetIdentifier) {
-  const { useAssetTimeseries: useSeries, useTimeseriesTrends: useTrends } =
-    useContext(UseAssetTimeseriesViewModelContext);
-  const series = useSeries(assetIdentifier);
-  const allTimeseries = series.data ?? [];
-  const numericTimeseries = allTimeseries.filter(
-    (timeseries) => !isNonNumericTimeseries(timeseries),
+export function useAssetTimeseriesViewModel(assetIdentifier: AssetIdentifier, limit?: number) {
+  const { useAssetTimeseries: useSeries, useTimeseriesTrends: useTrends } = useContext(
+    UseAssetTimeseriesViewModelContext,
   );
+  const series = useSeries(assetIdentifier, limit);
+
+  const allTimeseries = series.data?.items ?? NO_TIMESERIES;
   const trends = useTrends(
-    numericTimeseries.map(({ space, externalId }) => ({ space, externalId })),
+    allTimeseries
+      .filter((timeseries) => !isNonNumericTimeseries(timeseries))
+      .map(({ space, externalId }) => ({ space, externalId })),
   );
 
-  const items = allTimeseries.map((timeseries): AssetTimeseriesItem => ({
-    timeseries,
-    unit: getTimeseriesUnit(timeseries),
-    preview: getPreview(timeseries, trends),
-  }));
+  const { data: trendData, isError: isTrendError, isPending: isTrendPending } = trends;
+
+  const items = useMemo(
+    () =>
+      allTimeseries.map((timeseries): AssetTimeseriesItem => ({
+        timeseries,
+        unit: getTimeseriesUnit(timeseries),
+        preview: getPreview(timeseries, {
+          data: trendData,
+          isError: isTrendError,
+          isPending: isTrendPending,
+        }),
+      })),
+    [allTimeseries, trendData, isTrendError, isTrendPending],
+  );
 
   return {
     items,
+
+    timeseries: allTimeseries,
+
+    hasMore: series.data?.hasMore ?? false,
+
+    isLoadingMore: series.isPlaceholderData,
     isPending: series.isPending,
     isError: series.isError,
     isFetching: series.isFetching,
@@ -59,12 +72,14 @@ export function useAssetTimeseriesViewModel(assetIdentifier: AssetIdentifier) {
 
 function getPreview(
   timeseries: AssetInstanceDetails,
-  trends: ReturnType<typeof useTimeseriesTrends>,
+  trends: Pick<ReturnType<typeof useTimeseriesTrends>, 'data' | 'isError' | 'isPending'>,
 ): TimeseriesPreview {
-  if (isNonNumericTimeseries(timeseries)) return { kind: 'NON_NUMERIC' };
-  if (trends.isError) return { kind: 'UNAVAILABLE' };
-  if (trends.isPending) return { kind: 'LOADING' };
+  if (isNonNumericTimeseries(timeseries)) return { kind: TimeseriesPreviewKind.NON_NUMERIC };
+  if (trends.isError) return { kind: TimeseriesPreviewKind.UNAVAILABLE };
+  if (trends.isPending) return { kind: TimeseriesPreviewKind.LOADING };
 
   const points = trends.data?.get(getTimeseriesKey(timeseries)) ?? [];
-  return points.length > 0 ? { kind: 'READY', points } : { kind: 'EMPTY' };
+  return points.length > 0
+    ? { kind: TimeseriesPreviewKind.READY, points }
+    : { kind: TimeseriesPreviewKind.EMPTY };
 }

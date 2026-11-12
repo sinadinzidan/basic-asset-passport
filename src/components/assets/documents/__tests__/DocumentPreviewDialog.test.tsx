@@ -12,9 +12,7 @@ describe(DocumentPreviewDialog.name, () => {
   it('shows the document name as the title', () => {
     renderDialog({ isOpen: true });
 
-    expect(
-      screen.getByRole('heading', { name: 'Pump manual.pdf' }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Pump manual.pdf' })).toBeInTheDocument();
   });
 
   it('previews the document with the injected preview', () => {
@@ -25,17 +23,23 @@ describe(DocumentPreviewDialog.name, () => {
     renderDialog({ isOpen: true, preview });
 
     // Assert
-    expect(preview).toHaveBeenCalledWith(
-      expect.objectContaining({ externalId: 'doc-1' }),
-    );
+    expect(preview).toHaveBeenCalledWith(expect.objectContaining({ externalId: 'doc-1' }));
   });
 
   it('says so when no preview is available', () => {
     renderDialog({ isOpen: true, preview: null });
 
-    expect(
-      screen.getByText('Preview is not available here.'),
-    ).toBeInTheDocument();
+    expect(screen.getByText('Preview is not available here.')).toBeInTheDocument();
+  });
+
+  it('centres that message in a padded section of its own, under a decorative icon', () => {
+    renderDialog({ isOpen: true, preview: null });
+
+    const section = screen
+      .getByText('Preview is not available here.')
+      .closest('[data-slot="document-preview-unavailable"]');
+    expect(section).toHaveClass('items-center', 'text-center', 'py-10');
+    expect(section?.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
   });
 
   it('shows nothing, and mounts no preview, while closed', () => {

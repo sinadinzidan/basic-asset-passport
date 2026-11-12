@@ -1,8 +1,9 @@
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ComponentType, ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { DOCUMENT_QUERY_LIMIT } from '../../../../constants/documents';
 import { DocumentOrigin } from '../../../../enums/documentOrigin';
 import { DocumentUploadStatus } from '../../../../enums/documentUploadStatus';
 import {
@@ -21,13 +22,11 @@ import {
   DocumentPreviewContext,
   type RenderDocumentPreview,
 } from '../../../../hooks/assets/documents/useDocumentPreview';
-import {
-  UseUploadingDocumentNamesContext,
-  type UseUploadingDocumentNamesContextType,
-} from '../../../../hooks/assets/documents/useUploadingDocumentNames';
+import { AssetContext } from '../../../../hooks/assets/useAssetContext';
 import { makeMockClient } from '../../../../mocks/cogniteClient';
 import { makeAssetDocument } from '../../../../mocks/documents';
-import { makeQueryClientWrapper } from '../../../../mocks/queryClientWrapper';
+import { makeLimitedList } from '../../../../mocks/lists';
+import { makeQueryClientWrapper } from '../../../../mocks/QueryClientWrapper';
 import { AssetDocumentList } from '../AssetDocumentList';
 
 const assetIdentifier = { space: 'asset-space', externalId: 'FLOC-1' };
@@ -36,33 +35,28 @@ describe(AssetDocumentList.name, () => {
   let listContext: UseAssetDocumentsContextType;
   let linkedContext: UseAssetLinkedFilesContextType;
   let deleteContext: UseDeleteAssetDocumentContextType;
-  let uploadingContext: UseUploadingDocumentNamesContextType;
   let wrapper: ComponentType<{ children: ReactNode }>;
 
   beforeEach(() => {
     const client = makeMockClient();
     listContext = {
-      useAssetDataClient: vi.fn(() => client),
-      listAssetDocuments: vi.fn(() => Promise.resolve([makeAssetDocument()])),
+      listAssetDocuments: vi.fn(() => Promise.resolve(makeLimitedList([makeAssetDocument()]))),
     };
     linkedContext = {
-      useAssetDataClient: vi.fn(() => client),
-      listAssetLinkedFiles: vi.fn(() => Promise.resolve([])),
+      listAssetLinkedFiles: vi.fn(() => Promise.resolve(makeLimitedList([]))),
     };
     deleteContext = {
-      useAssetDataClient: vi.fn(() => client),
       deleteAssetDocument: vi.fn(() => Promise.resolve()),
     };
-    uploadingContext = { useAssetDataClient: vi.fn(() => client) };
     const QueryWrapper = makeQueryClientWrapper();
     wrapper = ({ children }) => (
       <UseAssetDocumentsContext.Provider value={listContext}>
         <UseAssetLinkedFilesContext.Provider value={linkedContext}>
           <DocumentPreviewContext.Provider value={renderPreviewStub}>
             <UseDeleteAssetDocumentContext.Provider value={deleteContext}>
-              <UseUploadingDocumentNamesContext.Provider value={uploadingContext}>
-                <QueryWrapper>{children}</QueryWrapper>
-              </UseUploadingDocumentNamesContext.Provider>
+              <QueryWrapper>
+                <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
+              </QueryWrapper>
             </UseDeleteAssetDocumentContext.Provider>
           </DocumentPreviewContext.Provider>
         </UseAssetLinkedFilesContext.Provider>
@@ -77,15 +71,11 @@ describe(AssetDocumentList.name, () => {
   }
 
   it('shows a loading status while the documents load', () => {
-    vi.mocked(listContext.listAssetDocuments).mockReturnValue(
-      new Promise(() => {}),
-    );
+    vi.mocked(listContext.listAssetDocuments).mockReturnValue(new Promise(() => {}));
 
     renderList();
 
-    expect(screen.getByRole('status')).toHaveTextContent(
-      'Loading documents...',
-    );
+    expect(screen.getByRole('status')).toHaveTextContent('Loading documents...');
   });
 
   it('lists each document with its type and upload date', async () => {
@@ -97,7 +87,7 @@ describe(AssetDocumentList.name, () => {
   });
 
   it('shows an empty state when the asset has no documents', async () => {
-    vi.mocked(listContext.listAssetDocuments).mockResolvedValue([]);
+    vi.mocked(listContext.listAssetDocuments).mockResolvedValue(makeLimitedList([]));
 
     renderList();
 
@@ -106,57 +96,113 @@ describe(AssetDocumentList.name, () => {
 
   it('shows a readable error with a retry when loading fails', async () => {
     const user = userEvent.setup();
-    vi.mocked(listContext.listAssetDocuments).mockRejectedValueOnce(
-      new Error('no access'),
-    );
+    vi.mocked(listContext.listAssetDocuments).mockRejectedValueOnce(new Error('no access'));
 
     renderList();
 
-    expect(
-      await screen.findByText('Documents could not be loaded'),
-    ).toBeInTheDocument();
+    expect(await screen.findByText('Documents could not be loaded')).toBeInTheDocument();
+    expect(screen.getByText('Reason: no access')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Retry' }));
     expect(await screen.findByText('Pump manual.pdf')).toBeInTheDocument();
   });
 
   it('shows a document CDF is still processing as processing, not incomplete', async () => {
-    vi.mocked(listContext.listAssetDocuments).mockResolvedValue([
-      makeAssetDocument({
-        isUploaded: false,
-        uploadStatus: DocumentUploadStatus.PROCESSING,
-        uploadedTime: null,
-      }),
-    ]);
+    vi.mocked(listContext.listAssetDocuments).mockResolvedValue(
+      makeLimitedList([
+        makeAssetDocument({
+          isUploaded: false,
+          uploadStatus: DocumentUploadStatus.PROCESSING,
+          uploadedTime: null,
+        }),
+      ]),
+    );
 
     renderList();
 
     expect(await screen.findByText('Processing...')).toBeInTheDocument();
     expect(screen.queryByText('Upload incomplete')).not.toBeInTheDocument();
-    expect(
-      screen.getByRole('button', { name: 'View Pump manual.pdf' }),
-    ).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'View Pump manual.pdf' })).toBeDisabled();
   });
 
   it('flags a document whose upload did not finish and cannot be viewed', async () => {
-    vi.mocked(listContext.listAssetDocuments).mockResolvedValue([
-      makeAssetDocument({
-        isUploaded: false,
-        uploadStatus: DocumentUploadStatus.INCOMPLETE,
-        uploadedTime: null,
-      }),
-    ]);
+    vi.mocked(listContext.listAssetDocuments).mockResolvedValue(
+      makeLimitedList([
+        makeAssetDocument({
+          isUploaded: false,
+          uploadStatus: DocumentUploadStatus.INCOMPLETE,
+          uploadedTime: null,
+        }),
+      ]),
+    );
 
     renderList();
 
     expect(await screen.findByText('Upload incomplete')).toBeInTheDocument();
     expect(screen.getByText('PDF')).toBeInTheDocument();
     expect(screen.queryByText(/^Uploaded /)).not.toBeInTheDocument();
-    expect(
-      screen.getByRole('button', { name: 'View Pump manual.pdf' }),
-    ).toBeDisabled();
-    expect(
-      screen.getByRole('button', { name: 'Delete Pump manual.pdf' }),
-    ).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'View Pump manual.pdf' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Delete Pump manual.pdf' })).toBeEnabled();
+  });
+
+  it('offers more uploaded documents when the asset has more than were read', async () => {
+    const user = userEvent.setup();
+    vi.mocked(listContext.listAssetDocuments).mockResolvedValue(
+      makeLimitedList([makeAssetDocument()], true),
+    );
+    renderList();
+
+    await user.click(
+      await screen.findByRole('button', {
+        name: 'Show more uploaded documents',
+      }),
+    );
+
+    await waitFor(() =>
+      expect(listContext.listAssetDocuments).toHaveBeenLastCalledWith(
+        expect.anything(),
+        assetIdentifier,
+        DOCUMENT_QUERY_LIMIT * 2,
+      ),
+    );
+  });
+
+  it('offers no more documents once every document is read', async () => {
+    renderList();
+
+    await screen.findByText('Pump manual.pdf');
+    expect(screen.queryByRole('button', { name: /show more/i })).not.toBeInTheDocument();
+  });
+
+  it('offers more existing files when the asset has more than were read', async () => {
+    const user = userEvent.setup();
+    vi.mocked(linkedContext.listAssetLinkedFiles).mockResolvedValue(
+      makeLimitedList(
+        [
+          makeAssetDocument({
+            externalId: 'file-1',
+            name: 'Datasheet.pdf',
+            origin: DocumentOrigin.RMDM,
+          }),
+        ],
+        true,
+      ),
+    );
+    renderList();
+
+    await user.click(await screen.findByRole('button', { name: 'Show more existing files' }));
+
+    await waitFor(() =>
+      expect(linkedContext.listAssetLinkedFiles).toHaveBeenLastCalledWith(
+        expect.anything(),
+        assetIdentifier,
+        DOCUMENT_QUERY_LIMIT * 2,
+      ),
+    );
+    expect(listContext.listAssetDocuments).toHaveBeenLastCalledWith(
+      expect.anything(),
+      assetIdentifier,
+      DOCUMENT_QUERY_LIMIT,
+    );
   });
 
   describe('files that already exist for the asset', () => {
@@ -169,9 +215,9 @@ describe(AssetDocumentList.name, () => {
       });
 
     it('lists them after the documents uploaded here, marked as existing files', async () => {
-      vi.mocked(linkedContext.listAssetLinkedFiles).mockResolvedValue([
-        existingFile(),
-      ]);
+      vi.mocked(linkedContext.listAssetLinkedFiles).mockResolvedValue(
+        makeLimitedList([existingFile()]),
+      );
 
       renderList();
 
@@ -184,45 +230,33 @@ describe(AssetDocumentList.name, () => {
     });
 
     it('can be viewed but not deleted', async () => {
-      vi.mocked(linkedContext.listAssetLinkedFiles).mockResolvedValue([
-        existingFile(),
-      ]);
+      vi.mocked(linkedContext.listAssetLinkedFiles).mockResolvedValue(
+        makeLimitedList([existingFile()]),
+      );
 
       renderList();
 
-      expect(
-        await screen.findByRole('button', { name: 'View P&ID.pdf' }),
-      ).toBeEnabled();
-      expect(
-        screen.queryByRole('button', { name: 'Delete P&ID.pdf' }),
-      ).not.toBeInTheDocument();
-      expect(
-        screen.getByRole('button', { name: 'Delete Pump manual.pdf' }),
-      ).toBeInTheDocument();
+      expect(await screen.findByRole('button', { name: 'View P&ID.pdf' })).toBeEnabled();
+      expect(screen.queryByRole('button', { name: 'Delete P&ID.pdf' })).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Delete Pump manual.pdf' })).toBeInTheDocument();
     });
 
     it('keep the loading status up while they load and nothing else is there to show', async () => {
-      vi.mocked(listContext.listAssetDocuments).mockResolvedValue([]);
-      vi.mocked(linkedContext.listAssetLinkedFiles).mockReturnValue(
-        new Promise(() => {}),
-      );
+      vi.mocked(listContext.listAssetDocuments).mockResolvedValue(makeLimitedList([]));
+      vi.mocked(linkedContext.listAssetLinkedFiles).mockReturnValue(new Promise(() => {}));
 
       renderList();
 
-      await vi.waitFor(() =>
-        expect(listContext.listAssetDocuments).toHaveBeenCalled(),
-      );
-      expect(screen.getByRole('status')).toHaveTextContent(
-        'Loading documents...',
-      );
+      await vi.waitFor(() => expect(listContext.listAssetDocuments).toHaveBeenCalled());
+      expect(screen.getByRole('status')).toHaveTextContent('Loading documents...');
       expect(screen.queryByText('No documents yet')).not.toBeInTheDocument();
     });
 
     it('are listed when nothing was uploaded here', async () => {
-      vi.mocked(listContext.listAssetDocuments).mockResolvedValue([]);
-      vi.mocked(linkedContext.listAssetLinkedFiles).mockResolvedValue([
-        existingFile(),
-      ]);
+      vi.mocked(listContext.listAssetDocuments).mockResolvedValue(makeLimitedList([]));
+      vi.mocked(linkedContext.listAssetLinkedFiles).mockResolvedValue(
+        makeLimitedList([existingFile()]),
+      );
 
       renderList();
 
@@ -234,29 +268,24 @@ describe(AssetDocumentList.name, () => {
       const user = userEvent.setup();
       vi.mocked(linkedContext.listAssetLinkedFiles)
         .mockRejectedValueOnce(new Error('no access'))
-        .mockResolvedValue([existingFile()]);
+        .mockResolvedValue(makeLimitedList([existingFile()]));
 
       renderList();
 
-      expect(
-        await screen.findByText('Existing files could not be loaded'),
-      ).toBeInTheDocument();
+      expect(await screen.findByText('Existing files could not be loaded')).toBeInTheDocument();
+      expect(screen.getByText('Reason: no access')).toBeInTheDocument();
       expect(screen.getByText('Pump manual.pdf')).toBeInTheDocument();
       await user.click(screen.getByRole('button', { name: 'Retry' }));
       expect(await screen.findByText('P&ID.pdf')).toBeInTheDocument();
     });
 
     it('do not turn the empty state into "No documents yet" when they failed to load', async () => {
-      vi.mocked(listContext.listAssetDocuments).mockResolvedValue([]);
-      vi.mocked(linkedContext.listAssetLinkedFiles).mockRejectedValue(
-        new Error('no access'),
-      );
+      vi.mocked(listContext.listAssetDocuments).mockResolvedValue(makeLimitedList([]));
+      vi.mocked(linkedContext.listAssetLinkedFiles).mockRejectedValue(new Error('no access'));
 
       renderList();
 
-      expect(
-        await screen.findByText('Existing files could not be loaded'),
-      ).toBeInTheDocument();
+      expect(await screen.findByText('Existing files could not be loaded')).toBeInTheDocument();
       expect(screen.queryByText('No documents yet')).not.toBeInTheDocument();
     });
   });
@@ -267,15 +296,11 @@ describe(AssetDocumentList.name, () => {
     renderList();
 
     // Act
-    await user.click(
-      await screen.findByRole('button', { name: 'View Pump manual.pdf' }),
-    );
+    await user.click(await screen.findByRole('button', { name: 'View Pump manual.pdf' }));
 
     // Assert
     const dialog = await screen.findByRole('dialog');
-    expect(
-      within(dialog).getByRole('heading', { name: 'Pump manual.pdf' }),
-    ).toBeInTheDocument();
+    expect(within(dialog).getByRole('heading', { name: 'Pump manual.pdf' })).toBeInTheDocument();
     expect(within(dialog).getByText('Previewing doc-1')).toBeInTheDocument();
   });
 
@@ -283,18 +308,14 @@ describe(AssetDocumentList.name, () => {
     const user = userEvent.setup();
     renderList();
 
-    await user.click(
-      await screen.findByRole('button', { name: 'View Pump manual.pdf' }),
-    );
+    await user.click(await screen.findByRole('button', { name: 'View Pump manual.pdf' }));
     await user.click(
       within(await screen.findByRole('dialog')).getByRole('button', {
         name: 'Close',
       }),
     );
 
-    await vi.waitFor(() =>
-      expect(screen.queryByRole('dialog')).not.toBeInTheDocument(),
-    );
+    await vi.waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
     expect(screen.getByText('Pump manual.pdf')).toBeInTheDocument();
   });
 
@@ -304,20 +325,14 @@ describe(AssetDocumentList.name, () => {
     renderList();
 
     // Act
-    await user.click(
-      await screen.findByRole('button', { name: 'Delete Pump manual.pdf' }),
-    );
+    await user.click(await screen.findByRole('button', { name: 'Delete Pump manual.pdf' }));
 
     // Assert
     const dialog = await screen.findByRole('dialog');
-    expect(
-      within(dialog).getByText('Delete document?'),
-    ).toBeInTheDocument();
+    expect(within(dialog).getByText('Delete document?')).toBeInTheDocument();
     expect(deleteContext.deleteAssetDocument).not.toHaveBeenCalled();
 
-    await user.click(
-      within(dialog).getByRole('button', { name: 'Delete document' }),
-    );
+    await user.click(within(dialog).getByRole('button', { name: 'Delete document' }));
 
     await vi.waitFor(() =>
       expect(deleteContext.deleteAssetDocument).toHaveBeenCalledWith(
@@ -340,34 +355,24 @@ describe(AssetDocumentList.name, () => {
     );
     renderList();
 
-    await user.click(
-      await screen.findByRole('button', { name: 'Delete Pump manual.pdf' }),
-    );
+    await user.click(await screen.findByRole('button', { name: 'Delete Pump manual.pdf' }));
     const dialog = await screen.findByRole('dialog');
-    await user.click(
-      within(dialog).getByRole('button', { name: 'Delete document' }),
-    );
+    await user.click(within(dialog).getByRole('button', { name: 'Delete document' }));
 
     expect(screen.getByRole('dialog')).toBeVisible();
-    expect(
-      within(dialog).getByRole('button', { name: 'Deleting...' }),
-    ).toBeDisabled();
+    expect(within(dialog).getByRole('button', { name: 'Deleting...' })).toBeDisabled();
     expect(within(dialog).getByRole('button', { name: 'Cancel' })).toBeDisabled();
 
     finishDelete();
 
-    await vi.waitFor(() =>
-      expect(screen.queryByRole('dialog')).not.toBeInTheDocument(),
-    );
+    await vi.waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
   });
 
   it('keeps the document when the delete is cancelled', async () => {
     const user = userEvent.setup();
     renderList();
 
-    await user.click(
-      await screen.findByRole('button', { name: 'Delete Pump manual.pdf' }),
-    );
+    await user.click(await screen.findByRole('button', { name: 'Delete Pump manual.pdf' }));
     await user.click(
       within(await screen.findByRole('dialog')).getByRole('button', {
         name: 'Cancel',
@@ -380,23 +385,17 @@ describe(AssetDocumentList.name, () => {
 
   it('explains why a document could not be deleted', async () => {
     const user = userEvent.setup();
-    vi.mocked(deleteContext.deleteAssetDocument).mockRejectedValue(
-      new Error('Forbidden'),
-    );
+    vi.mocked(deleteContext.deleteAssetDocument).mockRejectedValue(new Error('Forbidden'));
     renderList();
 
-    await user.click(
-      await screen.findByRole('button', { name: 'Delete Pump manual.pdf' }),
-    );
+    await user.click(await screen.findByRole('button', { name: 'Delete Pump manual.pdf' }));
     await user.click(
       within(await screen.findByRole('dialog')).getByRole('button', {
         name: 'Delete document',
       }),
     );
 
-    expect(
-      await screen.findByText('The document could not be deleted'),
-    ).toBeInTheDocument();
+    expect(await screen.findByText('The document could not be deleted')).toBeInTheDocument();
     expect(screen.getByText('Forbidden')).toBeInTheDocument();
     expect(screen.getByText('Pump manual.pdf')).toBeInTheDocument();
   });

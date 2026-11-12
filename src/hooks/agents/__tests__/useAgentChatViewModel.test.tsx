@@ -2,41 +2,40 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import type { ComponentType, ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { AgentChatStateProvider } from '../../../components/agents/AgentChatStateProvider';
-import { makeAgentClient, makeCdfAgent } from '../../../mocks/agents';
-import type { AgentClient } from '../../../types/agent';
-import { INITIAL_AGENT_CHAT_STATE } from '../agentChatReducer';
+import { ChatMessageRole } from '../../../enums/chatMessageRole';
+import { makeAgentContext, makeCdfAgent } from '../../../mocks/agents';
+import { createAgentChatStore, INITIAL_AGENT_CHAT_STATE } from '../../../store/agents';
+import type { AgentContextType } from '../../../types/agent';
+import { AgentChatStoreContext } from '../useAgentChatState';
 import {
   UseAgentChatViewModelContext,
   type UseAgentChatViewModelContextType,
   useAgentChatViewModel,
 } from '../useAgentChatViewModel';
+import { AgentContext } from '../useAgentContext';
 
 describe(useAgentChatViewModel.name, () => {
-  let chat: AgentClient['chat'];
+  let chat: AgentContextType['chat'];
   let context: UseAgentChatViewModelContextType;
   let wrapper: ComponentType<{ children: ReactNode }>;
   let idCount: number;
 
   beforeEach(() => {
     idCount = 0;
-    chat = vi.fn(() =>
-      Promise.resolve({ text: 'It is fouled.', cursor: 'c1' }),
-    );
+    const chatStore = createAgentChatStore({
+      ...INITIAL_AGENT_CHAT_STATE,
+      selectedAgent: makeCdfAgent(),
+    });
+    chat = vi.fn(() => Promise.resolve({ text: 'It is fouled.', cursor: 'c1' }));
+    const agentContext = makeAgentContext({ chat });
     context = {
-      useAgentClient: vi.fn(() => makeAgentClient({ chat })),
       createMessageId: () => `message-${++idCount}`,
     };
     wrapper = ({ children }) => (
       <UseAgentChatViewModelContext.Provider value={context}>
-        <AgentChatStateProvider
-          initialState={{
-            ...INITIAL_AGENT_CHAT_STATE,
-            selectedAgent: makeCdfAgent(),
-          }}
-        >
-          {children}
-        </AgentChatStateProvider>
+        <AgentChatStoreContext.Provider value={chatStore}>
+          <AgentContext.Provider value={agentContext}>{children}</AgentContext.Provider>
+        </AgentChatStoreContext.Provider>
       </UseAgentChatViewModelContext.Provider>
     );
   });
@@ -58,8 +57,8 @@ describe(useAgentChatViewModel.name, () => {
     });
 
     expect(result.current.messages).toEqual([
-      { id: 'message-1', role: 'USER', text: 'Why is pump 1 hot?' },
-      { id: 'message-2', role: 'AGENT', text: 'It is fouled.' },
+      { id: 'message-1', role: ChatMessageRole.USER, text: 'Why is pump 1 hot?' },
+      { id: 'message-2', role: ChatMessageRole.AGENT, text: 'It is fouled.' },
     ]);
     expect(result.current.isSending).toBe(false);
   });
@@ -111,6 +110,45 @@ describe(useAgentChatViewModel.name, () => {
     expect(result.current.isSending).toBe(false);
   });
 
+  it('asks the unanswered question again without repeating it', async () => {
+    // Arrange
+    vi.mocked(chat).mockRejectedValueOnce(new Error('forbidden'));
+    const { result } = renderHook(() => useAgentChatViewModel(), { wrapper });
+    await act(async () => {
+      await result.current.send('Hi');
+    });
+
+    // Act
+    await act(async () => {
+      await result.current.retry();
+    });
+
+    // Assert
+    expect(chat).toHaveBeenLastCalledWith({
+      agentExternalId: makeCdfAgent().externalId,
+      text: 'Hi',
+      cursor: null,
+    });
+    expect(result.current.errorMessage).toBeNull();
+    expect(result.current.messages).toEqual([
+      { id: 'message-1', role: ChatMessageRole.USER, text: 'Hi' },
+      { id: 'message-2', role: ChatMessageRole.AGENT, text: 'It is fouled.' },
+    ]);
+  });
+
+  it('asks nothing again when no question failed', async () => {
+    const { result } = renderHook(() => useAgentChatViewModel(), { wrapper });
+    await act(async () => {
+      await result.current.send('Hi');
+    });
+
+    await act(async () => {
+      await result.current.retry();
+    });
+
+    expect(chat).toHaveBeenCalledTimes(1);
+  });
+
   it('ignores an empty question', async () => {
     const { result } = renderHook(() => useAgentChatViewModel(), { wrapper });
 
@@ -149,8 +187,6 @@ describe(useAgentChatViewModel.name, () => {
     await act(async () => {
       await result.current.send('Again');
     });
-    expect(chat).toHaveBeenLastCalledWith(
-      expect.objectContaining({ cursor: null }),
-    );
+    expect(chat).toHaveBeenLastCalledWith(expect.objectContaining({ cursor: null }));
   });
 });

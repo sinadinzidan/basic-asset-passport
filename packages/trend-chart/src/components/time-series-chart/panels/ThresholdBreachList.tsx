@@ -1,3 +1,4 @@
+import { Button } from '@cognite/aura/components/button';
 import { IconChevronDown, IconChevronRight } from '@tabler/icons-react';
 import { useId, useState } from 'react';
 
@@ -7,7 +8,7 @@ import type { ThresholdBreach } from '../../../types/timeSeriesChart';
 
 import { formatChartInstantShort, formatCountOf } from './panelFormat';
 
-interface ThresholdBreachListProps {
+interface ThresholdBreachListProperties {
   summary: string;
   breaches: readonly ThresholdBreach[];
   unit: string;
@@ -15,7 +16,7 @@ interface ThresholdBreachListProps {
 
 const VISIBLE_BREACH_COUNT = 5;
 
-export function ThresholdBreachList({ summary, breaches, unit }: ThresholdBreachListProps) {
+export function ThresholdBreachList({ summary, breaches, unit }: ThresholdBreachListProperties) {
   const [isOpen, setIsOpen] = useState(false);
   const listId = useId();
   const Chevron = isOpen ? IconChevronDown : IconChevronRight;
@@ -26,16 +27,16 @@ export function ThresholdBreachList({ summary, breaches, unit }: ThresholdBreach
     <div className="flex flex-col gap-1">
       <div className="flex items-center justify-between gap-2">
         {summaryText}
-        <button
-          type="button"
+        <Button
+          variant="ghost"
+          size="sm"
           aria-expanded={isOpen}
           aria-controls={listId}
-          onClick={() => setIsOpen((current) => !current)}
-          className="flex shrink-0 items-center gap-0.5 rounded-sm text-xs text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+          onClick={() => setIsOpen((isCurrentlyOpen) => !isCurrentlyOpen)}
         >
-          <Chevron size={14} aria-hidden />
+          <Chevron aria-hidden />
           {formatCountOf(breaches.length, 'period')}
-        </button>
+        </Button>
       </div>
       {isOpen ? (
         <ul id={listId} aria-label="Periods beyond the limit" className="flex flex-col gap-1">
@@ -50,10 +51,14 @@ export function ThresholdBreachList({ summary, breaches, unit }: ThresholdBreach
                   ? ''
                   : ` to ${formatChartInstantShort(breach.to)} (${formatDuration(breach.to - breach.from)})`}
               </span>
-              <span className="shrink-0 text-foreground">peak {formatSignalWithUnit(breach.peak, unit)}</span>
+              <span className="shrink-0 text-foreground">
+                peak {formatSignalWithUnit(breach.peak, unit)}
+              </span>
             </li>
           ))}
-          {hiddenCount > 0 ? <li className="text-xs text-muted-foreground">{hiddenCount} more</li> : null}
+          {hiddenCount > 0 ? (
+            <li className="text-xs text-muted-foreground">{hiddenCount} more</li>
+          ) : null}
         </ul>
       ) : null}
     </div>

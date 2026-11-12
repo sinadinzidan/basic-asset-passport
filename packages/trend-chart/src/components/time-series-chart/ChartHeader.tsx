@@ -3,15 +3,17 @@ import { IconPencil } from '@tabler/icons-react';
 import { useState } from 'react';
 import type { KeyboardEvent, ReactNode } from 'react';
 
+import { ENTER_KEY, ESCAPE_KEY } from '../../constants/keyboardConstants';
 import { CHART_TITLE_MAX_LENGTH } from '../../constants/timeSeriesChart';
+import { PlainButton } from '../general/PlainButton';
 
-interface ChartHeaderProps {
+interface ChartHeaderProperties {
   title: string;
   onTitleChange: (title: string) => void;
   status?: ReactNode;
 }
 
-export function ChartHeader({ title, onTitleChange, status }: ChartHeaderProps) {
+export function ChartHeader({ title, onTitleChange, status }: ChartHeaderProperties) {
   const [draft, setDraft] = useState<string | undefined>();
   const isEditing = draft !== undefined;
 
@@ -20,8 +22,12 @@ export function ChartHeader({ title, onTitleChange, status }: ChartHeaderProps) 
     setDraft(undefined);
   };
   const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>): void => {
-    if (event.key === 'Enter') commit();
-    else if (event.key === 'Escape') setDraft(undefined);
+    if (event.key === ENTER_KEY) commit();
+    else if (event.key === ESCAPE_KEY) {
+      // Escape cancels the edit only: it must not travel on and close the dialog the chart sits in.
+      event.stopPropagation();
+      setDraft(undefined);
+    }
   };
 
   return (
@@ -38,19 +44,19 @@ export function ChartHeader({ title, onTitleChange, status }: ChartHeaderProps) 
           onKeyDown={handleKeyDown}
         />
       ) : (
-        <button
-          type="button"
-          className="group inline-flex min-w-0 items-center gap-1.5 rounded-sm text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+        <PlainButton
+          className="group min-w-0 gap-1.5"
           aria-label={`Chart title: ${title}. Edit`}
           onClick={() => setDraft(title)}
         >
-          <h2 className="min-w-0 truncate text-base font-semibold tracking-tight text-foreground">{title}</h2>
+          <h2 className="min-w-0 truncate text-base font-semibold tracking-tight text-foreground">
+            {title}
+          </h2>
           <IconPencil
-            size={14}
             aria-hidden
-            className="shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
+            className="size-3.5 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
           />
-        </button>
+        </PlainButton>
       )}
       {status}
     </div>

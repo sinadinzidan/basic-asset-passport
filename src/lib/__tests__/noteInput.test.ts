@@ -1,17 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-  NOTE_BODY_MAX_LENGTH,
-  NOTE_TITLE_MAX_LENGTH,
-} from '../../constants/notes';
+import { NOTE_BODY_MAX_LENGTH, NOTE_TITLE_MAX_LENGTH } from '../../constants/notes';
 import { isNewAssetNoteValid, normalizeNewAssetNote } from '../noteInput';
 
 describe(isNewAssetNoteValid.name, () => {
   it('accepts a title with an optional body', () => {
     expect(isNewAssetNoteValid({ title: 'Inspection', body: '' })).toBe(true);
-    expect(isNewAssetNoteValid({ title: 'Inspection', body: 'Done' })).toBe(
-      true,
-    );
+    expect(isNewAssetNoteValid({ title: 'Inspection', body: 'Done' })).toBe(true);
   });
 
   it('rejects an empty or blank title', () => {
@@ -46,9 +41,10 @@ describe(isNewAssetNoteValid.name, () => {
 
 describe(normalizeNewAssetNote.name, () => {
   it('trims the title and the body', () => {
-    expect(
-      normalizeNewAssetNote({ title: '  Title ', body: ' Text\n' }),
-    ).toEqual({ title: 'Title', body: 'Text' });
+    expect(normalizeNewAssetNote({ title: '  Title ', body: ' Text\n' })).toEqual({
+      title: 'Title',
+      body: 'Text',
+    });
   });
 
   it('throws for an invalid note', () => {

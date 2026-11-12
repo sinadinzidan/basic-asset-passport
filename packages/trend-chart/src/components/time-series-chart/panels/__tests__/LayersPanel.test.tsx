@@ -38,7 +38,13 @@ it('moves a series and says where it went', async () => {
 
 it('says so when no series is on the chart', () => {
   render(
-    <LayersPanel series={[]} overlays={[]} onVisibilityChange={vi.fn()} onMove={vi.fn()} onToggleOverlay={vi.fn()} />,
+    <LayersPanel
+      series={[]}
+      overlays={[]}
+      onVisibilityChange={vi.fn()}
+      onMove={vi.fn()}
+      onToggleOverlay={vi.fn()}
+    />,
   );
 
   expect(screen.getByText('No series on the chart')).toBeInTheDocument();
@@ -70,6 +76,13 @@ function renderPanel(overrides: Partial<Parameters<typeof LayersPanel>[0]> = {})
 function entry(seriesId: string, name: string, isVisible: boolean): ChartSeriesView {
   return {
     configuration: { seriesId, isVisible, style: { color: '#000', lineWidth: 1.5 } },
-    definition: { id: seriesId, name, tag: 'T', description: name, sourceName: 'Demo', isSimulated: true },
+    definition: {
+      id: seriesId,
+      name,
+      tag: 'T',
+      description: name,
+      sourceName: 'Demo',
+      isSimulated: true,
+    },
   } as Partial<ChartSeriesView> as ChartSeriesView;
 }

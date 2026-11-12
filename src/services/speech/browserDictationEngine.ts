@@ -1,9 +1,5 @@
-import type {
-  DictationCallbacks,
-  DictationEngine,
-  DictationFailure,
-  DictationSession,
-} from '../../types/speech';
+import { DictationFailure } from '../../enums/dictationFailure';
+import type { DictationCallbacks, DictationEngine, DictationSession } from '../../types/speech';
 
 type RecognitionAlternative = { transcript: string };
 type RecognitionResult = {
@@ -17,7 +13,6 @@ type RecognitionEvent = {
   };
 };
 
-/** The part of the browser's SpeechRecognition that dictation uses. */
 type Recognition = {
   continuous: boolean;
   interimResults: boolean;
@@ -31,18 +26,10 @@ type Recognition = {
 
 type RecognitionConstructor = new () => Recognition;
 
-const BLOCKED_ERRORS: ReadonlySet<string> = new Set([
-  'not-allowed',
-  'service-not-allowed',
-]);
-// Silence and a stop we asked for are not failures.
+const BLOCKED_ERRORS: ReadonlySet<string> = new Set(['not-allowed', 'service-not-allowed']);
+
 const QUIET_ERRORS: ReadonlySet<string> = new Set(['no-speech', 'aborted']);
 
-/**
- * Dictation through the browser's speech recognition, or null when the browser
- * has none. Chrome and Edge send the audio to their speech service to be
- * recognised.
- */
 export function createBrowserDictationEngine(
   globalObject: object,
   language: string,
@@ -69,7 +56,7 @@ export function createBrowserDictationEngine(
       try {
         recognition.start();
       } catch {
-        callbacks.onError('FAILED');
+        callbacks.onError(DictationFailure.FAILED);
         callbacks.onEnd();
       }
 
@@ -78,9 +65,7 @@ export function createBrowserDictationEngine(
   };
 }
 
-function findRecognitionConstructor(
-  globalObject: object,
-): RecognitionConstructor | null {
+function findRecognitionConstructor(globalObject: object): RecognitionConstructor | null {
   const candidate: unknown =
     Reflect.get(globalObject, 'SpeechRecognition') ??
     Reflect.get(globalObject, 'webkitSpeechRecognition');
@@ -88,9 +73,7 @@ function findRecognitionConstructor(
   return isRecognitionConstructor(candidate) ? candidate : null;
 }
 
-function isRecognitionConstructor(
-  value: unknown,
-): value is RecognitionConstructor {
+function isRecognitionConstructor(value: unknown): value is RecognitionConstructor {
   return typeof value === 'function';
 }
 
@@ -103,7 +86,7 @@ function joinTranscript(event: RecognitionEvent): string {
 }
 
 function toFailure(error: string): DictationFailure | null {
-  if (BLOCKED_ERRORS.has(error)) return 'BLOCKED';
+  if (BLOCKED_ERRORS.has(error)) return DictationFailure.BLOCKED;
   if (QUIET_ERRORS.has(error)) return null;
-  return 'FAILED';
+  return DictationFailure.FAILED;
 }

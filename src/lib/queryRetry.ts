@@ -1,5 +1,6 @@
 import {
   QUERY_MAX_RETRIES,
+  QUERY_RETRY_BACKOFF_FACTOR,
   QUERY_RETRY_BASE_DELAY_MS,
   QUERY_RETRY_MAX_DELAY_MS,
   RETRYABLE_HTTP_STATUSES,
@@ -14,12 +15,7 @@ function hasStatus(error: unknown): error is { status: number } {
   );
 }
 
-// Only throttling and temporary gateway failures are retried. A 4xx such as
-// 401 or 404 would fail again, so it is shown to the user straight away.
-export function shouldRetryQuery(
-  failureCount: number,
-  error: unknown,
-): boolean {
+export function shouldRetryQuery(failureCount: number, error: unknown): boolean {
   return (
     failureCount < QUERY_MAX_RETRIES &&
     hasStatus(error) &&
@@ -27,17 +23,11 @@ export function shouldRetryQuery(
   );
 }
 
-// Exponential backoff with full jitter: a random wait between zero and a
-// ceiling that doubles with each attempt, so parallel clients do not retry together.
-// TanStack Query calls the delay with (failureCount, error), so the random source
-// is fixed by this factory rather than passed as a second argument.
-export function createQueryRetryDelay(
-  random: () => number,
-): (failureCount: number) => number {
+export function createQueryRetryDelay(random: () => number): (failureCount: number) => number {
   return (failureCount) => {
     const ceilingMs = Math.min(
       QUERY_RETRY_MAX_DELAY_MS,
-      QUERY_RETRY_BASE_DELAY_MS * 2 ** failureCount,
+      QUERY_RETRY_BASE_DELAY_MS * QUERY_RETRY_BACKOFF_FACTOR ** failureCount,
     );
     return Math.floor(random() * ceilingMs);
   };

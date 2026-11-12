@@ -10,7 +10,10 @@ const KEPT_PER_SLICE = 3;
  * smoothed away. The first and last readings are always kept. Readings are expected in time order and the result is too. A series
  * within the cap is returned as it is, the same array, so nothing downstream sees a change.
  */
-export function thinPoints(points: readonly TimeSeriesPoint[], maxPoints: number): readonly TimeSeriesPoint[] {
+export function thinPoints(
+  points: readonly TimeSeriesPoint[],
+  maxPoints: number,
+): readonly TimeSeriesPoint[] {
   if (points.length <= maxPoints) return points;
   const sliceCount = Math.max(1, Math.floor(maxPoints / KEPT_PER_SLICE));
   const sliceSize = points.length / sliceCount;

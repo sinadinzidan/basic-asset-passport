@@ -1,5 +1,7 @@
 import { useState, type FormEvent } from 'react';
 
+import { NOTE_SAVE_ERROR_TITLE } from '../../../constants/notes';
+import { AppAlertVariant } from '../../../enums/appAlertVariant';
 import { isNewAssetNoteValid } from '../../../lib/noteInput';
 import type { AssetNote, NewAssetNote } from '../../../types/note';
 import { AppAlert } from '../../general/AppAlert';
@@ -15,7 +17,6 @@ type AssetNoteEditFormProps = {
   onCancel: () => void;
 };
 
-/** Edits the title and text of a note in place. */
 export function AssetNoteEditForm({
   note,
   isSaving,
@@ -43,7 +44,7 @@ export function AssetNoteEditForm({
         onBodyChange={setBody}
       />
       {errorMessage !== null ? (
-        <AppAlert variant="error" title="The note could not be saved">
+        <AppAlert variant={AppAlertVariant.ERROR} title={NOTE_SAVE_ERROR_TITLE}>
           {errorMessage}
         </AppAlert>
       ) : null}
@@ -51,12 +52,7 @@ export function AssetNoteEditForm({
         <GeneralButton disabled={!canSave} type="submit">
           {isSaving ? 'Saving...' : 'Save'}
         </GeneralButton>
-        <GeneralButton
-          disabled={isSaving}
-          onClick={onCancel}
-          type="button"
-          variant="outline"
-        >
+        <GeneralButton disabled={isSaving} onClick={onCancel} type="button" variant="outline">
           Cancel
         </GeneralButton>
       </div>

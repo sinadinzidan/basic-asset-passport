@@ -7,7 +7,12 @@ import { PillSize } from '../../../enums/display';
 import { ThresholdSide } from '../../../enums/timeSeriesChart';
 import { formatSignalWithUnit } from '../../../lib/monitoring/signalFormat';
 import { countBeyond } from '../../../lib/time-series-chart/thresholds';
-import type { ChartSeriesView, ChartThreshold, ChartTimeRange, ThresholdBreach } from '../../../types/timeSeriesChart';
+import type {
+  ChartSeriesView,
+  ChartThreshold,
+  ChartTimeRange,
+  ThresholdBreach,
+} from '../../../types/timeSeriesChart';
 import { StatusPill } from '../../general/StatusPill';
 
 import { formatCountOf } from './panelFormat';
@@ -18,7 +23,7 @@ const THRESHOLD_SIDE_TITLES: Record<ThresholdSide, string> = {
   [ThresholdSide.LOWER]: 'Low limit',
 };
 
-interface ThresholdRowProps {
+interface ThresholdRowProperties {
   threshold: ChartThreshold;
   series: ChartSeriesView;
   range: ChartTimeRange;
@@ -27,7 +32,13 @@ interface ThresholdRowProps {
   isSourceShown: boolean;
 }
 
-export function ThresholdRow({ threshold, series, range, breaches, isSourceShown }: ThresholdRowProps) {
+export function ThresholdRow({
+  threshold,
+  series,
+  range,
+  breaches,
+  isSourceShown,
+}: ThresholdRowProperties) {
   const beyondCount = countBeyond(series.points, threshold, range);
   const summary = `${beyondCount === 0 ? 'No readings' : formatCountOf(beyondCount, 'reading')} beyond${isSourceShown ? ` · ${THRESHOLD_SOURCE_LABELS[threshold.source]}` : ''}`;
   return (

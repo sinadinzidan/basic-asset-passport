@@ -22,9 +22,7 @@ describe(getDocumentRefetchInterval.name, () => {
       }),
     ];
 
-    expect(getDocumentRefetchInterval(documents)).toBe(
-      DOCUMENT_PENDING_POLL_MS,
-    );
+    expect(getDocumentRefetchInterval(documents)).toBe(DOCUMENT_PENDING_POLL_MS);
   });
 
   it('stops polling for a document whose upload never finished', () => {

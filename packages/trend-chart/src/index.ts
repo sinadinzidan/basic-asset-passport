@@ -1,5 +1,5 @@
 export { IndustrialTimeSeriesChart } from './components/time-series-chart/IndustrialTimeSeriesChart';
-export type { IndustrialTimeSeriesChartProps } from './components/time-series-chart/IndustrialTimeSeriesChart';
+export type { IndustrialTimeSeriesChartProperties } from './components/time-series-chart/IndustrialTimeSeriesChart';
 export { ChartAdapterContext } from './hooks/time-series-chart/useChartAdapter';
 export type { ChartDataSource } from './hooks/time-series-chart/useChartAdapter';
 export { QUERY_ROOT } from './hooks/core/queryRoot';

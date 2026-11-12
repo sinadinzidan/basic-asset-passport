@@ -11,9 +11,7 @@ export function AppLogo({ source, alt, fallbackText }: AppLogoProps) {
 
   if (hasFailed) {
     return (
-      <span className="shrink-0 text-base font-semibold text-base-foreground">
-        {fallbackText}
-      </span>
+      <span className="shrink-0 text-base font-semibold text-base-foreground">{fallbackText}</span>
     );
   }
 

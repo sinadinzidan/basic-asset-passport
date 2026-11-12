@@ -1,23 +1,11 @@
-import { createContext, useContext, type Dispatch } from 'react';
+import { createContext, useContext } from 'react';
+import { useStore, type StoreApi } from 'zustand';
 
-import type { AgentChatAction, AgentChatState } from './agentChatReducer';
+import { agentChatStore } from '../../store/agents';
+import type { AgentChatStore } from '../../types/agentChat';
 
-export type AgentChatStore = {
-  state: AgentChatState;
-  dispatch: Dispatch<AgentChatAction>;
-};
+export const AgentChatStoreContext = createContext<StoreApi<AgentChatStore>>(agentChatStore);
 
-export const AgentChatStateContext = createContext<AgentChatStore | null>(null);
-
-/** The chosen agent and every conversation, shared by the whole helper. */
-export function useAgentChatState(): AgentChatStore {
-  const store = useContext(AgentChatStateContext);
-
-  if (store === null) {
-    throw new Error(
-      'useAgentChatState must be used inside an AgentChatStateProvider.',
-    );
-  }
-
-  return store;
+export function useAgentChatState<Slice>(select: (store: AgentChatStore) => Slice): Slice {
+  return useStore(useContext(AgentChatStoreContext), select);
 }

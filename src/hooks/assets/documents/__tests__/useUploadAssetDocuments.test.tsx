@@ -4,24 +4,25 @@ import type { ComponentType, ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 
 import { makeMockClient } from '../../../../mocks/cogniteClient';
-import {
-  makeQueryClientWrapper,
-  makeTestQueryClient,
-} from '../../../../mocks/queryClientWrapper';
-import type { DocumentFileClient } from '../../../../types/documentFileClient';
+import { makeQueryClientWrapper, makeTestQueryClient } from '../../../../mocks/QueryClientWrapper';
+import type { DocumentFileContextType } from '../../../../types/documentFileContext';
 import type { ShowSuccessToast } from '../../../general/useSuccessToast';
+import { AssetContext } from '../../useAssetContext';
 import { getAssetDocumentsQueryKey } from '../useAssetDocuments';
+import { DocumentFileContext } from '../useDocumentFileContext';
 import {
   useUploadAssetDocuments,
   UseUploadAssetDocumentsContext,
   type UseUploadAssetDocumentsContextType,
 } from '../useUploadAssetDocuments';
 
+const REJECTED_FILE_NAME = 'bad.pdf';
+
 const assetIdentifier = { space: 'asset-space', externalId: 'FLOC-1' };
 
 describe(useUploadAssetDocuments.name, () => {
   const client = makeMockClient();
-  const fileClient = {} as Partial<DocumentFileClient> as DocumentFileClient;
+  const fileClient = {} as Partial<DocumentFileContextType> as DocumentFileContextType;
   let queryClient: QueryClient;
   let mockContext: UseUploadAssetDocumentsContextType;
   let showSuccessToast: Mock<ShowSuccessToast>;
@@ -31,15 +32,17 @@ describe(useUploadAssetDocuments.name, () => {
     queryClient = makeTestQueryClient();
     showSuccessToast = vi.fn();
     mockContext = {
-      useAssetDataClient: vi.fn(() => client),
-      useDocumentFileClient: vi.fn(() => fileClient),
       useSuccessToast: vi.fn(() => showSuccessToast),
       uploadAssetDocument: vi.fn(() => Promise.resolve()),
     };
     const QueryWrapper = makeQueryClientWrapper(queryClient);
     wrapper = ({ children }) => (
       <UseUploadAssetDocumentsContext.Provider value={mockContext}>
-        <QueryWrapper>{children}</QueryWrapper>
+        <QueryWrapper>
+          <DocumentFileContext.Provider value={fileClient}>
+            <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
+          </DocumentFileContext.Provider>
+        </QueryWrapper>
       </UseUploadAssetDocumentsContext.Provider>
     );
   });
@@ -52,10 +55,7 @@ describe(useUploadAssetDocuments.name, () => {
     // Arrange
     const first = makeFile('a.pdf');
     const second = makeFile('b.pdf');
-    const { result } = renderHook(
-      () => useUploadAssetDocuments(assetIdentifier),
-      { wrapper },
-    );
+    const { result } = renderHook(() => useUploadAssetDocuments(assetIdentifier), { wrapper });
 
     // Act
     let results: Awaited<ReturnType<typeof result.current.mutateAsync>> = [];
@@ -86,37 +86,31 @@ describe(useUploadAssetDocuments.name, () => {
     // Arrange
     vi.mocked(mockContext.uploadAssetDocument).mockImplementation(
       (_client, _files, _asset, file) =>
-        file.name === 'bad.pdf'
+        file.name === REJECTED_FILE_NAME
           ? Promise.reject(new Error('The file is empty.'))
           : Promise.resolve(),
     );
-    const { result } = renderHook(
-      () => useUploadAssetDocuments(assetIdentifier),
-      { wrapper },
-    );
+    const { result } = renderHook(() => useUploadAssetDocuments(assetIdentifier), { wrapper });
 
     // Act
     let results: Awaited<ReturnType<typeof result.current.mutateAsync>> = [];
     await act(async () => {
       results = await result.current.mutateAsync([
-        makeFile('bad.pdf'),
+        makeFile(REJECTED_FILE_NAME),
         makeFile('good.pdf'),
       ]);
     });
 
     // Assert
     expect(results).toEqual([
-      { fileName: 'bad.pdf', errorMessage: 'The file is empty.' },
+      { fileName: REJECTED_FILE_NAME, errorMessage: 'The file is empty.' },
       { fileName: 'good.pdf', errorMessage: null },
     ]);
   });
 
   it('refreshes the documents of that asset when the uploads settle', async () => {
     const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
-    const { result } = renderHook(
-      () => useUploadAssetDocuments(assetIdentifier),
-      { wrapper },
-    );
+    const { result } = renderHook(() => useUploadAssetDocuments(assetIdentifier), { wrapper });
 
     await act(async () => {
       await result.current.mutateAsync([makeFile('a.pdf')]);
@@ -129,10 +123,7 @@ describe(useUploadAssetDocuments.name, () => {
 
   it('confirms the uploaded files in a toast', async () => {
     // Arrange
-    const { result } = renderHook(
-      () => useUploadAssetDocuments(assetIdentifier),
-      { wrapper },
-    );
+    const { result } = renderHook(() => useUploadAssetDocuments(assetIdentifier), { wrapper });
 
     // Act
     await act(async () => {
@@ -147,33 +138,22 @@ describe(useUploadAssetDocuments.name, () => {
   it('only counts the files that uploaded', async () => {
     vi.mocked(mockContext.uploadAssetDocument).mockImplementation(
       (_client, _files, _asset, file) =>
-        file.name === 'bad.pdf'
+        file.name === REJECTED_FILE_NAME
           ? Promise.reject(new Error('The file is empty.'))
           : Promise.resolve(),
     );
-    const { result } = renderHook(
-      () => useUploadAssetDocuments(assetIdentifier),
-      { wrapper },
-    );
+    const { result } = renderHook(() => useUploadAssetDocuments(assetIdentifier), { wrapper });
 
     await act(async () => {
-      await result.current.mutateAsync([
-        makeFile('bad.pdf'),
-        makeFile('good.pdf'),
-      ]);
+      await result.current.mutateAsync([makeFile(REJECTED_FILE_NAME), makeFile('good.pdf')]);
     });
 
     expect(showSuccessToast).toHaveBeenCalledWith('1 document uploaded.');
   });
 
   it('shows no toast when every file failed', async () => {
-    vi.mocked(mockContext.uploadAssetDocument).mockRejectedValue(
-      new Error('forbidden'),
-    );
-    const { result } = renderHook(
-      () => useUploadAssetDocuments(assetIdentifier),
-      { wrapper },
-    );
+    vi.mocked(mockContext.uploadAssetDocument).mockRejectedValue(new Error('forbidden'));
+    const { result } = renderHook(() => useUploadAssetDocuments(assetIdentifier), { wrapper });
 
     await act(async () => {
       await result.current.mutateAsync([makeFile('a.pdf')]);

@@ -26,7 +26,9 @@ const NO_APPENDED: Readonly<Record<string, readonly TimeSeriesPoint[]>> = {};
  */
 export function useLiveFeed({ isEnabled, basePointsReference }: UseLiveFeedInput): LiveFeed {
   const timers = useChartTimers();
-  const [appended, setAppended] = useState<Readonly<Record<string, readonly TimeSeriesPoint[]>>>({});
+  const [appended, setAppended] = useState<Readonly<Record<string, readonly TimeSeriesPoint[]>>>(
+    {},
+  );
 
   const stop = useCallback((): void => setAppended({}), []);
 

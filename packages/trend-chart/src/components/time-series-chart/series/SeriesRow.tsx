@@ -17,6 +17,8 @@ import { SeriesMoreMenu } from './SeriesMoreMenu';
 import { SeriesStyleControl } from './SeriesStyleControl';
 import { TruncatedText } from './TruncatedText';
 
+const MIN_UNIT_CHOICES = 2;
+
 export interface SeriesRowActions {
   onVisibilityChange: (seriesId: string, isVisible: boolean) => void;
   onStyleChange: (seriesId: string, style: Partial<SeriesStyle>) => void;
@@ -29,7 +31,7 @@ export interface SeriesRowActions {
   onShowOnly: (seriesId: string) => void;
 }
 
-interface SeriesRowProps {
+interface SeriesRowProperties {
   series: ChartSeriesView;
   position: number;
   seriesCount: number;
@@ -61,7 +63,7 @@ function UnitCell({
   const ownUnit = series.definition.unit?.trim() ? series.definition.unit : undefined;
   if (ownUnit === undefined) return <MetadataText value={undefined} />;
   const choices = convertibleUnits(ownUnit);
-  if (choices.length < 2) return <>{ownUnit}</>;
+  if (choices.length < MIN_UNIT_CHOICES) return <>{ownUnit}</>;
   const chosen = series.configuration.displayUnit;
   const current = chosen !== undefined && choices.includes(chosen) ? chosen : ownUnit;
   return (
@@ -78,7 +80,14 @@ function UnitCell({
   );
 }
 
-export function SeriesRow({ series, position, seriesCount, hiddenCount, onShowOnly, actions }: SeriesRowProps) {
+export function SeriesRow({
+  series,
+  position,
+  seriesCount,
+  hiddenCount,
+  onShowOnly,
+  actions,
+}: SeriesRowProperties) {
   const { definition, configuration } = series;
   const seriesId = definition.id;
   const name = definition.name;
@@ -111,7 +120,10 @@ export function SeriesRow({ series, position, seriesCount, hiddenCount, onShowOn
       </th>
       <td className={dataCell}>
         <div className="flex min-w-24 flex-col items-start gap-1">
-          <StatusPill label={SERIES_STATUS_LABELS[series.status]} tone={SERIES_STATUS_TONES[series.status]} />
+          <StatusPill
+            label={SERIES_STATUS_LABELS[series.status]}
+            tone={SERIES_STATUS_TONES[series.status]}
+          />
           {isError ? (
             <>
               <p className="max-w-[14rem] text-xs text-destructive-foreground">
@@ -151,7 +163,10 @@ export function SeriesRow({ series, position, seriesCount, hiddenCount, onShowOn
         <StatisticCell value={series.statistics.mean} />
       </td>
       <td className={cn(dataCell, 'whitespace-nowrap')}>
-        <UnitCell series={series} onDisplayUnitChange={(unit) => actions.onDisplayUnitChange(seriesId, unit)} />
+        <UnitCell
+          series={series}
+          onDisplayUnitChange={(unit) => actions.onDisplayUnitChange(seriesId, unit)}
+        />
       </td>
       <td className={controlCell}>
         <IconTooltipButton

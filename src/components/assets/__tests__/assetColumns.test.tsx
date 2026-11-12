@@ -5,15 +5,12 @@ import { describe, expect, it } from 'vitest';
 
 import { makeAssetListItem } from '../../../mocks/assets';
 import type { AssetListItem } from '../../../types/asset';
-import { ASSET_COLUMNS } from '../assetColumns';
+import { ASSET_COLUMNS } from '../AssetColumns';
 
 function renderCell(columnIndex: number, asset: AssetListItem) {
   const context = {
     row: { original: asset },
-  } as Partial<CellContext<AssetListItem, unknown>> as CellContext<
-    AssetListItem,
-    unknown
-  >;
+  } as Partial<CellContext<AssetListItem, unknown>> as CellContext<AssetListItem, unknown>;
 
   return render(<>{flexRender(ASSET_COLUMNS[columnIndex].cell, context)}</>);
 }
@@ -46,9 +43,7 @@ describe('ASSET_COLUMNS', () => {
     expect(screen.getByText('North Plant')).toBeInTheDocument();
     expect(screen.getByText('FLOC-100')).toBeInTheDocument();
     expect(screen.getByText('Cooling Water Pump')).toBeInTheDocument();
-    expect(
-      screen.getByText('North process cooling system'),
-    ).toBeInTheDocument();
+    expect(screen.getByText('North process cooling system')).toBeInTheDocument();
     expect(screen.getByText('A - High criticality')).toBeInTheDocument();
   });
 
@@ -73,25 +68,28 @@ describe('ASSET_COLUMNS', () => {
   it('shows an Operating status as active', () => {
     renderCell(4, makeAssetListItem({ flocStatus: 'Operating' }));
 
-    expect(
-      screen.getByText('Operating').closest('[data-tone]'),
-    ).toHaveAttribute('data-tone', 'active');
+    expect(screen.getByText('Operating').closest('[data-tone]')).toHaveAttribute(
+      'data-tone',
+      'active',
+    );
   });
 
   it('shows any other status as neutral', () => {
     renderCell(4, makeAssetListItem({ flocStatus: 'IN SERVICE' }));
 
-    expect(
-      screen.getByText('IN SERVICE').closest('[data-tone]'),
-    ).toHaveAttribute('data-tone', 'neutral');
+    expect(screen.getByText('IN SERVICE').closest('[data-tone]')).toHaveAttribute(
+      'data-tone',
+      'neutral',
+    );
   });
 
   it('shows a maintenance status as a warning', () => {
     renderCell(4, makeAssetListItem({ flocStatus: 'Under maintenance' }));
 
-    expect(
-      screen.getByText('Under maintenance').closest('[data-tone]'),
-    ).toHaveAttribute('data-tone', 'warning');
+    expect(screen.getByText('Under maintenance').closest('[data-tone]')).toHaveAttribute(
+      'data-tone',
+      'warning',
+    );
   });
 
   it.each([
@@ -101,9 +99,7 @@ describe('ASSET_COLUMNS', () => {
   ] as const)('shows %s as a %s pill', (criticality, tone) => {
     renderCell(5, makeAssetListItem({ abcIndicatorName: criticality }));
 
-    expect(
-      screen.getByText(criticality).closest('[data-tone]'),
-    ).toHaveAttribute('data-tone', tone);
+    expect(screen.getByText(criticality).closest('[data-tone]')).toHaveAttribute('data-tone', tone);
   });
 
   it('says the criticality is not provided when it is missing', () => {

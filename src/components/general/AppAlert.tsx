@@ -7,48 +7,44 @@ import {
 } from '@tabler/icons-react';
 import type { ReactNode } from 'react';
 
-import { cn } from '../../lib/utils';
-
-export type AppAlertVariant = 'error' | 'warning' | 'info' | 'success';
+import { AppAlertVariant } from '../../enums/appAlertVariant';
 
 type AppAlertProps = {
   variant: AppAlertVariant;
   title?: string;
   children: ReactNode;
   action?: ReactNode;
-  className?: string;
 };
 
-// Colours live in styles.css (`.app-alert[data-variant]`); only the icon differs here.
 const ICON_BY_VARIANT: Record<AppAlertVariant, TablerIcon> = {
-  error: IconAlertCircle,
-  warning: IconAlertTriangle,
-  info: IconInfoCircle,
-  success: IconCircleCheck,
+  [AppAlertVariant.ERROR]: IconAlertCircle,
+  [AppAlertVariant.WARNING]: IconAlertTriangle,
+  [AppAlertVariant.INFO]: IconInfoCircle,
+  [AppAlertVariant.SUCCESS]: IconCircleCheck,
 };
 
-// Errors and warnings interrupt a screen reader; info and success wait their turn.
+const DATA_VARIANT_BY_VARIANT: Record<AppAlertVariant, string> = {
+  [AppAlertVariant.ERROR]: 'error',
+  [AppAlertVariant.WARNING]: 'warning',
+  [AppAlertVariant.INFO]: 'info',
+  [AppAlertVariant.SUCCESS]: 'success',
+};
+
 const ROLE_BY_VARIANT: Record<AppAlertVariant, 'alert' | 'status'> = {
-  error: 'alert',
-  warning: 'alert',
-  info: 'status',
-  success: 'status',
+  [AppAlertVariant.ERROR]: 'alert',
+  [AppAlertVariant.WARNING]: 'alert',
+  [AppAlertVariant.INFO]: 'status',
+  [AppAlertVariant.SUCCESS]: 'status',
 };
 
-export function AppAlert({
-  variant,
-  title,
-  children,
-  action,
-  className,
-}: AppAlertProps) {
+export function AppAlert({ variant, title, children, action }: AppAlertProps) {
   const Icon = ICON_BY_VARIANT[variant];
 
   return (
     <div
       role={ROLE_BY_VARIANT[variant]}
-      data-variant={variant}
-      className={cn('app-alert flex w-full items-center gap-3 text-sm', className)}
+      data-variant={DATA_VARIANT_BY_VARIANT[variant]}
+      className="app-alert flex w-full items-center gap-3 text-sm"
     >
       <span aria-hidden className="app-alert__icon">
         <Icon aria-hidden className="size-5" />

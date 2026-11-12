@@ -1,59 +1,53 @@
-import {
-  AssetEquipmentTab,
-  isAssetEquipmentTab,
-} from '../enums/assetEquipmentTab';
-import type {
-  AssetIdentifier,
-  AssetNavigationState,
-  TimeseriesChartOptions,
-} from '../types/asset';
+import { AssetTab, isAssetTab } from '../enums/assetTab';
+import type { AssetIdentifier, TimeseriesChartOptions } from '../types/asset';
+import type { NavigationState } from '../types/navigation';
 
-export const DEFAULT_NAVIGATION_STATE: AssetNavigationState = {
+import { isRecord } from './isRecord';
+
+export const DEFAULT_NAVIGATION_STATE: NavigationState = {
   selectedAsset: null,
-  activeEquipmentTab: AssetEquipmentTab.PROPERTIES,
+  activeAssetTab: AssetTab.PROPERTIES,
 };
 
-export function parseNavigationState(
-  initialState: string | undefined,
-): AssetNavigationState {
+export function parseNavigationState(initialState: string | undefined): NavigationState {
   if (!initialState) return DEFAULT_NAVIGATION_STATE;
 
   try {
     const parsed: unknown = JSON.parse(initialState);
     if (!isRecord(parsed)) return DEFAULT_NAVIGATION_STATE;
 
-    const selectedAsset = isAssetIdentifier(parsed.selectedAsset)
-      ? parsed.selectedAsset
-      : null;
+    const selectedAsset = isAssetIdentifier(parsed.selectedAsset) ? parsed.selectedAsset : null;
 
-    const searchQuery =
-      typeof parsed.searchQuery === 'string' ? parsed.searchQuery.trim() : '';
+    const searchQuery = typeof parsed.searchQuery === 'string' ? parsed.searchQuery.trim() : '';
+
+    const registerCursors =
+      !searchQuery && isCursorTrail(parsed.registerCursors) ? parsed.registerCursors : [];
 
     return {
       selectedAsset,
-      activeEquipmentTab: isAssetEquipmentTab(parsed.activeEquipmentTab)
-        ? parsed.activeEquipmentTab
-        : AssetEquipmentTab.PROPERTIES,
+      activeAssetTab: isAssetTab(parsed.activeAssetTab)
+        ? parsed.activeAssetTab
+        : AssetTab.PROPERTIES,
       ...(searchQuery ? { searchQuery } : {}),
-      // A chart belongs to the open asset, so it is only restored with one.
+
       ...(selectedAsset && isChartOptions(parsed.timeseriesChart)
         ? { timeseriesChart: parsed.timeseriesChart }
         : {}),
+      ...(registerCursors.length > 0 ? { registerCursors } : {}),
+      ...(parsed.isAssistantOpen === true ? { isAssistantOpen: true } : {}),
     };
   } catch {
     return DEFAULT_NAVIGATION_STATE;
   }
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
+function isAssetIdentifier(value: unknown): value is AssetIdentifier {
+  return isRecord(value) && typeof value.space === 'string' && typeof value.externalId === 'string';
 }
 
-function isAssetIdentifier(value: unknown): value is AssetIdentifier {
+function isCursorTrail(value: unknown): value is string[] {
   return (
-    isRecord(value) &&
-    typeof value.space === 'string' &&
-    typeof value.externalId === 'string'
+    Array.isArray(value) && value.every((cursor) => typeof cursor === 'string' && cursor !== '')
   );
 }
 

@@ -4,10 +4,8 @@ import type { ComponentType, ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { makeMockClient } from '../../../../mocks/cogniteClient';
-import {
-  makeQueryClientWrapper,
-  makeTestQueryClient,
-} from '../../../../mocks/queryClientWrapper';
+import { makeQueryClientWrapper, makeTestQueryClient } from '../../../../mocks/QueryClientWrapper';
+import { AssetContext } from '../../useAssetContext';
 import { getAssetNotesQueryKey } from '../useAssetNotes';
 import {
   useUpdateAssetNote,
@@ -28,13 +26,14 @@ describe(useUpdateAssetNote.name, () => {
   beforeEach(() => {
     queryClient = makeTestQueryClient();
     mockContext = {
-      useAssetDataClient: vi.fn(() => client),
       updateAssetNote: vi.fn(() => Promise.resolve()),
     };
     const QueryWrapper = makeQueryClientWrapper(queryClient);
     wrapper = ({ children }) => (
       <UseUpdateAssetNoteContext.Provider value={mockContext}>
-        <QueryWrapper>{children}</QueryWrapper>
+        <QueryWrapper>
+          <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
+        </QueryWrapper>
       </UseUpdateAssetNoteContext.Provider>
     );
   });
@@ -48,11 +47,7 @@ describe(useUpdateAssetNote.name, () => {
       await result.current.mutateAsync({ note, input });
     });
 
-    expect(mockContext.updateAssetNote).toHaveBeenCalledWith(
-      client,
-      note,
-      input,
-    );
+    expect(mockContext.updateAssetNote).toHaveBeenCalledWith(client, note, input);
   });
 
   it('refreshes the notes of that asset after a save', async () => {
@@ -71,9 +66,7 @@ describe(useUpdateAssetNote.name, () => {
   });
 
   it('reports a failed save and does not refresh the list', async () => {
-    vi.mocked(mockContext.updateAssetNote).mockRejectedValue(
-      new Error('Forbidden'),
-    );
+    vi.mocked(mockContext.updateAssetNote).mockRejectedValue(new Error('Forbidden'));
     const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
     const { result } = renderHook(() => useUpdateAssetNote(assetIdentifier), {
       wrapper,

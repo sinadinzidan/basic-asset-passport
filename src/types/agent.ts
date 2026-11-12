@@ -1,4 +1,5 @@
-/** An AI agent configured in the CDF project. */
+import type { ChatMessageRole } from '../enums/chatMessageRole';
+
 export type CdfAgent = {
   externalId: string;
   name: string;
@@ -8,7 +9,6 @@ export type CdfAgent = {
 export type AgentChatRequest = {
   agentExternalId: string;
   text: string;
-  /** The cursor of the last reply, to continue a conversation; null to start one. */
   cursor: string | null;
 };
 
@@ -17,14 +17,11 @@ export type AgentReply = {
   cursor: string | null;
 };
 
-export type AgentClient = {
+export type AgentContextType = {
   project: string;
-  /** The agent with this external ID, or null when the project has none. */
   getAgent: (externalId: string) => Promise<CdfAgent | null>;
   chat: (request: AgentChatRequest) => Promise<AgentReply>;
 };
-
-export type ChatMessageRole = 'USER' | 'AGENT';
 
 export type ChatMessage = {
   id: string;

@@ -5,7 +5,9 @@ import type { ComponentProps } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import App from '../App';
-import { AssetEquipmentTab } from '../enums/assetEquipmentTab';
+import { ASSISTANT_LABEL } from '../constants/agents';
+import { APP_LOGO_SOURCE } from '../constants/branding';
+import { AssetTab } from '../enums/assetTab';
 import {
   makeNodeInstance,
   makeQueryResponse,
@@ -13,8 +15,11 @@ import {
   TEST_VIEW_SPACE,
 } from '../mocks/cdf';
 import { makeOfflineSdkClient, stubModelViews } from '../mocks/cogniteClient';
-import { makeMockAssetDataClient } from '../mocks/mockAssetDataClient';
-import { makeQueryClientWrapper } from '../mocks/queryClientWrapper';
+import { makeMockAgentContext } from '../mocks/mockAgentContext';
+import { makeMockAssetContext, makeMockDocumentFileContext } from '../mocks/mockAssetContext';
+import { makeMockTimeseriesContext } from '../mocks/mockTimeseriesContext';
+import { makeQueryClientWrapper } from '../mocks/QueryClientWrapper';
+import type { MockContexts } from '../types/mockContext';
 
 type AppDeps = NonNullable<ComponentProps<typeof App>['deps']>;
 
@@ -42,7 +47,7 @@ describe(App.name, () => {
     expect(header).not.toHaveTextContent('Asset Passport');
     expect(screen.getByRole('img', { name: 'ADNOC Gas logo' })).toHaveAttribute(
       'src',
-      '/adnoc-horizontal-white-logo.svg',
+      APP_LOGO_SOURCE,
     );
     expect(screen.queryByLabelText('Signed-in user')).not.toBeInTheDocument();
   });
@@ -53,9 +58,7 @@ describe(App.name, () => {
 
     renderApp(deps);
 
-    expect(screen.getByRole('status')).toHaveTextContent(
-      'Connecting to Cognite...',
-    );
+    expect(screen.getByRole('status')).toHaveTextContent('Connecting to Cognite...');
   });
 
   it('tells the user to refresh when the host connection fails', async () => {
@@ -65,28 +68,22 @@ describe(App.name, () => {
 
     renderApp(deps);
 
-    expect(
-      await screen.findByText('Could not connect to Cognite'),
-    ).toBeInTheDocument();
-    expect(screen.getByRole('alert')).toHaveTextContent(
-      'Refresh the app to try again.',
-    );
+    expect(await screen.findByText('Could not connect to Cognite')).toBeInTheDocument();
+    expect(screen.getByRole('alert')).toHaveTextContent('Refresh the app to try again.');
   });
 
   it('shows the selected asset name in the header without breadcrumb actions', async () => {
     const { deps } = makeDeps(
       JSON.stringify({
         selectedAsset,
-        activeEquipmentTab: AssetEquipmentTab.PROPERTIES,
+        activeAssetTab: AssetTab.PROPERTIES,
       }),
     );
 
     renderApp(deps);
 
     const header = await screen.findByRole('banner');
-    expect(
-      await within(header).findByText('Cooling Water Pump'),
-    ).toBeInTheDocument();
+    expect(await within(header).findByText('Cooling Water Pump')).toBeInTheDocument();
     expect(
       within(header).queryByRole('button', {
         name: 'Actions for asset asset-node-100',
@@ -100,20 +97,14 @@ describe(App.name, () => {
 
     renderApp(deps);
 
-    expect(
-      await screen.findByRole('heading', { name: 'Asset register' }),
-    ).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Asset register' })).toBeInTheDocument();
     expect(screen.getByRole('table', { name: 'Assets' })).toBeInTheDocument();
-    expect(
-      screen.getByRole('columnheader', { name: 'Functional location' }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: 'Functional location' })).toBeInTheDocument();
     expect(screen.getByRole('columnheader', { name: 'Plant' })).toHaveAttribute(
       'aria-colindex',
       '1',
     );
-    expect(
-      screen.getByRole('columnheader', { name: 'Description' }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: 'Description' })).toBeInTheDocument();
     await waitFor(() => expect(query).toHaveBeenCalled());
     expect(query).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -167,15 +158,28 @@ describe(App.name, () => {
 
     render(
       <QueryWrapper>
-        <App deps={deps} mockDataClient={makeMockAssetDataClient(0)} />
+        <App deps={deps} mockContexts={makeMockContexts()} />
       </QueryWrapper>,
     );
 
     expect(await screen.findByText(/showing dummy data/i)).toBeInTheDocument();
-    expect(
-      await screen.findByRole('heading', { name: 'Asset register' }),
-    ).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Asset register' })).toBeInTheDocument();
     expect(deps.connectToHostApp).not.toHaveBeenCalled();
+  });
+
+  it('keeps the mascot in mock mode, whose panel says the assistant is not available', async () => {
+    const { deps } = makeDeps();
+    const QueryWrapper = makeQueryClientWrapper();
+    const user = userEvent.setup();
+
+    render(
+      <QueryWrapper>
+        <App deps={deps} mockContexts={makeMockContexts()} />
+      </QueryWrapper>,
+    );
+    await user.click(await screen.findByRole('button', { name: ASSISTANT_LABEL }));
+
+    expect(await screen.findByText(/assistant is not available/i)).toBeInTheDocument();
   });
 
   it('does not show the mock notice when talking to CDF', async () => {
@@ -191,30 +195,26 @@ describe(App.name, () => {
     const { deps, syncInternalState } = makeDeps(
       JSON.stringify({
         selectedAsset,
-        activeEquipmentTab: AssetEquipmentTab.EQUIPMENTS,
+        activeAssetTab: AssetTab.EQUIPMENTS,
       }),
     );
 
     renderApp(deps);
 
+    expect(await screen.findByRole('tab', { name: /equipments/i })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
+    await waitFor(() =>
+      expect(
+        screen.getByRole('tab', { name: /equipments/i }).querySelectorAll('[data-slot="badge"]'),
+      ).toHaveLength(1),
+    );
+    expect(await screen.findByText('Equipment ID: equipment-node-100')).toBeInTheDocument();
     expect(
-      await screen.findByRole('tab', { name: /equipments/i }),
-    ).toHaveAttribute('aria-selected', 'true');
-    expect(
-      screen
-        .getByRole('tab', { name: /equipments/i })
-        .querySelectorAll('[data-slot="badge"]'),
-    ).toHaveLength(1);
-    expect(
-      screen.getByText('Equipment ID: equipment-node-100'),
+      screen.getByRole('heading', { name: 'Cooling Water Pump', level: 1 }),
     ).toBeInTheDocument();
-    const backButton = screen.getByRole('button', { name: 'Back to assets' });
-    const assetTitle = screen.getByRole('heading', {
-      name: 'Cooling Water Pump',
-      level: 1,
-    });
-    expect(backButton).not.toHaveTextContent('Back to assets');
-    expect(assetTitle.parentElement).toContainElement(backButton);
+    expect(screen.queryByRole('button', { name: 'Back to assets' })).not.toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('tab', { name: 'Properties' }));
 
@@ -222,7 +222,7 @@ describe(App.name, () => {
       expect(syncInternalState).toHaveBeenLastCalledWith(
         JSON.stringify({
           selectedAsset,
-          activeEquipmentTab: AssetEquipmentTab.PROPERTIES,
+          activeAssetTab: AssetTab.PROPERTIES,
         }),
       ),
     );
@@ -237,6 +237,16 @@ function renderApp(deps: AppDeps) {
       <App deps={deps} />
     </QueryWrapper>,
   );
+}
+
+function makeMockContexts(): MockContexts {
+  const assetContext = makeMockAssetContext(0);
+  return {
+    assetContext,
+    documentFileContext: makeMockDocumentFileContext(assetContext),
+    timeseriesContext: makeMockTimeseriesContext(),
+    agentContext: makeMockAgentContext(),
+  };
 }
 
 function makeDeps(initialState?: string) {
@@ -271,22 +281,15 @@ function makeDeps(initialState?: string) {
         { assets: 'next-page-cursor' },
       ),
     );
-  const syncInternalState = vi.fn<HostAppAPI['syncInternalState']>(() =>
-    Promise.resolve(true),
-  );
+  vi.spyOn(client.instances, 'aggregate').mockResolvedValue({
+    items: [{ instanceType: 'node', aggregates: [{ aggregate: 'count', value: 1 }] }],
+  });
+  const syncInternalState = vi.fn<HostAppAPI['syncInternalState']>(() => Promise.resolve(true));
   const api = {
-    getProject: vi.fn<HostAppAPI['getProject']>(() =>
-      Promise.resolve('sub-cgnt-adg-idi-dev'),
-    ),
-    getBaseUrl: vi.fn<HostAppAPI['getBaseUrl']>(() =>
-      Promise.resolve('https://cognite.test'),
-    ),
-    getAccessToken: vi.fn<HostAppAPI['getAccessToken']>(() =>
-      Promise.resolve('test-token'),
-    ),
-    getAppId: vi.fn<HostAppAPI['getAppId']>(() =>
-      Promise.resolve('test-app-id'),
-    ),
+    getProject: vi.fn<HostAppAPI['getProject']>(() => Promise.resolve('sub-cgnt-adg-idi-dev')),
+    getBaseUrl: vi.fn<HostAppAPI['getBaseUrl']>(() => Promise.resolve('https://cognite.test')),
+    getAccessToken: vi.fn<HostAppAPI['getAccessToken']>(() => Promise.resolve('test-token')),
+    getAppId: vi.fn<HostAppAPI['getAppId']>(() => Promise.resolve('test-app-id')),
     syncInternalState,
   } as Partial<HostAppAPI> as HostAppAPI;
 

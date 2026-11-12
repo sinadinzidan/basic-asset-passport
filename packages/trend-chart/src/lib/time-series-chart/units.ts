@@ -16,7 +16,14 @@ const linear = (symbol: string, family: UnitFamily, factor: number): UnitDefinit
 
 const KELVIN_OFFSET = 273.15;
 const FAHRENHEIT_OFFSET = 32;
-const FAHRENHEIT_RATIO = 5 / 9;
+const CELSIUS_DEGREES_PER_STEP = 5;
+const FAHRENHEIT_DEGREES_PER_STEP = 9;
+const FAHRENHEIT_RATIO = CELSIUS_DEGREES_PER_STEP / FAHRENHEIT_DEGREES_PER_STEP;
+const KILOPASCALS_PER_BAR = 100;
+const BARS_PER_MEGAPASCAL = 10;
+const MILLIAMPERES_PER_AMPERE = 1000;
+const KILOWATTS_PER_MEGAWATT = 1000;
+const WATTS_PER_KILOWATT = 1000;
 const SECONDS_PER_HOUR = 3600;
 const LITRES_PER_CUBIC_METRE = 1000;
 const MILLIMETRES_PER_INCH = 25.4;
@@ -32,7 +39,12 @@ const REVOLUTIONS_PER_MINUTE_PER_HERTZ = 60;
  * that the chart does not know.
  */
 const UNITS: readonly UnitDefinition[] = [
-  { symbol: '°C', family: UnitFamily.TEMPERATURE, toBase: (value) => value, fromBase: (value) => value },
+  {
+    symbol: '°C',
+    family: UnitFamily.TEMPERATURE,
+    toBase: (value) => value,
+    fromBase: (value) => value,
+  },
   {
     symbol: '°F',
     family: UnitFamily.TEMPERATURE,
@@ -46,11 +58,11 @@ const UNITS: readonly UnitDefinition[] = [
     fromBase: (value) => value + KELVIN_OFFSET,
   },
   linear('barg', UnitFamily.PRESSURE_GAUGE, 1),
-  linear('kPag', UnitFamily.PRESSURE_GAUGE, 1 / 100),
+  linear('kPag', UnitFamily.PRESSURE_GAUGE, 1 / KILOPASCALS_PER_BAR),
   linear('psig', UnitFamily.PRESSURE_GAUGE, PASCALS_PER_PSI / PASCALS_PER_BAR),
   linear('bar', UnitFamily.PRESSURE_ABSOLUTE, 1),
-  linear('kPa', UnitFamily.PRESSURE_ABSOLUTE, 1 / 100),
-  linear('MPa', UnitFamily.PRESSURE_ABSOLUTE, 10),
+  linear('kPa', UnitFamily.PRESSURE_ABSOLUTE, 1 / KILOPASCALS_PER_BAR),
+  linear('MPa', UnitFamily.PRESSURE_ABSOLUTE, BARS_PER_MEGAPASCAL),
   linear('psi', UnitFamily.PRESSURE_ABSOLUTE, PASCALS_PER_PSI / PASCALS_PER_BAR),
   linear('mm/s', UnitFamily.VELOCITY, 1),
   linear('in/s', UnitFamily.VELOCITY, MILLIMETRES_PER_INCH),
@@ -60,12 +72,12 @@ const UNITS: readonly UnitDefinition[] = [
   linear('t/h', UnitFamily.MASS_FLOW, 1),
   linear('kg/s', UnitFamily.MASS_FLOW, SECONDS_PER_HOUR / KILOGRAMS_PER_TONNE),
   linear('A', UnitFamily.ELECTRIC_CURRENT, 1),
-  linear('mA', UnitFamily.ELECTRIC_CURRENT, 1 / 1000),
+  linear('mA', UnitFamily.ELECTRIC_CURRENT, 1 / MILLIAMPERES_PER_AMPERE),
   linear('rpm', UnitFamily.ROTATIONAL_SPEED, 1),
   linear('Hz', UnitFamily.ROTATIONAL_SPEED, REVOLUTIONS_PER_MINUTE_PER_HERTZ),
   linear('kW', UnitFamily.POWER, 1),
-  linear('MW', UnitFamily.POWER, 1000),
-  linear('hp', UnitFamily.POWER, WATTS_PER_HORSEPOWER / 1000),
+  linear('MW', UnitFamily.POWER, KILOWATTS_PER_MEGAWATT),
+  linear('hp', UnitFamily.POWER, WATTS_PER_HORSEPOWER / WATTS_PER_KILOWATT),
 ];
 
 function definitionOf(unit: string | undefined): UnitDefinition | undefined {
@@ -77,9 +89,9 @@ export function convertibleUnits(unit: string): string[] {
   if (!definition) return [unit];
   return [
     unit,
-    ...UNITS.filter((candidate) => candidate.family === definition.family && candidate.symbol !== unit).map(
-      (candidate) => candidate.symbol,
-    ),
+    ...UNITS.filter(
+      (candidate) => candidate.family === definition.family && candidate.symbol !== unit,
+    ).map((candidate) => candidate.symbol),
   ];
 }
 
@@ -90,7 +102,11 @@ export function canConvert(from: string | undefined, to: string | undefined): bo
   return source !== undefined && target !== undefined && source.family === target.family;
 }
 
-export function convertValue(value: number, from: string | undefined, to: string | undefined): number | undefined {
+export function convertValue(
+  value: number,
+  from: string | undefined,
+  to: string | undefined,
+): number | undefined {
   if (from === to) return value;
   const source = definitionOf(from);
   const target = definitionOf(to);

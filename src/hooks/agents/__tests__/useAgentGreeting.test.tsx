@@ -2,10 +2,7 @@ import { act, renderHook } from '@testing-library/react';
 import type { ComponentType, ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import {
-  GREETING_INTRO_DELAY_MS,
-  GREETING_INTRO_DURATION_MS,
-} from '../../../constants/agents';
+import { GREETING_INTRO_DELAY_MS, GREETING_INTRO_DURATION_MS } from '../../../constants/agents';
 import {
   UseAgentGreetingContext,
   type UseAgentGreetingContextType,

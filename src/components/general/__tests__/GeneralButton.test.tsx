@@ -15,9 +15,7 @@ describe('GeneralButton', () => {
   it('always takes the HUD pill look', () => {
     render(<GeneralButton>Save</GeneralButton>);
 
-    expect(screen.getByRole('button', { name: 'Save' })).toHaveClass(
-      'hud-button',
-    );
+    expect(screen.getByRole('button', { name: 'Save' })).toHaveClass('hud-button');
   });
 
   it('keeps the HUD look when a class is added', () => {
@@ -48,11 +46,11 @@ describe('GeneralButton', () => {
     expect(button).toHaveAttribute('data-size', 'icon-sm');
   });
 
-  it('forwards its ref to the button element', () => {
-    const ref = createRef<HTMLElement>();
-    render(<GeneralButton ref={ref}>Save</GeneralButton>);
+  it('forwards its reference to the button element', () => {
+    const reference = createRef<HTMLElement>();
+    render(<GeneralButton ref={reference}>Save</GeneralButton>);
 
-    expect(ref.current).toBe(screen.getByRole('button', { name: 'Save' }));
+    expect(reference.current).toBe(screen.getByRole('button', { name: 'Save' }));
   });
 
   it('calls onClick when pressed', async () => {

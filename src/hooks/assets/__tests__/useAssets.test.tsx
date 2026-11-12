@@ -4,12 +4,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { makeAssetListItem, makeAssetPage } from '../../../mocks/assets';
 import { makeMockClient } from '../../../mocks/cogniteClient';
-import { makeQueryClientWrapper } from '../../../mocks/queryClientWrapper';
-import {
-  useAssets,
-  UseAssetsContext,
-  type UseAssetsContextType,
-} from '../useAssets';
+import { makeQueryClientWrapper } from '../../../mocks/QueryClientWrapper';
+import { AssetContext } from '../useAssetContext';
+import { useAssets, UseAssetsContext, type UseAssetsContextType } from '../useAssets';
 
 describe(useAssets.name, () => {
   const client = makeMockClient();
@@ -18,14 +15,15 @@ describe(useAssets.name, () => {
 
   beforeEach(() => {
     mockContext = {
-      useAssetDataClient: vi.fn(() => client),
       listAssets: vi.fn(() => Promise.resolve(makeAssetPage())),
       searchAssets: vi.fn(() => Promise.resolve(makeAssetPage())),
     };
     const QueryWrapper = makeQueryClientWrapper();
     wrapper = ({ children }) => (
       <UseAssetsContext.Provider value={mockContext}>
-        <QueryWrapper>{children}</QueryWrapper>
+        <QueryWrapper>
+          <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
+        </QueryWrapper>
       </UseAssetsContext.Provider>
     );
   });
@@ -46,10 +44,7 @@ describe(useAssets.name, () => {
     });
 
     await waitFor(() => expect(result.current.data).toEqual(page));
-    expect(mockContext.listAssets).toHaveBeenCalledWith(
-      client,
-      'current-cursor',
-    );
+    expect(mockContext.listAssets).toHaveBeenCalledWith(client, 'current-cursor');
   });
 
   it('reports a failed load as an error', async () => {
@@ -69,9 +64,7 @@ describe(useAssets.name, () => {
 
     rerender({ cursor: 'page-2' });
 
-    await waitFor(() =>
-      expect(mockContext.listAssets).toHaveBeenCalledTimes(2),
-    );
+    await waitFor(() => expect(mockContext.listAssets).toHaveBeenCalledTimes(2));
   });
 
   it('searches instead of listing when there is search text', async () => {
@@ -99,16 +92,13 @@ describe(useAssets.name, () => {
 
   it('caches each search text separately', async () => {
     const { result, rerender } = renderHook(
-      ({ searchText }: { searchText: string }) =>
-        useAssets(undefined, searchText),
+      ({ searchText }: { searchText: string }) => useAssets(undefined, searchText),
       { wrapper, initialProps: { searchText: 'pump' } },
     );
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
     rerender({ searchText: 'valve' });
 
-    await waitFor(() =>
-      expect(mockContext.searchAssets).toHaveBeenCalledWith(client, 'valve'),
-    );
+    await waitFor(() => expect(mockContext.searchAssets).toHaveBeenCalledWith(client, 'valve'));
   });
 });

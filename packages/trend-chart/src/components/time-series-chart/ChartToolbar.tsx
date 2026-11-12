@@ -8,7 +8,7 @@ import { MarkerReadingMenu } from './MarkerReadingMenu';
 import { TimeRangeControl } from './TimeRangeControl';
 import { ToolbarToggle } from './ToolbarToggle';
 
-export interface ChartToolbarProps {
+export interface ChartToolbarProperties {
   window: ChartTimeRange;
   nowMs: number;
   isMarkerMode: boolean;
@@ -21,35 +21,45 @@ export interface ChartToolbarProps {
   onInterpolatedChange: (isInterpolated: boolean) => void;
 }
 
-export function ChartToolbar(props: ChartToolbarProps) {
+export function ChartToolbar(properties: ChartToolbarProperties) {
   return (
-    <div role="toolbar" aria-label="Chart tools" className="flex flex-wrap items-center gap-x-2 gap-y-2">
+    <div
+      role="toolbar"
+      aria-label="Chart tools"
+      className="flex flex-wrap items-center gap-x-2 gap-y-2"
+    >
       <div role="group" aria-label="Explore" className="flex items-center gap-1.5">
         <ToolbarToggle
           label="Vertical marker"
           icon={IconRulerMeasure}
-          isActive={props.isMarkerMode}
-          onClick={props.onMarkerModeToggle}
+          isActive={properties.isMarkerMode}
+          onClick={properties.onMarkerModeToggle}
         />
-        {props.onLiveToggle ? (
+        {properties.onLiveToggle ? (
           <ToolbarToggle
             label="Play the live feed (simulated)"
             icon={IconPlayerPlay}
-            isActive={props.isLive}
+            isActive={properties.isLive}
             isRunningTone
-            onClick={props.onLiveToggle}
+            onClick={properties.onLiveToggle}
           />
         ) : null}
-        {props.isMarkerMode ? (
-          <MarkerReadingMenu isInterpolated={props.isInterpolated} onChange={props.onInterpolatedChange} />
+        {properties.isMarkerMode ? (
+          <MarkerReadingMenu
+            isInterpolated={properties.isInterpolated}
+            onChange={properties.onInterpolatedChange}
+          />
         ) : null}
       </div>
-      <Separator orientation="vertical" className="hidden data-[orientation=vertical]:h-6 sm:block" />
+      <Separator
+        orientation="vertical"
+        className="hidden data-[orientation=vertical]:h-6 sm:block"
+      />
       <TimeRangeControl
-        window={props.window}
-        nowMs={props.nowMs}
-        onRangeChange={props.onRangeChange}
-        onWindowChange={props.onWindowChange}
+        window={properties.window}
+        nowMs={properties.nowMs}
+        onRangeChange={properties.onRangeChange}
+        onWindowChange={properties.onWindowChange}
       />
     </div>
   );

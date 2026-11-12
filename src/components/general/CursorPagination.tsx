@@ -22,17 +22,8 @@ export function CursorPagination({
   onNextPage,
 }: CursorPaginationProps) {
   return (
-    <nav
-      aria-label={label}
-      className="flex items-center justify-between gap-3 border-t border-default bg-muted-background/50 px-5 py-3"
-    >
-      <span
-        aria-live="polite"
-        className="text-sm font-medium text-muted-foreground"
-      >
-        Page {pageNumber}
-      </span>
-      <div className="flex items-center gap-2">
+    <nav aria-label={label} className="pager">
+      <div className="pager__console">
         <GeneralButton
           aria-label="Previous page"
           disabled={!hasPreviousPage || isFetching}
@@ -43,6 +34,9 @@ export function CursorPagination({
           <IconChevronLeft aria-hidden />
           Previous
         </GeneralButton>
+        <span aria-live="polite" className="pager__page">
+          Page {pageNumber}
+        </span>
         <GeneralButton
           aria-label="Next page"
           disabled={!hasNextPage || isFetching}

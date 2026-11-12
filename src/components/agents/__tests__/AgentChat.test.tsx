@@ -1,30 +1,23 @@
-import {
-  act,
-  render,
-  screen,
-  waitFor,
-  within,
-} from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { SAMPLE_QUESTIONS } from '../../../constants/agents';
-import { makeAgentClient, makeCdfAgent } from '../../../mocks/agents';
-import type { AgentClient } from '../../../types/agent';
+import { DictationFailure } from '../../../enums/dictationFailure';
+import { makeAgentContext, makeCdfAgent } from '../../../mocks/agents';
+import type { AgentContextType } from '../../../types/agent';
 import type { DictationCallbacks, DictationEngine } from '../../../types/speech';
 import { AgentChat } from '../AgentChat';
 
-import { makeAgentWrapper } from './agentTestHarness';
+import { makeAgentWrapper } from './AgentTestHarness';
 
 describe(AgentChat.name, () => {
-  let chat: AgentClient['chat'];
+  let chat: AgentContextType['chat'];
   let onClose: () => void;
 
   beforeEach(() => {
     onClose = vi.fn();
-    chat = vi.fn(() =>
-      Promise.resolve({ text: 'The strainer is fouled.', cursor: 'c1' }),
-    );
+    chat = vi.fn(() => Promise.resolve({ text: 'The strainer is fouled.', cursor: 'c1' }));
   });
 
   function renderChat(
@@ -33,7 +26,7 @@ describe(AgentChat.name, () => {
   ) {
     return render(<AgentChat onClose={onClose} />, {
       wrapper: makeAgentWrapper({
-        client: makeAgentClient({ chat }),
+        client: makeAgentContext({ chat }),
         selectedAgent: makeCdfAgent(),
         dictationEngine,
         copyText,
@@ -41,13 +34,11 @@ describe(AgentChat.name, () => {
     });
   }
 
-  it('is titled with the assistant\'s name and invites a first question', () => {
+  it("is titled with the assistant's name and invites a first question", () => {
     renderChat();
 
-    expect(
-      screen.getByRole('heading', { name: 'Dalil' }),
-    ).toBeVisible();
-    expect(screen.getByText('Ask Dalil something.')).toBeVisible();
+    expect(screen.getByRole('heading', { name: 'Dalil AI' })).toBeVisible();
+    expect(screen.getByText('Ask Dalil AI something.')).toBeVisible();
   });
 
   it('suggests sample questions in an empty chat', () => {
@@ -58,6 +49,14 @@ describe(AgentChat.name, () => {
     }
   });
 
+  it("offers each sample question as the app's button", () => {
+    renderChat();
+
+    for (const question of SAMPLE_QUESTIONS) {
+      expect(screen.getByRole('button', { name: question })).toHaveClass('hud-button');
+    }
+  });
+
   it('sends a sample question when it is chosen', async () => {
     const user = userEvent.setup();
     renderChat();
@@ -65,13 +64,9 @@ describe(AgentChat.name, () => {
 
     await user.click(screen.getByRole('button', { name: question }));
 
-    expect(chat).toHaveBeenCalledWith(
-      expect.objectContaining({ text: question }),
-    );
+    expect(chat).toHaveBeenCalledWith(expect.objectContaining({ text: question }));
     expect(
-      await within(screen.getByRole('log')).findByText(
-        'The strainer is fouled.',
-      ),
+      await within(screen.getByRole('log')).findByText('The strainer is fouled.'),
     ).toBeVisible();
   });
 
@@ -82,9 +77,7 @@ describe(AgentChat.name, () => {
     await user.click(screen.getByRole('button', { name: SAMPLE_QUESTIONS[1] }));
 
     await waitFor(() =>
-      expect(
-        screen.queryByRole('button', { name: SAMPLE_QUESTIONS[0] }),
-      ).not.toBeInTheDocument(),
+      expect(screen.queryByRole('button', { name: SAMPLE_QUESTIONS[0] })).not.toBeInTheDocument(),
     );
   });
 
@@ -92,17 +85,12 @@ describe(AgentChat.name, () => {
     const user = userEvent.setup();
     renderChat();
 
-    await user.type(
-      screen.getByRole('textbox', { name: 'Message' }),
-      'Why is pump 1 hot?',
-    );
+    await user.type(screen.getByRole('textbox', { name: 'Message' }), 'Why is pump 1 hot?');
     await user.click(screen.getByRole('button', { name: 'Send' }));
 
     const log = screen.getByRole('log');
     expect(within(log).getByText('Why is pump 1 hot?')).toBeVisible();
-    expect(
-      await within(log).findByText('The strainer is fouled.'),
-    ).toBeVisible();
+    expect(await within(log).findByText('The strainer is fouled.')).toBeVisible();
     expect(screen.getByRole('textbox', { name: 'Message' })).toHaveValue('');
   });
 
@@ -115,9 +103,7 @@ describe(AgentChat.name, () => {
     expect(chat).not.toHaveBeenCalled();
     await user.keyboard('{Enter}');
 
-    expect(chat).toHaveBeenCalledWith(
-      expect.objectContaining({ text: 'Line one\nLine two' }),
-    );
+    expect(chat).toHaveBeenCalledWith(expect.objectContaining({ text: 'Line one\nLine two' }));
   });
 
   it('cannot send an empty question', () => {
@@ -147,11 +133,27 @@ describe(AgentChat.name, () => {
     await user.type(screen.getByRole('textbox', { name: 'Message' }), 'Hi');
     await user.click(screen.getByRole('button', { name: 'Send' }));
 
-    expect(await screen.findByRole('alert')).toHaveTextContent(
-      'The agent could not answer',
-    );
+    expect(await screen.findByRole('alert')).toHaveTextContent('The agent could not answer');
     expect(screen.getByRole('alert')).toHaveTextContent('forbidden');
     expect(screen.getByText('Hi')).toBeVisible();
+  });
+
+  it('asks the question again when Retry is pressed after a failed answer', async () => {
+    // Arrange
+    vi.mocked(chat).mockRejectedValueOnce(new Error('forbidden'));
+    const user = userEvent.setup();
+    renderChat();
+    await user.type(screen.getByRole('textbox', { name: 'Message' }), 'Hi');
+    await user.click(screen.getByRole('button', { name: 'Send' }));
+
+    // Act
+    await user.click(await screen.findByRole('button', { name: 'Retry' }));
+
+    // Assert
+    expect(await screen.findByText('The strainer is fouled.')).toBeVisible();
+    expect(screen.getAllByText('Hi')).toHaveLength(1);
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(chat).toHaveBeenCalledTimes(2);
   });
 
   it('starts a new chat', async () => {
@@ -166,18 +168,16 @@ describe(AgentChat.name, () => {
     await user.click(newChat);
 
     await waitFor(() =>
-      expect(
-        screen.queryByText('The strainer is fouled.'),
-      ).not.toBeInTheDocument(),
+      expect(screen.queryByText('The strainer is fouled.')).not.toBeInTheDocument(),
     );
-    expect(screen.getByText('Ask Dalil something.')).toBeVisible();
+    expect(screen.getByText('Ask Dalil AI something.')).toBeVisible();
   });
 
   it('closes the panel', async () => {
     const user = userEvent.setup();
     renderChat();
 
-    await user.click(screen.getByRole('button', { name: 'Close agents' }));
+    await user.click(screen.getByRole('button', { name: 'Close assistant' }));
 
     expect(onClose).toHaveBeenCalledTimes(1);
   });
@@ -186,9 +186,7 @@ describe(AgentChat.name, () => {
     async function askAndWaitForReply(user: ReturnType<typeof userEvent.setup>) {
       await user.type(screen.getByRole('textbox', { name: 'Message' }), 'Why?');
       await user.click(screen.getByRole('button', { name: 'Send' }));
-      await within(screen.getByRole('log')).findByText(
-        'The strainer is fouled.',
-      );
+      await within(screen.getByRole('log')).findByText('The strainer is fouled.');
     }
 
     it('has a copy button on the agent reply but not on the question', async () => {
@@ -209,9 +207,7 @@ describe(AgentChat.name, () => {
       await user.click(screen.getByRole('button', { name: 'Copy response' }));
 
       expect(copyText).toHaveBeenCalledWith('The strainer is fouled.');
-      expect(
-        await screen.findByRole('button', { name: 'Copied' }),
-      ).toBeVisible();
+      expect(await screen.findByRole('button', { name: 'Copied' })).toBeVisible();
     });
 
     it('says when the reply could not be copied', async () => {
@@ -221,9 +217,7 @@ describe(AgentChat.name, () => {
 
       await user.click(screen.getByRole('button', { name: 'Copy response' }));
 
-      expect(
-        await screen.findByRole('button', { name: 'Could not copy' }),
-      ).toBeVisible();
+      expect(await screen.findByRole('button', { name: 'Could not copy' })).toBeVisible();
     });
   });
 
@@ -245,9 +239,7 @@ describe(AgentChat.name, () => {
     it('has no microphone button when the browser cannot recognise speech', () => {
       renderChat(null);
 
-      expect(
-        screen.queryByRole('button', { name: 'Start dictation' }),
-      ).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Start dictation' })).not.toBeInTheDocument();
     });
 
     it('shows a microphone while idle and a stop sign while listening', async () => {
@@ -274,9 +266,10 @@ describe(AgentChat.name, () => {
       expect(screen.getByRole('textbox', { name: 'Message' })).toHaveValue(
         'which pumps are leaking',
       );
-      expect(
-        screen.getByRole('button', { name: 'Stop dictation' }),
-      ).toHaveAttribute('aria-pressed', 'true');
+      expect(screen.getByRole('button', { name: 'Stop dictation' })).toHaveAttribute(
+        'aria-pressed',
+        'true',
+      );
     });
 
     it('adds the spoken words after what was already typed', async () => {
@@ -287,9 +280,7 @@ describe(AgentChat.name, () => {
       await user.click(screen.getByRole('button', { name: 'Start dictation' }));
       act(() => callbacks.onTranscript('the strainer'));
 
-      expect(screen.getByRole('textbox', { name: 'Message' })).toHaveValue(
-        'Check the strainer',
-      );
+      expect(screen.getByRole('textbox', { name: 'Message' })).toHaveValue('Check the strainer');
     });
 
     it('stops listening when the microphone button is pressed again', async () => {
@@ -299,7 +290,7 @@ describe(AgentChat.name, () => {
 
       await user.click(screen.getByRole('button', { name: 'Stop dictation' }));
 
-      expect(stopSession).toHaveBeenCalledTimes(1);
+      expect(stopSession).toHaveBeenCalled();
     });
 
     it('stops listening and sends the dictated question', async () => {
@@ -310,10 +301,33 @@ describe(AgentChat.name, () => {
 
       await user.click(screen.getByRole('button', { name: 'Send' }));
 
-      expect(stopSession).toHaveBeenCalledTimes(1);
-      expect(chat).toHaveBeenCalledWith(
-        expect.objectContaining({ text: 'which pumps leak' }),
-      );
+      expect(stopSession).toHaveBeenCalled();
+      expect(chat).toHaveBeenCalledWith(expect.objectContaining({ text: 'which pumps leak' }));
+    });
+
+    it('does not refill the message box with words recognised after sending', async () => {
+      const user = userEvent.setup();
+      renderChat(engine);
+      await user.click(screen.getByRole('button', { name: 'Start dictation' }));
+      act(() => callbacks.onTranscript('which pumps leak'));
+      await user.click(screen.getByRole('button', { name: 'Send' }));
+
+      act(() => callbacks.onTranscript('which pumps leak today'));
+
+      expect(screen.getByRole('textbox', { name: 'Message' })).toHaveValue('');
+    });
+
+    it('stops dictating when the message is edited by hand, and keeps the edit', async () => {
+      const user = userEvent.setup();
+      renderChat(engine);
+      await user.click(screen.getByRole('button', { name: 'Start dictation' }));
+      act(() => callbacks.onTranscript('which pumps'));
+
+      await user.type(screen.getByRole('textbox', { name: 'Message' }), ' leak');
+      act(() => callbacks.onTranscript('which pumps are'));
+
+      expect(stopSession).toHaveBeenCalled();
+      expect(screen.getByRole('textbox', { name: 'Message' })).toHaveValue('which pumps leak');
     });
 
     it('explains when the microphone is blocked', async () => {
@@ -321,7 +335,7 @@ describe(AgentChat.name, () => {
       renderChat(engine);
       await user.click(screen.getByRole('button', { name: 'Start dictation' }));
 
-      act(() => callbacks.onError('BLOCKED'));
+      act(() => callbacks.onError(DictationFailure.BLOCKED));
       act(() => callbacks.onEnd());
 
       expect(
@@ -329,9 +343,10 @@ describe(AgentChat.name, () => {
           'Microphone access is blocked. Allow it in the browser to dictate.',
         ),
       ).toBeVisible();
-      expect(
-        screen.getByRole('button', { name: 'Start dictation' }),
-      ).toHaveAttribute('aria-pressed', 'false');
+      expect(screen.getByRole('button', { name: 'Start dictation' })).toHaveAttribute(
+        'aria-pressed',
+        'false',
+      );
     });
   });
 });

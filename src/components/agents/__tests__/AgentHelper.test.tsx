@@ -1,27 +1,23 @@
-import {
-  act,
-  fireEvent,
-  render,
-  screen,
-  waitFor,
-} from '@testing-library/react';
+import { buttonVariants } from '@cognite/aura/components/button';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { makeAgentClient } from '../../../mocks/agents';
-import type { AgentClient } from '../../../types/agent';
+import { PanelPhase } from '../../../enums/panelPhase';
+import { makeAgentContext } from '../../../mocks/agents';
+import type { AgentContextType } from '../../../types/agent';
+import type { StateSyncApi } from '../../../types/host';
 import { AgentHelper } from '../AgentHelper';
 
+import { makeAgentWrapper } from './AgentTestHarness';
 
-import { makeAgentWrapper } from './agentTestHarness';
-
-const GREETING = "Hi, I'm Dalil, your assistant";
+const GREETING = "Hi, I'm Dalil AI, your assistant";
 
 describe(AgentHelper.name, () => {
-  let client: AgentClient;
+  let client: AgentContextType;
 
   beforeEach(() => {
-    client = makeAgentClient();
+    client = makeAgentContext();
     client.getAgent = vi.fn(client.getAgent);
   });
 
@@ -40,17 +36,25 @@ describe(AgentHelper.name, () => {
     return { finish: () => finishWait() };
   }
 
-  async function openPicker() {
+  async function openPanel() {
     const user = userEvent.setup();
     render(<AgentHelper />, { wrapper: makeAgentWrapper({ client }) });
-    await user.click(screen.getByRole('button', { name: 'Dalil, AI assistant' }));
+    await user.click(screen.getByRole('button', { name: 'Dalil AI assistant' }));
     return user;
   }
 
   it('offers a button that names the helper for assistive technology', () => {
     render(<AgentHelper />, { wrapper: makeAgentWrapper({ client }) });
 
-    expect(screen.getByRole('button', { name: 'Dalil, AI assistant' })).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Dalil AI assistant' })).toBeVisible();
+  });
+
+  it('makes the mascot an Aura ghost button', () => {
+    render(<AgentHelper />, { wrapper: makeAgentWrapper({ client }) });
+
+    expect(screen.getByRole('button', { name: 'Dalil AI assistant' })).toHaveClass(
+      ...buttonVariants({ variant: 'ghost' }).split(' '),
+    );
   });
 
   it('does not greet before anyone points at the mascot', () => {
@@ -70,6 +74,20 @@ describe(AgentHelper.name, () => {
     expect(helper()).toHaveAttribute('data-greeting', 'true');
   });
 
+  it('waves the mascot only while it greets, and when it is hovered or focused', async () => {
+    const user = userEvent.setup();
+    const { container } = render(<AgentHelper />, { wrapper: makeAgentWrapper({ client }) });
+    const mascot = container.querySelector('.agent-mascot');
+    expect(mascot).toHaveAttribute('data-waving', 'false');
+
+    await user.tab();
+
+    await waitFor(() => expect(mascot).toHaveAttribute('data-waving', 'true'));
+    expect(screen.getByRole('button', { name: 'Dalil AI assistant' })).toHaveClass(
+      'agent-mascot-wave-on-hover',
+    );
+  });
+
   it('greets by itself shortly after the app opens, then stops', async () => {
     const waits = renderWithGreetingWaits();
 
@@ -80,9 +98,7 @@ describe(AgentHelper.name, () => {
 
     act(() => waits.finish());
 
-    await waitFor(() =>
-      expect(screen.queryByText(GREETING)).not.toBeInTheDocument(),
-    );
+    await waitFor(() => expect(screen.queryByText(GREETING)).not.toBeInTheDocument());
     expect(helper()).toHaveAttribute('data-greeting', 'false');
   });
 
@@ -92,9 +108,7 @@ describe(AgentHelper.name, () => {
     act(() => waits.finish());
     await screen.findByText(GREETING);
 
-    await user.hover(
-      screen.getByRole('button', { name: 'Dalil, AI assistant' }),
-    );
+    await user.hover(screen.getByRole('button', { name: 'Dalil AI assistant' }));
     act(() => waits.finish());
 
     expect(screen.getByText(GREETING)).toBeInTheDocument();
@@ -107,11 +121,9 @@ describe(AgentHelper.name, () => {
     act(() => waits.finish());
     await screen.findByText(GREETING);
 
-    await user.click(screen.getByRole('button', { name: 'Dalil, AI assistant' }));
+    await user.click(screen.getByRole('button', { name: 'Dalil AI assistant' }));
 
-    await waitFor(() =>
-      expect(screen.queryByText(GREETING)).not.toBeInTheDocument(),
-    );
+    await waitFor(() => expect(screen.queryByText(GREETING)).not.toBeInTheDocument());
     expect(screen.getByRole('dialog')).toBeVisible();
     expect(helper()).toHaveAttribute('data-greeting', 'false');
   });
@@ -119,7 +131,7 @@ describe(AgentHelper.name, () => {
   it('starts closed: nothing is looked up and the button is collapsed', () => {
     render(<AgentHelper />, { wrapper: makeAgentWrapper({ client }) });
 
-    expect(screen.getByRole('button', { name: 'Dalil, AI assistant' })).toHaveAttribute(
+    expect(screen.getByRole('button', { name: 'Dalil AI assistant' })).toHaveAttribute(
       'aria-expanded',
       'false',
     );
@@ -128,50 +140,46 @@ describe(AgentHelper.name, () => {
   });
 
   it('opens a panel that the mascot button controls', async () => {
-    await openPicker();
+    await openPanel();
 
-    expect(screen.getByRole('button', { name: 'Dalil, AI assistant' })).toHaveAttribute(
+    expect(screen.getByRole('button', { name: 'Dalil AI assistant' })).toHaveAttribute(
       'aria-expanded',
       'true',
     );
-    expect(screen.getByRole('dialog', { name: 'Dalil, AI assistant' })).toBeVisible();
+    expect(screen.getByRole('dialog', { name: 'Dalil AI assistant' })).toBeVisible();
   });
 
   it.each([
     [
       'the mascot button',
       async (user: ReturnType<typeof userEvent.setup>) =>
-        user.click(screen.getByRole('button', { name: 'Dalil, AI assistant' })),
+        user.click(screen.getByRole('button', { name: 'Dalil AI assistant' })),
     ],
     [
       'the close button',
       async (user: ReturnType<typeof userEvent.setup>) =>
-        user.click(screen.getByRole('button', { name: 'Close agents' })),
+        user.click(screen.getByRole('button', { name: 'Close assistant' })),
     ],
-    [
-      'Escape',
-      async (user: ReturnType<typeof userEvent.setup>) =>
-        user.keyboard('{Escape}'),
-    ],
+    ['Escape', async (user: ReturnType<typeof userEvent.setup>) => user.keyboard('{Escape}')],
   ])('closes with %s', async (_name, close) => {
-    const user = await openPicker();
+    const user = await openPanel();
 
     await close(user);
     await finishClosing();
 
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Dalil, AI assistant' })).toHaveAttribute(
+    expect(screen.getByRole('button', { name: 'Dalil AI assistant' })).toHaveAttribute(
       'aria-expanded',
       'false',
     );
   });
 
   it('keeps the panel on screen until its exit animation ends', async () => {
-    const user = await openPicker();
+    const user = await openPanel();
 
-    await user.click(screen.getByRole('button', { name: 'Close agents' }));
+    await user.click(screen.getByRole('button', { name: 'Close assistant' }));
 
-    expect(screen.getByRole('dialog')).toHaveAttribute('data-phase', 'CLOSING');
+    expect(screen.getByRole('dialog')).toHaveAttribute('data-phase', PanelPhase.CLOSING);
     await finishClosing();
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
@@ -179,35 +187,80 @@ describe(AgentHelper.name, () => {
   it('shows a loading status while the assistant is looked up', async () => {
     vi.mocked(client.getAgent).mockReturnValue(new Promise(() => {}));
 
-    await openPicker();
+    await openPanel();
 
-    expect(await screen.findByRole('status')).toHaveTextContent(
-      'Loading assistant...',
-    );
+    expect(await screen.findByRole('status')).toHaveTextContent('Loading assistant...');
   });
 
   it('opens a chat with the assistant by itself, looking up only that agent', async () => {
-    await openPicker();
+    await openPanel();
 
-    expect(
-      await screen.findByRole('heading', { name: 'Dalil' }),
-    ).toBeVisible();
+    expect(await screen.findByRole('heading', { name: 'Dalil AI' })).toBeVisible();
     expect(screen.getByRole('textbox', { name: 'Message' })).toBeVisible();
     expect(client.getAgent).toHaveBeenCalledWith('cooling-expert');
   });
 
   it('comes back to the same conversation after the helper is closed', async () => {
-    const user = await openPicker();
-    await screen.findByRole('heading', { name: 'Dalil' });
+    const user = await openPanel();
+    await screen.findByRole('heading', { name: 'Dalil AI' });
     await user.type(screen.getByRole('textbox', { name: 'Message' }), 'Hi');
     await user.click(screen.getByRole('button', { name: 'Send' }));
     await screen.findByText('Hello!');
 
-    await user.click(screen.getByRole('button', { name: 'Dalil, AI assistant' }));
+    await user.click(screen.getByRole('button', { name: 'Dalil AI assistant' }));
     await finishClosing();
-    await user.click(screen.getByRole('button', { name: 'Dalil, AI assistant' }));
+    await user.click(screen.getByRole('button', { name: 'Dalil AI assistant' }));
 
     expect(await screen.findByText('Hello!')).toBeVisible();
+  });
+
+  describe('keeping the panel open across a reload', () => {
+    let api: StateSyncApi;
+
+    beforeEach(() => {
+      api = {
+        syncInternalState: vi.fn<StateSyncApi['syncInternalState']>(() => Promise.resolve(true)),
+      };
+    });
+
+    it('syncs that the panel is open when it opens', async () => {
+      const user = userEvent.setup();
+      render(<AgentHelper />, { wrapper: makeAgentWrapper({ client, hostApi: api }) });
+
+      await user.click(screen.getByRole('button', { name: 'Dalil AI assistant' }));
+
+      expect(api.syncInternalState).toHaveBeenLastCalledWith(
+        expect.stringContaining('"isAssistantOpen":true'),
+      );
+    });
+
+    it('syncs that the panel is closed when it closes', async () => {
+      const user = userEvent.setup();
+      render(<AgentHelper />, { wrapper: makeAgentWrapper({ client, hostApi: api }) });
+      await user.click(screen.getByRole('button', { name: 'Dalil AI assistant' }));
+
+      await user.click(screen.getByRole('button', { name: 'Close assistant' }));
+
+      expect(api.syncInternalState).toHaveBeenLastCalledWith(
+        expect.not.stringContaining('isAssistantOpen'),
+      );
+    });
+
+    it('comes back open when the host restores an open panel', () => {
+      render(<AgentHelper />, {
+        wrapper: makeAgentWrapper({
+          client,
+          hostApi: api,
+          hostInitialState: JSON.stringify({ isAssistantOpen: true }),
+        }),
+      });
+
+      expect(screen.getByRole('dialog', { name: 'Dalil AI assistant' })).toBeVisible();
+      expect(screen.getByRole('button', { name: 'Dalil AI assistant' })).toHaveAttribute(
+        'aria-expanded',
+        'true',
+      );
+    });
   });
 });
 
@@ -221,7 +274,5 @@ function helper(): HTMLElement {
 async function finishClosing(): Promise<void> {
   const panel = screen.queryByRole('dialog');
   if (panel !== null) fireEvent.animationEnd(panel);
-  await waitFor(() =>
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument(),
-  );
+  await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
 }

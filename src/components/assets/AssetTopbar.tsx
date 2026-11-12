@@ -1,50 +1,47 @@
 import {
   BreadcrumbItem,
+  BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbPage,
+  BreadcrumbSeparator,
 } from '@cognite/aura/components/breadcrumb';
 import {
   Topbar,
   TopbarBreadcrumbs,
   TopbarLeft,
+  TopbarRight,
 } from '@cognite/aura/components/topbar';
 
-import { NAME_PROPERTY_IDENTIFIER } from '../../constants/assets';
-import {
-  APP_LOGO_ALT_TEXT,
-  APP_LOGO_SOURCE,
-  APP_NAME,
-} from '../../constants/branding';
-import { useAssetEquipmentDetails } from '../../hooks/assets/useAssetEquipmentDetails';
+import { ASSETS_BREADCRUMB_LABEL, NAME_PROPERTY_IDENTIFIER } from '../../constants/assets';
+import { APP_LOGO_ALT_TEXT, APP_LOGO_SOURCE, APP_NAME } from '../../constants/branding';
+import { useAssetDetails } from '../../hooks/assets/useAssetDetails';
+import { useNavigationState } from '../../hooks/general/useNavigationState';
 import { getPropertyValue } from '../../lib/assetProperties';
 import type { AssetIdentifier } from '../../types/asset';
+import { ThemeModeToggle } from '../general/ThemeModeToggle';
 
 import { AppLogo } from './AppLogo';
-
-type AssetTopbarProps = {
-  selectedAsset?: AssetIdentifier;
-};
 
 type SelectedAssetBreadcrumbProps = {
   selectedAsset: AssetIdentifier;
 };
 
-function SelectedAssetBreadcrumb({
-  selectedAsset,
-}: SelectedAssetBreadcrumbProps) {
-  const { data } = useAssetEquipmentDetails(selectedAsset);
+function SelectedAssetBreadcrumb({ selectedAsset }: SelectedAssetBreadcrumbProps) {
+  const clearSelectedAsset = useNavigationState((store) => store.actions.clearSelectedAsset);
+  const { data } = useAssetDetails(selectedAsset);
 
-  const assetName =
-    getPropertyValue(data?.asset, NAME_PROPERTY_IDENTIFIER) ??
-    selectedAsset.externalId;
+  const assetName = getPropertyValue(data, NAME_PROPERTY_IDENTIFIER) ?? selectedAsset.externalId;
 
   return (
     <BreadcrumbList className="min-w-0 flex-nowrap">
+      <BreadcrumbItem>
+        <BreadcrumbLink render={<button type="button" onClick={clearSelectedAsset} />}>
+          {ASSETS_BREADCRUMB_LABEL}
+        </BreadcrumbLink>
+      </BreadcrumbItem>
+      <BreadcrumbSeparator />
       <BreadcrumbItem className="min-w-0">
-        <BreadcrumbPage
-          className="truncate font-medium text-base-foreground"
-          title={assetName}
-        >
+        <BreadcrumbPage className="truncate font-medium text-base-foreground" title={assetName}>
           {assetName}
         </BreadcrumbPage>
       </BreadcrumbItem>
@@ -52,15 +49,13 @@ function SelectedAssetBreadcrumb({
   );
 }
 
-export function AssetTopbar({ selectedAsset }: AssetTopbarProps) {
+export function AssetTopbar() {
+  const selectedAsset = useNavigationState((store) => store.navigationState.selectedAsset);
+
   return (
-    <Topbar className="app-topbar sticky top-0 z-20 h-14 gap-4 rounded-none px-4 sm:px-6 lg:px-8">
+    <Topbar className="dark app-topbar sticky top-0 z-20 h-14 gap-4 rounded-none px-4 sm:px-6 lg:px-8">
       <TopbarLeft className="flex-1 gap-4 sm:gap-6">
-        <AppLogo
-          alt={APP_LOGO_ALT_TEXT}
-          fallbackText={APP_NAME}
-          source={APP_LOGO_SOURCE}
-        />
+        <AppLogo alt={APP_LOGO_ALT_TEXT} fallbackText={APP_NAME} source={APP_LOGO_SOURCE} />
         {selectedAsset ? (
           <TopbarBreadcrumbs
             aria-label="Breadcrumb"
@@ -70,6 +65,9 @@ export function AssetTopbar({ selectedAsset }: AssetTopbarProps) {
           </TopbarBreadcrumbs>
         ) : null}
       </TopbarLeft>
+      <TopbarRight className="flex-none">
+        <ThemeModeToggle />
+      </TopbarRight>
     </Topbar>
   );
 }

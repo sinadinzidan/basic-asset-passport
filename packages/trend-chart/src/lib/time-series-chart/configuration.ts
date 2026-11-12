@@ -7,6 +7,7 @@ import {
   CHART_LINE_WIDTHS,
   CHART_MAX_SERIES,
   CHART_TITLE_MAX_LENGTH,
+  CHART_LINE_WIDTH_THIN,
 } from '../../constants/timeSeriesChart';
 import { ChartMode, ChartRange } from '../../enums/monitoring';
 import { AxisScaleMode, ChartOverlay, ChartPanel, LineStyle } from '../../enums/timeSeriesChart';
@@ -20,6 +21,10 @@ import type {
 import { isEnumValue } from '../enumGuards';
 
 import { canConvert } from './units';
+
+/** How a switch is written in the shareable options: on is `1` and off is `0`. */
+const OPTION_ON = '1';
+const OPTION_OFF = '0';
 
 const LIST_SEPARATOR = ',';
 const PAIR_SEPARATOR = ';';
@@ -39,8 +44,11 @@ export interface ConfigurationResult {
 
 export function defaultSeriesStyle(index: number): SeriesStyle {
   return {
-    color: CHART_COLOR_PALETTE[index % CHART_COLOR_PALETTE.length] ?? CHART_COLOR_PALETTE[0] ?? 'currentColor',
-    lineWidth: CHART_LINE_WIDTHS[0] ?? 1.5,
+    color:
+      CHART_COLOR_PALETTE[index % CHART_COLOR_PALETTE.length] ??
+      CHART_COLOR_PALETTE[0] ??
+      'currentColor',
+    lineWidth: CHART_LINE_WIDTHS[0] ?? CHART_LINE_WIDTH_THIN,
     lineStyle: index >= CHART_COLOR_PALETTE.length ? LineStyle.DASHED : LineStyle.SOLID,
   };
 }
@@ -57,8 +65,8 @@ export function createChartConfiguration(
       .slice(0, CHART_MAX_SERIES)
       .map((seriesId, index) => ({ seriesId, isVisible: true, style: defaultSeriesStyle(index) })),
     axes: [],
-    showGridlines: true,
-    showMinMax: false,
+    shouldShowGridlines: true,
+    shouldShowMinMax: false,
     isMarkerMode: false,
     isLive: false,
     overlays: [...CHART_DEFAULT_OVERLAYS],
@@ -66,7 +74,10 @@ export function createChartConfiguration(
   };
 }
 
-export function addSeries(configuration: ChartConfiguration, seriesId: string): ConfigurationResult {
+export function addSeries(
+  configuration: ChartConfiguration,
+  seriesId: string,
+): ConfigurationResult {
   if (configuration.series.some((entry) => entry.seriesId === seriesId))
     return { configuration, error: 'This series is already on the chart.' };
   if (configuration.series.length >= CHART_MAX_SERIES)
@@ -79,8 +90,14 @@ export function addSeries(configuration: ChartConfiguration, seriesId: string): 
   return { configuration: { ...configuration, series: [...configuration.series, entry] } };
 }
 
-export function removeSeries(configuration: ChartConfiguration, seriesId: string): ChartConfiguration {
-  return { ...configuration, series: configuration.series.filter((entry) => entry.seriesId !== seriesId) };
+export function removeSeries(
+  configuration: ChartConfiguration,
+  seriesId: string,
+): ChartConfiguration {
+  return {
+    ...configuration,
+    series: configuration.series.filter((entry) => entry.seriesId !== seriesId),
+  };
 }
 
 function updateSeries(
@@ -90,7 +107,9 @@ function updateSeries(
 ): ChartConfiguration {
   return {
     ...configuration,
-    series: configuration.series.map((entry) => (entry.seriesId === seriesId ? change(entry) : entry)),
+    series: configuration.series.map((entry) =>
+      entry.seriesId === seriesId ? change(entry) : entry,
+    ),
   };
 }
 
@@ -103,13 +122,22 @@ export function setSeriesVisible(
 }
 
 export function showAllSeries(configuration: ChartConfiguration): ChartConfiguration {
-  return { ...configuration, series: configuration.series.map((entry) => ({ ...entry, isVisible: true })) };
-}
-
-export function showOnlySeries(configuration: ChartConfiguration, seriesId: string): ChartConfiguration {
   return {
     ...configuration,
-    series: configuration.series.map((entry) => ({ ...entry, isVisible: entry.seriesId === seriesId })),
+    series: configuration.series.map((entry) => ({ ...entry, isVisible: true })),
+  };
+}
+
+export function showOnlySeries(
+  configuration: ChartConfiguration,
+  seriesId: string,
+): ChartConfiguration {
+  return {
+    ...configuration,
+    series: configuration.series.map((entry) => ({
+      ...entry,
+      isVisible: entry.seriesId === seriesId,
+    })),
   };
 }
 
@@ -118,7 +146,10 @@ export function setSeriesStyle(
   seriesId: string,
   style: Partial<SeriesStyle>,
 ): ChartConfiguration {
-  return updateSeries(configuration, seriesId, (entry) => ({ ...entry, style: { ...entry.style, ...style } }));
+  return updateSeries(configuration, seriesId, (entry) => ({
+    ...entry,
+    style: { ...entry.style, ...style },
+  }));
 }
 
 export function setDisplayUnit(
@@ -128,7 +159,10 @@ export function setDisplayUnit(
   displayUnit: string | undefined,
 ): ConfigurationResult {
   if (displayUnit !== undefined && displayUnit !== ownUnit && !canConvert(ownUnit, displayUnit)) {
-    return { configuration, error: `There is no known conversion from ${ownUnit ?? 'this unit'} to ${displayUnit}.` };
+    return {
+      configuration,
+      error: `There is no known conversion from ${ownUnit ?? 'this unit'} to ${displayUnit}.`,
+    };
   }
   return {
     configuration: updateSeries(configuration, seriesId, (entry) => ({
@@ -138,7 +172,11 @@ export function setDisplayUnit(
   };
 }
 
-export function moveSeries(configuration: ChartConfiguration, seriesId: string, offset: number): ChartConfiguration {
+export function moveSeries(
+  configuration: ChartConfiguration,
+  seriesId: string,
+  offset: number,
+): ChartConfiguration {
   const from = configuration.series.findIndex((entry) => entry.seriesId === seriesId);
   const to = from + offset;
   if (from < 0 || to < 0 || to >= configuration.series.length) return configuration;
@@ -149,7 +187,10 @@ export function moveSeries(configuration: ChartConfiguration, seriesId: string, 
   return { ...configuration, series: next };
 }
 
-export function toggleOverlay(configuration: ChartConfiguration, overlay: ChartOverlay): ChartConfiguration {
+export function toggleOverlay(
+  configuration: ChartConfiguration,
+  overlay: ChartOverlay,
+): ChartConfiguration {
   return {
     ...configuration,
     overlays: configuration.overlays.includes(overlay)
@@ -158,7 +199,10 @@ export function toggleOverlay(configuration: ChartConfiguration, overlay: ChartO
   };
 }
 
-export function togglePanel(configuration: ChartConfiguration, panel: ChartPanel): ChartConfiguration {
+export function togglePanel(
+  configuration: ChartConfiguration,
+  panel: ChartPanel,
+): ChartConfiguration {
   return { ...configuration, panel: configuration.panel === panel ? undefined : panel };
 }
 
@@ -191,8 +235,14 @@ function styleOf(text: string | undefined, index: number): SeriesStyle {
   const [colorIndex, widthIndex, code] = text.split(STYLE_SEPARATOR);
   const color = CHART_COLOR_PALETTE[Number(colorIndex)];
   const lineWidth = CHART_LINE_WIDTHS[Number(widthIndex)];
-  const lineStyle = Object.values(LineStyle).find((candidate) => LINE_STYLE_CODES[candidate] === code);
-  return { color: color ?? base.color, lineWidth: lineWidth ?? base.lineWidth, lineStyle: lineStyle ?? base.lineStyle };
+  const lineStyle = Object.values(LineStyle).find(
+    (candidate) => LINE_STYLE_CODES[candidate] === code,
+  );
+  return {
+    color: color ?? base.color,
+    lineWidth: lineWidth ?? base.lineWidth,
+    lineStyle: lineStyle ?? base.lineStyle,
+  };
 }
 
 function styleText(style: SeriesStyle): string {
@@ -218,7 +268,9 @@ export function serialiseConfiguration(configuration: ChartConfiguration): Recor
     options.from = String(configuration.window.start);
     options.to = String(configuration.window.end);
   }
-  const hidden = configuration.series.filter((entry) => !entry.isVisible).map((entry) => entry.seriesId);
+  const hidden = configuration.series
+    .filter((entry) => !entry.isVisible)
+    .map((entry) => entry.seriesId);
   if (hidden.length > 0) options.hid = hidden.join(LIST_SEPARATOR);
   const units = configuration.series
     .filter((entry) => entry.displayUnit !== undefined)
@@ -228,11 +280,11 @@ export function serialiseConfiguration(configuration: ChartConfiguration): Recor
     .filter((axis) => axis.mode === AxisScaleMode.MANUAL)
     .map((axis) => [axis.seriesId, axis.min ?? '', axis.max ?? ''].join(FIELD_SEPARATOR));
   if (axes.length > 0) options.ax = axes.join(PAIR_SEPARATOR);
-  if (!configuration.showGridlines) options.grid = '0';
-  if (configuration.showMinMax) options.mm = '1';
-  if (configuration.isMarkerMode) options.mk = '1';
+  if (!configuration.shouldShowGridlines) options.grid = OPTION_OFF;
+  if (configuration.shouldShowMinMax) options.mm = OPTION_ON;
+  if (configuration.isMarkerMode) options.mk = OPTION_ON;
   if (configuration.markerAt !== undefined) options.at = String(configuration.markerAt);
-  if (configuration.isLive) options.live = '1';
+  if (configuration.isLive) options.live = OPTION_ON;
   if (configuration.panel) options.pn = configuration.panel;
   return options;
 }
@@ -252,29 +304,41 @@ export function parseConfiguration(
     (options.du ?? '')
       .split(PAIR_SEPARATOR)
       .filter((pair) => pair.includes('='))
-      .map((pair) => [pair.slice(0, pair.indexOf('=')), pair.slice(pair.indexOf('=') + 1)] as const),
+      .map(
+        (pair) => [pair.slice(0, pair.indexOf('=')), pair.slice(pair.indexOf('=') + 1)] as const,
+      ),
   );
   const from = numberOf(options.from);
   const to = numberOf(options.to);
   const range = isEnumValue(ChartRange, options.range) ? options.range : fallback.range;
-  const hasWindow = range === ChartRange.CUSTOM && from !== undefined && to !== undefined && to > from;
+  const hasWindow =
+    range === ChartRange.CUSTOM && from !== undefined && to !== undefined && to > from;
   const axes: AxisSetting[] = (options.ax ?? '')
     .split(PAIR_SEPARATOR)
     .filter((entry) => entry.length > 0)
     .flatMap((entry) => {
       const [seriesId, min, max] = entry.split(FIELD_SEPARATOR);
       if (!seriesId) return [];
-      const setting: AxisSetting = { seriesId, mode: AxisScaleMode.MANUAL, min: numberOf(min), max: numberOf(max) };
+      const setting: AxisSetting = {
+        seriesId,
+        mode: AxisScaleMode.MANUAL,
+        min: numberOf(min),
+        max: numberOf(max),
+      };
       return setting.min === undefined && setting.max === undefined ? [] : [setting];
     });
   const overlays =
     options.ov !== undefined
-      ? listOf(options.ov).filter((candidate): candidate is ChartOverlay => isEnumValue(ChartOverlay, candidate))
+      ? listOf(options.ov).filter((candidate): candidate is ChartOverlay =>
+          isEnumValue(ChartOverlay, candidate),
+        )
       : fallback.overlays;
   return {
-    title: options.title !== undefined ? options.title.slice(0, CHART_TITLE_MAX_LENGTH) : fallback.title,
+    title:
+      options.title !== undefined ? options.title.slice(0, CHART_TITLE_MAX_LENGTH) : fallback.title,
     range: range === ChartRange.CUSTOM && !hasWindow ? fallback.range : range,
-    window: hasWindow && from !== undefined && to !== undefined ? { start: from, end: to } : undefined,
+    window:
+      hasWindow && from !== undefined && to !== undefined ? { start: from, end: to } : undefined,
     mode: isEnumValue(ChartMode, options.mode) ? options.mode : fallback.mode,
     series: ids.map((seriesId, index) => ({
       seriesId,
@@ -283,11 +347,11 @@ export function parseConfiguration(
       displayUnit: displayUnits.get(seriesId),
     })),
     axes,
-    showGridlines: options.grid !== '0',
-    showMinMax: options.mm === '1',
-    isMarkerMode: options.mk === '1',
+    shouldShowGridlines: options.grid !== OPTION_OFF,
+    shouldShowMinMax: options.mm === OPTION_ON,
+    isMarkerMode: options.mk === OPTION_ON,
     markerAt: numberOf(options.at),
-    isLive: options.live === '1',
+    isLive: options.live === OPTION_ON,
     overlays,
     panel: isEnumValue(ChartPanel, options.pn) ? options.pn : undefined,
   };

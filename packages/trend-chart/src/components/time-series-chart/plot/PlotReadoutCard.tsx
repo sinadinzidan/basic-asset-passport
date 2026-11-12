@@ -2,7 +2,7 @@ import type { ReadoutRow } from '../../../lib/time-series-chart/plotReadouts';
 
 import { HOVER_CARD_WIDTH_PX } from './plotLayout';
 
-interface PlotReadoutCardProps {
+interface PlotReadoutCardProperties {
   title: string;
   rows: readonly ReadoutRow[];
   anchorX: number;
@@ -23,7 +23,7 @@ export function PlotReadoutCard({
   isOnLeft,
   testId,
   isAnnounced = false,
-}: PlotReadoutCardProps) {
+}: PlotReadoutCardProperties) {
   return (
     <div
       className="pointer-events-none absolute z-20 rounded-xl border border-border bg-popover-background px-3 py-2 text-xs"
@@ -56,7 +56,9 @@ export function PlotReadoutCard({
               </span>
               <span className="tabular-nums shrink-0 font-medium text-foreground">{row.value}</span>
             </span>
-            {row.detail ? <span className="pl-3.5 text-[11px] text-muted-foreground">{row.detail}</span> : null}
+            {row.detail ? (
+              <span className="pl-3.5 text-[11px] text-muted-foreground">{row.detail}</span>
+            ) : null}
           </li>
         ))}
       </ul>

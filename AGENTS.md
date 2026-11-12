@@ -100,13 +100,24 @@ Use **narrow interfaces** — depend only on the subset of a service you actuall
 
 ### React context (hooks and components)
 
-```typescript
-const defaultDeps = { useDataSource, useAnalytics };
-export type MyHookContextType = typeof defaultDeps;
-export const MyHookContext = createContext<MyHookContextType>(defaultDeps);
+A value that a provider already supplies is read through its reader hook, called directly. The reader throws outside its provider, and a test supplies the value with the context's own provider. Do not route a reader hook through a deps context.
 
-export function useMyHook() {
-  const { useDataSource } = useContext(MyHookContext);
+```typescript
+export function useAgent(externalId: string) {
+  const { project, getAgent } = useAgentContext();
+}
+```
+
+Use a per-hook deps context only for what no provider supplies (service functions, clocks, timers, ID generators), and delete it when nothing is left in it.
+
+```typescript
+const defaultDeps = { listAssets, now: () => Date.now() };
+export type UseAssetsContextType = typeof defaultDeps;
+export const UseAssetsContext = createContext<UseAssetsContextType>(defaultDeps);
+
+export function useAssets() {
+  const { listAssets: loadAssets, now } = useContext(UseAssetsContext);
+  const client = useAssetContext();
 }
 ```
 
@@ -211,7 +222,7 @@ Every new module with logic (service, hook, component, utility) must include a c
 
 | File type | Required test cases |
 | --- | --- |
-| Service (`*Service.ts`) | Correct request construction; response parsing; error thrown on non-OK status |
+| Service (a file in `src/services/`) | Correct request construction; response parsing; error thrown on non-OK status |
 | ViewModel hook (`use*ViewModel.ts`) | Loading state; success state with correct derived values; error state |
 | Pure utility / helper | Every exported function and all meaningful branches |
 | View component | Renders expected content from props; loading/error/empty states where applicable |

@@ -2,11 +2,7 @@ import { act, renderHook } from '@testing-library/react';
 import type { ComponentType, ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import {
-  DebounceContext,
-  type DebounceDeps,
-  useDebouncedCallback,
-} from '../useDebouncedCallback';
+import { DebounceContext, type DebounceDeps, useDebouncedCallback } from '../useDebouncedCallback';
 
 describe(useDebouncedCallback.name, () => {
   let scheduled: Map<number, () => void>;
@@ -28,9 +24,7 @@ describe(useDebouncedCallback.name, () => {
       }),
     };
     wrapper = ({ children }) => (
-      <DebounceContext.Provider value={deps}>
-        {children}
-      </DebounceContext.Provider>
+      <DebounceContext.Provider value={deps}>{children}</DebounceContext.Provider>
     );
   });
 
@@ -65,10 +59,10 @@ describe(useDebouncedCallback.name, () => {
   it('calls the latest callback, not the one from the first render', () => {
     const first = vi.fn();
     const second = vi.fn();
-    const { result, rerender } = renderHook(
-      ({ callback }) => useDebouncedCallback(callback, 300),
-      { wrapper, initialProps: { callback: first } },
-    );
+    const { result, rerender } = renderHook(({ callback }) => useDebouncedCallback(callback, 300), {
+      wrapper,
+      initialProps: { callback: first },
+    });
     act(() => result.current.run('pump'));
 
     rerender({ callback: second });
@@ -93,10 +87,7 @@ describe(useDebouncedCallback.name, () => {
 
   it('drops a pending call when the component unmounts', () => {
     const callback = vi.fn();
-    const { result, unmount } = renderHook(
-      () => useDebouncedCallback(callback, 300),
-      { wrapper },
-    );
+    const { result, unmount } = renderHook(() => useDebouncedCallback(callback, 300), { wrapper });
     act(() => result.current.run('pump'));
 
     unmount();

@@ -2,6 +2,7 @@ import { Button } from '@cognite/aura/components/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@cognite/aura/components/popover';
 import type { ReactNode } from 'react';
 
+import { HALF } from '../../../constants/mathConstants';
 import {
   CHART_COLOR_PALETTE,
   CHART_LINE_WIDTHS,
@@ -18,7 +19,7 @@ const PREVIEW_HEIGHT = 12;
 const PREVIEW_PADDING = 2;
 
 function LinePreview({ style }: { style: SeriesStyle }) {
-  const middle = PREVIEW_HEIGHT / 2;
+  const middle = PREVIEW_HEIGHT * HALF;
   return (
     <svg width={PREVIEW_WIDTH} height={PREVIEW_HEIGHT} aria-hidden className="shrink-0">
       <line
@@ -38,13 +39,15 @@ function LinePreview({ style }: { style: SeriesStyle }) {
 function ChoiceGroup({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div role="group" aria-label={label} className="flex flex-col gap-1.5">
-      <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.06em] text-muted-foreground">{label}</p>
+      <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
+        {label}
+      </p>
       <div className="flex flex-wrap items-center gap-1.5">{children}</div>
     </div>
   );
 }
 
-interface SeriesStyleControlProps {
+interface SeriesStyleControlProperties {
   seriesName: string;
   style: SeriesStyle;
   onStyleChange: (style: Partial<SeriesStyle>) => void;
@@ -54,12 +57,18 @@ interface SeriesStyleControlProps {
  * The swatch of a series, drawn from the style the plot uses, so table and plot cannot disagree. It opens the choices of
  * colour, line width and line style; a choice applies at once.
  */
-export function SeriesStyleControl({ seriesName, style, onStyleChange }: SeriesStyleControlProps) {
+export function SeriesStyleControl({
+  seriesName,
+  style,
+  onStyleChange,
+}: SeriesStyleControlProperties) {
   const label = `Style of ${seriesName}`;
   return (
     <Popover>
       <TooltipTarget text={label}>
-        <PopoverTrigger render={<Button variant="ghost" size="icon-sm" aria-label={label} className="w-9" />}>
+        <PopoverTrigger
+          render={<Button variant="ghost" size="icon-sm" aria-label={label} className="w-9" />}
+        >
           <LinePreview style={style} />
         </PopoverTrigger>
       </TooltipTarget>

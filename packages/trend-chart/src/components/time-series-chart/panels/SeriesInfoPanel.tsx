@@ -12,7 +12,7 @@ import { formatChartInstant } from './panelFormat';
 import { PanelSection } from './PanelSection';
 import { SeriesLabel } from './SeriesLabel';
 
-interface SeriesInfoPanelProps {
+interface SeriesInfoPanelProperties {
   series: ChartSeriesView;
   profile: DataProfile | undefined;
 }
@@ -49,7 +49,10 @@ function FactList({ label, facts }: { label: string; facts: readonly Fact[] }) {
   return (
     <dl aria-label={label} className="flex flex-col divide-y divide-border">
       {facts.map((fact) => (
-        <div key={fact.label} className="grid grid-cols-[7.5rem_minmax(0,1fr)] gap-x-3 py-1.5 first:pt-0 last:pb-0">
+        <div
+          key={fact.label}
+          className="grid grid-cols-[7.5rem_minmax(0,1fr)] gap-x-3 py-1.5 first:pt-0 last:pb-0"
+        >
           <dt className="text-xs text-muted-foreground">{fact.label}</dt>
           <dd className="break-words text-sm text-foreground">{fact.value}</dd>
         </div>
@@ -59,7 +62,8 @@ function FactList({ label, facts }: { label: string; facts: readonly Fact[] }) {
 }
 
 function DataQuality({ profile }: { profile: DataProfile | undefined }) {
-  if (!profile) return <p className="text-xs text-muted-foreground">Not profiled yet for the visible range.</p>;
+  if (!profile)
+    return <p className="text-xs text-muted-foreground">Not profiled yet for the visible range.</p>;
   return (
     <div className="flex flex-col gap-1.5">
       <p className="tabular-nums text-sm text-foreground">{profileSummary(profile)}</p>
@@ -81,18 +85,21 @@ function DataQuality({ profile }: { profile: DataProfile | undefined }) {
  * "Not available". The status of the source is a pill only when it is not the normal one, and the chart header says once that the
  * data is simulated.
  */
-export function SeriesInfoPanel({ series, profile }: SeriesInfoPanelProps) {
+export function SeriesInfoPanel({ series, profile }: SeriesInfoPanelProperties) {
   const { definition } = series;
-  const showsOtherUnit = series.unit !== '' && series.unit !== definition.unit;
+  const shouldShowOtherUnit = series.unit !== '' && series.unit !== definition.unit;
   const identification: Fact[] = [
     { label: 'External ID', value: <MetadataText value={definition.name} /> },
     { label: 'Tag', value: <MetadataText value={definition.tag} /> },
     { label: 'Description', value: <MetadataText value={definition.description} /> },
-    { label: 'Belongs to', value: <MetadataText value={definition.parentName ?? definition.parentId} /> },
+    {
+      label: 'Belongs to',
+      value: <MetadataText value={definition.parentName ?? definition.parentId} />,
+    },
   ];
   const data: Fact[] = [
     { label: 'Unit', value: <MetadataText value={definition.unit} /> },
-    ...(showsOtherUnit ? [{ label: 'Shown in', value: series.unit }] : []),
+    ...(shouldShowOtherUnit ? [{ label: 'Shown in', value: series.unit }] : []),
     { label: 'Data type', value: <MetadataText value={definition.dataType} /> },
     { label: 'Source', value: <MetadataText value={definition.sourceName} /> },
     ...(series.status === SeriesDataStatus.OK

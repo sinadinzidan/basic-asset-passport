@@ -9,7 +9,11 @@ afterEach(() => setChartTimeZone({ id: 'UTC', label: 'UTC' }));
 
 describe('buildExportFileName', () => {
   it('names the module, the scope and the minute, with lower-case words joined by hyphens', () => {
-    const name = buildExportFileName('Time series', 'Pump P-101A', new Date(Date.UTC(2026, 9, 1, 8, 5)));
+    const name = buildExportFileName(
+      'Time series',
+      'Pump P-101A',
+      new Date(Date.UTC(2026, 9, 1, 8, 5)),
+    );
 
     expect(name).toBe('time-series_pump-p-101a_20261001-0805.csv');
   });

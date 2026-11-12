@@ -5,14 +5,14 @@ import { useId } from 'react';
 import { FieldOrientation } from '../../../enums/display';
 import { cn } from '../../../lib/utils';
 
-export interface FieldControlProps {
+export interface FieldControlProperties {
   id: string;
   'aria-invalid': boolean | undefined;
   'aria-describedby': string | undefined;
   'aria-required': boolean | undefined;
 }
 
-interface FormFieldProps {
+interface FormFieldProperties {
   label: string;
   isRequired?: boolean;
   description?: string;
@@ -21,7 +21,7 @@ interface FormFieldProps {
   /** Shown at the right end of the label row, for example a character count, so the message stays directly under the control. */
   labelAccessory?: ReactNode;
   className?: string;
-  children: (control: FieldControlProps) => ReactNode;
+  children: (control: FieldControlProperties) => ReactNode;
 }
 
 export function FormField({
@@ -33,7 +33,7 @@ export function FormField({
   labelAccessory,
   className,
   children,
-}: FormFieldProps) {
+}: FormFieldProperties) {
   const id = useId();
   const messageId = `${id}-message`;
   const hasMessage = Boolean(errorMessage ?? description);
@@ -41,7 +41,10 @@ export function FormField({
   const labelElement = (
     <label
       htmlFor={id}
-      className={cn('text-sm leading-none font-medium text-foreground select-none', isHorizontal && 'shrink-0')}
+      className={cn(
+        'text-sm leading-none font-medium text-foreground select-none',
+        isHorizontal && 'shrink-0',
+      )}
     >
       {label}
       {isRequired ? (
@@ -61,7 +64,9 @@ export function FormField({
     'aria-describedby': hasMessage ? messageId : undefined,
     'aria-required': isRequired ? true : undefined,
   });
-  const message = <FieldMessage id={messageId} errorMessage={errorMessage} description={description} />;
+  const message = (
+    <FieldMessage id={messageId} errorMessage={errorMessage} description={description} />
+  );
   if (isHorizontal) {
     return (
       <div className={cn('flex min-w-0 items-center gap-3', className)}>
@@ -89,29 +94,36 @@ export function FormField({
   );
 }
 
-interface CharacterCountProps {
+interface CharacterCountProperties {
   length: number;
   maxLength: number;
 }
 
-export function CharacterCount({ length, maxLength }: CharacterCountProps) {
+export function CharacterCount({ length, maxLength }: CharacterCountProperties) {
   return (
     <span
-      className={cn('tabular-nums shrink-0 text-xs text-muted-foreground', length >= maxLength && 'text-destructive')}
+      className={cn(
+        'tabular-nums shrink-0 text-xs text-muted-foreground',
+        length >= maxLength && 'text-destructive',
+      )}
     >{`${length} / ${maxLength}`}</span>
   );
 }
 
-interface FieldMessageProps {
+interface FieldMessageProperties {
   id: string;
   errorMessage?: string;
   description?: string;
 }
 
-export function FieldMessage({ id, errorMessage, description }: FieldMessageProps) {
+export function FieldMessage({ id, errorMessage, description }: FieldMessageProperties) {
   if (errorMessage) {
     return (
-      <p id={id} role="alert" className="flex items-start gap-1 text-sm font-normal text-destructive">
+      <p
+        id={id}
+        role="alert"
+        className="flex items-start gap-1 text-sm font-normal text-destructive"
+      >
         <IconAlertCircle size={16} aria-hidden className="mt-0.5 shrink-0" />
         <span>{errorMessage}</span>
       </p>

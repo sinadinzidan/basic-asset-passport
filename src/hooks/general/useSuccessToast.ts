@@ -7,10 +7,8 @@ const showSuccessToast: ShowSuccessToast = (message) => {
   toast.success(message);
 };
 
-export const SuccessToastContext =
-  createContext<ShowSuccessToast>(showSuccessToast);
+export const SuccessToastContext = createContext<ShowSuccessToast>(showSuccessToast);
 
-/** A short, self-dismissing confirmation. Errors that need action stay inline. */
 export function useSuccessToast(): ShowSuccessToast {
   return useContext(SuccessToastContext);
 }

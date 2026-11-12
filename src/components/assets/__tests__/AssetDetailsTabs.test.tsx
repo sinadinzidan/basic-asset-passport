@@ -1,32 +1,60 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
+import type { ComponentType, ReactNode } from 'react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { StoreApi } from 'zustand';
 
-import { AssetEquipmentTab } from '../../../enums/assetEquipmentTab';
+import { AssetTab } from '../../../enums/assetTab';
+import {
+  UseAssetEquipmentContext,
+  type UseAssetEquipmentContextType,
+} from '../../../hooks/assets/equipment/useAssetEquipment';
+import { AssetContext } from '../../../hooks/assets/useAssetContext';
+import type { AssetDetailsTabCounts } from '../../../hooks/assets/useAssetDetailsTabCounts';
+import { NavigationStoreContext } from '../../../hooks/general/useNavigationState';
+import { NO_TAB_COUNTS } from '../../../mocks/assetDetailsTabCounts';
 import { makeInstanceDetails } from '../../../mocks/assets';
-import type { AssetEquipmentDetails } from '../../../types/asset';
+import { makeMockClient } from '../../../mocks/cogniteClient';
+import { makeLimitedList } from '../../../mocks/lists';
+import { makeNavigationStore } from '../../../mocks/navigation';
+import { makeQueryClientWrapper } from '../../../mocks/QueryClientWrapper';
+import type { NavigationStore } from '../../../types/navigation';
 import { AssetDetailsTabs } from '../AssetDetailsTabs';
 
-function makeDetails(equipmentCount: number): AssetEquipmentDetails {
-  return {
-    asset: makeInstanceDetails({
-      properties: [{ identifier: 'plantId', label: 'Plant ID', value: 'G307' }],
-    }),
-    equipment: Array.from({ length: equipmentCount }, (_, index) =>
-      makeInstanceDetails({ externalId: `P-${index + 1}`, properties: [] }),
-    ),
-  };
-}
+const assetContext = makeMockClient();
+
+const asset = makeInstanceDetails({
+  properties: [{ identifier: 'plantId', label: 'Plant ID', value: 'G307' }],
+});
 
 describe(AssetDetailsTabs.name, () => {
-  it('shows the asset properties on the properties tab', () => {
-    render(
-      <AssetDetailsTabs
-        details={makeDetails(0)}
-        activeTab={AssetEquipmentTab.PROPERTIES}
-        onTabChange={vi.fn()}
-      />,
+  let equipmentContext: UseAssetEquipmentContextType;
+  let wrapper: ComponentType<{ children: ReactNode }>;
+  let store: StoreApi<NavigationStore>;
+
+  beforeEach(() => {
+    store = makeNavigationStore();
+    equipmentContext = {
+      listAssetEquipment: vi.fn(() =>
+        Promise.resolve(
+          makeLimitedList([makeInstanceDetails({ externalId: 'P-1', properties: [] })]),
+        ),
+      ),
+    };
+    const QueryWrapper = makeQueryClientWrapper();
+    wrapper = ({ children }) => (
+      <NavigationStoreContext.Provider value={store}>
+        <UseAssetEquipmentContext.Provider value={equipmentContext}>
+          <QueryWrapper>
+            <AssetContext.Provider value={assetContext}>{children}</AssetContext.Provider>
+          </QueryWrapper>
+        </UseAssetEquipmentContext.Provider>
+      </NavigationStoreContext.Provider>
     );
+  });
+
+  it('shows the asset properties on the properties tab', () => {
+    renderTabs(AssetTab.PROPERTIES);
 
     expect(screen.getByRole('tab', { name: 'Properties' })).toHaveAttribute(
       'aria-selected',
@@ -36,76 +64,153 @@ describe(AssetDetailsTabs.name, () => {
   });
 
   it('shows the asset external ID exactly as stored on the properties tab', () => {
-    // Arrange
-    const details = makeDetails(0);
-    details.asset.externalId = 'A-GF-G307-FFS2-RSHT2-FIREFIGHT';
+    renderTabs(AssetTab.PROPERTIES, {
+      asset: { ...asset, externalId: 'A-GF-G307-FFS2-RSHT2-FIREFIGHT' },
+    });
 
-    // Act
-    render(
-      <AssetDetailsTabs
-        details={details}
-        activeTab={AssetEquipmentTab.PROPERTIES}
-        onTabChange={vi.fn()}
-      />,
-    );
-
-    // Assert
-    expect(
-      screen.getByText('Asset ID: A-GF-G307-FFS2-RSHT2-FIREFIGHT'),
-    ).toBeInTheDocument();
+    expect(screen.getByText('Asset ID: A-GF-G307-FFS2-RSHT2-FIREFIGHT')).toBeInTheDocument();
   });
 
-  it('lists every linked equipment on the equipments tab', () => {
-    render(
-      <AssetDetailsTabs
-        details={makeDetails(2)}
-        activeTab={AssetEquipmentTab.EQUIPMENTS}
-        onTabChange={vi.fn()}
-      />,
-    );
+  it('lists the equipment of the asset on the equipments tab', async () => {
+    renderTabs(AssetTab.EQUIPMENTS);
 
-    expect(screen.getByText('Equipment ID: P-1')).toBeInTheDocument();
-    expect(screen.getByText('Equipment ID: P-2')).toBeInTheDocument();
-  });
-
-  it('shows an empty state when no equipment is linked', () => {
-    render(
-      <AssetDetailsTabs
-        details={makeDetails(0)}
-        activeTab={AssetEquipmentTab.EQUIPMENTS}
-        onTabChange={vi.fn()}
-      />,
-    );
-
-    expect(screen.getByText('No equipment linked')).toBeInTheDocument();
-  });
-
-  it('shows the equipment count on its tab', () => {
-    render(
-      <AssetDetailsTabs
-        details={makeDetails(3)}
-        activeTab={AssetEquipmentTab.PROPERTIES}
-        onTabChange={vi.fn()}
-      />,
-    );
-
-    expect(screen.getByRole('tab', { name: /equipments/i })).toHaveTextContent(
-      '3',
+    expect(await screen.findByText('Equipment ID: P-1')).toBeInTheDocument();
+    expect(equipmentContext.listAssetEquipment).toHaveBeenCalledWith(
+      expect.anything(),
+      { space: asset.space, externalId: asset.externalId },
+      expect.any(Number),
     );
   });
 
-  it('reports the tab the user selects', async () => {
-    const onTabChange = vi.fn();
-    render(
-      <AssetDetailsTabs
-        details={makeDetails(1)}
-        activeTab={AssetEquipmentTab.PROPERTIES}
-        onTabChange={onTabChange}
-      />,
+  it('does not read the equipment while another tab is open', () => {
+    renderTabs(AssetTab.PROPERTIES);
+
+    expect(equipmentContext.listAssetEquipment).not.toHaveBeenCalled();
+  });
+
+  it('shows each list count on its tab', () => {
+    renderTabs(AssetTab.PROPERTIES, {
+      tabCounts: {
+        equipment: { count: 3, isLoading: false },
+        timeseries: { count: 4, isLoading: false },
+        notes: { count: 2, isLoading: false },
+        documents: { count: 7, isLoading: false },
+      },
+    });
+
+    expect(screen.getByRole('tab', { name: /equipments/i })).toHaveTextContent('3');
+    expect(screen.getByRole('tab', { name: /timeseries/i })).toHaveTextContent('4');
+    expect(screen.getByRole('tab', { name: /notes/i })).toHaveTextContent('2');
+    expect(screen.getByRole('tab', { name: /documents/i })).toHaveTextContent('7');
+  });
+
+  it('shows the whole count of a long list, with a thousands separator and no plus', () => {
+    renderTabs(AssetTab.PROPERTIES, {
+      tabCounts: {
+        ...NO_TAB_COUNTS,
+        equipment: { count: 1500, isLoading: false },
+      },
+    });
+
+    expect(screen.getByRole('tab', { name: /equipments/i })).toHaveTextContent(/^Equipments1,500$/);
+  });
+
+  it('shows a zero for a list with nothing in it', () => {
+    renderTabs(AssetTab.PROPERTIES, {
+      tabCounts: {
+        ...NO_TAB_COUNTS,
+        notes: { count: 0, isLoading: false },
+      },
+    });
+
+    expect(screen.getByRole('tab', { name: /notes/i })).toHaveTextContent('0');
+  });
+
+  it('shows no count on a tab whose list could not be counted, and leaves it open', () => {
+    renderTabs(AssetTab.PROPERTIES);
+
+    for (const name of ['Equipments', 'Timeseries', 'Notes', 'Documents']) {
+      const tab = screen.getByRole('tab', { name });
+      expect(tab).toHaveTextContent(new RegExp(`^${name}$`));
+      expect(tab).not.toHaveAttribute('aria-disabled', 'true');
+    }
+  });
+
+  it('disables a tab while its list is being counted, and shows no count on it', () => {
+    renderTabs(AssetTab.PROPERTIES, {
+      tabCounts: {
+        equipment: { count: null, isLoading: true },
+        timeseries: { count: null, isLoading: true },
+        notes: { count: 2, isLoading: false },
+        documents: { count: null, isLoading: true },
+      },
+    });
+
+    for (const name of ['Equipments', 'Timeseries', 'Documents']) {
+      const tab = screen.getByRole('tab', { name });
+      expect(tab).toHaveAttribute('aria-disabled', 'true');
+      expect(tab).toHaveTextContent(new RegExp(`^${name}$`));
+    }
+    expect(screen.getByRole('tab', { name: /notes/i })).not.toHaveAttribute(
+      'aria-disabled',
+      'true',
     );
+  });
+
+  it('does not disable the equipments tab that is open while the equipment is being counted', async () => {
+    renderTabs(AssetTab.EQUIPMENTS, {
+      tabCounts: {
+        ...NO_TAB_COUNTS,
+        equipment: { count: null, isLoading: true },
+      },
+    });
+
+    expect(await screen.findByText('Equipment ID: P-1')).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Equipments' })).not.toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
+  });
+
+  it('never disables the properties tab', () => {
+    renderTabs(AssetTab.EQUIPMENTS, {
+      tabCounts: {
+        equipment: { count: null, isLoading: true },
+        timeseries: { count: null, isLoading: true },
+        notes: { count: null, isLoading: true },
+        documents: { count: null, isLoading: true },
+      },
+    });
+
+    expect(screen.getByRole('tab', { name: 'Properties' })).not.toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
+  });
+
+  it('opens the tab the user selects', async () => {
+    renderTabs(AssetTab.PROPERTIES);
 
     await userEvent.click(screen.getByRole('tab', { name: /equipments/i }));
 
-    expect(onTabChange).toHaveBeenCalledWith(AssetEquipmentTab.EQUIPMENTS);
+    expect(store.getState().navigationState.activeAssetTab).toBe(AssetTab.EQUIPMENTS);
+    expect(await screen.findByText('Equipment ID: P-1')).toBeInTheDocument();
   });
+
+  type TabsOptions = {
+    asset?: typeof asset;
+    tabCounts?: AssetDetailsTabCounts;
+  };
+
+  function renderTabs(activeAssetTab: AssetTab, options: TabsOptions = {}) {
+    store = makeNavigationStore({ activeAssetTab });
+
+    return render(
+      <AssetDetailsTabs
+        asset={options.asset ?? asset}
+        tabCounts={options.tabCounts ?? NO_TAB_COUNTS}
+      />,
+      { wrapper },
+    );
+  }
 });

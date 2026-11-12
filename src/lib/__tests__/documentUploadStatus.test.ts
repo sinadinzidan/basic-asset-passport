@@ -20,10 +20,7 @@ describe(getDocumentUploadStatus.name, () => {
   });
 
   it('is processing while a young document is not marked uploaded', () => {
-    const status = getDocumentUploadStatus(
-      { isUploaded: false, createdTime: NOW - 1_000 },
-      NOW,
-    );
+    const status = getDocumentUploadStatus({ isUploaded: false, createdTime: NOW - 1_000 }, NOW);
 
     expect(status).toBe(DocumentUploadStatus.PROCESSING);
   });

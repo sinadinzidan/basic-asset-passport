@@ -1,13 +1,16 @@
 import { useEffect, useState } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
 
-import { CHART_SIDEBAR_TRANSITION_MS, CHART_SIDEBAR_WIDTH_PX } from '../../../constants/timeSeriesChart';
+import {
+  CHART_SIDEBAR_TRANSITION_MS,
+  CHART_SIDEBAR_WIDTH_PX,
+} from '../../../constants/timeSeriesChart';
 import type { ChartPanel } from '../../../enums/timeSeriesChart';
 import { useChartTimers } from '../../../hooks/time-series-chart/useChartTimers';
 
 import { ChartSidebar } from './ChartSidebar';
 
-interface ChartSidebarSlotProps {
+interface ChartSidebarSlotProperties {
   panel: ChartPanel | undefined;
   assistantLabel?: string;
   onClose: () => void;
@@ -28,7 +31,12 @@ const SLOT_STYLE: CSSProperties & Record<`--${string}`, string> = {
  * until it is gone. The room it takes is given and taken back once, not animated, so the plot is not redrawn on every frame. Another panel
  * replaces the content directly. While it is shut nothing of it is in the page.
  */
-export function ChartSidebarSlot({ panel, assistantLabel, onClose, renderPanel }: ChartSidebarSlotProps) {
+export function ChartSidebarSlot({
+  panel,
+  assistantLabel,
+  onClose,
+  renderPanel,
+}: ChartSidebarSlotProperties) {
   const timers = useChartTimers();
   const [shown, setShown] = useState(panel);
   if (panel !== undefined && panel !== shown) setShown(panel);

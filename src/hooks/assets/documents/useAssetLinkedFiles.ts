@@ -7,23 +7,22 @@ import {
   ASSET_PASSPORT_MODEL_VERSION,
 } from '../../../constants/assets';
 import {
+  DOCUMENT_QUERY_LIMIT,
   DOCUMENT_QUERY_STALE_TIME_MS,
   FILES_VIEW_EXTERNAL_ID,
 } from '../../../constants/documents';
-import { listAssetLinkedFiles } from '../../../services/assets/documents/assetDocumentService';
+import { isKeyOfList } from '../../../lib/queryKeys';
+import { listAssetLinkedFiles } from '../../../services/assets/documents/assetDocument';
 import type { AssetIdentifier } from '../../../types/asset';
-import { useAssetDataClient } from '../useAssetDataClient';
+import { useAssetContext } from '../useAssetContext';
 
-const defaultDeps = { useAssetDataClient, listAssetLinkedFiles };
+const defaultDeps = { listAssetLinkedFiles };
 
 export type UseAssetLinkedFilesContextType = typeof defaultDeps;
 export const UseAssetLinkedFilesContext =
   createContext<UseAssetLinkedFilesContextType>(defaultDeps);
 
-export function getAssetLinkedFilesQueryKey(
-  project: string,
-  assetIdentifier: AssetIdentifier,
-) {
+export function getAssetLinkedFilesQueryKey(project: string, assetIdentifier: AssetIdentifier) {
   return [
     'asset-linked-files',
     project,
@@ -36,15 +35,20 @@ export function getAssetLinkedFilesQueryKey(
   ];
 }
 
-/** The files that already exist in the domain model for the asset. Read separately from the documents uploaded here, so a failure to read them never hides those. */
-export function useAssetLinkedFiles(assetIdentifier: AssetIdentifier) {
-  const { useAssetDataClient: useClient, listAssetLinkedFiles: loadFiles } =
-    useContext(UseAssetLinkedFilesContext);
-  const client = useClient();
+export function useAssetLinkedFiles(
+  assetIdentifier: AssetIdentifier,
+  limit: number = DOCUMENT_QUERY_LIMIT,
+) {
+  const { listAssetLinkedFiles: loadFiles } = useContext(UseAssetLinkedFilesContext);
+  const client = useAssetContext();
+
+  const listKey = getAssetLinkedFilesQueryKey(client.project, assetIdentifier);
 
   return useQuery({
-    queryKey: getAssetLinkedFilesQueryKey(client.project, assetIdentifier),
-    queryFn: () => loadFiles(client, assetIdentifier),
+    queryKey: [...listKey, limit],
+    queryFn: () => loadFiles(client, assetIdentifier, limit),
     staleTime: DOCUMENT_QUERY_STALE_TIME_MS,
+    placeholderData: (previousData, previousQuery) =>
+      isKeyOfList(previousQuery?.queryKey, listKey) ? previousData : undefined,
   });
 }

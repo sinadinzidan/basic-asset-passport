@@ -33,7 +33,10 @@
       transparent 50%,
       color-mix(in srgb, var(--chart-band-shade, #040a1a) 20%, transparent) 100%
     ),
-    var(--chart-band-gradient, linear-gradient(100deg, #050f26 0%, #0a2d66 26%, #1257a8 56%, #1f86d6 80%, #35bff2 100%));
+    var(
+      --chart-band-gradient,
+      linear-gradient(100deg, #050f26 0%, #0a2d66 26%, #1257a8 56%, #1f86d6 80%, #35bff2 100%)
+    );
   box-shadow: none;
 }
 .chart-topbar :is(h2, svg) {
@@ -43,7 +46,12 @@
   background: color-mix(in srgb, var(--chart-band-ink, #fff) 30%, transparent);
 }
 .chart-topbar
-  :is(button, [data-slot='select-trigger'], [data-slot='popover-trigger'], [data-slot='dropdown-menu-trigger']) {
+  :is(
+    button,
+    [data-slot='select-trigger'],
+    [data-slot='popover-trigger'],
+    [data-slot='dropdown-menu-trigger']
+  ) {
   border: 1px solid color-mix(in srgb, var(--chart-band-ink, #fff) 26%, transparent) !important;
   background: color-mix(in srgb, var(--chart-band-ink, #fff) 11%, transparent) !important;
   background-image: none !important;
@@ -52,7 +60,12 @@
   backdrop-filter: blur(6px);
 }
 .chart-topbar
-  :is(button, [data-slot='select-trigger'], [data-slot='popover-trigger'], [data-slot='dropdown-menu-trigger']):hover {
+  :is(
+    button,
+    [data-slot='select-trigger'],
+    [data-slot='popover-trigger'],
+    [data-slot='dropdown-menu-trigger']
+  ):hover {
   background: color-mix(in srgb, var(--chart-band-ink, #fff) 22%, transparent) !important;
   filter: none;
 }

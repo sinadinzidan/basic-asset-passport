@@ -1,3 +1,7 @@
+import { MILLISECONDS_PER_MINUTE } from '../constants/monitoring';
+
+const DEFAULT_PAD_WIDTH = 2;
+const YEAR_PAD_WIDTH = 4;
 export interface ChartTimeZone {
   /** An IANA zone name, such as "Europe/Oslo". */
   id: string;
@@ -47,16 +51,24 @@ function wallClockAt(ms: number): WallClock {
     minute: 'numeric',
     hourCycle: 'h23',
   }).formatToParts(new Date(ms));
-  const read = (type: Intl.DateTimeFormatPartTypes): number => Number(parts.find((part) => part.type === type)?.value);
-  return { year: read('year'), month: read('month'), day: read('day'), hour: read('hour'), minute: read('minute') };
+  const read = (type: Intl.DateTimeFormatPartTypes): number =>
+    Number(parts.find((part) => part.type === type)?.value);
+  return {
+    year: read('year'),
+    month: read('month'),
+    day: read('day'),
+    hour: read('hour'),
+    minute: read('minute'),
+  };
 }
 
-const pad = (value: number, width = 2): string => String(value).padStart(width, '0');
+const pad = (value: number, width = DEFAULT_PAD_WIDTH): string =>
+  String(value).padStart(width, '0');
 
 /** An instant as "YYYY-MM-DDTHH:mm" on the wall clock of the chart's zone. */
 export function toZonedInput(ms: number): string {
   const { year, month, day, hour, minute } = wallClockAt(ms);
-  return `${pad(year, 4)}-${pad(month)}-${pad(day)}T${pad(hour)}:${pad(minute)}`;
+  return `${pad(year, YEAR_PAD_WIDTH)}-${pad(month)}-${pad(day)}T${pad(hour)}:${pad(minute)}`;
 }
 
 /** The instant a wall-clock "YYYY-MM-DDTHH:mm" of the chart's zone names; undefined when the text is not a time. */
@@ -65,7 +77,10 @@ export function fromZonedInput(text: string): number | undefined {
   if (Number.isNaN(wallAsUtc)) return undefined;
   const offsetAt = (ms: number): number => {
     const { year, month, day, hour, minute } = wallClockAt(ms);
-    return Date.UTC(year, month - 1, day, hour, minute) - Math.floor(ms / 60_000) * 60_000;
+    return (
+      Date.UTC(year, month - 1, day, hour, minute) -
+      Math.floor(ms / MILLISECONDS_PER_MINUTE) * MILLISECONDS_PER_MINUTE
+    );
   };
   const first = wallAsUtc - offsetAt(wallAsUtc);
   return wallAsUtc - offsetAt(first);

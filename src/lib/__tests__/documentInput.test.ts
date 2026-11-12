@@ -9,9 +9,7 @@ describe(getDocumentFileProblem.name, () => {
   });
 
   it('accepts a file exactly at the size limit', () => {
-    expect(
-      getDocumentFileProblem({ size: DOCUMENT_MAX_FILE_SIZE_BYTES }),
-    ).toBeNull();
+    expect(getDocumentFileProblem({ size: DOCUMENT_MAX_FILE_SIZE_BYTES })).toBeNull();
   });
 
   it('rejects an empty file', () => {
@@ -19,8 +17,8 @@ describe(getDocumentFileProblem.name, () => {
   });
 
   it('rejects a file over the size limit', () => {
-    expect(
-      getDocumentFileProblem({ size: DOCUMENT_MAX_FILE_SIZE_BYTES + 1 }),
-    ).toBe('The file is larger than 50 MB.');
+    expect(getDocumentFileProblem({ size: DOCUMENT_MAX_FILE_SIZE_BYTES + 1 })).toBe(
+      'The file is larger than 50 MB.',
+    );
   });
 });

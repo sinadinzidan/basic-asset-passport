@@ -2,23 +2,19 @@ import { Search } from '@cognite/aura/components/search';
 import { useState, type ChangeEvent, type KeyboardEvent } from 'react';
 
 import { ASSET_SEARCH_DEBOUNCE_MS } from '../../constants/assets';
+import { ENTER_KEY } from '../../constants/keyboard';
 import { useDebouncedCallback } from '../../hooks/general/useDebouncedCallback';
 
 type AssetSearchFieldProps = {
-  /** The search that is applied now. */
   value: string;
-  /** Applies a search; an empty text means no search. */
+
   onChange: (searchText: string) => void;
 };
 
-/**
- * The search box of the asset register. What is typed shows at once, but is
- * applied only after a pause, on Enter, or when cleared, so the register is not
- * searched on every keystroke.
- */
 export function AssetSearchField({ value, onChange }: AssetSearchFieldProps) {
-  const [draft, setDraft] = useState(value);
   const apply = useDebouncedCallback(onChange, ASSET_SEARCH_DEBOUNCE_MS);
+
+  const [draft, setDraft] = useState(value);
 
   function handleChange(event: ChangeEvent<HTMLInputElement>): void {
     setDraft(event.target.value);
@@ -26,7 +22,7 @@ export function AssetSearchField({ value, onChange }: AssetSearchFieldProps) {
   }
 
   function handleKeyDown(event: KeyboardEvent<HTMLInputElement>): void {
-    if (event.key !== 'Enter') return;
+    if (event.key !== ENTER_KEY) return;
     apply.cancel();
     onChange(draft.trim());
   }

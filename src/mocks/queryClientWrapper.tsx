@@ -9,8 +9,6 @@ export function makeQueryClientWrapper(
   queryClient: QueryClient = makeTestQueryClient(),
 ): ComponentType<{ children: ReactNode }> {
   return function QueryClientWrapper({ children }) {
-    return (
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-    );
+    return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
   };
 }

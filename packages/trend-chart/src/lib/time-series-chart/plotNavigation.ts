@@ -36,12 +36,20 @@ export function zoomWindow(
   return clampWindow({ start, end: start + nextSpan }, bounds);
 }
 
-export function panWindow(window: ChartTimeRange, bounds: ChartTimeRange, deltaMs: number): ChartTimeRange {
+export function panWindow(
+  window: ChartTimeRange,
+  bounds: ChartTimeRange,
+  deltaMs: number,
+): ChartTimeRange {
   return clampWindow({ start: window.start + deltaMs, end: window.end + deltaMs }, bounds);
 }
 
 /** A dragged span becomes the window; undefined when it is narrower than the minimum window, so a stray click never zooms. */
-export function dragWindow(bounds: ChartTimeRange, firstMs: number, secondMs: number): ChartTimeRange | undefined {
+export function dragWindow(
+  bounds: ChartTimeRange,
+  firstMs: number,
+  secondMs: number,
+): ChartTimeRange | undefined {
   const start = Math.max(bounds.start, Math.min(firstMs, secondMs));
   const end = Math.min(bounds.end, Math.max(firstMs, secondMs));
   if (end - start < MINIMUM_WINDOW_MS) return undefined;
@@ -62,11 +70,16 @@ export function plotWidth(geometry: PlotGeometry): number {
 
 export function timeToX(geometry: PlotGeometry, atMs: number): number {
   return (
-    geometry.left + ((atMs - geometry.window.start) / Math.max(1, windowSpan(geometry.window))) * plotWidth(geometry)
+    geometry.left +
+    ((atMs - geometry.window.start) / Math.max(1, windowSpan(geometry.window))) *
+      plotWidth(geometry)
   );
 }
 
 export function xToTime(geometry: PlotGeometry, xInPlot: number): number {
   const width = plotWidth(geometry);
-  return geometry.window.start + (Math.min(Math.max(xInPlot, 0), width) / width) * windowSpan(geometry.window);
+  return (
+    geometry.window.start +
+    (Math.min(Math.max(xInPlot, 0), width) / width) * windowSpan(geometry.window)
+  );
 }

@@ -1,32 +1,38 @@
 import { Skeleton } from '@cognite/aura/components/skeleton';
 import { useId } from 'react';
 
+import { TREND_WINDOW_LABEL } from '../../../constants/timeseries';
+import { TimeseriesPreviewKind } from '../../../enums/timeseriesPreviewKind';
 import { buildSparkline, formatTrendValue, summarizeTrend } from '../../../lib/timeseriesTrend';
 import type { TimeseriesPreview as Preview } from '../../../types/timeseries';
 
 const CHART_SIZE = { width: 320, height: 104, padding: 8 };
 
-const MESSAGES = {
-  NON_NUMERIC: 'Not a numeric series: there is no trend to draw.',
-  EMPTY: 'No readings in the last 6 months.',
-  UNAVAILABLE: 'The preview could not be loaded.',
-} as const;
+const STAT_COUNT = 4;
+
+const PREVIEW_MESSAGE_BY_KIND: Record<
+  Exclude<Preview['kind'], TimeseriesPreviewKind.LOADING | TimeseriesPreviewKind.READY>,
+  string
+> = {
+  [TimeseriesPreviewKind.NON_NUMERIC]: 'Not a numeric series: there is no trend to draw.',
+  [TimeseriesPreviewKind.EMPTY]: `No readings in the last ${TREND_WINDOW_LABEL}.`,
+  [TimeseriesPreviewKind.UNAVAILABLE]: 'The preview could not be loaded.',
+};
 
 type TimeseriesPreviewProps = {
   preview: Preview;
   unit: string | null;
 };
 
-/** The last 6 months of a series as a glowing area chart with its latest, lowest, highest and average reading. */
 export function TimeseriesPreview({ preview, unit }: TimeseriesPreviewProps) {
   const gradientId = useId();
 
-  if (preview.kind === 'LOADING') {
+  if (preview.kind === TimeseriesPreviewKind.LOADING) {
     return (
       <div className="timeseries-preview" aria-busy="true" aria-label="Loading preview">
         <Skeleton className="h-[6.5rem] w-full" />
         <div className="timeseries-preview__stats">
-          {[0, 1, 2, 3].map((index) => (
+          {Array.from({ length: STAT_COUNT }, (_item, index) => (
             <Skeleton key={index} className="h-8 w-full" />
           ))}
         </div>
@@ -34,10 +40,10 @@ export function TimeseriesPreview({ preview, unit }: TimeseriesPreviewProps) {
     );
   }
 
-  if (preview.kind !== 'READY') {
+  if (preview.kind !== TimeseriesPreviewKind.READY) {
     return (
       <p className="timeseries-preview timeseries-preview--message">
-        {MESSAGES[preview.kind]}
+        {PREVIEW_MESSAGE_BY_KIND[preview.kind]}
       </p>
     );
   }
@@ -59,7 +65,7 @@ export function TimeseriesPreview({ preview, unit }: TimeseriesPreviewProps) {
       <svg
         className="trend-chart"
         role="img"
-        aria-label={`Last 6 months: latest ${formatTrendValue(summary.latest)}${suffix}, from ${formatTrendValue(summary.minimum)} to ${formatTrendValue(summary.maximum)}${suffix}`}
+        aria-label={`Last ${TREND_WINDOW_LABEL}: latest ${formatTrendValue(summary.latest)}${suffix}, from ${formatTrendValue(summary.minimum)} to ${formatTrendValue(summary.maximum)}${suffix}`}
         viewBox={`0 0 ${CHART_SIZE.width} ${CHART_SIZE.height}`}
       >
         <defs>
@@ -68,14 +74,14 @@ export function TimeseriesPreview({ preview, unit }: TimeseriesPreviewProps) {
             <stop className="trend-chart__stop-bottom" offset="1" />
           </linearGradient>
         </defs>
-        {drawing.gridLines.map((y) => (
+        {drawing.gridLines.map((gridLineY) => (
           <line
-            key={y}
+            key={gridLineY}
             className="trend-chart__grid"
             x1={CHART_SIZE.padding}
             x2={CHART_SIZE.width - CHART_SIZE.padding}
-            y1={y}
-            y2={y}
+            y1={gridLineY}
+            y2={gridLineY}
           />
         ))}
         <path d={drawing.areaPath} fill={`url(#${gradientId})`} />
@@ -94,16 +100,12 @@ export function TimeseriesPreview({ preview, unit }: TimeseriesPreviewProps) {
         />
       </svg>
       <div className="timeseries-preview__range" aria-hidden>
-        <span>6 months ago</span>
+        <span>{`${TREND_WINDOW_LABEL} ago`}</span>
         <span>Now</span>
       </div>
       <dl className="timeseries-preview__stats">
         {stats.map(({ label, value, isHighlighted }) => (
-          <div
-            key={label}
-            className="timeseries-preview__stat"
-            data-highlighted={isHighlighted}
-          >
+          <div key={label} className="timeseries-preview__stat" data-highlighted={isHighlighted}>
             <dt>{label}</dt>
             <dd>
               {formatTrendValue(value)}

@@ -6,10 +6,7 @@ type AssetDocumentUploadingItemProps = {
   name: string;
 };
 
-/** A file on its way to CDF: it takes the place of the document until the real one is listed. */
-export function AssetDocumentUploadingItem({
-  name,
-}: AssetDocumentUploadingItemProps) {
+export function AssetDocumentUploadingItem({ name }: AssetDocumentUploadingItemProps) {
   return (
     <article aria-label={`Uploading ${name}`} className="data-card">
       <header className="data-card__header">

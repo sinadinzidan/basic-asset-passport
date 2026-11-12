@@ -8,28 +8,21 @@ import {
   ASSET_PASSPORT_MODEL_SPACE,
   ASSET_PASSPORT_MODEL_VERSION,
 } from '../../constants/assets';
-import { listAssets, searchAssets } from '../../services/assets/assetService';
+import { listAssets, searchAssets } from '../../services/assets/asset';
 
-import { useAssetDataClient } from './useAssetDataClient';
+import { useAssetContext } from './useAssetContext';
 
-const defaultDeps = { useAssetDataClient, listAssets, searchAssets };
+const defaultDeps = { listAssets, searchAssets };
 
 export type UseAssetsContextType = typeof defaultDeps;
-export const UseAssetsContext =
-  createContext<UseAssetsContextType>(defaultDeps);
+export const UseAssetsContext = createContext<UseAssetsContextType>(defaultDeps);
 
-/**
- * One page of assets: the page after `cursor` of the whole register, or, when
- * there is search text, the assets matching it (which have no further pages).
- */
 export function useAssets(cursor?: string, searchText: string = '') {
-  const {
-    useAssetDataClient: useClient,
-    listAssets: loadAssets,
-    searchAssets: findAssets,
-  } = useContext(UseAssetsContext);
-  const client = useClient();
+  const { listAssets: loadAssets, searchAssets: findAssets } = useContext(UseAssetsContext);
+  const client = useAssetContext();
+
   const searchQuery = searchText.trim();
+  const pageCursor = searchQuery ? undefined : cursor;
 
   return useQuery({
     queryKey: [
@@ -39,13 +32,10 @@ export function useAssets(cursor?: string, searchText: string = '') {
       ASSET_PASSPORT_MODEL_SPACE,
       ASSET_PASSPORT_MODEL_VERSION,
       ASSET_VIEW_EXTERNAL_ID,
-      cursor,
+      pageCursor,
       searchQuery,
     ],
-    queryFn: () =>
-      searchQuery
-        ? findAssets(client, searchQuery)
-        : loadAssets(client, cursor),
+    queryFn: () => (searchQuery ? findAssets(client, searchQuery) : loadAssets(client, pageCursor)),
     staleTime: ASSET_QUERY_STALE_TIME_MS,
   });
 }

@@ -1,4 +1,7 @@
+import { useId } from 'react';
 import type { ReactNode } from 'react';
+
+import { HudShape } from '../../enums/hudShape';
 
 import { HudPanel } from './HudPanel';
 
@@ -9,16 +12,22 @@ type StatTileProps = {
 };
 
 export function StatTile({ label, value, icon }: StatTileProps) {
+  const labelId = useId();
+
   return (
-    <HudPanel bodyClassName="hud-row">
-      <span aria-hidden className="icon-chip size-12">
-        {icon}
-      </span>
-      <div className="min-w-0">
-        <p className="text-sm text-muted-foreground">{label}</p>
-        <p className="font-display text-3xl font-semibold leading-tight tabular-nums">
-          {value}
-        </p>
+    <HudPanel shape={HudShape.NOTCHED} bodyClassName="stat-tile">
+      <div role="group" aria-labelledby={labelId} className="stat-tile__content">
+        <div className="stat-tile__head">
+          <p id={labelId} className="hud-tag hud-kicker">
+            <span className="hud-dot" aria-hidden />
+            {label}
+          </p>
+          <span aria-hidden className="stat-tile__rule" />
+          <span aria-hidden className="stat-tile__icon">
+            {icon}
+          </span>
+        </div>
+        <p className="font-display text-3xl font-semibold leading-tight tabular-nums">{value}</p>
       </div>
     </HudPanel>
   );

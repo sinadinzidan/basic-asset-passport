@@ -1,10 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-  buildSparkline,
-  formatTrendValue,
-  summarizeTrend,
-} from '../timeseriesTrend';
+import { buildSparkline, formatTrendValue, summarizeTrend } from '../timeseriesTrend';
 
 const size = { width: 100, height: 50, padding: 5 };
 
@@ -77,9 +73,7 @@ describe(buildSparkline.name, () => {
   });
 
   it('gives three guide lines from top to bottom', () => {
-    expect(buildSparkline(points([1, 2]), size)?.gridLines).toEqual([
-      5, 25, 45,
-    ]);
+    expect(buildSparkline(points([1, 2]), size)?.gridLines).toEqual([5, 25, 45]);
   });
 });
 

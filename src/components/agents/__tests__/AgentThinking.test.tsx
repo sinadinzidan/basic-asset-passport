@@ -1,7 +1,7 @@
 import { act, render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
-import { UseRotatingWordContext } from '../../../hooks/agents/useRotatingWord';
+import { UseRotatingWordContext } from '../../../hooks/general/useRotatingWord';
 import { AgentThinking } from '../AgentThinking';
 
 describe(AgentThinking.name, () => {
@@ -32,9 +32,8 @@ describe(AgentThinking.name, () => {
   it('shows a playful word on screen and changes it over time', () => {
     const { tick } = renderThinking();
     const visible = () =>
-      screen
-        .getByRole('status')
-        .querySelector('[aria-hidden="true"].agent-chat__word')?.textContent;
+      screen.getByRole('status').querySelector('[aria-hidden="true"].agent-chat__word')
+        ?.textContent;
 
     const first = visible();
     tick();

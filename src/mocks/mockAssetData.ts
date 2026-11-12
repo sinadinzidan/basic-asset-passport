@@ -12,25 +12,21 @@ import {
   DOCUMENT_VIEW_EXTERNAL_ID,
   FILES_VIEW_EXTERNAL_ID,
 } from '../constants/documents';
-import {
-  NOTE_INSTANCE_SPACE,
-  NOTE_VIEW_EXTERNAL_ID,
-} from '../constants/notes';
+import { NOTE_INSTANCE_SPACE, NOTE_VIEW_EXTERNAL_ID } from '../constants/notes';
 import { TIMESERIES_VIEW_EXTERNAL_ID } from '../constants/timeseries';
+import { TestPropertyType } from '../enums/testPropertyType';
 import type { NodeInstance } from '../services/assets/viewHelpers';
 
 import { makeNodeInstance, makeViewDefinition } from './cdf';
 
 export const MOCK_VIEW_VERSION = 'v1';
-export const MOCK_RMDM_VIEW_SPACE = 'sp-dm-idi-rmdm';
+const MOCK_RMDM_VIEW_SPACE = 'sp-dm-idi-rmdm';
 export const MOCK_ASSET_INSTANCE_SPACE = 'mock-asset-instances';
-export const MOCK_EQUIPMENT_INSTANCE_SPACE = 'mock-equipment-instances';
+const MOCK_EQUIPMENT_INSTANCE_SPACE = 'mock-equipment-instances';
 
 const MOCK_ASSET_COUNT = 25;
 
-// Property names follow the views the app reads from CDF, including the
-// system, relation and JSON properties the details page leaves out.
-export const MOCK_ASSET_VIEW: ViewDefinition = makeViewDefinition(
+const MOCK_ASSET_VIEW: ViewDefinition = makeViewDefinition(
   ASSET_VIEW_EXTERNAL_ID,
   {
     name: { label: 'Name' },
@@ -42,14 +38,14 @@ export const MOCK_ASSET_VIEW: ViewDefinition = makeViewDefinition(
     installationDate: { label: 'Installation date' },
     sourceSystem: { label: 'Source system' },
     functionalLocationId: { label: 'Functional location ID' },
-    parent: { label: 'Parent', type: 'direct' },
-    metadata: { label: 'Metadata', type: 'json' },
+    parent: { label: 'Parent', type: TestPropertyType.DIRECT },
+    metadata: { label: 'Metadata', type: TestPropertyType.JSON },
   },
   MOCK_VIEW_VERSION,
   MOCK_RMDM_VIEW_SPACE,
 );
 
-export const MOCK_EQUIPMENT_VIEW: ViewDefinition = makeViewDefinition(
+const MOCK_EQUIPMENT_VIEW: ViewDefinition = makeViewDefinition(
   EQUIPMENT_VIEW_EXTERNAL_ID,
   {
     name: { label: 'Name' },
@@ -59,20 +55,20 @@ export const MOCK_EQUIPMENT_VIEW: ViewDefinition = makeViewDefinition(
     ratedPowerKw: { label: 'Rated power (kW)' },
     isCritical: { label: 'Critical equipment' },
     sourceSystem: { label: 'Source system' },
-    asset: { label: 'Asset', type: 'direct' },
+    asset: { label: 'Asset', type: TestPropertyType.DIRECT },
   },
   MOCK_VIEW_VERSION,
   MOCK_RMDM_VIEW_SPACE,
 );
 
-export const MOCK_NOTE_VIEW: ViewDefinition = makeViewDefinition(
+const MOCK_NOTE_VIEW: ViewDefinition = makeViewDefinition(
   NOTE_VIEW_EXTERNAL_ID,
   {
     title: { label: 'Title' },
     body: { label: 'Note' },
     author: { label: 'Author' },
     authorId: { label: 'Author ID' },
-    asset: { label: 'Asset', type: 'direct' },
+    asset: { label: 'Asset', type: TestPropertyType.DIRECT },
   },
   MOCK_VIEW_VERSION,
   ASSET_PASSPORT_MODEL_SPACE,
@@ -85,13 +81,13 @@ export const MOCK_DOCUMENT_VIEW: ViewDefinition = makeViewDefinition(
     mimeType: { label: 'File type' },
     isUploaded: { label: 'Upload status' },
     uploadedTime: { label: 'Uploaded time' },
-    asset: { label: 'Asset', type: 'direct' },
+    asset: { label: 'Asset', type: TestPropertyType.DIRECT },
   },
   MOCK_VIEW_VERSION,
   ASSET_PASSPORT_MODEL_SPACE,
 );
 
-export const MOCK_TIMESERIES_VIEW: ViewDefinition = makeViewDefinition(
+const MOCK_TIMESERIES_VIEW: ViewDefinition = makeViewDefinition(
   TIMESERIES_VIEW_EXTERNAL_ID,
   {
     name: { label: 'Name' },
@@ -107,29 +103,28 @@ export const MOCK_TIMESERIES_VIEW: ViewDefinition = makeViewDefinition(
     oweLimitMin: { label: 'OWE Limit Min' },
     tripLimitMax: { label: 'Trip Limit Max' },
     tripLimitMin: { label: 'Trip Limit Min' },
-    // A PI point setting the card does not show, as the real view has dozens.
+
     compdev: { label: 'Compression Deviation' },
-    assets: { label: 'Assets', type: 'direct' },
+    assets: { label: 'Assets', type: TestPropertyType.DIRECT },
   },
   MOCK_VIEW_VERSION,
   MOCK_RMDM_VIEW_SPACE,
 );
 
-/** RMDM's view of files, which link to assets through their own `assets` list. Read by reference, so not part of the data model. */
-export const MOCK_FILES_VIEW: ViewDefinition = makeViewDefinition(
+const MOCK_FILES_VIEW: ViewDefinition = makeViewDefinition(
   FILES_VIEW_EXTERNAL_ID,
   {
     name: { label: 'Name' },
     mimeType: { label: 'File type' },
     isUploaded: { label: 'Upload status' },
     uploadedTime: { label: 'Uploaded time' },
-    assets: { label: 'Assets', type: 'direct' },
+    assets: { label: 'Assets', type: TestPropertyType.DIRECT },
   },
   MOCK_VIEW_VERSION,
   MOCK_RMDM_VIEW_SPACE,
 );
 
-export const MOCK_VIEWS: ViewDefinition[] = [
+const MOCK_VIEWS: ViewDefinition[] = [
   MOCK_ASSET_VIEW,
   MOCK_EQUIPMENT_VIEW,
   MOCK_TIMESERIES_VIEW,
@@ -159,22 +154,9 @@ const ASSET_TYPES = [
   'Separator Vessel',
   'Flare Knock-out Drum',
 ];
-const STATUSES = [
-  'Operating',
-  'Operating',
-  'Under maintenance',
-  'Decommissioned',
-];
-const CRITICALITIES = [
-  'A - High criticality',
-  'B - Medium criticality',
-  'C - Low criticality',
-];
-const MANUFACTURERS = [
-  'Northwind Industrial',
-  'Contoso Rotating',
-  'Fabrikam Process',
-];
+const STATUSES = ['Operating', 'Operating', 'Under maintenance', 'Decommissioned'];
+const CRITICALITIES = ['A - High criticality', 'B - Medium criticality', 'C - Low criticality'];
+const MANUFACTURERS = ['Northwind Industrial', 'Contoso Rotating', 'Fabrikam Process'];
 
 function makeMockAsset(index: number): NodeInstance {
   const number = index + 1;
@@ -189,9 +171,7 @@ function makeMockAsset(index: number): NodeInstance {
     },
     {
       name: `${ASSET_TYPES[index % ASSET_TYPES.length]} ${number}`,
-      ...(hasDescription
-        ? { description: `${plant.name} process unit ${number}` }
-        : {}),
+      ...(hasDescription ? { description: `${plant.name} process unit ${number}` } : {}),
       plantName: plant.name,
       plantId: plant.id,
       flocStatus: STATUSES[index % STATUSES.length],
@@ -205,10 +185,9 @@ function makeMockAsset(index: number): NodeInstance {
 }
 
 function makeMockEquipment(assetIndex: number): NodeInstance[] {
-  // Assets 3, 6, 9... have no equipment so the empty state can be seen.
   const count = (assetIndex + 1) % 3 === 0 ? 0 : (assetIndex % 3) + 1;
 
-  return Array.from({ length: count }, (_, equipmentIndex) => {
+  return Array.from({ length: count }, (_item, equipmentIndex) => {
     const label = `P-${assetIndex + 1}0${equipmentIndex + 1}`;
 
     return makeNodeInstance(
@@ -229,17 +208,12 @@ function makeMockEquipment(assetIndex: number): NodeInstance[] {
 
 export const MOCK_ASSETS: NodeInstance[] = Array.from(
   { length: MOCK_ASSET_COUNT },
-  (_, index) => makeMockAsset(index),
+  (_item, index) => makeMockAsset(index),
 );
 
-/** Equipment per asset external ID, standing in for the `asset` relation. */
-export const MOCK_EQUIPMENT_BY_ASSET_ID: ReadonlyMap<string, NodeInstance[]> =
-  new Map(
-    MOCK_ASSETS.map((asset, index) => [
-      asset.externalId,
-      makeMockEquipment(index),
-    ]),
-  );
+export const MOCK_EQUIPMENT_BY_ASSET_ID: ReadonlyMap<string, NodeInstance[]> = new Map(
+  MOCK_ASSETS.map((asset, index) => [asset.externalId, makeMockEquipment(index)]),
+);
 
 const HOUR_MS = 3_600_000;
 
@@ -265,7 +239,6 @@ function makeMockNote(
   };
 }
 
-/** Notes shown for the first assets so the list and its newest-first order can be seen. */
 export const MOCK_NOTES: readonly NodeInstance[] = [
   makeMockNote('note-mock-1', 0, 72, {
     title: 'Seal inspection',
@@ -307,7 +280,6 @@ function makeMockDocument(
   };
 }
 
-/** Documents shown for the first assets, including one whose upload never finished. */
 export const MOCK_DOCUMENTS: readonly NodeInstance[] = [
   makeMockDocument('doc-mock-1', 0, 96, {
     name: 'Pump datasheet.pdf',
@@ -319,8 +291,7 @@ export const MOCK_DOCUMENTS: readonly NodeInstance[] = [
   }),
   makeMockDocument('doc-mock-3', 0, 2, {
     name: 'Maintenance schedule.xlsx',
-    mimeType:
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     isUploaded: false,
   }),
   makeMockDocument('doc-mock-4', 1, 30, {
@@ -357,7 +328,6 @@ function makeMockFile(
   };
 }
 
-/** Files that already exist for the first assets; one is linked to two assets, and the third asset has none. */
 export const MOCK_FILES: readonly NodeInstance[] = [
   makeMockFile('file-mock-1', [0, 1], 24 * 90, {
     name: 'Pump data sheet.pdf',
@@ -406,7 +376,6 @@ function makeMockTimeseries(
   );
 }
 
-/** Time series linked to the first assets; the third asset has none so the empty state can be seen. */
 export const MOCK_TIMESERIES: readonly NodeInstance[] = [
   makeMockTimeseries('PI.G307.PT-101', [0], {
     name: 'Discharge pressure',

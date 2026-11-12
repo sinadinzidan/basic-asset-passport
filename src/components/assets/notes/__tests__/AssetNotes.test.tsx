@@ -18,9 +18,11 @@ import {
   UseUpdateAssetNoteContext,
   type UseUpdateAssetNoteContextType,
 } from '../../../../hooks/assets/notes/useUpdateAssetNote';
+import { AssetContext } from '../../../../hooks/assets/useAssetContext';
 import { makeMockClient } from '../../../../mocks/cogniteClient';
+import { makeLimitedList } from '../../../../mocks/lists';
 import { makeAssetNote } from '../../../../mocks/notes';
-import { makeQueryClientWrapper } from '../../../../mocks/queryClientWrapper';
+import { makeQueryClientWrapper } from '../../../../mocks/QueryClientWrapper';
 import { AssetNotes } from '../AssetNotes';
 
 describe(AssetNotes.name, () => {
@@ -29,19 +31,15 @@ describe(AssetNotes.name, () => {
   beforeEach(() => {
     const client = makeMockClient();
     const listContext: UseAssetNotesContextType = {
-      useAssetDataClient: vi.fn(() => client),
-      listAssetNotes: vi.fn(() => Promise.resolve([makeAssetNote()])),
+      listAssetNotes: vi.fn(() => Promise.resolve(makeLimitedList([makeAssetNote()]))),
     };
     const addContext: UseAddAssetNoteContextType = {
-      useAssetDataClient: vi.fn(() => client),
       createAssetNote: vi.fn(() => Promise.resolve()),
     };
     const updateContext: UseUpdateAssetNoteContextType = {
-      useAssetDataClient: vi.fn(() => client),
       updateAssetNote: vi.fn(() => Promise.resolve()),
     };
     const deleteContext: UseDeleteAssetNoteContextType = {
-      useAssetDataClient: vi.fn(() => client),
       deleteAssetNote: vi.fn(() => Promise.resolve()),
     };
     const QueryWrapper = makeQueryClientWrapper();
@@ -50,7 +48,9 @@ describe(AssetNotes.name, () => {
         <UseAddAssetNoteContext.Provider value={addContext}>
           <UseUpdateAssetNoteContext.Provider value={updateContext}>
             <UseDeleteAssetNoteContext.Provider value={deleteContext}>
-              <QueryWrapper>{children}</QueryWrapper>
+              <QueryWrapper>
+                <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
+              </QueryWrapper>
             </UseDeleteAssetNoteContext.Provider>
           </UseUpdateAssetNoteContext.Provider>
         </UseAddAssetNoteContext.Provider>
@@ -59,16 +59,11 @@ describe(AssetNotes.name, () => {
   });
 
   it('shows the add button above the notes of the asset', async () => {
-    render(
-      <AssetNotes
-        assetIdentifier={{ space: 'asset-space', externalId: 'FLOC-1' }}
-      />,
-      { wrapper },
-    );
+    render(<AssetNotes assetIdentifier={{ space: 'asset-space', externalId: 'FLOC-1' }} />, {
+      wrapper,
+    });
 
-    expect(
-      screen.getByRole('button', { name: 'Add note' }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Add note' })).toBeInTheDocument();
     expect(await screen.findByText('Seal inspection')).toBeInTheDocument();
   });
 });

@@ -1,3 +1,10 @@
+import {
+  PERCENT_FULL,
+  PERCENT_HALF,
+  PERCENT_QUARTER,
+  PERCENT_THREE_QUARTERS,
+} from '../../constants/mathConstants';
+import { AxisSide } from '../../enums/axisSide';
 import { ChartMode } from '../../enums/monitoring';
 import { AxisScaleMode } from '../../enums/timeSeriesChart';
 import type { AxisSetting } from '../../types/timeSeriesChart';
@@ -13,7 +20,11 @@ export const TIME_AXIS_HEIGHT_PX = 30;
 export const LANE_GAP_PX = 22;
 /** The value axes may take at most this share of the width; beyond it axes are shared by unit, then the series are normalised. */
 export const MAX_AXES_SHARE_OF_WIDTH = 0.45;
-export const NORMALISED_DOMAIN: NiceScale = { minimum: 0, maximum: 100, ticks: [0, 25, 50, 75, 100] };
+export const NORMALISED_DOMAIN: NiceScale = {
+  minimum: 0,
+  maximum: 100,
+  ticks: [0, PERCENT_QUARTER, PERCENT_HALF, PERCENT_THREE_QUARTERS, PERCENT_FULL],
+};
 const TICK_TARGET_OVERLAID = 6;
 const MIN_TICK_TARGET_OVERLAID = 3;
 const TICK_SPACING_PX = 45;
@@ -31,13 +42,13 @@ export interface PlotSeriesInput {
   unit: string;
   buckets: readonly ChartBucket[];
   limits: LimitValues;
-  showLimits: boolean;
+  shouldShowLimits: boolean;
 }
 
 export interface AxisModel {
   id: string;
   unit: string;
-  side: 'LEFT' | 'RIGHT';
+  side: AxisSide;
   slot: number;
   domain: NiceScale;
   laneIndex: number;
@@ -72,15 +83,19 @@ export interface PlotModel {
   scales: Map<string, SeriesScale>;
 }
 
-function collectValues(series: readonly PlotSeriesInput[], showBand: boolean): number[] {
+function collectValues(series: readonly PlotSeriesInput[], shouldShowBand: boolean): number[] {
   const values: number[] = [];
   for (const entry of series) {
     for (const bucket of entry.buckets) {
       if (bucket.average === null) continue;
-      values.push(showBand && bucket.minimum !== null && bucket.maximum !== null ? bucket.minimum : bucket.average);
-      if (showBand && bucket.maximum !== null) values.push(bucket.maximum);
+      values.push(
+        shouldShowBand && bucket.minimum !== null && bucket.maximum !== null
+          ? bucket.minimum
+          : bucket.average,
+      );
+      if (shouldShowBand && bucket.maximum !== null) values.push(bucket.maximum);
     }
-    if (entry.showLimits) {
+    if (entry.shouldShowLimits) {
       for (const limit of [
         entry.limits.alertLow,
         entry.limits.alertHigh,
@@ -106,18 +121,23 @@ function withManualLimits(scale: NiceScale, setting: AxisSetting, tickTarget: nu
 
 function domainOf(
   series: readonly PlotSeriesInput[],
-  showBand: boolean,
+  shouldShowBand: boolean,
   tickTarget: number,
   setting: AxisSetting,
 ): NiceScale {
-  const values = collectValues(series, showBand);
+  const values = collectValues(series, shouldShowBand);
   const automatic =
-    values.length === 0 ? niceScale(0, 1, tickTarget) : niceScale(Math.min(...values), Math.max(...values), tickTarget);
+    values.length === 0
+      ? niceScale(0, 1, tickTarget)
+      : niceScale(Math.min(...values), Math.max(...values), tickTarget);
   return withManualLimits(automatic, setting, tickTarget);
 }
 
 function tickTargetFor(plotHeight: number): number {
-  return Math.min(TICK_TARGET_OVERLAID, Math.max(MIN_TICK_TARGET_OVERLAID, Math.round(plotHeight / TICK_SPACING_PX)));
+  return Math.min(
+    TICK_TARGET_OVERLAID,
+    Math.max(MIN_TICK_TARGET_OVERLAID, Math.round(plotHeight / TICK_SPACING_PX)),
+  );
 }
 
 export interface PlotModelInput {
@@ -126,12 +146,12 @@ export interface PlotModelInput {
   width: number;
   plotHeight: number;
   laneHeight: number;
-  showBand: boolean;
+  shouldShowBand: boolean;
   axes?: readonly AxisSetting[];
 }
 
 export function buildPlotModel(input: PlotModelInput): PlotModel {
-  const { series, width, showBand } = input;
+  const { series, width, shouldShowBand } = input;
   const axisSettings = input.axes ?? [];
   const unitGroups = groupAxesByUnit(series);
   const room = Math.max(1, Math.floor((width * MAX_AXES_SHARE_OF_WIDTH) / AXIS_WIDTH_PX));
@@ -145,12 +165,21 @@ export function buildPlotModel(input: PlotModelInput): PlotModel {
 
   if (mode === ChartMode.STACKED) {
     series.forEach((entry, index) => {
-      lanes.push({ index, top: PLOT_TOP_PX + index * (input.laneHeight + LANE_GAP_PX), height: input.laneHeight });
-      const domain = domainOf([entry], showBand, TICK_TARGET_LANE, axisSettingFor(axisSettings, entry.id));
+      lanes.push({
+        index,
+        top: PLOT_TOP_PX + index * (input.laneHeight + LANE_GAP_PX),
+        height: input.laneHeight,
+      });
+      const domain = domainOf(
+        [entry],
+        shouldShowBand,
+        TICK_TARGET_LANE,
+        axisSettingFor(axisSettings, entry.id),
+      );
       axes.push({
         id: `axis-${entry.id}`,
         unit: entry.unit,
-        side: 'LEFT',
+        side: AxisSide.LEFT,
         slot: 0,
         domain,
         laneIndex: index,
@@ -164,7 +193,7 @@ export function buildPlotModel(input: PlotModelInput): PlotModel {
     axes.push({
       id: 'axis-normalised',
       unit: '%',
-      side: 'LEFT',
+      side: AxisSide.LEFT,
       slot: 0,
       domain: NORMALISED_DOMAIN,
       laneIndex: 0,
@@ -193,11 +222,11 @@ export function buildPlotModel(input: PlotModelInput): PlotModel {
           .map((entry) => axisSettingFor(axisSettings, entry.id))
           .find((candidate) => candidate.mode === AxisScaleMode.MANUAL) ??
         axisSettingFor(axisSettings, group.seriesIds[0] ?? '');
-      const domain = domainOf(members, showBand, tickTargetFor(input.plotHeight), setting);
+      const domain = domainOf(members, shouldShowBand, tickTargetFor(input.plotHeight), setting);
       axes.push({
         id: `axis-${groupIndex}`,
         unit: group.unit,
-        side: 'LEFT',
+        side: AxisSide.LEFT,
         slot: groupIndex,
         domain,
         laneIndex: 0,
@@ -209,8 +238,14 @@ export function buildPlotModel(input: PlotModelInput): PlotModel {
     });
   }
 
-  const leftSlots = Math.max(1, ...axes.filter((axis) => axis.side === 'LEFT').map((axis) => axis.slot + 1));
-  const rightSlots = Math.max(0, ...axes.filter((axis) => axis.side === 'RIGHT').map((axis) => axis.slot + 1));
+  const leftSlots = Math.max(
+    1,
+    ...axes.filter((axis) => axis.side === AxisSide.LEFT).map((axis) => axis.slot + 1),
+  );
+  const rightSlots = Math.max(
+    0,
+    ...axes.filter((axis) => axis.side === AxisSide.RIGHT).map((axis) => axis.slot + 1),
+  );
   const lastLane = lanes[lanes.length - 1];
   const height = lastLane
     ? lastLane.top + lastLane.height + TIME_AXIS_HEIGHT_PX

@@ -4,7 +4,5 @@ export function getPropertyValue(
   instance: AssetInstanceDetails | undefined,
   identifier: string,
 ): string | undefined {
-  return instance?.properties.find(
-    (property) => property.identifier === identifier,
-  )?.value;
+  return instance?.properties.find((property) => property.identifier === identifier)?.value;
 }

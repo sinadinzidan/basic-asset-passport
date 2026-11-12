@@ -1,86 +1,56 @@
 import { Textarea } from '@cognite/aura/components/textarea';
-import {
-  IconMicrophone,
-  IconPlayerStopFilled,
-  IconSend,
-} from '@tabler/icons-react';
-import {
-  useEffect,
-  useRef,
-  useState,
-  type ChangeEvent,
-  type FormEvent,
-  type KeyboardEvent,
-} from 'react';
+import { IconMicrophone, IconPlayerStopFilled, IconSend } from '@tabler/icons-react';
+import type { ChangeEvent, FormEvent, KeyboardEvent } from 'react';
 
 import {
+  ANSWER_ERROR_TITLE,
   ASSISTANT_NAME,
   DICTATION_FAILURE_MESSAGES,
   SAMPLE_QUESTIONS,
 } from '../../constants/agents';
-import { useAgentChatViewModel } from '../../hooks/agents/useAgentChatViewModel';
-import { useSpeechDictation } from '../../hooks/agents/useSpeechDictation';
-import { appendSpokenText } from '../../lib/appendSpokenText';
+import { ENTER_KEY } from '../../constants/keyboard';
+import { RETRY_LABEL } from '../../constants/labels';
+import { AppAlertVariant } from '../../enums/appAlertVariant';
+import { useAgentComposerViewModel } from '../../hooks/agents/useAgentComposerViewModel';
+import { useScrollToEnd } from '../../hooks/general/useScrollToEnd';
 import { AppAlert } from '../general/AppAlert';
 import { GeneralButton } from '../general/GeneralButton';
 
 import { AgentMessage } from './AgentMessage';
-import { AgentPanelClose } from './AgentPanelClose';
+import { AgentPanelHeader } from './AgentPanelHeader';
 import { AgentThinking } from './AgentThinking';
 
 type AgentChatProps = {
   onClose: () => void;
 };
 
-/** A chat with the chosen agent, answered through the CDF Agents API. */
 export function AgentChat({ onClose }: AgentChatProps) {
   const {
-    agent,
     messages,
     isSending,
     errorMessage,
-    send,
+    draft,
+    canSend,
+    canStartNewChat,
+    dictation,
+    submit,
+    changeDraft,
+    toggleDictation,
+    sendSample,
+    retrySend,
     startNewChat,
-  } = useAgentChatViewModel();
-  const dictation = useSpeechDictation();
-  const [draft, setDraft] = useState('');
-  const logRef = useRef<HTMLDivElement>(null);
-
-  // Keep the newest message, or the thinking line, in view.
-  useEffect(() => {
-    const log = logRef.current;
-    if (log !== null) log.scrollTop = log.scrollHeight;
-  }, [messages.length, isSending]);
-
-  if (agent === null) return null;
-
-  const canSend = draft.trim() !== '' && !isSending;
-
-  function submit(): void {
-    if (!canSend) return;
-    dictation.stop();
-    setDraft('');
-    void send(draft);
-  }
-
-  function toggleDictation(): void {
-    const typedBefore = draft;
-    dictation.toggle((spoken) =>
-      setDraft(appendSpokenText(typedBefore, spoken)),
-    );
-  }
+  } = useAgentComposerViewModel();
+  const logReference = useScrollToEnd<HTMLDivElement>(messages.length, isSending);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>): void {
     event.preventDefault();
     submit();
   }
-
   function handleChange(event: ChangeEvent<HTMLTextAreaElement>): void {
-    setDraft(event.target.value);
+    changeDraft(event.target.value);
   }
-
   function handleKeyDown(event: KeyboardEvent<HTMLTextAreaElement>): void {
-    if (event.key === 'Enter' && !event.shiftKey) {
+    if (event.key === ENTER_KEY && !event.shiftKey) {
       event.preventDefault();
       submit();
     }
@@ -88,58 +58,55 @@ export function AgentChat({ onClose }: AgentChatProps) {
 
   return (
     <>
-      <header className="agent-panel__header">
-        <h2 className="agent-panel__title agent-panel__title--grow">
-          {ASSISTANT_NAME}
-        </h2>
+      <AgentPanelHeader onClose={onClose}>
         <GeneralButton
-          disabled={messages.length === 0 || isSending}
+          disabled={!canStartNewChat}
           onClick={startNewChat}
           size="sm"
           variant="outline"
         >
           New chat
         </GeneralButton>
-        <AgentPanelClose onClose={onClose} />
-      </header>
+      </AgentPanelHeader>
       <div className="agent-panel__body agent-chat">
-        <div
-          ref={logRef}
-          role="log"
-          aria-label="Conversation"
-          className="agent-chat__log"
-        >
+        <div ref={logReference} role="log" aria-label="Conversation" className="agent-chat__log">
           {messages.length === 0 ? (
             <div className="agent-chat__welcome">
               <p className="agent-panel__empty">Ask {ASSISTANT_NAME} something.</p>
               <ul className="agent-chat__samples" aria-label="Sample questions">
                 {SAMPLE_QUESTIONS.map((question) => (
                   <li key={question}>
-                    <button
-                      type="button"
+                    <GeneralButton
                       className="agent-chat__sample"
-                      onClick={() => void send(question)}
+                      onClick={() => sendSample(question)}
+                      variant="outline"
                     >
                       {question}
-                    </button>
+                    </GeneralButton>
                   </li>
                 ))}
               </ul>
             </div>
           ) : (
-            messages.map((message) => (
-              <AgentMessage key={message.id} message={message} />
-            ))
+            messages.map((message) => <AgentMessage key={message.id} message={message} />)
           )}
           {isSending ? <AgentThinking /> : null}
         </div>
         {errorMessage !== null ? (
-          <AppAlert variant="error" title="The agent could not answer">
+          <AppAlert
+            variant={AppAlertVariant.ERROR}
+            title={ANSWER_ERROR_TITLE}
+            action={
+              <GeneralButton disabled={isSending} onClick={retrySend} variant="secondary">
+                {RETRY_LABEL}
+              </GeneralButton>
+            }
+          >
             {errorMessage}
           </AppAlert>
         ) : null}
         {dictation.failure !== null ? (
-          <AppAlert variant="error" title="Dictation stopped">
+          <AppAlert variant={AppAlertVariant.ERROR} title="Dictation stopped">
             {DICTATION_FAILURE_MESSAGES[dictation.failure]}
           </AppAlert>
         ) : null}
@@ -155,9 +122,7 @@ export function AgentChat({ onClose }: AgentChatProps) {
           />
           {dictation.isSupported ? (
             <GeneralButton
-              aria-label={
-                dictation.isListening ? 'Stop dictation' : 'Start dictation'
-              }
+              aria-label={dictation.isListening ? 'Stop dictation' : 'Start dictation'}
               aria-pressed={dictation.isListening}
               className="agent-chat__mic"
               data-listening={dictation.isListening}

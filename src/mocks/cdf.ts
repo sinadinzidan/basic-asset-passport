@@ -1,15 +1,17 @@
-import type {
-  QueryResponse,
-  RawPropertyValueV3,
-  ViewDefinition,
-} from '@cognite/sdk';
+import type { QueryResponse, RawPropertyValueV3, ViewDefinition } from '@cognite/sdk';
 
+import { DIRECT_PROPERTY_TYPE, JSON_PROPERTY_TYPE, TEXT_PROPERTY_TYPE } from '../constants/cdfApi';
+import { TestPropertyType } from '../enums/testPropertyType';
 import type { NodeInstance } from '../services/assets/viewHelpers';
 
-export const TEST_VIEW_VERSION = 'test-version';
+const TEST_VIEW_VERSION = 'test-version';
 export const TEST_VIEW_SPACE = 'test-view-space';
 
-type TestPropertyType = 'text' | 'direct' | 'json';
+const API_TYPE_BY_TEST_PROPERTY_TYPE = {
+  [TestPropertyType.TEXT]: TEXT_PROPERTY_TYPE,
+  [TestPropertyType.DIRECT]: DIRECT_PROPERTY_TYPE,
+  [TestPropertyType.JSON]: JSON_PROPERTY_TYPE,
+} as const;
 
 type TestPropertySpec = {
   label?: string;
@@ -37,7 +39,9 @@ export function makeViewDefinition(
             externalId,
           },
           containerPropertyIdentifier: identifier,
-          type: { type: spec.type ?? 'text' },
+          type: {
+            type: API_TYPE_BY_TEST_PROPERTY_TYPE[spec.type ?? TestPropertyType.TEXT],
+          },
         },
       ]),
     ),

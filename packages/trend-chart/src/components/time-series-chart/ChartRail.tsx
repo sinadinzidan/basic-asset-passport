@@ -36,7 +36,7 @@ const ANALYSIS_PANELS: readonly RailItem[] = [
 
 const ASSISTANT_PANELS: readonly RailItem[] = [{ panel: ChartPanel.ASSISTANT, icon: IconSparkles }];
 
-interface ChartRailProps {
+interface ChartRailProperties {
   panel: ChartPanel | undefined;
   onPanelToggle: (panel: ChartPanel) => void;
   /** The name of the assistant panel, when the host gives one; the rail shows no assistant button without it. */
@@ -51,11 +51,13 @@ export function ChartRail({
   assistantLabel,
   onDownloadImage,
   isDownloadDisabled = false,
-}: ChartRailProps) {
+}: ChartRailProperties) {
   const groups: ReadonlyArray<{ label: string; items: readonly RailItem[] }> = [
     { label: 'Appearance', items: APPEARANCE_PANELS },
     { label: 'Analysis', items: ANALYSIS_PANELS },
-    ...(assistantLabel !== undefined ? [{ label: ASSISTANT_PANEL_LABEL, items: ASSISTANT_PANELS }] : []),
+    ...(assistantLabel !== undefined
+      ? [{ label: ASSISTANT_PANEL_LABEL, items: ASSISTANT_PANELS }]
+      : []),
   ];
   return (
     <div
@@ -86,7 +88,11 @@ export function ChartRail({
         </div>
       ))}
       {onDownloadImage ? (
-        <div role="group" aria-label="Download" className="flex flex-row items-center gap-1.5 lg:flex-col">
+        <div
+          role="group"
+          aria-label="Download"
+          className="flex flex-row items-center gap-1.5 lg:flex-col"
+        >
           <ToolbarToggle
             label="Download image"
             icon={IconPhotoDown}

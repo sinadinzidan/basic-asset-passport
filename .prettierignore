@@ -1,0 +1,13 @@
+dist
+build
+coverage
+node_modules
+package-lock.json
+.agents
+.claude
+.cursor
+.github
+skills-lock.json
+src/cognite-file-viewer
+*.md
+public

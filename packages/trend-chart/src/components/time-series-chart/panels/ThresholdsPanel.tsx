@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 
+import { StateSize } from '../../../enums/stateSize';
 import { findBreaches } from '../../../lib/time-series-chart/thresholds';
 import type { ChartSeriesView, ChartTimeRange } from '../../../types/timeSeriesChart';
 import { SwitchField } from '../../general/forms/SwitchField';
@@ -8,9 +9,9 @@ import { StateMessage } from '../../general/StateMessage';
 import { SeriesLabel } from './SeriesLabel';
 import { ThresholdRow } from './ThresholdRow';
 
-interface ThresholdsPanelProps {
+interface ThresholdsPanelProperties {
   series: readonly ChartSeriesView[];
-  showThresholds: boolean;
+  shouldShowThresholds: boolean;
   onShowThresholdsChange: (show: boolean) => void;
   range: ChartTimeRange;
 }
@@ -23,25 +24,43 @@ function hasMixedSources(series: ChartSeriesView): boolean {
  * The limits of each series: the level, side and value of every threshold, how many readings of the range lie beyond it and
  * when. Thresholds come from the data source or were configured; they are never worked out from the observed minimum and maximum.
  */
-export function ThresholdsPanel({ series, showThresholds, onShowThresholdsChange, range }: ThresholdsPanelProps) {
+export function ThresholdsPanel({
+  series,
+  shouldShowThresholds,
+  onShowThresholdsChange,
+  range,
+}: ThresholdsPanelProperties) {
   const breachesBySeries = useMemo(
     () =>
       new Map(
-        series.map((entry) => [entry.configuration.seriesId, findBreaches(entry.points, entry.thresholds, range)]),
+        series.map((entry) => [
+          entry.configuration.seriesId,
+          findBreaches(entry.points, entry.thresholds, range),
+        ]),
       ),
     [series, range],
   );
   const limitedSeries = series.filter((entry) => entry.thresholds.length > 0);
-  const unlimitedNames = series.filter((entry) => entry.thresholds.length === 0).map((entry) => entry.definition.name);
+  const unlimitedNames = series
+    .filter((entry) => entry.thresholds.length === 0)
+    .map((entry) => entry.definition.name);
 
   return (
     <>
-      <SwitchField label="Show threshold lines" checked={showThresholds} onChange={onShowThresholdsChange} />
+      <SwitchField
+        label="Show threshold lines"
+        checked={shouldShowThresholds}
+        onChange={onShowThresholdsChange}
+      />
       {series.length === 0 ? (
-        <StateMessage size="inline" title="No series selected" description="Add a series to see its thresholds." />
+        <StateMessage
+          size={StateSize.INLINE}
+          title="No series selected"
+          description="Add a series to see its thresholds."
+        />
       ) : limitedSeries.length === 0 ? (
         <StateMessage
-          size="inline"
+          size={StateSize.INLINE}
           title="No thresholds to show"
           description="None of these series comes with an alert or danger limit."
         />
@@ -75,7 +94,9 @@ export function ThresholdsPanel({ series, showThresholds, onShowThresholdsChange
             ))}
           </ul>
           {unlimitedNames.length > 0 ? (
-            <p className="text-xs text-muted-foreground">No thresholds for {unlimitedNames.join(', ')}</p>
+            <p className="text-xs text-muted-foreground">
+              No thresholds for {unlimitedNames.join(', ')}
+            </p>
           ) : null}
         </div>
       )}

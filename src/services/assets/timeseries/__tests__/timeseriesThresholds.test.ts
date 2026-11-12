@@ -73,8 +73,8 @@ describe(getTimeseriesThresholds.name, () => {
   });
 
   it('skips a limit that is not a number', () => {
-    expect(
-      getTimeseriesThresholds(makeSeries({ tripLimitMax: 'n/a', oweLimitMax: '' })),
-    ).toEqual([]);
+    expect(getTimeseriesThresholds(makeSeries({ tripLimitMax: 'n/a', oweLimitMax: '' }))).toEqual(
+      [],
+    );
   });
 });

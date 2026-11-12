@@ -1,11 +1,14 @@
-import { CHART_INTERPOLATION_STEP_FACTOR, CHART_NEAREST_STEP_FACTOR } from '../../constants/timeSeriesChart';
+import {
+  CHART_INTERPOLATION_STEP_FACTOR,
+  CHART_NEAREST_STEP_FACTOR,
+} from '../../constants/timeSeriesChart';
 import { ReadingKind } from '../../enums/timeSeriesChart';
 import type { MarkerReading, TimeSeriesPoint } from '../../types/timeSeriesChart';
 
 import { isValidReading, typicalStepMs } from './statistics';
 
 export interface ReadingOptions {
-  interpolate: boolean;
+  isInterpolated: boolean;
 }
 
 /**
@@ -19,11 +22,14 @@ export function readingAt(
   atMs: number,
   options: ReadingOptions,
 ): MarkerReading {
-  const valid = points.filter(isValidReading).sort((first, second) => first.timestamp - second.timestamp);
+  const valid = points
+    .filter(isValidReading)
+    .sort((first, second) => first.timestamp - second.timestamp);
   const missing: MarkerReading = { seriesId, kind: ReadingKind.MISSING, value: null };
   if (valid.length === 0) return missing;
   const exact = valid.find((point) => point.timestamp === atMs);
-  if (exact) return { seriesId, kind: ReadingKind.EXACT, value: exact.value, readingAt: exact.timestamp };
+  if (exact)
+    return { seriesId, kind: ReadingKind.EXACT, value: exact.value, readingAt: exact.timestamp };
 
   const step = typicalStepMs(valid);
   let before: (TimeSeriesPoint & { value: number }) | undefined;
@@ -36,11 +42,15 @@ export function readingAt(
     }
   }
 
-  if (options.interpolate && before && after) {
+  if (options.isInterpolated && before && after) {
     const span = after.timestamp - before.timestamp;
     if (step === undefined || span <= step * CHART_INTERPOLATION_STEP_FACTOR) {
       const ratio = (atMs - before.timestamp) / span;
-      return { seriesId, kind: ReadingKind.INTERPOLATED, value: before.value + (after.value - before.value) * ratio };
+      return {
+        seriesId,
+        kind: ReadingKind.INTERPOLATED,
+        value: before.value + (after.value - before.value) * ratio,
+      };
     }
     return missing;
   }
@@ -50,11 +60,19 @@ export function readingAt(
   );
   let nearest: (TimeSeriesPoint & { value: number }) | undefined;
   for (const candidate of candidates) {
-    if (nearest === undefined || Math.abs(candidate.timestamp - atMs) < Math.abs(nearest.timestamp - atMs))
+    if (
+      nearest === undefined ||
+      Math.abs(candidate.timestamp - atMs) < Math.abs(nearest.timestamp - atMs)
+    )
       nearest = candidate;
   }
   if (!nearest) return missing;
   const tolerance = step === undefined ? 0 : step * CHART_NEAREST_STEP_FACTOR;
   if (Math.abs(nearest.timestamp - atMs) > tolerance) return missing;
-  return { seriesId, kind: ReadingKind.NEAREST, value: nearest.value, readingAt: nearest.timestamp };
+  return {
+    seriesId,
+    kind: ReadingKind.NEAREST,
+    value: nearest.value,
+    readingAt: nearest.timestamp,
+  };
 }

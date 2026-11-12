@@ -7,24 +7,22 @@ import {
   ASSET_PASSPORT_MODEL_VERSION,
 } from '../../../constants/assets';
 import {
+  DOCUMENT_QUERY_LIMIT,
   DOCUMENT_QUERY_STALE_TIME_MS,
   DOCUMENT_VIEW_EXTERNAL_ID,
 } from '../../../constants/documents';
 import { getDocumentRefetchInterval } from '../../../lib/documentPolling';
-import { listAssetDocuments } from '../../../services/assets/documents/assetDocumentService';
+import { isKeyOfList } from '../../../lib/queryKeys';
+import { listAssetDocuments } from '../../../services/assets/documents/assetDocument';
 import type { AssetIdentifier } from '../../../types/asset';
-import { useAssetDataClient } from '../useAssetDataClient';
+import { useAssetContext } from '../useAssetContext';
 
-const defaultDeps = { useAssetDataClient, listAssetDocuments };
+const defaultDeps = { listAssetDocuments };
 
 export type UseAssetDocumentsContextType = typeof defaultDeps;
-export const UseAssetDocumentsContext =
-  createContext<UseAssetDocumentsContextType>(defaultDeps);
+export const UseAssetDocumentsContext = createContext<UseAssetDocumentsContextType>(defaultDeps);
 
-export function getAssetDocumentsQueryKey(
-  project: string,
-  assetIdentifier: AssetIdentifier,
-) {
+export function getAssetDocumentsQueryKey(project: string, assetIdentifier: AssetIdentifier) {
   return [
     'asset-documents',
     project,
@@ -37,15 +35,21 @@ export function getAssetDocumentsQueryKey(
   ];
 }
 
-export function useAssetDocuments(assetIdentifier: AssetIdentifier) {
-  const { useAssetDataClient: useClient, listAssetDocuments: loadDocuments } =
-    useContext(UseAssetDocumentsContext);
-  const client = useClient();
+export function useAssetDocuments(
+  assetIdentifier: AssetIdentifier,
+  limit: number = DOCUMENT_QUERY_LIMIT,
+) {
+  const { listAssetDocuments: loadDocuments } = useContext(UseAssetDocumentsContext);
+  const client = useAssetContext();
+
+  const listKey = getAssetDocumentsQueryKey(client.project, assetIdentifier);
 
   return useQuery({
-    queryKey: getAssetDocumentsQueryKey(client.project, assetIdentifier),
-    queryFn: () => loadDocuments(client, assetIdentifier),
+    queryKey: [...listKey, limit],
+    queryFn: () => loadDocuments(client, assetIdentifier, limit),
     staleTime: DOCUMENT_QUERY_STALE_TIME_MS,
-    refetchInterval: (query) => getDocumentRefetchInterval(query.state.data),
+    refetchInterval: (query) => getDocumentRefetchInterval(query.state.data?.items),
+    placeholderData: (previousData, previousQuery) =>
+      isKeyOfList(previousQuery?.queryKey, listKey) ? previousData : undefined,
   });
 }

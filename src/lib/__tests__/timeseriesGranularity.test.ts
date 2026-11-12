@@ -1,9 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-  chooseChartGranularity,
-  granularityToMs,
-} from '../timeseriesGranularity';
+import { chooseChartGranularity, granularityToMs } from '../timeseriesGranularity';
 
 const HOUR_MS = 3_600_000;
 const DAY_MS = 24 * HOUR_MS;
@@ -18,12 +15,9 @@ describe(granularityToMs.name, () => {
     expect(granularityToMs(granularity)).toBe(expected);
   });
 
-  it.each(['', 'h', '0m', '5x', '1.5h', 'abc'])(
-    'rejects "%s"',
-    (granularity) => {
-      expect(granularityToMs(granularity)).toBeNull();
-    },
-  );
+  it.each(['', 'h', '0m', '5x', '1.5h', 'abc'])('rejects "%s"', (granularity) => {
+    expect(granularityToMs(granularity)).toBeNull();
+  });
 });
 
 describe(chooseChartGranularity.name, () => {

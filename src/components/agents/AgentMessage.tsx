@@ -1,42 +1,50 @@
-import { IconCheck, IconCopy, IconCopyOff } from '@tabler/icons-react';
+import { IconCheck, IconCopy, IconCopyOff, type Icon } from '@tabler/icons-react';
 
-import { useCopyToClipboard } from '../../hooks/agents/useCopyToClipboard';
+import { ChatMessageRole } from '../../enums/chatMessageRole';
+import { CopyStatus } from '../../enums/copyStatus';
+import { useCopyToClipboard } from '../../hooks/general/useCopyToClipboard';
+import { cn } from '../../lib/utils';
 import type { ChatMessage } from '../../types/agent';
+import { IconActionButton } from '../general/IconActionButton';
 
 type AgentMessageProps = {
   message: ChatMessage;
 };
 
-const COPY_LABELS = {
+const COPY_LABELS: Record<CopyStatus, string> = {
   IDLE: 'Copy response',
   COPIED: 'Copied',
   FAILED: 'Could not copy',
-} as const;
+};
 
-/** One message of the conversation; the agent's replies can be copied. */
+const COPY_ICONS: Record<CopyStatus, Icon> = {
+  IDLE: IconCopy,
+  COPIED: IconCheck,
+  FAILED: IconCopyOff,
+};
+
 export function AgentMessage({ message }: AgentMessageProps) {
   const { status, copy } = useCopyToClipboard();
+
+  const CopyIcon = COPY_ICONS[status];
+
+  function handleCopyClick(): void {
+    void copy(message.text);
+  }
 
   return (
     <div className="agent-chat__message" data-role={message.role}>
       <p className="agent-chat__text">{message.text}</p>
-      {message.role === 'AGENT' ? (
-        <button
-          type="button"
-          aria-label={COPY_LABELS[status]}
-          className="agent-chat__copy"
-          data-status={status}
-          onClick={() => void copy(message.text)}
-          title={COPY_LABELS[status]}
-        >
-          {status === 'COPIED' ? (
-            <IconCheck aria-hidden className="size-3.5" />
-          ) : status === 'FAILED' ? (
-            <IconCopyOff aria-hidden className="size-3.5" />
-          ) : (
-            <IconCopy aria-hidden className="size-3.5" />
+      {message.role === ChatMessageRole.AGENT ? (
+        <IconActionButton
+          className={cn(
+            'agent-chat__copy',
+            status === CopyStatus.COPIED && 'agent-chat__copy--copied',
           )}
-        </button>
+          icon={<CopyIcon aria-hidden className="size-4" />}
+          label={COPY_LABELS[status]}
+          onClick={handleCopyClick}
+        />
       ) : null}
     </div>
   );

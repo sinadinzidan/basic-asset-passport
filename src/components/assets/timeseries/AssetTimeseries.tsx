@@ -1,17 +1,19 @@
 import { lazy, Suspense } from 'react';
 
+import { TIMESERIES_QUERY_LIMIT } from '../../../constants/timeseries';
+import { LoadingNoticeVariant } from '../../../enums/loadingNoticeVariant';
 import { useAssetTimeseriesViewModel } from '../../../hooks/assets/timeseries/useAssetTimeseriesViewModel';
 import { useTimeseriesChartViewModel } from '../../../hooks/assets/timeseries/useTimeseriesChartViewModel';
-import { getTimeseriesKey } from '../../../lib/timeseriesProperties';
-import { getTimeseriesName } from '../../../services/assets/timeseries/assetTimeseriesService';
-import type { AssetIdentifier } from '../../../types/asset';
+import { useListLimit } from '../../../hooks/general/useListLimit';
+import { getTimeseriesKey, getTimeseriesName } from '../../../lib/timeseriesProperties';
+import type { AssetIdentifier, AssetInstanceDetails } from '../../../types/asset';
 import { EmptyStateMessage } from '../../general/EmptyStateMessage';
 import { LoadingNotice } from '../../general/LoadingNotice';
 import { RetryAlert } from '../../general/RetryAlert';
+import { ShowMoreButton } from '../../general/ShowMoreButton';
 
 import { TimeseriesDetails } from './TimeseriesDetails';
 
-// The chart is large, so it is only downloaded when a series is first opened.
 const TimeseriesChartDialog = lazy(() =>
   import('./TimeseriesChartDialog').then((module) => ({
     default: module.TimeseriesChartDialog,
@@ -23,19 +25,21 @@ type AssetTimeseriesProps = {
 };
 
 export function AssetTimeseries({ assetIdentifier }: AssetTimeseriesProps) {
-  const { items, isError, isFetching, isPending, retry } =
-    useAssetTimeseriesViewModel(assetIdentifier);
-  const chart = useTimeseriesChartViewModel(
-    assetIdentifier,
-    items.map(({ timeseries }) => timeseries),
-  );
+  const { limit, showMore } = useListLimit(TIMESERIES_QUERY_LIMIT);
+  const { items, timeseries, hasMore, isError, isFetching, isLoadingMore, isPending, retry } =
+    useAssetTimeseriesViewModel(assetIdentifier, limit);
+  const chart = useTimeseriesChartViewModel(assetIdentifier, timeseries);
+
+  function handleOpenChart(opened: AssetInstanceDetails): void {
+    chart.openSeries(getTimeseriesKey(opened), getTimeseriesName(opened));
+  }
 
   if (isPending) {
     return (
       <LoadingNotice
         className="p-6"
         message="Loading timeseries..."
-        variant="CARD"
+        variant={LoadingNoticeVariant.CARD}
       />
     );
   }
@@ -62,24 +66,27 @@ export function AssetTimeseries({ assetIdentifier }: AssetTimeseriesProps) {
 
   return (
     <>
-      <div className="grid grid-cols-1 items-start gap-5 md:grid-cols-2">
-        {items.map((item) => (
-          <TimeseriesDetails
-            key={getTimeseriesKey(item.timeseries)}
-            item={item}
-            onOpenChart={(timeseries) =>
-              chart.openSeries(
-                getTimeseriesKey(timeseries),
-                getTimeseriesName(timeseries),
-              )
-            }
+      <div className="flex flex-col gap-5">
+        <div className="grid grid-cols-1 items-start gap-5 md:grid-cols-2">
+          {items.map((item) => (
+            <TimeseriesDetails
+              key={getTimeseriesKey(item.timeseries)}
+              item={item}
+              onOpenChart={handleOpenChart}
+            />
+          ))}
+        </div>
+        {hasMore ? (
+          <ShowMoreButton
+            label="Show more timeseries"
+            isLoading={isLoadingMore}
+            onShowMore={showMore}
           />
-        ))}
+        ) : null}
       </div>
       {chart.isOpen ? (
         <Suspense fallback={null}>
           <TimeseriesChartDialog
-            isOpen
             source={chart.source}
             configuration={chart.configuration}
             nowMs={chart.nowMs}

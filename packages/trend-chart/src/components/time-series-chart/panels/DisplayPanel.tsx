@@ -2,9 +2,9 @@ import { SwitchField } from '../../general/forms/SwitchField';
 
 import { PanelSection } from './PanelSection';
 
-interface DisplayPanelProps {
-  showGridlines: boolean;
-  showMinMax: boolean;
+interface DisplayPanelProperties {
+  shouldShowGridlines: boolean;
+  shouldShowMinMax: boolean;
   isStacked: boolean;
   onGridlinesChange: (isOn: boolean) => void;
   onMinMaxChange: (isOn: boolean) => void;
@@ -12,21 +12,21 @@ interface DisplayPanelProps {
 }
 
 export function DisplayPanel({
-  showGridlines,
-  showMinMax,
+  shouldShowGridlines,
+  shouldShowMinMax,
   isStacked,
   onGridlinesChange,
   onMinMaxChange,
   onStackedChange,
-}: DisplayPanelProps) {
+}: DisplayPanelProperties) {
   return (
     <PanelSection title="Plot">
       <div className="flex flex-col gap-4">
-        <SwitchField label="Gridlines" checked={showGridlines} onChange={onGridlinesChange} />
+        <SwitchField label="Gridlines" checked={shouldShowGridlines} onChange={onGridlinesChange} />
         <SwitchField
           label="Minimum and maximum"
           description="Marks the lowest and highest reading of each series in the visible range."
-          checked={showMinMax}
+          checked={shouldShowMinMax}
           onChange={onMinMaxChange}
         />
         <SwitchField

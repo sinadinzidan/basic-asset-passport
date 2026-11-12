@@ -70,6 +70,8 @@ function addPanel(labels: string[]): void {
 }
 
 function isMarked(label: string): boolean {
-  const button = [...document.querySelectorAll('button')].find((candidate) => candidate.textContent === label);
+  const button = [...document.querySelectorAll('button')].find(
+    (candidate) => candidate.textContent === label,
+  );
   return button?.hasAttribute('data-active') ?? false;
 }

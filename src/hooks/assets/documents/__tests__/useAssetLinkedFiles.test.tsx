@@ -2,10 +2,13 @@ import { renderHook, waitFor } from '@testing-library/react';
 import type { ComponentType, ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { DOCUMENT_QUERY_LIMIT } from '../../../../constants/documents';
 import { DocumentOrigin } from '../../../../enums/documentOrigin';
 import { makeMockClient } from '../../../../mocks/cogniteClient';
 import { makeAssetDocument } from '../../../../mocks/documents';
-import { makeQueryClientWrapper } from '../../../../mocks/queryClientWrapper';
+import { makeLimitedList } from '../../../../mocks/lists';
+import { makeQueryClientWrapper } from '../../../../mocks/QueryClientWrapper';
+import { AssetContext } from '../../useAssetContext';
 import {
   useAssetLinkedFiles,
   UseAssetLinkedFilesContext,
@@ -21,15 +24,16 @@ describe(useAssetLinkedFiles.name, () => {
 
   beforeEach(() => {
     mockContext = {
-      useAssetDataClient: vi.fn(() => client),
       listAssetLinkedFiles: vi.fn(() =>
-        Promise.resolve([makeAssetDocument({ origin: DocumentOrigin.RMDM })]),
+        Promise.resolve(makeLimitedList([makeAssetDocument({ origin: DocumentOrigin.RMDM })])),
       ),
     };
     const QueryWrapper = makeQueryClientWrapper();
     wrapper = ({ children }) => (
       <UseAssetLinkedFilesContext.Provider value={mockContext}>
-        <QueryWrapper>{children}</QueryWrapper>
+        <QueryWrapper>
+          <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
+        </QueryWrapper>
       </UseAssetLinkedFilesContext.Provider>
     );
   });
@@ -44,9 +48,9 @@ describe(useAssetLinkedFiles.name, () => {
   });
 
   it('loads the files linked to the asset with the injected client', async () => {
-    const files = [
+    const files = makeLimitedList([
       makeAssetDocument({ externalId: 'file-2', origin: DocumentOrigin.RMDM }),
-    ];
+    ]);
     vi.mocked(mockContext.listAssetLinkedFiles).mockResolvedValue(files);
 
     const { result } = renderHook(() => useAssetLinkedFiles(assetIdentifier), {
@@ -57,13 +61,19 @@ describe(useAssetLinkedFiles.name, () => {
     expect(mockContext.listAssetLinkedFiles).toHaveBeenCalledWith(
       client,
       assetIdentifier,
+      DOCUMENT_QUERY_LIMIT,
     );
   });
 
+  it('reads the files to the limit asked for', async () => {
+    const { result } = renderHook(() => useAssetLinkedFiles(assetIdentifier, 300), { wrapper });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(mockContext.listAssetLinkedFiles).toHaveBeenCalledWith(client, assetIdentifier, 300);
+  });
+
   it('reports a failed load', async () => {
-    vi.mocked(mockContext.listAssetLinkedFiles).mockRejectedValue(
-      new Error('no access'),
-    );
+    vi.mocked(mockContext.listAssetLinkedFiles).mockRejectedValue(new Error('no access'));
 
     const { result } = renderHook(() => useAssetLinkedFiles(assetIdentifier), {
       wrapper,

@@ -37,6 +37,18 @@ describe(ErrorBoundary.name, () => {
     expect(screen.getByRole('button', { name: 'Retry' })).toBeInTheDocument();
   });
 
+  it('shows the error on the themed stage, which the failed page took with it', () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    render(
+      <ErrorBoundary onError={vi.fn()}>
+        <Exploding shouldThrow />
+      </ErrorBoundary>,
+    );
+
+    expect(screen.getByText('Something went wrong').closest('.neon-stage')).not.toBeNull();
+  });
+
   it('reports the error to the injected handler', () => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
     const onError = vi.fn();

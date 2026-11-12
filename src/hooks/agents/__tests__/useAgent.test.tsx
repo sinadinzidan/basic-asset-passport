@@ -2,30 +2,24 @@ import { renderHook, waitFor } from '@testing-library/react';
 import type { ComponentType, ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { makeAgentClient, makeCdfAgent } from '../../../mocks/agents';
-import { makeQueryClientWrapper } from '../../../mocks/queryClientWrapper';
-import type { AgentClient } from '../../../types/agent';
-import {
-  UseAgentContext,
-  type UseAgentContextType,
-  useAgent,
-} from '../useAgent';
+import { makeAgentContext, makeCdfAgent } from '../../../mocks/agents';
+import { makeQueryClientWrapper } from '../../../mocks/QueryClientWrapper';
+import type { AgentContextType } from '../../../types/agent';
+import { useAgent } from '../useAgent';
+import { AgentContext } from '../useAgentContext';
 
 describe(useAgent.name, () => {
-  let getAgent: AgentClient['getAgent'];
-  let mockContext: UseAgentContextType;
+  let getAgent: AgentContextType['getAgent'];
   let wrapper: ComponentType<{ children: ReactNode }>;
 
   beforeEach(() => {
     getAgent = vi.fn(() => Promise.resolve(makeCdfAgent()));
-    mockContext = {
-      useAgentClient: vi.fn(() => makeAgentClient({ getAgent })),
-    };
+    const agentContext = makeAgentContext({ getAgent });
     const QueryWrapper = makeQueryClientWrapper();
     wrapper = ({ children }) => (
-      <UseAgentContext.Provider value={mockContext}>
+      <AgentContext.Provider value={agentContext}>
         <QueryWrapper>{children}</QueryWrapper>
-      </UseAgentContext.Provider>
+      </AgentContext.Provider>
     );
   });
 

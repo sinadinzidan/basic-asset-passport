@@ -2,16 +2,25 @@ import { Alert, AlertDescription } from '@cognite/aura/components/alert';
 import { Button } from '@cognite/aura/components/button';
 import { Separator } from '@cognite/aura/components/separator';
 import { toast } from '@cognite/aura/components/sonner-toast';
-import { IconX, IconArrowAutofitHeight, IconChartLine, IconEyeOff, IconPlus } from '@tabler/icons-react';
+import {
+  IconX,
+  IconArrowAutofitHeight,
+  IconChartLine,
+  IconEyeOff,
+  IconPlus,
+} from '@tabler/icons-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 
+import { HALF } from '../../constants/mathConstants';
 import {
   ASSISTANT_PANEL_LABEL,
   CHART_MAX_SERIES,
   CHART_WORKSPACE_PLOT_HEIGHT_PX,
 } from '../../constants/timeSeriesChart';
 import { ChartMode, ChartRange } from '../../enums/monitoring';
+import { StateSize } from '../../enums/stateSize';
+import { StateVariant } from '../../enums/stateVariant';
 import { ChartOverlay, ChartPanel, SeriesDataStatus } from '../../enums/timeSeriesChart';
 import { useChartModel } from '../../hooks/time-series-chart/useChartModel';
 import { useLiveFeed } from '../../hooks/time-series-chart/useLiveFeed';
@@ -62,7 +71,9 @@ import { SeriesTable } from './series/SeriesTable';
 
 import '../../chart.css';
 
-export interface IndustrialTimeSeriesChartProps {
+const SUMMARY_SERIES_LIMIT = 6;
+
+export interface IndustrialTimeSeriesChartProperties {
   configuration: ChartConfiguration;
   onConfigurationChange: (configuration: ChartConfiguration) => void;
   /** "Now" in milliseconds, from the host's clock. */
@@ -91,7 +102,7 @@ export function IndustrialTimeSeriesChart({
   isLiveDisabled = false,
   assistantPanel,
   assistantLabel = ASSISTANT_PANEL_LABEL,
-}: IndustrialTimeSeriesChartProps) {
+}: IndustrialTimeSeriesChartProperties) {
   const svgReference = useRef<SVGSVGElement>(null);
   const loadedPointsReference = useRef<Readonly<Record<string, readonly TimeSeriesPoint[]>>>({});
   const [panelSeriesId, setPanelSeriesId] = useState<string | undefined>();
@@ -101,7 +112,12 @@ export function IndustrialTimeSeriesChart({
     isEnabled: configuration.isLive && !isLiveDisabled,
     basePointsReference: loadedPointsReference,
   });
-  const model = useChartModel({ configuration, nowMs, liveAppended: feed.appended, isLive: configuration.isLive });
+  const model = useChartModel({
+    configuration,
+    nowMs,
+    liveAppended: feed.appended,
+    isLive: configuration.isLive,
+  });
 
   const { window: chartWindow, views, visibleViews } = model;
   const { loadedPoints } = model;
@@ -116,14 +132,20 @@ export function IndustrialTimeSeriesChart({
   const panelProfile = useMemo(
     () =>
       panelView && configuration.panel === ChartPanel.SERIES_INFO
-        ? profileSeries(panelView.definition.id, panelView.points, chartWindow, Math.max(nowMs, chartWindow.end))
+        ? profileSeries(
+            panelView.definition.id,
+            panelView.points,
+            chartWindow,
+            Math.max(nowMs, chartWindow.end),
+          )
         : undefined,
     [panelView, configuration.panel, chartWindow, nowMs],
   );
 
   const update = (next: ChartConfiguration): void => onConfigurationChange(next);
   const overlayOn = (overlay: ChartOverlay): boolean => configuration.overlays.includes(overlay);
-  const changeWindow = (window: ChartTimeRange): void => update(setWindow(configuration, ChartRange.CUSTOM, window));
+  const changeWindow = (window: ChartTimeRange): void =>
+    update(setWindow(configuration, ChartRange.CUSTOM, window));
 
   const handleAddSeries = (seriesIds: string[]): void => {
     let next = configuration;
@@ -158,7 +180,10 @@ export function IndustrialTimeSeriesChart({
     const isInside = alert.at >= chartWindow.start && alert.at <= chartWindow.end;
     const moved = isInside
       ? configuration
-      : setWindow(configuration, ChartRange.CUSTOM, { start: alert.at - span / 2, end: alert.at + span / 2 });
+      : setWindow(configuration, ChartRange.CUSTOM, {
+          start: alert.at - span * HALF,
+          end: alert.at + span * HALF,
+        });
     update({ ...moved, isMarkerMode: true, markerAt: alert.at });
   };
   const handleExportImage = (): void => {
@@ -184,7 +209,7 @@ export function IndustrialTimeSeriesChart({
   };
 
   const summary = `${configuration.title}: ${visibleViews.length} series from ${periodLabel}. ${visibleViews
-    .slice(0, 6)
+    .slice(0, SUMMARY_SERIES_LIMIT)
     .map((view) =>
       `${view.definition.name} from ${view.statistics.min ?? 'no data'} to ${view.statistics.max ?? 'no data'} ${view.unit}`.trim(),
     )
@@ -205,7 +230,9 @@ export function IndustrialTimeSeriesChart({
           <LayersPanel
             series={views}
             overlays={configuration.overlays}
-            onVisibilityChange={(id, isVisible) => update(setSeriesVisible(configuration, id, isVisible))}
+            onVisibilityChange={(id, isVisible) =>
+              update(setSeriesVisible(configuration, id, isVisible))
+            }
             onMove={(id, offset) => update(moveSeries(configuration, id, offset))}
             onToggleOverlay={(overlay) => update(toggleOverlay(configuration, overlay))}
           />
@@ -213,11 +240,11 @@ export function IndustrialTimeSeriesChart({
       case ChartPanel.DISPLAY:
         return (
           <DisplayPanel
-            showGridlines={configuration.showGridlines}
-            showMinMax={configuration.showMinMax}
+            shouldShowGridlines={configuration.shouldShowGridlines}
+            shouldShowMinMax={configuration.shouldShowMinMax}
             isStacked={configuration.mode === ChartMode.STACKED}
-            onGridlinesChange={(isOn) => update({ ...configuration, showGridlines: isOn })}
-            onMinMaxChange={(isOn) => update({ ...configuration, showMinMax: isOn })}
+            onGridlinesChange={(isOn) => update({ ...configuration, shouldShowGridlines: isOn })}
+            onMinMaxChange={(isOn) => update({ ...configuration, shouldShowMinMax: isOn })}
             onStackedChange={(isOn) =>
               update({ ...configuration, mode: isOn ? ChartMode.STACKED : ChartMode.OVERLAID })
             }
@@ -259,8 +286,10 @@ export function IndustrialTimeSeriesChart({
         return (
           <ThresholdsPanel
             series={visibleViews}
-            showThresholds={overlayOn(ChartOverlay.THRESHOLDS)}
-            onShowThresholdsChange={() => update(toggleOverlay(configuration, ChartOverlay.THRESHOLDS))}
+            shouldShowThresholds={overlayOn(ChartOverlay.THRESHOLDS)}
+            onShowThresholdsChange={() =>
+              update(toggleOverlay(configuration, ChartOverlay.THRESHOLDS))
+            }
             range={chartWindow}
           />
         );
@@ -285,7 +314,10 @@ export function IndustrialTimeSeriesChart({
     <div className="flex min-h-0 min-w-0 flex-1 flex-col">
       <header className="chart-topbar flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3">
         <div className="min-w-0 max-w-sm shrink">
-          <ChartHeader title={configuration.title} onTitleChange={(title) => update(setTitle(configuration, title))} />
+          <ChartHeader
+            title={configuration.title}
+            onTitleChange={(title) => update(setTitle(configuration, title))}
+          />
         </div>
         <div className="ml-auto flex flex-wrap items-center gap-x-2 gap-y-2">
           <ChartToolbar
@@ -295,12 +327,17 @@ export function IndustrialTimeSeriesChart({
             isLive={configuration.isLive}
             onRangeChange={(range) => update(setWindow(configuration, range, undefined))}
             onWindowChange={changeWindow}
-            onMarkerModeToggle={() => update({ ...configuration, isMarkerMode: !configuration.isMarkerMode })}
+            onMarkerModeToggle={() =>
+              update({ ...configuration, isMarkerMode: !configuration.isMarkerMode })
+            }
             onLiveToggle={isLiveDisabled ? undefined : handleLiveToggle}
             isInterpolated={isInterpolated}
             onInterpolatedChange={setIsInterpolated}
           />
-          <Separator orientation="vertical" className="hidden data-[orientation=vertical]:h-6 sm:block" />
+          <Separator
+            orientation="vertical"
+            className="hidden data-[orientation=vertical]:h-6 sm:block"
+          />
           {extraActions}
           <ChartActions onAddData={() => togglePanelOf(ChartPanel.ADD_DATA)} />
           {onClose ? (
@@ -352,7 +389,12 @@ export function IndustrialTimeSeriesChart({
                 title="No series on the chart"
                 description="Add data to draw its trend. You can compare up to 12 series."
                 action={
-                  <Button type="button" size="sm" variant="outline" onClick={() => togglePanelOf(ChartPanel.ADD_DATA)}>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => togglePanelOf(ChartPanel.ADD_DATA)}
+                  >
                     <IconPlus size={16} aria-hidden />
                     Add data
                   </Button>
@@ -360,12 +402,18 @@ export function IndustrialTimeSeriesChart({
               />
             ) : visibleViews.length === 0 ? (
               <StateMessage
-                size="inline"
-                variant="info"
+                size={StateSize.INLINE}
+                variant={StateVariant.INFO}
                 icon={IconEyeOff}
-                title={failedViews.length === views.length ? 'No series could be loaded' : 'Every series is hidden'}
+                title={
+                  failedViews.length === views.length
+                    ? 'No series could be loaded'
+                    : 'Every series is hidden'
+                }
                 description={
-                  failedViews.length === views.length ? 'Retry from the table below.' : 'Show one to draw its trend.'
+                  failedViews.length === views.length
+                    ? 'Retry from the table below.'
+                    : 'Show one to draw its trend.'
                 }
                 action={
                   failedViews.length === views.length ? undefined : (
@@ -387,11 +435,11 @@ export function IndustrialTimeSeriesChart({
                 bounds={model.bounds}
                 mode={configuration.mode}
                 axes={configuration.axes}
-                showGridlines={configuration.showGridlines}
-                showMinMax={configuration.showMinMax}
-                showThresholds={overlayOn(ChartOverlay.THRESHOLDS)}
-                showGaps={overlayOn(ChartOverlay.DATA_GAPS)}
-                showBand={overlayOn(ChartOverlay.MIN_MAX_BAND)}
+                shouldShowGridlines={configuration.shouldShowGridlines}
+                shouldShowMinMax={configuration.shouldShowMinMax}
+                shouldShowThresholds={overlayOn(ChartOverlay.THRESHOLDS)}
+                shouldShowGaps={overlayOn(ChartOverlay.DATA_GAPS)}
+                shouldShowBand={overlayOn(ChartOverlay.MIN_MAX_BAND)}
                 events={model.events}
                 isMarkerMode={configuration.isMarkerMode}
                 markerAt={configuration.markerAt}
@@ -427,7 +475,9 @@ export function IndustrialTimeSeriesChart({
             <SeriesTable
               series={views}
               statisticsScope={`Visible range: ${periodLabel}`}
-              onVisibilityChange={(id, isVisible) => update(setSeriesVisible(configuration, id, isVisible))}
+              onVisibilityChange={(id, isVisible) =>
+                update(setSeriesVisible(configuration, id, isVisible))
+              }
               onStyleChange={(id: string, style: Partial<SeriesStyle>) =>
                 update(setSeriesStyle(configuration, id, style))
               }

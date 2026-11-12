@@ -23,7 +23,9 @@ describe(activeRangePresetId.name, () => {
   });
 
   it('finds no preset when the window does not end now', () => {
-    expect(activeRangePresetId({ start: NOW - 190 * DAY_MS, end: NOW - 10 * DAY_MS }, NOW)).toBeUndefined();
+    expect(
+      activeRangePresetId({ start: NOW - 190 * DAY_MS, end: NOW - 10 * DAY_MS }, NOW),
+    ).toBeUndefined();
   });
 
   it('finds no preset when the span matches none', () => {

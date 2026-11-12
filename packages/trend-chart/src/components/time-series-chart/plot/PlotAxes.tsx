@@ -1,3 +1,4 @@
+import { AxisSide } from '../../../enums/axisSide';
 import { formatNumber } from '../../../lib/format';
 import { buildTimeTicks, formatChartTick } from '../../../lib/monitoring/chartModel';
 import type { PlotModel } from '../../../lib/monitoring/plotModel';
@@ -8,11 +9,15 @@ import type { PlotGeometry } from '../../../lib/time-series-chart/plotNavigation
 import type { PlotSeries } from '../../../lib/time-series-chart/plotSeries';
 import { GRID_DASH } from '../../general/charts/chartColors';
 
-interface PlotAxesProps {
+const TIME_LABEL_OFFSET_PX = 18;
+const TICK_LABEL_BASELINE_PX = 4;
+const LANE_LABEL_RISE_PX = 7;
+
+interface PlotAxesProperties {
   model: PlotModel;
   geometry: PlotGeometry;
   series: readonly PlotSeries[];
-  showGridlines: boolean;
+  shouldShowGridlines: boolean;
 }
 
 const GRID_COLOR = 'var(--chart-gridlines)';
@@ -28,10 +33,10 @@ const LAST_TICK_EDGE_PX = 24;
  * when an axis belongs to one series, and the unit label names the series it scales, so it is clear which scale is whose.
  * Gridlines are presentation only: with them off the tick marks and labels keep the axes readable.
  */
-export function PlotAxes({ model, geometry, series, showGridlines }: PlotAxesProps) {
+export function PlotAxes({ model, geometry, series, shouldShowGridlines }: PlotAxesProperties) {
   const timeTicks = buildTimeTicks({ fromMs: geometry.window.start, toMs: geometry.window.end });
   const span = windowSpan(geometry.window);
-  const hasRightAxis = model.axes.some((axis) => axis.side === 'RIGHT');
+  const hasRightAxis = model.axes.some((axis) => axis.side === AxisSide.RIGHT);
 
   return (
     <g data-testid="plot-axes">
@@ -51,15 +56,15 @@ export function PlotAxes({ model, geometry, series, showGridlines }: PlotAxesPro
       ))}
 
       {timeTicks.map((tick) => {
-        const x = timeToX(geometry, tick);
+        const xCoordinate = timeToX(geometry, tick);
         // With no value axis on the right, the label of the last tick would run past the edge of the picture.
-        const isLastTick = !hasRightAxis && model.plotRight - x < LAST_TICK_EDGE_PX;
+        const isLastTick = !hasRightAxis && model.plotRight - xCoordinate < LAST_TICK_EDGE_PX;
         return (
           <g key={tick}>
-            {showGridlines ? (
+            {shouldShowGridlines ? (
               <line
-                x1={x}
-                x2={x}
+                x1={xCoordinate}
+                x2={xCoordinate}
                 y1={geometry.top}
                 y2={geometry.bottom}
                 stroke={GRID_COLOR}
@@ -69,16 +74,16 @@ export function PlotAxes({ model, geometry, series, showGridlines }: PlotAxesPro
               />
             ) : null}
             <line
-              x1={x}
-              x2={x}
+              x1={xCoordinate}
+              x2={xCoordinate}
               y1={geometry.bottom}
               y2={geometry.bottom + TICK_MARK_PX}
               stroke={MUTED}
               strokeOpacity="0.6"
             />
             <text
-              x={x}
-              y={geometry.bottom + 18}
+              x={xCoordinate}
+              y={geometry.bottom + TIME_LABEL_OFFSET_PX}
               textAnchor={isLastTick ? 'end' : 'middle'}
               fontSize="11"
               fill={MUTED}
@@ -96,10 +101,12 @@ export function PlotAxes({ model, geometry, series, showGridlines }: PlotAxesPro
         const members = series.filter((entry) => axis.seriesIds.includes(entry.id));
         const onlySeries = members.length === 1 ? members[0] : undefined;
         const colour = onlySeries ? onlySeries.color : MUTED;
-        const isLeft = axis.side === 'LEFT';
-        const edgeX = isLeft ? model.plotLeft - axis.slot * AXIS_WIDTH_PX : model.plotRight + axis.slot * AXIS_WIDTH_PX;
+        const isLeft = axis.side === AxisSide.LEFT;
+        const edgeX = isLeft
+          ? model.plotLeft - axis.slot * AXIS_WIDTH_PX
+          : model.plotRight + axis.slot * AXIS_WIDTH_PX;
         const tickEndX = isLeft ? edgeX - TICK_MARK_PX : edgeX + TICK_MARK_PX;
-        const x = isLeft ? tickEndX - AXIS_LABEL_GAP_PX : tickEndX + AXIS_LABEL_GAP_PX;
+        const xCoordinate = isLeft ? tickEndX - AXIS_LABEL_GAP_PX : tickEndX + AXIS_LABEL_GAP_PX;
         const anchor = isLeft ? 'end' : 'start';
         const domainSpan = axis.domain.maximum - axis.domain.minimum || 1;
         const names = members.map((entry) => entry.label).join(', ');
@@ -121,31 +128,46 @@ export function PlotAxes({ model, geometry, series, showGridlines }: PlotAxesPro
               data-testid="axis-line"
             />
             {axis.domain.ticks.map((tick) => {
-              const y = lane.top + lane.height - ((tick - axis.domain.minimum) / domainSpan) * lane.height;
+              const yCoordinate =
+                lane.top + lane.height - ((tick - axis.domain.minimum) / domainSpan) * lane.height;
               return (
                 <g key={tick}>
-                  {showGridlines && axis.slot === 0 && isLeft ? (
+                  {shouldShowGridlines && axis.slot === 0 && isLeft ? (
                     <line
                       x1={model.plotLeft}
                       x2={model.plotRight}
-                      y1={y}
-                      y2={y}
+                      y1={yCoordinate}
+                      y2={yCoordinate}
                       stroke={GRID_COLOR}
                       strokeDasharray={GRID_DASH}
                       data-testid="gridline"
                       data-direction="value"
                     />
                   ) : null}
-                  <line x1={edgeX} x2={tickEndX} y1={y} y2={y} stroke={colour} strokeOpacity="0.8" />
-                  <text x={x} y={y + 4} textAnchor={anchor} fontSize="11" fill={colour} data-testid="value-tick">
+                  <line
+                    x1={edgeX}
+                    x2={tickEndX}
+                    y1={yCoordinate}
+                    y2={yCoordinate}
+                    stroke={colour}
+                    strokeOpacity="0.8"
+                  />
+                  <text
+                    x={xCoordinate}
+                    y={yCoordinate + TICK_LABEL_BASELINE_PX}
+                    textAnchor={anchor}
+                    fontSize="11"
+                    fill={colour}
+                    data-testid="value-tick"
+                  >
                     {axis.isNormalised ? formatNumber(tick, 0) : formatSignalValue(tick)}
                   </text>
                 </g>
               );
             })}
             <text
-              x={x}
-              y={lane.top - 7}
+              x={xCoordinate}
+              y={lane.top - LANE_LABEL_RISE_PX}
               textAnchor={anchor}
               fontSize="10"
               fontWeight="600"
@@ -159,7 +181,13 @@ export function PlotAxes({ model, geometry, series, showGridlines }: PlotAxesPro
         );
       })}
 
-      <line x1={model.plotLeft} x2={model.plotRight} y1={geometry.bottom} y2={geometry.bottom} stroke={AXIS_LINE} />
+      <line
+        x1={model.plotLeft}
+        x2={model.plotRight}
+        y1={geometry.bottom}
+        y2={geometry.bottom}
+        stroke={AXIS_LINE}
+      />
     </g>
   );
 }

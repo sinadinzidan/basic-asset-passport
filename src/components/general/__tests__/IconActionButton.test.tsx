@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
+import { IconActionVariant } from '../../../enums/iconActionVariant';
 import { IconActionButton } from '../IconActionButton';
 
 describe(IconActionButton.name, () => {
@@ -42,8 +43,17 @@ describe(IconActionButton.name, () => {
     expect(await screen.findByText('View manual')).toBeInTheDocument();
   });
 
+  it('takes a class for where it is placed', () => {
+    renderButton({ className: 'self-end' });
+
+    expect(screen.getByRole('button', { name: 'View manual' })).toHaveClass(
+      'self-end',
+      'hud-button',
+    );
+  });
+
   it('uses the red pill for a destructive action', () => {
-    renderButton({ variant: 'destructive' });
+    renderButton({ variant: IconActionVariant.DESTRUCTIVE });
 
     expect(screen.getByRole('button', { name: 'View manual' })).toHaveClass(
       'bg-destructive-background',
@@ -51,9 +61,7 @@ describe(IconActionButton.name, () => {
   });
 });
 
-function renderButton(
-  overrides: Partial<Parameters<typeof IconActionButton>[0]> = {},
-) {
+function renderButton(overrides: Partial<Parameters<typeof IconActionButton>[0]> = {}) {
   render(
     <IconActionButton
       icon={<svg aria-hidden />}

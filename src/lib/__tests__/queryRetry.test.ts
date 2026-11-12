@@ -5,11 +5,7 @@ import {
   QUERY_RETRY_BASE_DELAY_MS,
   QUERY_RETRY_MAX_DELAY_MS,
 } from '../../constants/query';
-import {
-  createQueryRetryDelay,
-  getQueryRetryDelayMs,
-  shouldRetryQuery,
-} from '../queryRetry';
+import { createQueryRetryDelay, getQueryRetryDelayMs, shouldRetryQuery } from '../queryRetry';
 
 describe(shouldRetryQuery.name, () => {
   it.each([429, 502, 503, 504])('retries a %i response', (status) => {
@@ -38,9 +34,7 @@ describe(createQueryRetryDelay.name, () => {
   });
 
   it('doubles the upper bound on each attempt', () => {
-    expect(createQueryRetryDelay(() => 1)(2)).toBe(
-      QUERY_RETRY_BASE_DELAY_MS * 4,
-    );
+    expect(createQueryRetryDelay(() => 1)(2)).toBe(QUERY_RETRY_BASE_DELAY_MS * 4);
   });
 
   it('applies jitter between zero and the upper bound', () => {

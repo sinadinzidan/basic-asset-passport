@@ -1,3 +1,5 @@
+import type { EventShape } from '../enums/eventShape';
+import type { EventTone } from '../enums/eventTone';
 import type { ChartMode, ChartRange } from '../enums/monitoring';
 import type {
   AlertSeverity,
@@ -98,8 +100,8 @@ export interface ChartConfiguration {
   mode: ChartMode;
   series: SeriesConfiguration[];
   axes: AxisSetting[];
-  showGridlines: boolean;
-  showMinMax: boolean;
+  shouldShowGridlines: boolean;
+  shouldShowMinMax: boolean;
   isMarkerMode: boolean;
   markerAt?: number;
   isLive: boolean;
@@ -170,9 +172,6 @@ export interface ConnectedFile {
   unavailableReason?: string;
   sizeBytes?: number;
 }
-
-export type EventShape = 'triangle' | 'diamond' | 'square' | 'circle';
-export type EventTone = 'good' | 'warning' | 'bad' | 'neutral' | 'info';
 
 /** A point in time marked on the plot. The host decides how a kind looks: its label, shape and tone. */
 export interface ChartEvent {

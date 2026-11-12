@@ -1,3 +1,6 @@
+import { IconEyeOff } from '@tabler/icons-react';
+
+import { DialogSize } from '../../../enums/dialogSize';
 import { useDocumentPreview } from '../../../hooks/assets/documents/useDocumentPreview';
 import type { AssetDocument } from '../../../types/document';
 import { GeneralDialog } from '../../general/GeneralDialog';
@@ -8,7 +11,6 @@ type DocumentPreviewDialogProps = {
   onOpenChange: (isOpen: boolean) => void;
 };
 
-/** Shows the content of a document in a dialog, so the user never leaves the asset. */
 export function DocumentPreviewDialog({
   document,
   isOpen,
@@ -20,13 +22,21 @@ export function DocumentPreviewDialog({
     <GeneralDialog
       isOpen={isOpen}
       onOpenChange={onOpenChange}
-      size="large"
+      size={DialogSize.LARGE}
       title={document.name}
     >
       {renderPreview ? (
         renderPreview(document)
       ) : (
-        <p>Preview is not available here.</p>
+        <div
+          className="flex flex-col items-center gap-4 px-6 py-10 text-center"
+          data-slot="document-preview-unavailable"
+        >
+          <span aria-hidden className="icon-chip size-12">
+            <IconEyeOff aria-hidden className="size-5" />
+          </span>
+          <p className="text-base-foreground">Preview is not available here.</p>
+        </div>
       )}
     </GeneralDialog>
   );

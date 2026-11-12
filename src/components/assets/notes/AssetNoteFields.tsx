@@ -3,13 +3,9 @@ import { Label } from '@cognite/aura/components/label';
 import { Textarea } from '@cognite/aura/components/textarea';
 import type { ChangeEvent } from 'react';
 
-import {
-  NOTE_BODY_MAX_LENGTH,
-  NOTE_TITLE_MAX_LENGTH,
-} from '../../../constants/notes';
+import { NOTE_BODY_MAX_LENGTH, NOTE_TITLE_MAX_LENGTH } from '../../../constants/notes';
 
 type AssetNoteFieldsProps = {
-  /** Keeps the field IDs unique when several forms are on the page. */
   idPrefix: string;
   title: string;
   body: string;
@@ -17,7 +13,6 @@ type AssetNoteFieldsProps = {
   onBodyChange: (body: string) => void;
 };
 
-/** The title and text of a note, shared by the add and edit forms. */
 export function AssetNoteFields({
   idPrefix,
   title,
@@ -45,6 +40,7 @@ export function AssetNoteFields({
             id={`${idPrefix}-title`}
             maxLength={NOTE_TITLE_MAX_LENGTH}
             onChange={handleTitleChange}
+            placeholder="Give the note a short title"
             value={title}
           />
         </div>
@@ -57,6 +53,7 @@ export function AssetNoteFields({
             id={`${idPrefix}-body`}
             maxLength={NOTE_BODY_MAX_LENGTH}
             onChange={handleBodyChange}
+            placeholder="Write what you found"
             rows={4}
             value={body}
           />

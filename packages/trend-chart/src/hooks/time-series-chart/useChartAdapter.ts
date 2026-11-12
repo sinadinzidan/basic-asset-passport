@@ -13,7 +13,9 @@ export const ChartAdapterContext = createContext<ChartDataSource | undefined>(un
 function useChartDataSource(): ChartDataSource {
   const source = useContext(ChartAdapterContext);
   if (!source)
-    throw new Error('A time-series chart needs a data adapter: render it inside a ChartAdapterContext provider.');
+    throw new Error(
+      'A time-series chart needs a data adapter: render it inside a ChartAdapterContext provider.',
+    );
   return source;
 }
 

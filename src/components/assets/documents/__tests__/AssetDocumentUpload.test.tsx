@@ -3,14 +3,21 @@ import userEvent from '@testing-library/user-event';
 import type { ComponentType, ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 
+import { DocumentFileContext } from '../../../../hooks/assets/documents/useDocumentFileContext';
 import {
   UseUploadAssetDocumentsContext,
   type UseUploadAssetDocumentsContextType,
 } from '../../../../hooks/assets/documents/useUploadAssetDocuments';
+import { AssetContext } from '../../../../hooks/assets/useAssetContext';
 import type { ShowSuccessToast } from '../../../../hooks/general/useSuccessToast';
 import { makeMockClient } from '../../../../mocks/cogniteClient';
-import { makeQueryClientWrapper } from '../../../../mocks/queryClientWrapper';
+import { makeQueryClientWrapper } from '../../../../mocks/QueryClientWrapper';
 import { AssetDocumentUpload } from '../AssetDocumentUpload';
+
+const assetContext = makeMockClient();
+const documentFileContext = { requestUploadUrl: vi.fn(), uploadContent: vi.fn() };
+
+const REJECTED_FILE_NAME = 'bad.pdf';
 
 const assetIdentifier = { space: 'asset-space', externalId: 'FLOC-1' };
 
@@ -22,18 +29,19 @@ describe(AssetDocumentUpload.name, () => {
   beforeEach(() => {
     showSuccessToast = vi.fn();
     mockContext = {
-      useAssetDataClient: vi.fn(() => makeMockClient()),
-      useDocumentFileClient: vi.fn(() => ({
-        requestUploadUrl: vi.fn(),
-        uploadContent: vi.fn(),
-      })),
       useSuccessToast: vi.fn(() => showSuccessToast),
       uploadAssetDocument: vi.fn(() => Promise.resolve()),
     };
     const QueryWrapper = makeQueryClientWrapper();
     wrapper = ({ children }) => (
       <UseUploadAssetDocumentsContext.Provider value={mockContext}>
-        <QueryWrapper>{children}</QueryWrapper>
+        <QueryWrapper>
+          <AssetContext.Provider value={assetContext}>
+            <DocumentFileContext.Provider value={documentFileContext}>
+              {children}
+            </DocumentFileContext.Provider>
+          </AssetContext.Provider>
+        </QueryWrapper>
       </UseUploadAssetDocumentsContext.Provider>
     );
   });
@@ -51,12 +59,8 @@ describe(AssetDocumentUpload.name, () => {
   it('tells the user what can be uploaded', () => {
     renderUpload();
 
-    expect(
-      screen.getByText('Choose one or more files, up to 50 MB each.'),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole('button', { name: 'Upload documents' }),
-    ).toBeEnabled();
+    expect(screen.getByText('Choose one or more files, up to 50 MB each.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Upload documents' })).toBeEnabled();
   });
 
   it('uploads every chosen file for the asset', async () => {
@@ -66,15 +70,10 @@ describe(AssetDocumentUpload.name, () => {
     renderUpload();
 
     // Act
-    await user.upload(
-      screen.getByLabelText('Choose documents to upload'),
-      files,
-    );
+    await user.upload(screen.getByLabelText('Choose documents to upload'), files);
 
     // Assert
-    await vi.waitFor(() =>
-      expect(showSuccessToast).toHaveBeenCalledWith('2 documents uploaded.'),
-    );
+    await vi.waitFor(() => expect(showSuccessToast).toHaveBeenCalledWith('2 documents uploaded.'));
     expect(mockContext.uploadAssetDocument).toHaveBeenCalledTimes(2);
     expect(mockContext.uploadAssetDocument).toHaveBeenCalledWith(
       expect.anything(),
@@ -88,14 +87,9 @@ describe(AssetDocumentUpload.name, () => {
     const user = userEvent.setup();
     renderUpload();
 
-    await user.upload(
-      screen.getByLabelText('Choose documents to upload'),
-      makeFile('a.pdf'),
-    );
+    await user.upload(screen.getByLabelText('Choose documents to upload'), makeFile('a.pdf'));
 
-    await vi.waitFor(() =>
-      expect(showSuccessToast).toHaveBeenCalledWith('1 document uploaded.'),
-    );
+    await vi.waitFor(() => expect(showSuccessToast).toHaveBeenCalledWith('1 document uploaded.'));
     expect(screen.queryByText('1 document uploaded.')).not.toBeInTheDocument();
   });
 
@@ -104,7 +98,7 @@ describe(AssetDocumentUpload.name, () => {
     const user = userEvent.setup();
     vi.mocked(mockContext.uploadAssetDocument).mockImplementation(
       (_client, _files, _asset, file) =>
-        file.name === 'bad.pdf'
+        file.name === REJECTED_FILE_NAME
           ? Promise.reject(new Error('Uploading the file failed (403).'))
           : Promise.resolve(),
     );
@@ -112,34 +106,52 @@ describe(AssetDocumentUpload.name, () => {
 
     // Act
     await user.upload(screen.getByLabelText('Choose documents to upload'), [
-      makeFile('bad.pdf'),
+      makeFile(REJECTED_FILE_NAME),
       makeFile('good.pdf'),
     ]);
 
     // Assert
-    expect(
-      await screen.findByText('Some documents could not be uploaded'),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText('bad.pdf: Uploading the file failed (403).'),
-    ).toBeInTheDocument();
+    expect(await screen.findByText('Some documents could not be uploaded')).toBeInTheDocument();
+    expect(screen.getByText('bad.pdf: Uploading the file failed (403).')).toBeInTheDocument();
     expect(showSuccessToast).toHaveBeenCalledWith('1 document uploaded.');
+  });
+
+  it('uploads only the failed files again when Try again is pressed', async () => {
+    // Arrange
+    const user = userEvent.setup();
+    const rejectedFile = makeFile(REJECTED_FILE_NAME);
+    vi.mocked(mockContext.uploadAssetDocument).mockImplementationOnce(() =>
+      Promise.reject(new Error('Uploading the file failed (403).')),
+    );
+    renderUpload();
+    await user.upload(screen.getByLabelText('Choose documents to upload'), [
+      rejectedFile,
+      makeFile('good.pdf'),
+    ]);
+
+    // Act
+    await user.click(await screen.findByRole('button', { name: 'Try again' }));
+
+    // Assert
+    await vi.waitFor(() => expect(mockContext.uploadAssetDocument).toHaveBeenCalledTimes(3));
+    expect(mockContext.uploadAssetDocument).toHaveBeenLastCalledWith(
+      expect.anything(),
+      expect.anything(),
+      assetIdentifier,
+      rejectedFile,
+    );
+    await vi.waitFor(() =>
+      expect(screen.queryByText('Some documents could not be uploaded')).not.toBeInTheDocument(),
+    );
   });
 
   it('disables the button while uploading', async () => {
     const user = userEvent.setup();
-    vi.mocked(mockContext.uploadAssetDocument).mockReturnValue(
-      new Promise(() => {}),
-    );
+    vi.mocked(mockContext.uploadAssetDocument).mockReturnValue(new Promise(() => {}));
     renderUpload();
 
-    await user.upload(
-      screen.getByLabelText('Choose documents to upload'),
-      makeFile('a.pdf'),
-    );
+    await user.upload(screen.getByLabelText('Choose documents to upload'), makeFile('a.pdf'));
 
-    expect(
-      await screen.findByRole('button', { name: 'Uploading...' }),
-    ).toBeDisabled();
+    expect(await screen.findByRole('button', { name: 'Uploading...' })).toBeDisabled();
   });
 });

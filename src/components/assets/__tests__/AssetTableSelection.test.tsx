@@ -5,15 +5,19 @@ import userEvent from '@testing-library/user-event';
 import type { ComponentType, ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import {
-  UseAssetsContext,
-  type UseAssetsContextType,
-} from '../../../hooks/assets/useAssets';
+import { AssetContext } from '../../../hooks/assets/useAssetContext';
+import { UseAssetsContext, type UseAssetsContextType } from '../../../hooks/assets/useAssets';
+import { UseAssetsKPICountsContext } from '../../../hooks/assets/useAssetsKPICounts';
+import { NavigationStoreContext } from '../../../hooks/general/useNavigationState';
 import { makeAssetListItem, makeAssetPage } from '../../../mocks/assets';
+import { makeAssetsKPICountsContext } from '../../../mocks/assetsKPICounts';
 import { makeMockClient } from '../../../mocks/cogniteClient';
-import { makeQueryClientWrapper } from '../../../mocks/queryClientWrapper';
+import { makeNavigationStore } from '../../../mocks/navigation';
+import { makeQueryClientWrapper } from '../../../mocks/QueryClientWrapper';
 import type { AssetListItem } from '../../../types/asset';
 import { AssetTable } from '../AssetTable';
+
+const assetContext = makeMockClient();
 
 type GridStubProps = {
   data: AssetListItem[];
@@ -31,9 +35,7 @@ vi.mock('@cognite/aura/data-grid', () => ({
         <button
           key={asset.externalId}
           onClick={() =>
-            onRowClick({ original: asset } as Partial<
-              Row<AssetListItem>
-            > as Row<AssetListItem>)
+            onRowClick({ original: asset } as Partial<Row<AssetListItem>> as Row<AssetListItem>)
           }
         >
           {asset.externalId}
@@ -46,43 +48,38 @@ vi.mock('@cognite/aura/data-grid', () => ({
 describe('AssetTable row selection', () => {
   let mockContext: UseAssetsContextType;
   let wrapper: ComponentType<{ children: ReactNode }>;
+  const store = makeNavigationStore();
 
   beforeEach(() => {
     mockContext = {
-      useAssetDataClient: vi.fn(() => makeMockClient()),
       listAssets: vi.fn(() =>
         Promise.resolve(
-          makeAssetPage([
-            makeAssetListItem({ space: 'asset-space', externalId: 'FLOC-7' }),
-          ]),
+          makeAssetPage([makeAssetListItem({ space: 'asset-space', externalId: 'FLOC-7' })]),
         ),
       ),
       searchAssets: vi.fn(() => Promise.resolve(makeAssetPage())),
     };
     const QueryWrapper = makeQueryClientWrapper();
+    const countsContext = makeAssetsKPICountsContext();
     wrapper = ({ children }) => (
-      <UseAssetsContext.Provider value={mockContext}>
-        <QueryWrapper>{children}</QueryWrapper>
-      </UseAssetsContext.Provider>
+      <NavigationStoreContext.Provider value={store}>
+        <UseAssetsContext.Provider value={mockContext}>
+          <UseAssetsKPICountsContext.Provider value={countsContext}>
+            <QueryWrapper>
+              <AssetContext.Provider value={assetContext}>{children}</AssetContext.Provider>
+            </QueryWrapper>
+          </UseAssetsKPICountsContext.Provider>
+        </UseAssetsContext.Provider>
+      </NavigationStoreContext.Provider>
     );
   });
 
-  it('reports the identifier of the clicked asset', async () => {
-    const onAssetSelect = vi.fn();
-    render(
-      <AssetTable
-        onAssetSelect={onAssetSelect}
-        searchQuery=""
-        onSearchChange={vi.fn()}
-      />,
-      { wrapper },
-    );
+  it('selects the clicked asset', async () => {
+    render(<AssetTable />, { wrapper });
 
-    await userEvent.click(
-      await screen.findByRole('button', { name: 'FLOC-7' }),
-    );
+    await userEvent.click(await screen.findByRole('button', { name: 'FLOC-7' }));
 
-    expect(onAssetSelect).toHaveBeenCalledWith({
+    expect(store.getState().navigationState.selectedAsset).toEqual({
       space: 'asset-space',
       externalId: 'FLOC-7',
     });

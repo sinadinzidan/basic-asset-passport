@@ -1,5 +1,6 @@
 import { ALERT_LIMIT_COLOR, DANGER_LIMIT_COLOR } from '../../../constants/monitoring';
 import { THRESHOLD_LEVEL_LABELS } from '../../../constants/timeSeriesChart';
+import { ExtremeKind } from '../../../enums/extremeKind';
 import { ChartMode } from '../../../enums/monitoring';
 import { ThresholdLevel, ThresholdSide } from '../../../enums/timeSeriesChart';
 import { findGapSpans, splitIntoRuns } from '../../../lib/monitoring/chartModel';
@@ -22,12 +23,21 @@ import {
   hatchPatternId,
 } from './plotLayout';
 
-interface PlotSeriesLayerProps {
+const INDICATOR_LABEL_DROP_PX = 4;
+const LABEL_BOTTOM_INSET_PX = 3;
+const LABEL_TOP_INSET_PX = 10;
+const LANE_LABEL_LEFT_INSET_PX = 6;
+const LANE_LABEL_TOP_INSET_PX = 13;
+const THRESHOLD_LABEL_RIGHT_INSET_PX = 4;
+const THRESHOLD_LABEL_BELOW_PX = 11;
+const THRESHOLD_LABEL_ABOVE_PX = 3;
+
+interface PlotSeriesLayerProperties {
   model: PlotModel;
   geometry: PlotGeometry;
   series: readonly PlotSeries[];
-  showGaps: boolean;
-  showBand: boolean;
+  shouldShowGaps: boolean;
+  shouldShowBand: boolean;
   idPrefix: string;
 }
 
@@ -49,8 +59,9 @@ function pointsOf(
   buckets: readonly ChartBucket[],
 ): Array<{ x: number; y: number }> {
   return buckets.flatMap((bucket) => {
-    const y = bucket.average === null ? undefined : yPosition(model, seriesId, bucket.average);
-    return y === undefined ? [] : [{ x: timeToX(geometry, bucket.atMs), y }];
+    const yCoordinate =
+      bucket.average === null ? undefined : yPosition(model, seriesId, bucket.average);
+    return yCoordinate === undefined ? [] : [{ x: timeToX(geometry, bucket.atMs), y: yCoordinate }];
   });
 }
 
@@ -71,42 +82,59 @@ function bandPolygon(
     const top = yPosition(model, seriesId, bucket.maximum);
     const bottom = yPosition(model, seriesId, bucket.minimum);
     if (top === undefined || bottom === undefined) continue;
-    const x = timeToX(geometry, bucket.atMs);
-    upper.push(`${x.toFixed(1)},${top.toFixed(1)}`);
-    lower.unshift(`${x.toFixed(1)},${bottom.toFixed(1)}`);
+    const xCoordinate = timeToX(geometry, bucket.atMs);
+    upper.push(`${xCoordinate.toFixed(1)},${top.toFixed(1)}`);
+    lower.unshift(`${xCoordinate.toFixed(1)},${bottom.toFixed(1)}`);
   }
   return upper.length > 1 ? [...upper, ...lower].join(' ') : undefined;
 }
 
-interface IndicatorProps {
-  kind: 'MIN' | 'MAX' | 'BOTH';
+interface IndicatorProperties {
+  kind: ExtremeKind;
   reading: ExtremeReading;
   entry: PlotSeries;
   model: PlotModel;
   geometry: PlotGeometry;
 }
 
-function ExtremeIndicator({ kind, reading, entry, model, geometry }: IndicatorProps) {
+function ExtremeIndicator({ kind, reading, entry, model, geometry }: IndicatorProperties) {
   const scale = model.scales.get(entry.id);
   const lane = scale ? model.lanes[scale.laneIndex] : undefined;
-  const y = laneYPosition(model, entry.id, reading.value);
-  if (!lane || y === undefined) return null;
-  const x = timeToX(geometry, reading.timestamp);
-  const isMax = kind !== 'MIN';
-  const wantedY = isMax ? y - INDICATOR_LABEL_OFFSET_PX : y + INDICATOR_LABEL_OFFSET_PX + 4;
-  const labelY = Math.min(lane.top + lane.height - 3, Math.max(lane.top + 10, wantedY));
-  const isNearLeft = x < geometry.left + MIN_MAX_LABEL_EDGE_PX;
-  const isNearRight = x > geometry.right - MIN_MAX_LABEL_EDGE_PX;
+  const yCoordinate = laneYPosition(model, entry.id, reading.value);
+  if (!lane || yCoordinate === undefined) return null;
+  const xCoordinate = timeToX(geometry, reading.timestamp);
+  const isMax = kind !== ExtremeKind.MIN;
+  const wantedY = isMax
+    ? yCoordinate - INDICATOR_LABEL_OFFSET_PX
+    : yCoordinate + INDICATOR_LABEL_OFFSET_PX + INDICATOR_LABEL_DROP_PX;
+  const labelY = Math.min(
+    lane.top + lane.height - LABEL_BOTTOM_INSET_PX,
+    Math.max(lane.top + LABEL_TOP_INSET_PX, wantedY),
+  );
+  const isNearLeft = xCoordinate < geometry.left + MIN_MAX_LABEL_EDGE_PX;
+  const isNearRight = xCoordinate > geometry.right - MIN_MAX_LABEL_EDGE_PX;
   const anchor = isNearLeft ? 'start' : isNearRight ? 'end' : 'middle';
-  const name = kind === 'BOTH' ? 'Min/Max' : isMax ? 'Max' : 'Min';
+  const name = kind === ExtremeKind.BOTH ? 'Min/Max' : isMax ? 'Max' : 'Min';
   const text = `${name} ${formatSignalValue(reading.value)}`;
-  const description = `${kind === 'BOTH' ? 'Minimum and maximum' : isMax ? 'Maximum' : 'Minimum'} of ${entry.label} in the visible period: ${formatSignalWithUnit(reading.value, entry.unit)} at ${formatPlotTimestamp(reading.timestamp)}`;
+  const description = `${kind === ExtremeKind.BOTH ? 'Minimum and maximum' : isMax ? 'Maximum' : 'Minimum'} of ${entry.label} in the visible period: ${formatSignalWithUnit(reading.value, entry.unit)} at ${formatPlotTimestamp(reading.timestamp)}`;
   return (
-    <g data-testid="min-max-indicator" data-series={entry.id} data-extreme={kind} data-value={reading.value}>
+    <g
+      data-testid="min-max-indicator"
+      data-series={entry.id}
+      data-extreme={kind}
+      data-value={reading.value}
+    >
       <title>{description}</title>
-      <circle cx={x} cy={y} r={INDICATOR_RADIUS} fill={SURFACE_COLOR} stroke={entry.color} strokeWidth="2" />
+      <circle
+        cx={xCoordinate}
+        cy={yCoordinate}
+        r={INDICATOR_RADIUS}
+        fill={SURFACE_COLOR}
+        stroke={entry.color}
+        strokeWidth="2"
+      />
       <text
-        x={x}
+        x={xCoordinate}
         y={labelY}
         textAnchor={anchor}
         fontSize="10"
@@ -126,7 +154,14 @@ function ExtremeIndicator({ kind, reading, entry, model, geometry }: IndicatorPr
  * What belongs to the series themselves: hatched gaps, the min-max band, threshold lines with the stretches beyond them, the
  * lines (one run at a time, so a missing reading is never joined up or drawn as zero) and the min/max indicators.
  */
-export function PlotSeriesLayer({ model, geometry, series, showGaps, showBand, idPrefix }: PlotSeriesLayerProps) {
+export function PlotSeriesLayer({
+  model,
+  geometry,
+  series,
+  shouldShowGaps,
+  shouldShowBand,
+  idPrefix,
+}: PlotSeriesLayerProperties) {
   const isStacked = model.mode === ChartMode.STACKED;
   const windowMs = { fromMs: geometry.window.start, toMs: geometry.window.end };
 
@@ -138,8 +173,8 @@ export function PlotSeriesLayer({ model, geometry, series, showGaps, showBand, i
             return lane ? (
               <text
                 key={`title-${entry.id}`}
-                x={model.plotLeft + 6}
-                y={lane.top + 13}
+                x={model.plotLeft + LANE_LABEL_LEFT_INSET_PX}
+                y={lane.top + LANE_LABEL_TOP_INSET_PX}
                 fontSize="11"
                 fontWeight="600"
                 fill={entry.color}
@@ -156,17 +191,22 @@ export function PlotSeriesLayer({ model, geometry, series, showGaps, showBand, i
         const lane = scale ? model.lanes[scale.laneIndex] : undefined;
         if (!scale || !lane) return null;
         // A series with nothing to draw is hatched across its own lane only; in a shared plot that would hide the other series.
-        const isGapShown = showGaps && (entry.hasValues || isStacked);
+        const isGapShown = shouldShowGaps && (entry.hasValues || isStacked);
         return (
-          <g key={entry.id} clipPath={`url(#${clipPathId(idPrefix, lane.index)})`} data-series-layer={entry.id}>
+          <g
+            key={entry.id}
+            clipPath={`url(#${clipPathId(idPrefix, lane.index)})`}
+            data-series-layer={entry.id}
+          >
             {isGapShown
               ? findGapSpans(entry.buckets, windowMs).map((gap) => {
-                  const x = Math.max(model.plotLeft, timeToX(geometry, gap.fromMs));
-                  const gapWidth = Math.min(model.plotRight, timeToX(geometry, gap.toMs)) - x;
+                  const xCoordinate = Math.max(model.plotLeft, timeToX(geometry, gap.fromMs));
+                  const gapWidth =
+                    Math.min(model.plotRight, timeToX(geometry, gap.toMs)) - xCoordinate;
                   return gapWidth > 0 ? (
                     <rect
                       key={`gap-${gap.fromMs}`}
-                      x={x}
+                      x={xCoordinate}
                       y={lane.top}
                       width={gapWidth}
                       height={lane.height}
@@ -178,8 +218,13 @@ export function PlotSeriesLayer({ model, geometry, series, showGaps, showBand, i
               : null}
 
             {entry.thresholds.map((threshold) => {
-              const y = yPosition(model, entry.id, threshold.value);
-              if (y === undefined || y < lane.top || y > lane.top + lane.height) return null;
+              const yCoordinate = yPosition(model, entry.id, threshold.value);
+              if (
+                yCoordinate === undefined ||
+                yCoordinate < lane.top ||
+                yCoordinate > lane.top + lane.height
+              )
+                return null;
               const colour = THRESHOLD_COLORS[threshold.level];
               const isLower = threshold.side === ThresholdSide.LOWER;
               return (
@@ -193,15 +238,19 @@ export function PlotSeriesLayer({ model, geometry, series, showGaps, showBand, i
                   <line
                     x1={model.plotLeft}
                     x2={model.plotRight}
-                    y1={y}
-                    y2={y}
+                    y1={yCoordinate}
+                    y2={yCoordinate}
                     stroke={colour}
                     strokeWidth="1.25"
                     strokeDasharray={THRESHOLD_DASH}
                   />
                   <text
-                    x={model.plotRight - 4}
-                    y={isLower ? y + 11 : y - 3}
+                    x={model.plotRight - THRESHOLD_LABEL_RIGHT_INSET_PX}
+                    y={
+                      isLower
+                        ? yCoordinate + THRESHOLD_LABEL_BELOW_PX
+                        : yCoordinate - THRESHOLD_LABEL_ABOVE_PX
+                    }
                     textAnchor="end"
                     fontSize="10"
                     fill={colour}
@@ -220,7 +269,10 @@ export function PlotSeriesLayer({ model, geometry, series, showGaps, showBand, i
               const first = points[0];
               const firstBucket = run[0];
               if (!first || !firstBucket) return null;
-              const band = showBand && !scale.isNormalised ? bandPolygon(model, geometry, entry.id, run) : undefined;
+              const band =
+                shouldShowBand && !scale.isNormalised
+                  ? bandPolygon(model, geometry, entry.id, run)
+                  : undefined;
               return (
                 <g key={firstBucket.atMs} data-series={entry.id}>
                   {band ? (
@@ -257,7 +309,12 @@ export function PlotSeriesLayer({ model, geometry, series, showGaps, showBand, i
             })}
 
             {entry.breaches.map((breach) => {
-              const points = pointsOf(model, geometry, entry.id, bucketsOfBreach(entry, breach, geometry.window));
+              const points = pointsOf(
+                model,
+                geometry,
+                entry.id,
+                bucketsOfBreach(entry, breach, geometry.window),
+              );
               const first = points[0];
               if (!first) return null;
               const colour = THRESHOLD_COLORS[breach.threshold.level];
@@ -295,7 +352,7 @@ export function PlotSeriesLayer({ model, geometry, series, showGaps, showBand, i
           <g key={`extremes-${entry.id}`}>
             {max ? (
               <ExtremeIndicator
-                kind={isFlat ? 'BOTH' : 'MAX'}
+                kind={isFlat ? ExtremeKind.BOTH : ExtremeKind.MAX}
                 reading={max}
                 entry={entry}
                 model={model}
@@ -303,7 +360,13 @@ export function PlotSeriesLayer({ model, geometry, series, showGaps, showBand, i
               />
             ) : null}
             {min && !isFlat ? (
-              <ExtremeIndicator kind="MIN" reading={min} entry={entry} model={model} geometry={geometry} />
+              <ExtremeIndicator
+                kind={ExtremeKind.MIN}
+                reading={min}
+                entry={entry}
+                model={model}
+                geometry={geometry}
+              />
             ) : null}
           </g>
         );

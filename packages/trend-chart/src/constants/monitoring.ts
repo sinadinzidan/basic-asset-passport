@@ -10,15 +10,18 @@ export const CHART_TIME_TICK_COUNT = 6;
 export const CHART_LANE_HEIGHT_PX = 120;
 export const CHART_MIN_DRAG_PX = 8;
 
-export const CHART_RANGE_MINUTES: Record<Exclude<ChartRange, ChartRange.ALL_HISTORY | ChartRange.CUSTOM>, number> = {
+export const CHART_RANGE_MINUTES: Record<
+  Exclude<ChartRange, ChartRange.ALL_HISTORY | ChartRange.CUSTOM>,
+  number
+> = {
   [ChartRange.FIFTEEN_MINUTES]: 15,
   [ChartRange.ONE_HOUR]: 60,
-  [ChartRange.SIX_HOURS]: 6 * 60,
-  [ChartRange.TWELVE_HOURS]: 12 * 60,
-  [ChartRange.ONE_DAY]: 24 * 60,
-  [ChartRange.ONE_WEEK]: 7 * 24 * 60,
-  [ChartRange.ONE_MONTH]: 30 * 24 * 60,
-  [ChartRange.ONE_YEAR]: 365 * 24 * 60,
+  [ChartRange.SIX_HOURS]: 360,
+  [ChartRange.TWELVE_HOURS]: 720,
+  [ChartRange.ONE_DAY]: 1440,
+  [ChartRange.ONE_WEEK]: 10_080,
+  [ChartRange.ONE_MONTH]: 43_200,
+  [ChartRange.ONE_YEAR]: 525_600,
 };
 
 /** Eight series colours in selection order; after eight they repeat with dashed lines. */

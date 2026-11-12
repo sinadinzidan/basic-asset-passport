@@ -2,83 +2,83 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ComponentType, ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { StoreApi } from 'zustand';
 
-import { AssetEquipmentTab } from '../../../enums/assetEquipmentTab';
+import { DOCUMENT_QUERY_LIMIT } from '../../../constants/documents';
+import { AssetTab } from '../../../enums/assetTab';
 import {
   UseAssetDocumentsContext,
   type UseAssetDocumentsContextType,
 } from '../../../hooks/assets/documents/useAssetDocuments';
-import { DocumentFileClientContext } from '../../../hooks/assets/documents/useDocumentFileClient';
-import { AssetDataClientContext } from '../../../hooks/assets/useAssetDataClient';
+import { DocumentFileContext } from '../../../hooks/assets/documents/useDocumentFileContext';
+import { AssetContext } from '../../../hooks/assets/useAssetContext';
+import { NavigationStoreContext } from '../../../hooks/general/useNavigationState';
+import { NO_TAB_COUNTS } from '../../../mocks/assetDetailsTabCounts';
 import { makeInstanceDetails } from '../../../mocks/assets';
 import { makeMockClient } from '../../../mocks/cogniteClient';
 import { makeAssetDocument } from '../../../mocks/documents';
-import { makeQueryClientWrapper } from '../../../mocks/queryClientWrapper';
+import { makeLimitedList } from '../../../mocks/lists';
+import { makeNavigationStore } from '../../../mocks/navigation';
+import { makeQueryClientWrapper } from '../../../mocks/QueryClientWrapper';
+import type { NavigationStore } from '../../../types/navigation';
 import { AssetDetailsTabs } from '../AssetDetailsTabs';
 
-const details = {
-  asset: makeInstanceDetails({ space: 'asset-space', externalId: 'FLOC-7' }),
-  equipment: [],
-};
+const asset = makeInstanceDetails({
+  space: 'asset-space',
+  externalId: 'FLOC-7',
+});
 
 describe(`${AssetDetailsTabs.name} documents`, () => {
   let listContext: UseAssetDocumentsContextType;
   let wrapper: ComponentType<{ children: ReactNode }>;
+  let store: StoreApi<NavigationStore>;
 
   beforeEach(() => {
+    store = makeNavigationStore();
     const client = makeMockClient();
     listContext = {
-      useAssetDataClient: vi.fn(() => client),
-      listAssetDocuments: vi.fn(() => Promise.resolve([makeAssetDocument()])),
+      listAssetDocuments: vi.fn(() => Promise.resolve(makeLimitedList([makeAssetDocument()]))),
     };
     const QueryWrapper = makeQueryClientWrapper();
     wrapper = ({ children }) => (
-      <AssetDataClientContext.Provider value={client}>
-        <DocumentFileClientContext.Provider
-          value={{
-            requestUploadUrl: vi.fn(),
-            uploadContent: vi.fn(),
-          }}
-        >
-          <UseAssetDocumentsContext.Provider value={listContext}>
-            <QueryWrapper>{children}</QueryWrapper>
-          </UseAssetDocumentsContext.Provider>
-        </DocumentFileClientContext.Provider>
-      </AssetDataClientContext.Provider>
+      <NavigationStoreContext.Provider value={store}>
+        <AssetContext.Provider value={client}>
+          <DocumentFileContext.Provider
+            value={{
+              requestUploadUrl: vi.fn(),
+              uploadContent: vi.fn(),
+            }}
+          >
+            <UseAssetDocumentsContext.Provider value={listContext}>
+              <QueryWrapper>
+                <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
+              </QueryWrapper>
+            </UseAssetDocumentsContext.Provider>
+          </DocumentFileContext.Provider>
+        </AssetContext.Provider>
+      </NavigationStoreContext.Provider>
     );
   });
 
   it('lists the documents of the open asset on the documents tab', async () => {
-    render(
-      <AssetDetailsTabs
-        details={details}
-        activeTab={AssetEquipmentTab.DOCUMENTS}
-        onTabChange={vi.fn()}
-      />,
-      { wrapper },
-    );
+    store = makeNavigationStore({ activeAssetTab: AssetTab.DOCUMENTS });
+    render(<AssetDetailsTabs asset={asset} tabCounts={NO_TAB_COUNTS} />, { wrapper });
 
     expect(await screen.findByText('Pump manual.pdf')).toBeInTheDocument();
     expect(listContext.listAssetDocuments).toHaveBeenCalledWith(
       expect.anything(),
       { space: 'asset-space', externalId: 'FLOC-7' },
+      DOCUMENT_QUERY_LIMIT,
     );
   });
 
   it('switches to the documents tab when it is chosen', async () => {
     const user = userEvent.setup();
-    const onTabChange = vi.fn();
-    render(
-      <AssetDetailsTabs
-        details={details}
-        activeTab={AssetEquipmentTab.PROPERTIES}
-        onTabChange={onTabChange}
-      />,
-      { wrapper },
-    );
+    render(<AssetDetailsTabs asset={asset} tabCounts={NO_TAB_COUNTS} />, { wrapper });
 
     await user.click(screen.getByRole('tab', { name: 'Documents' }));
 
-    expect(onTabChange).toHaveBeenCalledWith(AssetEquipmentTab.DOCUMENTS);
+    expect(store.getState().navigationState.activeAssetTab).toBe(AssetTab.DOCUMENTS);
+    expect(await screen.findByText('Pump manual.pdf')).toBeInTheDocument();
   });
 });

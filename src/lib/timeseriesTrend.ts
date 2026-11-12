@@ -1,5 +1,11 @@
 import type { TimeseriesPoint } from '../types/timeseries';
 
+const PADDING_SIDES = 2;
+
+const MIDDLE_SHARE = 0.5;
+
+const ROUNDING_SCALE = 100;
+
 export type TrendSummary = {
   latest: number;
   minimum: number;
@@ -31,11 +37,6 @@ export function summarizeTrend(points: TimeseriesPoint[]): TrendSummary | null {
   };
 }
 
-/**
- * The drawing of a trend in a box: a line through the points, a closed area
- * under it, the position of the newest point and the y of three guide lines.
- * A flat series is drawn in the middle of the box.
- */
 export function buildSparkline(
   points: TimeseriesPoint[],
   { width, height, padding }: SparklineSize,
@@ -44,8 +45,8 @@ export function buildSparkline(
   const last = points[points.length - 1];
   if (first === undefined || last === undefined) return null;
 
-  const innerWidth = width - padding * 2;
-  const innerHeight = height - padding * 2;
+  const innerWidth = width - padding * PADDING_SIDES;
+  const innerHeight = height - padding * PADDING_SIDES;
   const values = points.map((point) => point.value);
   const minimum = Math.min(...values);
   const range = Math.max(...values) - minimum;
@@ -57,8 +58,8 @@ export function buildSparkline(
         ? (point.timestamp - first.timestamp) / timeSpan
         : points.length > 1
           ? index / (points.length - 1)
-          : 0.5;
-    const level = range > 0 ? (point.value - minimum) / range : 0.5;
+          : MIDDLE_SHARE;
+    const level = range > 0 ? (point.value - minimum) / range : MIDDLE_SHARE;
 
     return {
       x: round(padding + share * innerWidth),
@@ -78,17 +79,14 @@ export function buildSparkline(
     linePath,
     areaPath: `${linePath} L${end.x} ${floor} L${start.x} ${floor} Z`,
     lastPoint: end,
-    gridLines: [0, 0.5, 1].map((share) => round(padding + share * innerHeight)),
+    gridLines: [0, MIDDLE_SHARE, 1].map((share) => round(padding + share * innerHeight)),
   };
 }
 
-/** A reading for display: grouped digits, at most two decimals, no trailing zeros. */
 export function formatTrendValue(value: number): string {
-  return new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 }).format(
-    value,
-  );
+  return new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 }).format(value);
 }
 
 function round(value: number): number {
-  return Math.round(value * 100) / 100;
+  return Math.round(value * ROUNDING_SCALE) / ROUNDING_SCALE;
 }

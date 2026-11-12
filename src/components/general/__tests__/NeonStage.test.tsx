@@ -23,11 +23,8 @@ describe(NeonStage.name, () => {
 
     const traces = container.querySelectorAll('.neon-trace');
     expect(traces).toHaveLength(GRID_TRACES.length);
-    expect(container.querySelectorAll('.neon-trace[data-axis="ROW"]').length)
-      .toBeGreaterThan(0);
-    expect(
-      container.querySelectorAll('.neon-trace[data-axis="COLUMN"]').length,
-    ).toBeGreaterThan(0);
+    expect(container.querySelectorAll('.neon-trace[data-axis="ROW"]').length).toBeGreaterThan(0);
+    expect(container.querySelectorAll('.neon-trace[data-axis="COLUMN"]').length).toBeGreaterThan(0);
   });
 
   it('places each light on its grid line and between its two crossings', () => {
@@ -45,10 +42,7 @@ describe(NeonStage.name, () => {
   it('hides the decorative lights from assistive technology', () => {
     const { container } = render(<NeonStage>Content</NeonStage>);
 
-    expect(container.querySelector('.neon-traces')).toHaveAttribute(
-      'aria-hidden',
-      'true',
-    );
+    expect(container.querySelector('.neon-traces')).toHaveAttribute('aria-hidden', 'true');
   });
 
   it('has traces that stay on the grid and keep moving forward', () => {

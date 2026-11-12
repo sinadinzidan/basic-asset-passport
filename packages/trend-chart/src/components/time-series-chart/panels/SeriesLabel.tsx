@@ -1,12 +1,12 @@
 import { cn } from '../../../lib/utils';
 import type { ChartSeriesView } from '../../../types/timeSeriesChart';
 
-interface SeriesLabelProps {
+interface SeriesLabelProperties {
   series: ChartSeriesView;
   isQuiet?: boolean;
 }
 
-export function SeriesLabel({ series, isQuiet = false }: SeriesLabelProps) {
+export function SeriesLabel({ series, isQuiet = false }: SeriesLabelProperties) {
   return (
     <span className="flex min-w-0 items-center gap-2">
       <span
@@ -15,7 +15,10 @@ export function SeriesLabel({ series, isQuiet = false }: SeriesLabelProps) {
         style={{ backgroundColor: series.configuration.style.color }}
       />
       <span
-        className={cn('truncate', isQuiet ? 'text-xs text-muted-foreground' : 'text-sm font-semibold text-foreground')}
+        className={cn(
+          'truncate',
+          isQuiet ? 'text-xs text-muted-foreground' : 'text-sm font-semibold text-foreground',
+        )}
       >
         {series.definition.name}
       </span>

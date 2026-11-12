@@ -1,0 +1,17 @@
+{
+  "name": "@adnoc/agent-mascot",
+  "version": "0.1.0",
+  "description": "An animated robot mascot for Adnoc apps. Shared as source, not published.",
+  "private": true,
+  "type": "module",
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "exports": {
+    ".": "./src/index.ts",
+    "./mascot.css": "./src/mascot.css"
+  },
+  "peerDependencies": {
+    "react": "^18.3.1"
+  }
+}

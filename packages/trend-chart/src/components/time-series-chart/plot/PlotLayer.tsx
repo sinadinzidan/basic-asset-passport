@@ -11,13 +11,16 @@ import { PlotAxes } from './PlotAxes';
 import { EVENT_BOTTOM_INSET_PX, clipPathId, hatchPatternId } from './plotLayout';
 import { PlotSeriesLayer } from './PlotSeriesLayer';
 
-export interface PlotLayerProps {
+const NOW_LABEL_GAP_PX = 4;
+const NOW_LABEL_RISE_PX = 7;
+
+export interface PlotLayerProperties {
   model: PlotModel;
   geometry: PlotGeometry;
   series: readonly PlotSeries[];
-  showGridlines: boolean;
-  showGaps: boolean;
-  showBand: boolean;
+  shouldShowGridlines: boolean;
+  shouldShowGaps: boolean;
+  shouldShowBand: boolean;
   events: readonly ChartEvent[];
   isLive: boolean;
   nowMs: number;
@@ -36,16 +39,18 @@ export const PlotLayer = memo(function PlotLayer({
   model,
   geometry,
   series,
-  showGridlines,
-  showGaps,
-  showBand,
+  shouldShowGridlines,
+  shouldShowGaps,
+  shouldShowBand,
   events,
   isLive,
   nowMs,
   idPrefix,
-}: PlotLayerProps) {
+}: PlotLayerProperties) {
   const isNowVisible = isLive && nowMs >= geometry.window.start && nowMs <= geometry.window.end;
-  const visibleEvents = events.filter((event) => event.at >= geometry.window.start && event.at <= geometry.window.end);
+  const visibleEvents = events.filter(
+    (event) => event.at >= geometry.window.start && event.at <= geometry.window.end,
+  );
 
   return (
     <g data-testid="plot-layer">
@@ -57,22 +62,40 @@ export const PlotLayer = memo(function PlotLayer({
           patternUnits="userSpaceOnUse"
           patternTransform="rotate(45)"
         >
-          <line x1="0" y1="0" x2="0" y2={HATCH_SIZE_PX} stroke={MUTED} strokeOpacity="0.45" strokeWidth="2" />
+          <line
+            x1="0"
+            y1="0"
+            x2="0"
+            y2={HATCH_SIZE_PX}
+            stroke={MUTED}
+            strokeOpacity="0.45"
+            strokeWidth="2"
+          />
         </pattern>
         {model.lanes.map((lane) => (
           <clipPath key={lane.index} id={clipPathId(idPrefix, lane.index)}>
-            <rect x={model.plotLeft} y={lane.top} width={model.plotRight - model.plotLeft} height={lane.height} />
+            <rect
+              x={model.plotLeft}
+              y={lane.top}
+              width={model.plotRight - model.plotLeft}
+              height={lane.height}
+            />
           </clipPath>
         ))}
       </defs>
 
-      <PlotAxes model={model} geometry={geometry} series={series} showGridlines={showGridlines} />
+      <PlotAxes
+        model={model}
+        geometry={geometry}
+        series={series}
+        shouldShowGridlines={shouldShowGridlines}
+      />
       <PlotSeriesLayer
         model={model}
         geometry={geometry}
         series={series}
-        showGaps={showGaps}
-        showBand={showBand}
+        shouldShowGaps={shouldShowGaps}
+        shouldShowBand={shouldShowBand}
         idPrefix={idPrefix}
       />
 
@@ -87,7 +110,13 @@ export const PlotLayer = memo(function PlotLayer({
             strokeOpacity="0.35"
             strokeWidth="1.5"
           />
-          <text x={timeToX(geometry, nowMs) - 4} y={geometry.top - 7} textAnchor="end" fontSize="10" fill={MUTED}>
+          <text
+            x={timeToX(geometry, nowMs) - NOW_LABEL_GAP_PX}
+            y={geometry.top - NOW_LABEL_RISE_PX}
+            textAnchor="end"
+            fontSize="10"
+            fill={MUTED}
+          >
             Now
           </text>
         </g>

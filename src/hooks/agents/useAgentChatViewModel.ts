@@ -1,13 +1,14 @@
 import { createContext, useCallback, useContext } from 'react';
 
+import { SEND_FAILED_FALLBACK_MESSAGE } from '../../constants/agents';
+import { ChatMessageRole } from '../../enums/chatMessageRole';
+import { getConversation } from '../../store/agents';
 import type { CdfAgent, ChatMessage } from '../../types/agent';
 
-import { getConversation } from './agentChatReducer';
 import { useAgentChatState } from './useAgentChatState';
-import { useAgentClient } from './useAgentClient';
+import { useAgentContext } from './useAgentContext';
 
 const defaultDeps = {
-  useAgentClient,
   createMessageId: (): string => crypto.randomUUID(),
 };
 
@@ -21,65 +22,74 @@ export type AgentChatViewModel = {
   isSending: boolean;
   errorMessage: string | null;
   send: (text: string) => Promise<void>;
+  retry: () => Promise<void>;
   startNewChat: () => void;
 };
 
 export function useAgentChatViewModel(): AgentChatViewModel {
-  const { useAgentClient: useClient, createMessageId } = useContext(
-    UseAgentChatViewModelContext,
+  const { createMessageId } = useContext(UseAgentChatViewModelContext);
+  const client = useAgentContext();
+  const agent = useAgentChatState((store) => store.selectedAgent);
+  const conversation = useAgentChatState((store) =>
+    getConversation(store, store.selectedAgent?.externalId ?? ''),
   );
-  const client = useClient();
-  const { state, dispatch } = useAgentChatState();
-  const agent = state.selectedAgent;
-  const conversation = getConversation(state, agent?.externalId ?? '');
+  const addUserMessage = useAgentChatState((store) => store.addUserMessage);
+  const receiveReply = useAgentChatState((store) => store.receiveReply);
+  const failSend = useAgentChatState((store) => store.failSend);
+  const retrySend = useAgentChatState((store) => store.retrySend);
+  const resetConversation = useAgentChatState((store) => store.resetConversation);
 
-  const send = useCallback(
-    async (text: string): Promise<void> => {
-      const question = text.trim();
-      if (agent === null || question === '' || conversation.isSending) return;
-
-      const agentExternalId = agent.externalId;
-      dispatch({
-        type: 'MESSAGE_SENT',
-        agentExternalId,
-        message: { id: createMessageId(), role: 'USER', text: question },
-      });
-
+  const ask = useCallback(
+    async (agentExternalId: string, question: string): Promise<void> => {
       try {
         const reply = await client.chat({
           agentExternalId,
           text: question,
           cursor: conversation.cursor,
         });
-        dispatch({
-          type: 'REPLY_RECEIVED',
+        receiveReply(
           agentExternalId,
-          message: { id: createMessageId(), role: 'AGENT', text: reply.text },
-          cursor: reply.cursor,
-        });
+          { id: createMessageId(), role: ChatMessageRole.AGENT, text: reply.text },
+          reply.cursor,
+        );
       } catch (error) {
-        dispatch({
-          type: 'SEND_FAILED',
+        failSend(
           agentExternalId,
-          errorMessage:
-            error instanceof Error ? error.message : 'Try again in a moment.',
-        });
+          error instanceof Error ? error.message : SEND_FAILED_FALLBACK_MESSAGE,
+        );
       }
     },
-    [
-      agent,
-      client,
-      conversation.cursor,
-      conversation.isSending,
-      createMessageId,
-      dispatch,
-    ],
+    [client, conversation.cursor, createMessageId, failSend, receiveReply],
   );
+
+  const send = useCallback(
+    async (text: string): Promise<void> => {
+      const question = text.trim();
+      if (agent === null || question === '' || conversation.isSending) return;
+
+      addUserMessage(agent.externalId, {
+        id: createMessageId(),
+        role: ChatMessageRole.USER,
+        text: question,
+      });
+      await ask(agent.externalId, question);
+    },
+    [addUserMessage, agent, ask, conversation.isSending, createMessageId],
+  );
+
+  const retry = useCallback(async (): Promise<void> => {
+    const unanswered = conversation.messages[conversation.messages.length - 1];
+    if (agent === null || conversation.errorMessage === null || conversation.isSending) return;
+    if (unanswered?.role !== ChatMessageRole.USER) return;
+
+    retrySend(agent.externalId);
+    await ask(agent.externalId, unanswered.text);
+  }, [agent, ask, conversation, retrySend]);
 
   const startNewChat = useCallback(() => {
     if (agent === null) return;
-    dispatch({ type: 'CONVERSATION_RESET', agentExternalId: agent.externalId });
-  }, [agent, dispatch]);
+    resetConversation(agent.externalId);
+  }, [agent, resetConversation]);
 
   return {
     agent,
@@ -87,6 +97,7 @@ export function useAgentChatViewModel(): AgentChatViewModel {
     isSending: conversation.isSending,
     errorMessage: conversation.errorMessage,
     send,
+    retry,
     startNewChat,
   };
 }

@@ -7,23 +7,21 @@ import {
   ASSET_PASSPORT_MODEL_VERSION,
 } from '../../../constants/assets';
 import {
+  TIMESERIES_QUERY_LIMIT,
   TIMESERIES_QUERY_STALE_TIME_MS,
   TIMESERIES_VIEW_EXTERNAL_ID,
 } from '../../../constants/timeseries';
-import { listAssetTimeseries } from '../../../services/assets/timeseries/assetTimeseriesService';
+import { isKeyOfList } from '../../../lib/queryKeys';
+import { listAssetTimeseries } from '../../../services/assets/timeseries/assetTimeseries';
 import type { AssetIdentifier } from '../../../types/asset';
-import { useAssetDataClient } from '../useAssetDataClient';
+import { useAssetContext } from '../useAssetContext';
 
-const defaultDeps = { useAssetDataClient, listAssetTimeseries };
+const defaultDeps = { listAssetTimeseries };
 
 export type UseAssetTimeseriesContextType = typeof defaultDeps;
-export const UseAssetTimeseriesContext =
-  createContext<UseAssetTimeseriesContextType>(defaultDeps);
+export const UseAssetTimeseriesContext = createContext<UseAssetTimeseriesContextType>(defaultDeps);
 
-export function getAssetTimeseriesQueryKey(
-  project: string,
-  assetIdentifier: AssetIdentifier,
-) {
+export function getAssetTimeseriesQueryKey(project: string, assetIdentifier: AssetIdentifier) {
   return [
     'asset-timeseries',
     project,
@@ -36,14 +34,20 @@ export function getAssetTimeseriesQueryKey(
   ];
 }
 
-export function useAssetTimeseries(assetIdentifier: AssetIdentifier) {
-  const { useAssetDataClient: useClient, listAssetTimeseries: loadTimeseries } =
-    useContext(UseAssetTimeseriesContext);
-  const client = useClient();
+export function useAssetTimeseries(
+  assetIdentifier: AssetIdentifier,
+  limit: number = TIMESERIES_QUERY_LIMIT,
+) {
+  const { listAssetTimeseries: loadTimeseries } = useContext(UseAssetTimeseriesContext);
+  const client = useAssetContext();
+
+  const listKey = getAssetTimeseriesQueryKey(client.project, assetIdentifier);
 
   return useQuery({
-    queryKey: getAssetTimeseriesQueryKey(client.project, assetIdentifier),
-    queryFn: () => loadTimeseries(client, assetIdentifier),
+    queryKey: [...listKey, limit],
+    queryFn: () => loadTimeseries(client, assetIdentifier, limit),
     staleTime: TIMESERIES_QUERY_STALE_TIME_MS,
+    placeholderData: (previousData, previousQuery) =>
+      isKeyOfList(previousQuery?.queryKey, listKey) ? previousData : undefined,
   });
 }

@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
+import { LoadingNoticeVariant } from '../../../enums/loadingNoticeVariant';
 import { LoadingNotice } from '../LoadingNotice';
 
 describe(LoadingNotice.name, () => {
@@ -18,7 +19,7 @@ describe(LoadingNotice.name, () => {
 
   it('is a plain data card, not a glowing panel, in the card variant', () => {
     const { container } = render(
-      <LoadingNotice message="Loading things..." variant="CARD" />,
+      <LoadingNotice message="Loading things..." variant={LoadingNoticeVariant.CARD} />,
     );
 
     expect(screen.getByRole('status')).toHaveClass('data-card');

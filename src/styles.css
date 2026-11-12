@@ -4,8 +4,15 @@
 @source '../packages/trend-chart/src';
 
 /*
- * Theme ported from the control-room HUD reference: electric blue on deep navy,
- * dark only. Colours come from Aura's blue, amber, red and mountain ramps.
+ * Control-room HUD theme in the colours of the assistant's mascot, in two modes. Dark: its royal
+ * blue on deep navy, near-white ink, the cyan of its eyes for lit details and one gold band.
+ * Light: its white body as the surface, its navy as the ink and its royal blue for every line and
+ * lit detail. The blue is the mascot's, held in --mascot-blue; every other colour comes from
+ * Aura's fjord, blue, sky, amber, red, green and mountain ramps.
+ *
+ * The dark values sit on :root and on .dark, the light ones on :root:not(.dark). The class on
+ * <html> picks the mode; an element that carries .dark itself, such as the header, stays dark in
+ * both. Rules below read the tokens, so they need no second copy for the light mode.
  */
 
 /* Registered so the border light can animate its angle. */
@@ -15,34 +22,163 @@
   initial-value: 0deg;
 }
 
-:root {
+:root,
+.dark {
+  color-scheme: dark;
+
   /* One face for the whole app. Aura reads body text from --font-inter, so that is pointed at it too. */
   --font-ui: 'Chakra Petch', ui-sans-serif, system-ui, sans-serif;
   --font-inter: var(--font-ui);
   --font-source-code-pro:
-    'Source Code Pro', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-    'Liberation Mono', 'Courier New', monospace;
+    'Source Code Pro', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
+    'Courier New', monospace;
   --font-display: var(--font-ui);
 
   /*
-   * HUD palette. Aura has no sci-fi role, so these map an electric-blue scheme onto Aura colour
-   * ramps (no raw hex). Blue carries the interface; only warnings (gold) and critical states
-   * (red) bring other colour, so alerts always stand out.
+   * HUD palette. Aura has no sci-fi role, so these carry the mascot's colours: its royal-blue
+   * panels the interface, its navy the surfaces and the cyan of its eyes the lit details. Only
+   * warnings (amber) and critical states (red) bring other colour to the content, so alerts
+   * always stand out; the gold of the mascot's bands is kept to trim.
    */
-  --neon-cyan: var(--blue-450);
-  --neon-green: var(--blue-300);
-  --neon-sky: var(--blue-400);
+  /*
+   * The royal blue of the mascot's panels, measured from its artwork. Aura has no ramp in this
+   * blue, so this is the one raw colour value in the theme. It fills the primary controls and
+   * glows as it is; the surfaces and the lit accent are mixed from it.
+   */
+  --mascot-blue: #1642a5;
+  --neon-royal: var(--mascot-blue);
+  /*
+   * The mascot's blue is too dark to read as text or a line on navy, so those use it lit up: the
+   * same hue at a higher lightness. Browsers without relative colours get the tint below.
+   */
+  --neon-cyan: color-mix(in oklab, var(--mascot-blue) 30%, var(--blue-300));
+  --neon-green: var(--sky-200);
+  --neon-sky: var(--sky-300);
+  --neon-gold: var(--amber-450);
   --neon-amber: var(--amber-400);
   --neon-red: var(--red-500);
-  --neon-surface: color-mix(in oklab, var(--blue-700) 36%, var(--mountain-950));
-  --neon-surface-deep: color-mix(
-    in oklab,
-    var(--blue-800) 24%,
-    var(--mountain-950)
-  );
-  --neon-boost: saturate(1.45) brightness(1.06);
+  --neon-surface: color-mix(in oklab, var(--mascot-blue) 50%, var(--fjord-950));
+  --neon-surface-deep: color-mix(in oklab, var(--mascot-blue) 30%, var(--fjord-950));
+  --neon-boost: saturate(1.3) brightness(1.03);
+
+  /*
+   * What the rules below read, so each has one meaning in both modes: four strengths of ink, the
+   * lit bottom line of a pill or field and its stronger hover, the fill behind a pill, and the
+   * colours of what is lit, pressed or primary.
+   */
+  --hud-ink-strong: var(--blue-50);
+  --hud-ink: var(--blue-100);
+  --hud-ink-soft: var(--blue-200);
+  --hud-ink-faint: var(--blue-300);
+  --hud-ink-muted: color-mix(in oklab, var(--blue-200) 82%, var(--neon-surface));
+  --hud-ink-hover: var(--mountain-white);
+  --hud-line: var(--blue-300);
+  --hud-line-strong: var(--blue-100);
+  --hud-sheen: var(--blue-100);
+  --hud-focus: var(--blue-200);
+  --hud-spark: var(--blue-50);
+  --hud-fill: var(--neon-cyan);
+  --hud-lit-base: var(--neon-surface-deep);
+  --hud-filled-ink: var(--mountain-950);
+  --hud-primary-ink: var(--blue-50);
+  --hud-primary-top: color-mix(in srgb, var(--neon-cyan) 65%, transparent);
+  --hud-primary-bottom: color-mix(in srgb, var(--neon-cyan) 28%, transparent);
+  --hud-primary-hover-top: color-mix(in srgb, var(--neon-cyan) 75%, transparent);
+  --hud-primary-hover-bottom: color-mix(in srgb, var(--neon-cyan) 32%, transparent);
+  --hud-shadow: color-mix(in srgb, var(--mountain-black) 60%, transparent);
+
+  /* Status pills: the fill behind the pill, its bottom line and its text. */
+  --hud-warning-fill: var(--neon-amber);
+  --hud-warning-line: var(--amber-300);
+  --hud-warning-ink: var(--amber-50);
+  --hud-danger-fill: var(--neon-red);
+  --hud-danger-line: var(--red-400);
+  --hud-danger-ink: var(--red-50);
+  --hud-success-fill: var(--green-450);
+  --hud-success-line: var(--green-300);
+  --hud-success-ink: var(--green-50);
+  --hud-neutral-fill: var(--mountain-500);
+  --hud-neutral-line: var(--mountain-400);
+  --hud-neutral-ink: var(--mountain-100);
 
   --hud-cut: 12px;
+}
+
+@supports (color: oklch(from red l c h)) {
+  :root,
+  .dark {
+    --neon-cyan: oklch(from var(--mascot-blue) 0.69 0.135 h);
+  }
+}
+
+/*
+ * Light mode: the mascot the other way round. Its white body is the surface, its navy the ink and
+ * its royal blue, dark enough to read on white as it is, every line and lit detail. Colours that
+ * carry text (sky, amber, red) take the dark steps of their ramps so they hold 4.5:1 on white.
+ */
+:root:not(.dark) {
+  color-scheme: light;
+
+  --neon-cyan: var(--mascot-blue);
+  --neon-green: var(--sky-700);
+  --neon-sky: var(--sky-650);
+  --neon-gold: var(--amber-500);
+  --neon-amber: var(--amber-700);
+  --neon-red: var(--red-650);
+  --neon-surface: var(--mountain-white);
+  --neon-surface-deep: color-mix(in oklab, var(--mascot-blue) 5%, var(--mountain-white));
+  --neon-boost: saturate(1);
+
+  --base-foreground: var(--hud-ink-strong);
+
+  --hud-ink-strong: color-mix(in oklab, var(--mascot-blue) 35%, var(--fjord-950));
+  --hud-ink: color-mix(in oklab, var(--mascot-blue) 45%, var(--fjord-950));
+  --hud-ink-soft: color-mix(in oklab, var(--mascot-blue) 60%, var(--fjord-950));
+  --hud-ink-faint: color-mix(in oklab, var(--mascot-blue) 50%, var(--mountain-500));
+  --hud-ink-muted: color-mix(in oklab, var(--mascot-blue) 60%, var(--mountain-500));
+  --hud-ink-hover: var(--hud-ink-strong);
+  --hud-line: var(--mascot-blue);
+  --hud-line-strong: var(--hud-ink-strong);
+  --hud-sheen: var(--mountain-white);
+  --hud-focus: var(--mascot-blue);
+  --hud-spark: var(--mascot-blue);
+  /* Pale enough for navy text at every strength a pill is drawn in. */
+  --hud-fill: color-mix(in oklab, var(--mascot-blue) 55%, var(--mountain-white));
+  --hud-lit-base: color-mix(in oklab, var(--mascot-blue) 70%, var(--fjord-950));
+  --hud-filled-ink: var(--mountain-white);
+  /* The primary button is the mascot's blue itself, with white text. */
+  --hud-primary-ink: var(--mountain-white);
+  --hud-primary-top: var(--mascot-blue);
+  --hud-primary-bottom: var(--hud-lit-base);
+  --hud-primary-hover-top: var(--hud-primary-top);
+  --hud-primary-hover-bottom: var(--hud-primary-bottom);
+  --hud-shadow: color-mix(in srgb, var(--mascot-blue) 22%, transparent);
+
+  --hud-warning-fill: var(--amber-300);
+  --hud-warning-line: var(--amber-650);
+  --hud-warning-ink: var(--amber-800);
+  --hud-danger-fill: var(--red-400);
+  --hud-danger-line: var(--red-600);
+  --hud-danger-ink: var(--red-800);
+  --hud-success-fill: var(--green-300);
+  --hud-success-line: var(--green-600);
+  --hud-success-ink: var(--green-800);
+  --hud-neutral-fill: var(--mountain-400);
+  --hud-neutral-line: var(--mountain-600);
+  --hud-neutral-ink: var(--mountain-800);
+}
+
+/*
+ * Aura's themes are neutral grey. On the stage, and in the dialogs and popovers portaled
+ * outside it, its quiet text, hairlines and tinted backgrounds take the mascot's blue instead,
+ * so nothing reads as grey. Aura's utilities read these tokens directly. The header is listed
+ * so it works them out from its own dark palette instead of inheriting the stage's.
+ */
+:is(.neon-stage, .hud-dialog, .hud-popover, .app-topbar) {
+  --muted-foreground: var(--hud-ink-muted);
+  --muted-background: var(--neon-surface-deep);
+  --default: color-mix(in srgb, var(--neon-cyan) 30%, transparent);
+  --border: var(--default);
 }
 
 /* ---------- Stage ---------- */
@@ -58,17 +194,17 @@
   background:
     radial-gradient(
       60rem 34rem at 12% -14%,
-      color-mix(in srgb, var(--blue-500) 34%, transparent),
+      color-mix(in srgb, var(--neon-royal) 38%, transparent),
       transparent 70%
     ),
     radial-gradient(
       46rem 30rem at 100% 2%,
-      color-mix(in srgb, var(--blue-450) 20%, transparent),
+      color-mix(in srgb, var(--sky-400) 14%, transparent),
       transparent 70%
     ),
     radial-gradient(
       60rem 30rem at 50% 118%,
-      color-mix(in srgb, var(--blue-500) 16%, transparent),
+      color-mix(in srgb, var(--neon-royal) 18%, transparent),
       transparent 70%
     ),
     var(--neon-surface-deep);
@@ -81,22 +217,16 @@
   inset: 0;
   pointer-events: none;
   background-image:
-    linear-gradient(
-      color-mix(in srgb, var(--blue-400) 12%, transparent) 1px,
-      transparent 1px
-    ),
+    linear-gradient(color-mix(in srgb, var(--neon-cyan) 12%, transparent) 1px, transparent 1px),
     linear-gradient(
       90deg,
-      color-mix(in srgb, var(--blue-400) 12%, transparent) 1px,
+      color-mix(in srgb, var(--neon-cyan) 12%, transparent) 1px,
       transparent 1px
     ),
-    linear-gradient(
-      color-mix(in srgb, var(--blue-400) 5%, transparent) 1px,
-      transparent 1px
-    ),
+    linear-gradient(color-mix(in srgb, var(--neon-cyan) 5%, transparent) 1px, transparent 1px),
     linear-gradient(
       90deg,
-      color-mix(in srgb, var(--blue-400) 5%, transparent) 1px,
+      color-mix(in srgb, var(--neon-cyan) 5%, transparent) 1px,
       transparent 1px
     );
   background-size:
@@ -118,7 +248,7 @@
     repeating-radial-gradient(
       circle at 92% 4%,
       transparent 0 78px,
-      color-mix(in srgb, var(--blue-400) 11%, transparent) 79px 80px
+      color-mix(in srgb, var(--neon-cyan) 11%, transparent) 79px 80px
     ),
     radial-gradient(
       ellipse at 50% 38%,
@@ -141,7 +271,7 @@
 
 .neon-trace {
   --trace-length: 9rem;
-  --trace-color: var(--neon-cyan);
+  --trace-color: var(--neon-sky);
 
   position: absolute;
   top: 0;
@@ -159,7 +289,7 @@
     90deg,
     transparent,
     color-mix(in srgb, var(--trace-color) 70%, transparent) 78%,
-    var(--blue-50)
+    var(--hud-spark)
   );
   box-shadow: 0 0 6px color-mix(in srgb, var(--trace-color) 60%, transparent);
   animation-name: trace-run-row;
@@ -173,53 +303,13 @@
     180deg,
     transparent,
     color-mix(in srgb, var(--trace-color) 70%, transparent) 78%,
-    var(--blue-50)
+    var(--hud-spark)
   );
   box-shadow: 0 0 6px color-mix(in srgb, var(--trace-color) 60%, transparent);
   animation-name: trace-run-column;
 }
 
 /* ---------- Typography ---------- */
-
-.hud-display {
-  font-family: var(--font-display);
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.hud-mono {
-  font-family: var(--font-source-code-pro);
-}
-
-.neon-text {
-  color: color-mix(
-    in srgb,
-    var(--hud-accent, var(--neon-cyan)) 62%,
-    var(--blue-50)
-  );
-  text-shadow:
-    0 0 8px
-      color-mix(in srgb, var(--hud-accent, var(--neon-cyan)) 60%, transparent),
-    0 0 26px
-      color-mix(in srgb, var(--hud-accent, var(--neon-cyan)) 34%, transparent);
-}
-
-/* Big gradient headline: white-hot to electric blue. */
-.hud-headline {
-  background: linear-gradient(
-    100deg,
-    var(--blue-50) 5%,
-    var(--blue-200) 40%,
-    var(--blue-450) 100%
-  );
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  filter: drop-shadow(
-    0 0 14px color-mix(in srgb, var(--blue-450) 55%, transparent)
-  );
-}
 
 /* The title of every page: one size, 24 px on a phone growing to 32 px, so no page shouts louder than another. */
 .page-title {
@@ -236,7 +326,8 @@
   font-weight: 600;
   letter-spacing: 0.26em;
   text-transform: uppercase;
-  color: var(--hud-accent, var(--neon-cyan));
+  /* Lit like the mascot's eyes; warning and critical cards keep their own colour. */
+  color: var(--hud-kicker-color, var(--neon-sky));
 }
 
 /* ---------- Tones ---------- */
@@ -262,7 +353,7 @@
 .tone-sky,
 .tone-amber,
 .tone-red {
-  --hud-accent-light: color-mix(in srgb, var(--hud-accent) 45%, var(--blue-50));
+  --hud-accent-light: color-mix(in srgb, var(--hud-accent) 45%, var(--hud-ink-strong));
   /* How strongly the accent tints the card, and how far its glow reaches. */
   --hud-tint: 14%;
   --hud-glow: 20%;
@@ -271,13 +362,10 @@
 /* Warning and critical cards stay dark and crisp: a heavy red or gold tint over navy turns muddy and pink. */
 .tone-amber,
 .tone-red {
+  --hud-kicker-color: var(--hud-accent);
   --hud-tint: 6%;
   --hud-glow: 13%;
   --neon-boost: saturate(1.15) brightness(1.05);
-}
-
-.text-accent {
-  color: var(--hud-accent, var(--neon-cyan));
 }
 
 /* ---------- HUD panel: glass card, bright edge, light that chases the border ---------- */
@@ -286,10 +374,7 @@
   position: relative;
   height: 100%;
   filter: var(--neon-boost)
-    drop-shadow(
-      0 8px 22px
-        color-mix(in srgb, var(--hud-accent) var(--hud-glow), transparent)
-    );
+    drop-shadow(0 8px 22px color-mix(in srgb, var(--hud-accent) var(--hud-glow), transparent));
   transition: filter 220ms ease;
 }
 
@@ -343,11 +428,7 @@
     ),
     linear-gradient(
       160deg,
-      color-mix(
-        in srgb,
-        var(--hud-accent) var(--hud-tint),
-        var(--neon-surface)
-      ),
+      color-mix(in srgb, var(--hud-accent) var(--hud-tint), var(--neon-surface)),
       var(--neon-surface) 58%,
       color-mix(in srgb, var(--hud-accent) 4%, var(--neon-surface-deep))
     );
@@ -363,16 +444,6 @@
   );
 }
 
-/*
- * A panel stretched by its grid row (to match a taller neighbour) can lay its content out in a column and
- * let one child grow. This is unlayered on purpose: `.hud-body` sets display, which would beat Tailwind's
- * layered `flex flex-col` utilities.
- */
-.hud-body.hud-fill {
-  display: flex;
-  flex-direction: column;
-}
-
 /* A bright accent bar along the top edge: the "lit" side of the glass. */
 .hud-body::before {
   content: '';
@@ -382,35 +453,8 @@
   right: 18%;
   height: 2px;
   pointer-events: none;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    var(--hud-accent-light),
-    transparent
-  );
+  background: linear-gradient(90deg, transparent, var(--hud-accent-light), transparent);
   box-shadow: 0 0 14px var(--hud-accent);
-}
-
-button.hud-body {
-  cursor: pointer;
-  border: 0;
-}
-
-.hud-glow.is-interactive:hover,
-.hud-glow.is-selected {
-  filter: var(--neon-boost)
-    drop-shadow(
-      0 10px 30px color-mix(in srgb, var(--hud-accent) 48%, transparent)
-    );
-}
-
-.hud-glow:has(button.hud-body:focus-visible) {
-  filter: var(--neon-boost) drop-shadow(0 0 18px var(--hud-accent));
-}
-
-button.hud-body:focus-visible {
-  outline: 2px solid var(--hud-accent-light);
-  outline-offset: -4px;
 }
 
 .hud-tag {
@@ -428,88 +472,123 @@ button.hud-body:focus-visible {
   box-shadow: 0 0 8px var(--hud-accent);
 }
 
-.hud-title-chip {
-  display: inline-block;
-  max-width: 100%;
-  padding: 0.3rem 0.7rem;
-  border: 1px solid color-mix(in srgb, var(--hud-accent) 40%, transparent);
-  border-left: 3px solid var(--hud-accent);
+/*
+ * A notched panel: a control panel's outline. The four corners are cut, the top edge dips in a notch, and the lower
+ * left is cut away: the edge steps in, runs down and then cuts the corner. A vent of slanted bars stands in the gap,
+ * outside the body. The frame and the body draw the same outline, the body's a pixel smaller so the edge shows as a line.
+ */
+.hud-notched {
+  --hud-notch: 8px;
+  --hud-notch-slant: 12px;
+  --hud-notch-start: 21%;
+  --hud-notch-end: 57%;
+  /* The cut-away: where the step starts, how far the edge steps in, and how far it drops as it goes. */
+  --hud-step: 34%;
+  --hud-inset: 24px;
+  --hud-rise: 13px;
+}
+
+/*
+ * A screen: a large panel that holds a table or a tab bar. It takes the notched panel's outline, quietly: a shallow
+ * notch, a narrow cut-away that takes only the foot of the panel however tall it grows, and no vent.
+ */
+.hud-screen {
+  --hud-notch: 5px;
+  --hud-notch-slant: 8px;
+  --hud-notch-start: 21%;
+  --hud-notch-end: 57%;
+  --hud-step: max(50%, calc(100% - 5rem));
+  --hud-inset: 10px;
+  --hud-rise: 6px;
+}
+
+.hud-notched > .hud-frame {
+  /* A fuller edge than the plain panel's, so the notch and the step read along their whole length. */
   background: linear-gradient(
-    90deg,
-    color-mix(in srgb, var(--hud-accent) 14%, transparent),
-    color-mix(in srgb, var(--neon-surface-deep) 80%, transparent)
-  );
-  border-radius: 0;
-  overflow-wrap: anywhere;
-}
-
-.hud-stat {
-  padding-top: 0.6rem;
-  border-top: 1px solid color-mix(in srgb, var(--hud-accent) 26%, transparent);
-}
-
-.hud-bar {
-  height: 3px;
-  border-radius: 9999px;
-  background: color-mix(in srgb, var(--hud-accent) 16%, transparent);
-  overflow: hidden;
-}
-
-.hud-bar > span {
-  display: block;
-  height: 100%;
-  border-radius: 9999px;
-  background: linear-gradient(
-    90deg,
+    140deg,
     var(--hud-accent),
-    var(--hud-accent-light)
+    color-mix(in srgb, var(--hud-accent) 55%, transparent) 40%,
+    color-mix(in srgb, var(--hud-accent) 55%, transparent) 60%,
+    var(--hud-accent)
   );
-  box-shadow: 0 0 8px var(--hud-accent);
 }
 
-/* ---------- Brand ---------- */
-
-.brand-mark {
-  display: grid;
-  place-items: center;
-  width: 2.5rem;
-  height: 2.5rem;
-  color: var(--neon-cyan);
-  border: 1px solid color-mix(in srgb, var(--neon-cyan) 55%, transparent);
-  background: color-mix(in srgb, var(--neon-cyan) 10%, transparent);
-  clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%);
-  filter: drop-shadow(0 0 8px var(--neon-cyan));
+:is(.hud-notched, .hud-screen) > .hud-frame {
+  --hud-outline-cut: var(--hud-cut);
 }
 
-.neon-divider {
-  height: 1px;
-  border: 0;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    var(--neon-cyan),
-    transparent
+:is(.hud-notched, .hud-screen) > .hud-frame > .hud-body {
+  --hud-outline-cut: calc(var(--hud-cut) - 1px);
+}
+
+:is(.hud-notched, .hud-screen) > .hud-frame,
+:is(.hud-notched, .hud-screen) > .hud-frame > .hud-body,
+.hud-dialog__frame,
+.hud-dialog__body {
+  clip-path: polygon(
+    0 var(--hud-outline-cut),
+    var(--hud-outline-cut) 0,
+    var(--hud-notch-start) 0,
+    calc(var(--hud-notch-start) + var(--hud-notch-slant)) var(--hud-notch),
+    var(--hud-notch-end) var(--hud-notch),
+    calc(var(--hud-notch-end) + var(--hud-notch-slant)) 0,
+    calc(100% - var(--hud-outline-cut)) 0,
+    100% var(--hud-outline-cut),
+    100% calc(100% - var(--hud-outline-cut)),
+    calc(100% - var(--hud-outline-cut)) 100%,
+    calc(var(--hud-outline-cut) + var(--hud-inset)) 100%,
+    var(--hud-inset) calc(100% - var(--hud-outline-cut)),
+    var(--hud-inset) calc(var(--hud-step) + var(--hud-rise)),
+    0 var(--hud-step)
   );
-  opacity: 0.55;
+}
+
+/* The lit bar sits on the floor of the notch rather than on the top edge, which the notch cuts away. */
+:is(.hud-notched, .hud-screen) > .hud-frame > .hud-body::before {
+  top: var(--hud-notch);
+  left: calc(var(--hud-notch-start) + var(--hud-notch-slant));
+  right: calc(100% - var(--hud-notch-end));
+}
+
+/* On a screen the bar is gold trim, like the band under the header; a tile's bar keeps its tone's colour. */
+.hud-screen > .hud-frame > .hud-body::before {
+  background: linear-gradient(90deg, transparent, var(--neon-gold), transparent);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--neon-gold) 60%, transparent);
+}
+
+/*
+ * The vent: bars that slope with the step beside them (the rise over the inset), spaced by one gap from each other,
+ * from the step and from the body's edge.
+ */
+.hud-vent {
+  --hud-vent-gap: 0.3rem;
+  position: absolute;
+  top: calc(var(--hud-step) + var(--hud-vent-gap));
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--hud-vent-gap);
+  width: calc(var(--hud-inset) - var(--hud-vent-gap));
+  pointer-events: none;
+}
+
+.hud-vent > i {
+  display: block;
+  height: 0.45rem;
+  border: 1px solid var(--hud-accent);
+  background: color-mix(in srgb, var(--hud-accent) 22%, transparent);
+  /* Skewed about the end by the outer edge, so the bar runs parallel to the step. */
+  transform: skewY(atan2(var(--hud-rise), var(--hud-inset)));
+  transform-origin: left center;
 }
 
 /* ---------- Motion ---------- */
-
-@keyframes grid-drift {
-  to {
-    background-position:
-      44px 44px,
-      44px 44px;
-  }
-}
 
 /* One run takes the first part of the cycle; the rest is the pause before the next one. */
 @keyframes trace-run-row {
   0% {
     opacity: 0;
-    transform: translateX(
-      calc(var(--trace-from) * var(--grid-cell) - var(--trace-length))
-    );
+    transform: translateX(calc(var(--trace-from) * var(--grid-cell) - var(--trace-length)));
   }
   8%,
   54% {
@@ -525,9 +604,7 @@ button.hud-body:focus-visible {
 @keyframes trace-run-column {
   0% {
     opacity: 0;
-    transform: translateY(
-      calc(var(--trace-from) * var(--grid-cell) - var(--trace-length))
-    );
+    transform: translateY(calc(var(--trace-from) * var(--grid-cell) - var(--trace-length)));
   }
   8%,
   54% {
@@ -546,89 +623,17 @@ button.hud-body:focus-visible {
   }
 }
 
-@keyframes ring-rotate {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .neon-stage::before,
-  .trend-live,
-  .ring-spin {
-    animation: none;
-  }
-
   .neon-traces {
     display: none;
   }
 
-  .hud-glow,
-  .ring-value {
+  .hud-glow {
     transition: none;
   }
 }
 
 /* ---------- Data table ---------- */
-
-.hud-table-wrap {
-  overflow-x: auto;
-  max-height: 32rem;
-  outline: none;
-}
-
-.hud-table-wrap:focus-visible {
-  outline: 2px solid var(--hud-accent-light);
-  outline-offset: -2px;
-}
-
-.hud-table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  font-size: 0.8125rem;
-  white-space: nowrap;
-}
-
-.hud-table th,
-.hud-table td {
-  padding: 0.65rem 1rem;
-  text-align: left;
-  border-bottom: 1px solid
-    color-mix(in srgb, var(--hud-accent) 14%, transparent);
-}
-
-.hud-table thead th {
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  font-family: var(--font-display);
-  font-size: 0.6875rem;
-  font-weight: 600;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--hud-accent);
-  background: color-mix(in srgb, var(--neon-surface-deep) 94%, transparent);
-  border-bottom: 1px solid
-    color-mix(in srgb, var(--hud-accent) 45%, transparent);
-}
-
-.hud-table .is-sticky {
-  position: sticky;
-  left: 0;
-  z-index: 1;
-  background: color-mix(in srgb, var(--neon-surface) 96%, transparent);
-  border-right: 1px solid color-mix(in srgb, var(--hud-accent) 22%, transparent);
-}
-
-.hud-table thead .is-sticky {
-  z-index: 3;
-}
-
-.hud-table tbody tr:hover td,
-.hud-table tbody tr:hover th {
-  background: color-mix(in srgb, var(--hud-accent) 9%, var(--neon-surface));
-}
 
 /*
  * The asset register's grid (Aura DataGrid) draws each row's bottom line with a default border colour that is nearly
@@ -643,82 +648,6 @@ button.hud-body:focus-visible {
   border-color: color-mix(in srgb, var(--neon-cyan) 45%, transparent);
 }
 
-.tab-count {
-  /* A true circle: equal width and height, no padding, the digit centred in both directions. */
-  box-sizing: border-box;
-  display: inline-grid;
-  place-items: center;
-  width: 1.25rem;
-  height: 1.25rem;
-  padding: 0;
-  margin-left: 0.3rem;
-  font-family: var(--font-source-code-pro);
-  font-size: 0.6875rem;
-  font-variant-numeric: tabular-nums;
-  /* The tabs space their letters out; inherited here it adds trailing space after the digit and pulls it off centre. */
-  letter-spacing: 0;
-  line-height: 1;
-  text-align: center;
-  font-weight: 600;
-  color: var(--blue-100);
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--neon-cyan) 30%, transparent),
-    color-mix(in srgb, var(--neon-cyan) 10%, transparent)
-  );
-  border: 1px solid color-mix(in srgb, var(--neon-cyan) 45%, transparent);
-  border-radius: 50%;
-}
-
-/* Counts of 100 or more no longer fit a circle, so they become a pill. */
-.tab-count.is-wide {
-  width: auto;
-  min-width: 1.25rem;
-  padding: 0 0.4rem;
-  border-radius: 9999px;
-}
-
-.tab-count.is-alert {
-  color: color-mix(in srgb, var(--neon-red) 55%, var(--blue-50));
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--neon-red) 32%, transparent),
-    color-mix(in srgb, var(--neon-red) 10%, transparent)
-  );
-  border-color: color-mix(in srgb, var(--neon-red) 55%, transparent);
-  box-shadow: 0 0 10px color-mix(in srgb, var(--neon-red) 35%, transparent);
-}
-
-.collapse-trigger {
-  display: flex;
-  width: 100%;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.55rem 0.75rem;
-  color: var(--hud-accent);
-  background: linear-gradient(
-    90deg,
-    color-mix(in srgb, var(--hud-accent) 14%, transparent),
-    transparent
-  );
-  border: 0;
-  border-left: 3px solid var(--hud-accent);
-  cursor: pointer;
-}
-
-.collapse-trigger:focus-visible {
-  outline: 2px solid var(--hud-accent-light);
-  outline-offset: 2px;
-}
-
-.collapse-trigger[data-panel-open] .collapse-chevron {
-  transform: rotate(180deg);
-}
-
-.collapse-chevron {
-  transition: transform 200ms ease;
-}
-
 /* =====================================================================
  * Control restyle: Aura controls, themed to match the HUD panels.
  * Aura's own classes live in a cascade layer, so these unlayered rules win.
@@ -726,8 +655,7 @@ button.hud-body:focus-visible {
 
 .neon-stage {
   scrollbar-width: thin;
-  scrollbar-color: color-mix(in srgb, var(--neon-cyan) 45%, transparent)
-    transparent;
+  scrollbar-color: color-mix(in srgb, var(--neon-cyan) 45%, transparent) transparent;
 }
 
 .neon-stage ::selection {
@@ -788,14 +716,7 @@ button.hud-body:focus-visible {
   background: transparent;
   border: 0;
   border-radius: 0;
-  clip-path: polygon(
-    7px 0,
-    100% 0,
-    100% calc(100% - 7px),
-    calc(100% - 7px) 100%,
-    0 100%,
-    0 7px
-  );
+  clip-path: polygon(7px 0, 100% 0, 100% calc(100% - 7px), calc(100% - 7px) 100%, 0 100%, 0 7px);
   transition:
     color 160ms ease,
     background 160ms ease,
@@ -809,89 +730,21 @@ button.hud-body:focus-visible {
 }
 
 .neon-stage [data-slot='tabs-trigger'][aria-selected='true'] {
-  color: var(--blue-50);
+  color: var(--hud-ink-strong);
   background: linear-gradient(
     180deg,
     color-mix(in srgb, var(--neon-cyan) 40%, transparent),
     color-mix(in srgb, var(--neon-cyan) 12%, transparent)
   );
   box-shadow:
-    inset 0 -2px 0 var(--blue-300),
-    inset 0 1px 0 color-mix(in srgb, var(--blue-100) 30%, transparent);
+    inset 0 -2px 0 var(--hud-line),
+    inset 0 1px 0 color-mix(in srgb, var(--hud-sheen) 30%, transparent);
 }
 
 .neon-stage [data-slot='tabs-trigger']:focus-visible,
 .neon-stage [data-slot='segmented-control-trigger']:focus-visible {
-  outline: 2px solid var(--blue-200);
+  outline: 2px solid var(--hud-focus);
   outline-offset: -2px;
-}
-
-/* The header search: the same glass rail as the tabs, so the two read as one control group. */
-.nav-search {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.6rem;
-  /* Matches the tab rail: border 1 + padding 4 + tab + padding 4 + border 1. */
-  height: calc(var(--tab-height) + 10px);
-  min-width: 14rem;
-  padding: 0 1rem;
-  font-family: var(--font-display);
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--muted-foreground);
-  cursor: pointer;
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--neon-cyan) 9%, var(--neon-surface-deep)),
-    var(--neon-surface-deep)
-  );
-  border: 1px solid color-mix(in srgb, var(--neon-cyan) 32%, transparent);
-  clip-path: polygon(
-    10px 0,
-    100% 0,
-    100% calc(100% - 10px),
-    calc(100% - 10px) 100%,
-    0 100%,
-    0 10px
-  );
-  transition:
-    color 160ms ease,
-    background 160ms ease,
-    border-color 160ms ease;
-}
-
-.nav-search:hover {
-  color: var(--base-foreground);
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--neon-cyan) 20%, var(--neon-surface-deep)),
-    color-mix(in srgb, var(--neon-cyan) 8%, var(--neon-surface-deep))
-  );
-  border-color: color-mix(in srgb, var(--neon-cyan) 55%, transparent);
-}
-
-.nav-search:focus-visible {
-  outline: 2px solid var(--blue-200);
-  outline-offset: -2px;
-}
-
-/* On a phone the search and the tabs stack, each spanning the full width so their edges line up. */
-@media (max-width: 639.98px) {
-  .nav-search,
-  .neon-stage [data-header-actions] > [data-slot='tabs'] {
-    flex: 1 1 100%;
-  }
-
-  .neon-stage [data-header-actions] [data-slot='tabs-list'] {
-    width: 100%;
-  }
-
-  .neon-stage [data-header-actions] [data-slot='tabs-trigger'] {
-    flex: 1 1 auto;
-    padding: 0 0.5rem;
-  }
 }
 
 /* ---------- Segmented controls (filters, view switches) ---------- */
@@ -914,20 +767,13 @@ button.hud-body:focus-visible {
   );
   border-radius: 0;
   box-shadow:
-    inset 0 -2px 0 var(--blue-300),
-    inset 0 1px 0 color-mix(in srgb, var(--blue-100) 30%, transparent);
-  clip-path: polygon(
-    7px 0,
-    100% 0,
-    100% calc(100% - 7px),
-    calc(100% - 7px) 100%,
-    0 100%,
-    0 7px
-  );
+    inset 0 -2px 0 var(--hud-line),
+    inset 0 1px 0 color-mix(in srgb, var(--hud-sheen) 30%, transparent);
+  clip-path: polygon(7px 0, 100% 0, 100% calc(100% - 7px), calc(100% - 7px) 100%, 0 100%, 0 7px);
 }
 
 .neon-stage [data-slot='segmented-control-trigger'][aria-selected='true'] {
-  color: var(--blue-50);
+  color: var(--hud-ink-strong);
   background: transparent;
 }
 
@@ -944,7 +790,7 @@ button.hud-body:focus-visible {
 [data-slot='search'] {
   --field-cut: 8px;
   --field-edge: color-mix(in srgb, var(--neon-cyan) 55%, transparent);
-  --field-line: var(--blue-300);
+  --field-line: var(--hud-line);
   border: 1px solid transparent;
   background:
     linear-gradient(
@@ -972,10 +818,15 @@ button.hud-body:focus-visible {
 
 [data-slot='search']:focus-within {
   --field-edge: var(--neon-cyan);
-  --field-line: var(--blue-100);
+  --field-line: var(--hud-line-strong);
 }
 
-[data-slot='search'] :is([data-slot='input-group'], [data-slot='input-group-addon'], [data-slot='input-group-control']) {
+[data-slot='search']
+  :is(
+    [data-slot='input-group'],
+    [data-slot='input-group-addon'],
+    [data-slot='input-group-control']
+  ) {
   background: transparent !important;
   border-color: transparent !important;
   border-radius: 0 !important;
@@ -984,11 +835,11 @@ button.hud-body:focus-visible {
 }
 
 [data-slot='search'] [data-slot='input-group-control'] {
-  color: var(--base-foreground, var(--blue-50));
+  color: var(--base-foreground, var(--hud-ink-strong));
 }
 
 [data-slot='search'] [data-slot='input-group-control']::placeholder {
-  color: var(--blue-300);
+  color: var(--hud-ink-faint);
 }
 
 /*
@@ -1031,9 +882,9 @@ button.hud-body:focus-visible {
  * per tone below; --pill-line is the bottom line and --pill-text the label.
  */
 :is(.neon-stage, .hud-dialog, .hud-popover) [data-slot='badge'] {
-  --pill: var(--neon-cyan);
-  --pill-line: var(--blue-300);
-  --pill-text: var(--blue-50);
+  --pill: var(--hud-fill);
+  --pill-line: var(--hud-line);
+  --pill-text: var(--hud-ink-strong);
   --pill-cut: 5px;
   height: 1.375rem;
   padding: 0 0.6rem;
@@ -1052,7 +903,7 @@ button.hud-body:focus-visible {
   );
   box-shadow:
     inset 0 -2px 0 var(--pill-line),
-    inset 0 1px 0 color-mix(in srgb, var(--blue-100) 30%, transparent);
+    inset 0 1px 0 color-mix(in srgb, var(--hud-sheen) 30%, transparent);
   clip-path: polygon(
     var(--pill-cut) 0,
     100% 0,
@@ -1069,33 +920,33 @@ button.hud-body:focus-visible {
  * is a muted grey. The default above is the lit blue.
  */
 :is(.neon-stage, .hud-dialog, .hud-popover) [data-slot='badge'][data-tone='active'] {
-  --pill: var(--neon-cyan);
-  --pill-line: var(--blue-300);
-  --pill-text: var(--blue-50);
+  --pill: var(--hud-fill);
+  --pill-line: var(--hud-line);
+  --pill-text: var(--hud-ink-strong);
 }
 
 :is(.neon-stage, .hud-dialog, .hud-popover) [data-slot='badge'][data-tone='warning'] {
-  --pill: var(--neon-amber);
-  --pill-line: var(--amber-300);
-  --pill-text: var(--amber-50);
+  --pill: var(--hud-warning-fill);
+  --pill-line: var(--hud-warning-line);
+  --pill-text: var(--hud-warning-ink);
 }
 
 :is(.neon-stage, .hud-dialog, .hud-popover) [data-slot='badge'][data-tone='error'] {
-  --pill: var(--neon-red);
-  --pill-line: var(--red-400);
-  --pill-text: var(--red-50);
+  --pill: var(--hud-danger-fill);
+  --pill-line: var(--hud-danger-line);
+  --pill-text: var(--hud-danger-ink);
 }
 
 :is(.neon-stage, .hud-dialog, .hud-popover) [data-slot='badge'][data-tone='success'] {
-  --pill: var(--green-450);
-  --pill-line: var(--green-300);
-  --pill-text: var(--green-50);
+  --pill: var(--hud-success-fill);
+  --pill-line: var(--hud-success-line);
+  --pill-text: var(--hud-success-ink);
 }
 
 :is(.neon-stage, .hud-dialog, .hud-popover) [data-slot='badge'][data-tone='neutral'] {
-  --pill: var(--mountain-500);
-  --pill-line: var(--mountain-400);
-  --pill-text: var(--mountain-100);
+  --pill: var(--hud-neutral-fill);
+  --pill-line: var(--hud-neutral-line);
+  --pill-text: var(--hud-neutral-ink);
 }
 
 /* Status dot badges keep their dot-sized shape. */
@@ -1134,22 +985,28 @@ button.hud-body:focus-visible {
  * Icons always take the text colour, so the two never disagree, on hover and when disabled too.
  */
 :is(.neon-stage, [data-slot='dialog-content'], .hud-popover)
-  :is([data-slot='button'], [data-slot='dialog-close'], [data-slot='tooltip-trigger'], [data-slot='popover-close'])
+  :is(
+    [data-slot='button'],
+    [data-slot='dialog-close'],
+    [data-slot='tooltip-trigger'],
+    [data-slot='popover-close']
+  )
   svg {
   color: inherit;
 }
 
 /* Filled: the one primary action of a view. */
 .neon-stage [data-slot='button']:is([data-variant='default'], [data-variant='defaultOnDark']) {
-  color: var(--mountain-950);
-  background: linear-gradient(135deg, var(--blue-300), var(--neon-cyan));
-  border: 1px solid var(--blue-200);
+  color: var(--hud-filled-ink);
+  background: linear-gradient(135deg, var(--hud-line), var(--neon-cyan));
+  border: 1px solid var(--hud-focus);
   box-shadow: 0 0 16px color-mix(in srgb, var(--neon-cyan) 35%, transparent);
 }
 
-.neon-stage [data-slot='button']:is([data-variant='default'], [data-variant='defaultOnDark']):hover {
-  color: var(--mountain-950);
-  background: linear-gradient(135deg, var(--blue-200), var(--blue-300));
+.neon-stage
+  [data-slot='button']:is([data-variant='default'], [data-variant='defaultOnDark']):hover {
+  color: var(--hud-filled-ink);
+  background: linear-gradient(135deg, var(--hud-focus), var(--hud-line));
   box-shadow: 0 0 24px color-mix(in srgb, var(--neon-cyan) 60%, transparent);
 }
 
@@ -1160,7 +1017,7 @@ button.hud-body:focus-visible {
     [data-variant='secondary'],
     [data-variant='secondaryOnDark']
   ) {
-  color: var(--blue-100);
+  color: var(--hud-ink);
   background: color-mix(in srgb, var(--neon-cyan) 8%, transparent);
   border: 1px solid var(--btn-edge);
 }
@@ -1171,7 +1028,7 @@ button.hud-body:focus-visible {
     [data-variant='secondary'],
     [data-variant='secondaryOnDark']
   ):hover {
-  color: var(--blue-50);
+  color: var(--hud-ink-strong);
   background: color-mix(in srgb, var(--neon-cyan) 20%, transparent);
   border-color: var(--neon-cyan);
   box-shadow: 0 0 18px color-mix(in srgb, var(--neon-cyan) 40%, transparent);
@@ -1179,12 +1036,12 @@ button.hud-body:focus-visible {
 
 /* Ghost: low emphasis, same shape and type so it still reads as a button. */
 .neon-stage [data-slot='button']:is([data-variant='ghost'], [data-variant='ghostOnDark']) {
-  color: var(--blue-200);
+  color: var(--hud-ink-soft);
   border: 1px solid transparent;
 }
 
 .neon-stage [data-slot='button']:is([data-variant='ghost'], [data-variant='ghostOnDark']):hover {
-  color: var(--blue-50);
+  color: var(--hud-ink-strong);
   background: color-mix(in srgb, var(--neon-cyan) 14%, transparent);
   border-color: var(--btn-edge);
 }
@@ -1197,7 +1054,7 @@ button.hud-body:focus-visible {
 }
 
 .neon-stage :is([data-slot='button'], button[data-slot='tooltip-trigger']):focus-visible {
-  outline: 2px solid var(--blue-200);
+  outline: 2px solid var(--hud-focus);
   outline-offset: 2px;
 }
 
@@ -1212,11 +1069,17 @@ button.hud-body:focus-visible {
  * part must stay: it keeps the specificity above Aura's generic outlined rules. Dialogs and tooltips are portaled
  * outside the stage, so their buttons need the type styles here too.
  */
-:is(.neon-stage, [data-slot='dialog-content'], .hud-popover) button.hud-button:is([data-slot='button'], [data-slot='dialog-close'], [data-slot='popover-close'], [data-slot='tooltip-trigger']) {
-  --pill: var(--neon-cyan);
-  --pill-line: var(--blue-300);
+:is(.neon-stage, [data-slot='dialog-content'], .hud-popover)
+  button.hud-button:is(
+    [data-slot='button'],
+    [data-slot='dialog-close'],
+    [data-slot='popover-close'],
+    [data-slot='tooltip-trigger']
+  ) {
+  --pill: var(--hud-fill);
+  --pill-line: var(--hud-line);
   --pill-cut: 6px;
-  color: var(--blue-50);
+  color: var(--hud-ink-strong);
   border: 0;
   border-radius: 0;
   font-family: var(--font-display);
@@ -1231,7 +1094,7 @@ button.hud-body:focus-visible {
   );
   box-shadow:
     inset 0 -2px 0 var(--pill-line),
-    inset 0 1px 0 color-mix(in srgb, var(--blue-100) 30%, transparent);
+    inset 0 1px 0 color-mix(in srgb, var(--hud-sheen) 30%, transparent);
   clip-path: polygon(
     var(--pill-cut) 0,
     100% 0,
@@ -1242,11 +1105,8 @@ button.hud-body:focus-visible {
   );
 
   &:is([data-variant='default'], [data-variant='defaultOnDark']) {
-    background: linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--pill) 65%, transparent),
-      color-mix(in srgb, var(--pill) 28%, transparent)
-    );
+    color: var(--hud-primary-ink);
+    background: linear-gradient(180deg, var(--hud-primary-top), var(--hud-primary-bottom));
   }
 
   transition:
@@ -1254,7 +1114,7 @@ button.hud-body:focus-visible {
     box-shadow 160ms ease;
 
   &:hover:not(:disabled) {
-    color: var(--blue-50);
+    color: var(--hud-ink-strong);
     background: linear-gradient(
       180deg,
       color-mix(in srgb, var(--pill) 75%, transparent),
@@ -1263,7 +1123,7 @@ button.hud-body:focus-visible {
     /* Restated, so the generic outlined hover glow cannot replace the bottom line. */
     box-shadow:
       inset 0 -2px 0 var(--pill-line),
-      inset 0 1px 0 color-mix(in srgb, var(--blue-100) 30%, transparent);
+      inset 0 1px 0 color-mix(in srgb, var(--hud-sheen) 30%, transparent);
   }
 
   /*
@@ -1271,7 +1131,13 @@ button.hud-body:focus-visible {
    * pressing dims it back a little.
    */
   &:is([data-variant='default'], [data-variant='defaultOnDark']):hover:not(:disabled) {
-    --pill-line: var(--blue-100);
+    --pill-line: var(--hud-line-strong);
+    color: var(--hud-primary-ink);
+    background: linear-gradient(
+      180deg,
+      var(--hud-primary-hover-top),
+      var(--hud-primary-hover-bottom)
+    );
     filter: brightness(1.2);
   }
 
@@ -1283,13 +1149,13 @@ button.hud-body:focus-visible {
     outline: none;
     box-shadow:
       inset 0 -2px 0 var(--pill-line),
-      inset 0 0 0 2px var(--blue-200);
+      inset 0 0 0 2px var(--hud-focus);
   }
 
   &[data-variant='destructive'] {
-    --pill: var(--neon-red);
-    --pill-line: var(--red-400);
-    color: var(--red-50);
+    --pill: var(--hud-danger-fill);
+    --pill-line: var(--hud-danger-line);
+    color: var(--hud-danger-ink);
   }
 }
 
@@ -1302,30 +1168,28 @@ button.hud-body:focus-visible {
   text-transform: uppercase;
 }
 
+/* The current page reads in the plain ink of the header; no glow. Its ancestors are muted and brighten on hover. */
 .neon-stage [data-slot='breadcrumb-page'] {
-  color: var(--neon-cyan);
-  text-shadow: 0 0 10px color-mix(in srgb, var(--neon-cyan) 50%, transparent);
+  color: var(--base-foreground);
 }
 
-.neon-stage [data-slot='breadcrumb-page-button'] {
+.neon-stage :is([data-slot='breadcrumb-link'], [data-slot='breadcrumb-page-button']) {
   color: var(--muted-foreground);
   transition: color 150ms ease;
 }
 
-.neon-stage [data-slot='breadcrumb-page-button']:hover {
-  color: var(--blue-100);
+.neon-stage :is([data-slot='breadcrumb-link'], [data-slot='breadcrumb-page-button']):hover {
+  color: var(--base-foreground);
 }
 
 /* ---------- Empty states, alerts, loading skeletons ---------- */
 
+/*
+ * An empty state is a data card with nothing in it yet: the same outline and faint edge as the cards beside it, so
+ * its cut-away follows the one on the panel it sits in.
+ */
 .neon-stage [data-slot='empty-state'] {
   padding: 2rem 1.5rem;
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--neon-cyan) 7%, transparent),
-    transparent
-  );
-  border: 1px dashed color-mix(in srgb, var(--neon-cyan) 32%, transparent);
   border-radius: 0;
 }
 
@@ -1372,60 +1236,172 @@ button.hud-body:focus-visible {
 
 /* ---------- App additions ---------- */
 
-:root {
-  --brand: var(--blue-450);
-  --brand-strong: var(--blue-200);
-}
-
 .font-display {
   font-family: var(--font-display);
 }
 
-/* Icon tile beside a figure: a cut-corner tinted chip. */
+/* Icon tile beside a figure: a tinted chip with two opposite corners cut, like the buttons and fields. */
 .icon-chip {
-  --chip-cut: 8px;
+  --chip-cut: 10px;
   display: flex;
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  color: var(--blue-100);
+  color: var(--hud-ink);
   background-color: color-mix(in srgb, var(--neon-cyan) 24%, transparent);
   clip-path: polygon(
-    0 var(--chip-cut),
     var(--chip-cut) 0,
-    calc(100% - var(--chip-cut)) 0,
-    100% var(--chip-cut),
+    100% 0,
     100% calc(100% - var(--chip-cut)),
     calc(100% - var(--chip-cut)) 100%,
-    var(--chip-cut) 100%,
-    0 calc(100% - var(--chip-cut))
+    0 100%,
+    0 var(--chip-cut)
   );
-}
-
-/* Header bar: translucent glass with a lit lower edge. */
-.app-topbar {
-  background-image: none;
-  background-color: color-mix(
-    in srgb,
-    var(--neon-surface-deep) 82%,
-    transparent
-  );
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid color-mix(in srgb, var(--neon-cyan) 35%, transparent);
-  box-shadow: 0 8px 24px -14px
-    color-mix(in srgb, var(--neon-cyan) 55%, transparent);
 }
 
 /*
- * Notices: a cut-corner glass strip with a glowing bar on the left. Each
- * variant sets --alert-color; the tint, border, bar, icon chip and glow follow.
+ * A label row: a diamond, a tracked label and a hairline that fades out, the way a status line heads a console.
+ * It stands outside any panel, where no tone is set, so it names its own colours.
+ */
+.label-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.label-row > .hud-dot {
+  flex-shrink: 0;
+  background: var(--neon-gold);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--neon-gold) 70%, transparent);
+}
+
+.label-row__rule {
+  flex: 1;
+  max-width: 16rem;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--neon-gold) 80%, transparent),
+    transparent
+  );
+}
+
+/*
+ * The pager: the foot of the table whose pages it turns. It is a band as wide as the table, in the header row's
+ * tint and under the header row's line, so the table reads as one piece from its header to its foot. On the band
+ * stands the console that holds the two buttons and the page between them. Its sides are the buttons' own: straight,
+ * with the top left corner cut, a little larger so it runs beside the buttons. Its foot is the band's foot: there is
+ * no line or cut along the bottom, so it rises out of the band rather than lying on it as a plate. It is a hairline
+ * in the table's line colour over a wash of the same blue, and both fade out towards the foot.
+ */
+.pager {
+  display: flex;
+  justify-content: center;
+  padding: 0.625rem 1rem 0;
+  background: color-mix(in oklab, var(--muted-background) 60%, transparent);
+  border-top: 1px solid color-mix(in srgb, var(--neon-cyan) 45%, transparent);
+}
+
+.pager__console {
+  /* The buttons' cut is 6px and the console stands 6px off them, which puts its own cut at about 10px. */
+  --console-cut: 10px;
+  /* A cut corner a pixel inside the outline: the diagonal moves in by a pixel, so its ends move by less. */
+  --console-cut-inner: calc(var(--console-cut) + 0.41px);
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  max-width: 100%;
+  padding: 0.375rem 0.375rem 0.5rem;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--neon-cyan) 14%, transparent),
+    transparent
+  );
+  clip-path: polygon(var(--console-cut) 0, 100% 0, 100% 100%, 0 100%, 0 var(--console-cut));
+}
+
+.pager__console::before {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  content: '';
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--neon-cyan) 50%, transparent),
+    color-mix(in srgb, var(--neon-cyan) 14%, transparent)
+  );
+  /*
+   * The outline, then the same outline a pixel inside it and running out through the foot: with the even-odd rule
+   * only the top and the two sides between them fill.
+   */
+  clip-path: polygon(
+    evenodd,
+    var(--console-cut) 0,
+    100% 0,
+    100% 100%,
+    0 100%,
+    0 var(--console-cut),
+    var(--console-cut) 0,
+    var(--console-cut-inner) 1px,
+    calc(100% - 1px) 1px,
+    calc(100% - 1px) 100%,
+    1px 100%,
+    1px var(--console-cut-inner),
+    var(--console-cut-inner) 1px
+  );
+}
+
+.pager__page {
+  min-width: 4.5rem;
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-align: center;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+  color: var(--hud-ink);
+}
+
+/* On a narrow screen the page number gives up some of its room, so the three stay inside the panel. */
+@media (max-width: 40rem) {
+  .pager__console {
+    gap: 0.25rem;
+  }
+
+  .pager__page {
+    min-width: 3.5rem;
+  }
+}
+
+/* Header bar: translucent glass with a gold lower edge, like the band on the mascot's hat. */
+.app-topbar {
+  /* Restated: the header is dark in both modes, and colour is inherited as the stage worked it out. */
+  color: var(--base-foreground);
+  background-image: none;
+  background-color: color-mix(in srgb, var(--neon-surface-deep) 82%, transparent);
+  backdrop-filter: blur(12px);
+  border-bottom: 2px solid color-mix(in srgb, var(--neon-gold) 75%, transparent);
+  box-shadow: 0 8px 24px -14px color-mix(in srgb, var(--neon-cyan) 55%, transparent);
+}
+
+/* On the light page the see-through navy would wash out to grey, so there the header is solid. */
+:root:not(.dark) .app-topbar {
+  background-color: var(--neon-surface);
+}
+
+/*
+ * Notices: a glass strip with a glowing bar on the left, in the buttons' shape: straight sides, the top left and
+ * bottom right corners cut. Each variant sets --alert-color; the tint, edge, bar, icon chip and glow follow.
  */
 .app-alert {
   --alert-color: var(--neon-cyan);
   --alert-cut: 10px;
+  --alert-cut-inner: calc(var(--alert-cut) + 0.41px);
   position: relative;
-  padding: 0.75rem 1rem 0.75rem 1.25rem;
-  color: var(--blue-50);
+  padding: 0.75rem 1.5rem 0.75rem 1.25rem;
+  color: var(--hud-ink-strong);
   background:
     linear-gradient(
       90deg,
@@ -1433,15 +1409,42 @@ button.hud-body:focus-visible {
       color-mix(in srgb, var(--alert-color) 4%, transparent) 70%
     ),
     color-mix(in srgb, var(--neon-surface-deep) 88%, transparent);
-  border: 1px solid color-mix(in srgb, var(--alert-color) 38%, transparent);
+  border: 1px solid transparent;
   border-radius: 0;
   box-shadow: 0 0 18px -8px color-mix(in srgb, var(--alert-color) 70%, transparent);
   clip-path: polygon(
-    0 0,
-    calc(100% - var(--alert-cut)) 0,
-    100% var(--alert-cut),
-    100% 100%,
-    0 100%
+    var(--alert-cut) 0,
+    100% 0,
+    100% calc(100% - var(--alert-cut)),
+    calc(100% - var(--alert-cut)) 100%,
+    0 100%,
+    0 var(--alert-cut)
+  );
+}
+
+/* The clip cuts the border away at the two corners, so the edge is drawn again as a 1px ring that follows the cuts. */
+.app-alert::after {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  content: '';
+  background: color-mix(in srgb, var(--alert-color) 38%, transparent);
+  clip-path: polygon(
+    evenodd,
+    var(--alert-cut) 0,
+    100% 0,
+    100% calc(100% - var(--alert-cut)),
+    calc(100% - var(--alert-cut)) 100%,
+    0 100%,
+    0 var(--alert-cut),
+    var(--alert-cut) 0,
+    var(--alert-cut-inner) 1px,
+    calc(100% - 1px) 1px,
+    calc(100% - 1px) calc(100% - var(--alert-cut-inner)),
+    calc(100% - var(--alert-cut-inner)) calc(100% - 1px),
+    1px calc(100% - 1px),
+    1px var(--alert-cut-inner),
+    var(--alert-cut-inner) 1px
   );
 }
 
@@ -1489,20 +1492,43 @@ button.hud-body:focus-visible {
 }
 
 .app-alert__body {
-  color: var(--blue-50);
+  color: var(--hud-ink-strong);
 }
 
-/* Layout helpers for panel bodies. Unlayered on purpose, like .hud-fill: .hud-body sets padding and display. */
+/* Layout helpers for panel bodies. Unlayered on purpose: .hud-body sets padding and display, which would beat Tailwind's layered utilities. */
 .hud-body.hud-flush {
   padding: 0;
   /* Less tint at the top edge: a tall panel with a tab bar should not carry a bright band. */
   --hud-tint: 6%;
 }
 
-.hud-body.hud-row {
+/* A KPI card: its label as a kicker with a hairline running to the icon, the figure under it, clear of the cut-away. */
+.hud-body.stat-tile {
+  padding: 1.35rem 1.4rem 1.1rem calc(var(--hud-inset) + 1.1rem);
+}
+
+.stat-tile__content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.stat-tile__head {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.6rem;
+  min-width: 0;
+}
+
+.stat-tile__rule {
+  flex: 1;
+  height: 1px;
+  background: color-mix(in srgb, var(--hud-accent) 40%, transparent);
+}
+
+.stat-tile__icon {
+  display: inline-flex;
+  color: var(--hud-accent-light);
 }
 
 /* The count beside a tab label: a true circle with the digit centred. */
@@ -1519,18 +1545,20 @@ button.hud-body:focus-visible {
   font-variant-numeric: tabular-nums;
   letter-spacing: 0;
   line-height: 1;
-  color: var(--blue-100);
+  /* Trim the line box to the digit's own height, so the circle centres the digit whatever the font's ascent and descent are. */
+  text-box: trim-both cap alphabetic;
+  color: var(--hud-ink);
   border-radius: 50%;
   clip-path: none;
   background: color-mix(in srgb, var(--neon-cyan) 30%, transparent);
-  box-shadow: inset 0 0 0 1px
-    color-mix(in srgb, var(--neon-cyan) 45%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--neon-cyan) 45%, transparent);
 }
 
 /* Tab bar inside a flush panel: a full-width header strip, not a box floating in the panel. */
 .neon-stage [data-slot='tabs-list'].hud-tabbar {
   width: 100%;
-  padding: 0.5rem 1rem;
+  /* More room at the top, so the tabs stand clear of the notch in the screen panel's top edge. */
+  padding: 0.85rem 1rem 0.5rem;
   margin: 0;
   background: color-mix(in srgb, var(--neon-surface-deep) 70%, transparent);
   border: 0;
@@ -1542,11 +1570,86 @@ button.hud-body:focus-visible {
   height: calc(var(--tab-height) + 4px);
 }
 
-/* Data card: optional header band over a property grid of label/value cells. */
+/*
+ * Data card: optional header band over a property grid of label/value cells. It takes the notched panel's outline
+ * at its quietest: small cut corners, a slight notch in the top edge and a narrow cut-away at the foot of the left
+ * side, with a faint edge and nothing lit. The card is clipped to the outline; the edge is a ring between that
+ * outline and the same one a pixel inside it, drawn by the overlay. The border only holds the edge's place.
+ */
 .data-card {
+  --card-cut: 8px;
+  --card-notch: 4px;
+  --card-notch-slant: 6px;
+  --card-notch-start: 21%;
+  --card-notch-end: 57%;
+  /* The cut-away: where the step starts, how far the edge steps in, and how far it drops as it goes. */
+  --card-step: max(50%, calc(100% - 3.5rem));
+  --card-inset: 7px;
+  --card-rise: 4px;
+  /* A cut corner a pixel inside the outline: the diagonal moves in by a pixel, so its ends move by less. */
+  --card-cut-inner: calc(var(--card-cut) + 0.41px);
+  --card-edge: color-mix(in srgb, var(--neon-cyan) 26%, transparent);
   position: relative;
   background: color-mix(in srgb, var(--neon-surface-deep) 55%, transparent);
-  border: 1px solid color-mix(in srgb, var(--neon-cyan) 22%, transparent);
+  border: 1px solid transparent;
+  clip-path: polygon(
+    0 var(--card-cut),
+    var(--card-cut) 0,
+    var(--card-notch-start) 0,
+    calc(var(--card-notch-start) + var(--card-notch-slant)) var(--card-notch),
+    var(--card-notch-end) var(--card-notch),
+    calc(var(--card-notch-end) + var(--card-notch-slant)) 0,
+    calc(100% - var(--card-cut)) 0,
+    100% var(--card-cut),
+    100% calc(100% - var(--card-cut)),
+    calc(100% - var(--card-cut)) 100%,
+    calc(var(--card-cut) + var(--card-inset)) 100%,
+    var(--card-inset) calc(100% - var(--card-cut)),
+    var(--card-inset) calc(var(--card-step) + var(--card-rise)),
+    0 var(--card-step)
+  );
+}
+
+.data-card::after {
+  position: absolute;
+  inset: -1px;
+  pointer-events: none;
+  content: '';
+  background: var(--card-edge);
+  /* The outline, then the same outline a pixel inside it: with the even-odd rule only the ring between them fills. */
+  clip-path: polygon(
+    evenodd,
+    0 var(--card-cut),
+    var(--card-cut) 0,
+    var(--card-notch-start) 0,
+    calc(var(--card-notch-start) + var(--card-notch-slant)) var(--card-notch),
+    var(--card-notch-end) var(--card-notch),
+    calc(var(--card-notch-end) + var(--card-notch-slant)) 0,
+    calc(100% - var(--card-cut)) 0,
+    100% var(--card-cut),
+    100% calc(100% - var(--card-cut)),
+    calc(100% - var(--card-cut)) 100%,
+    calc(var(--card-cut) + var(--card-inset)) 100%,
+    var(--card-inset) calc(100% - var(--card-cut)),
+    var(--card-inset) calc(var(--card-step) + var(--card-rise)),
+    0 var(--card-step),
+    0 var(--card-cut),
+    1px var(--card-cut-inner),
+    var(--card-cut-inner) 1px,
+    var(--card-notch-start) 1px,
+    calc(var(--card-notch-start) + var(--card-notch-slant)) calc(var(--card-notch) + 1px),
+    var(--card-notch-end) calc(var(--card-notch) + 1px),
+    calc(var(--card-notch-end) + var(--card-notch-slant)) 1px,
+    calc(100% - var(--card-cut-inner)) 1px,
+    calc(100% - 1px) var(--card-cut-inner),
+    calc(100% - 1px) calc(100% - var(--card-cut-inner)),
+    calc(100% - var(--card-cut-inner)) calc(100% - 1px),
+    calc(var(--card-cut-inner) + var(--card-inset)) calc(100% - 1px),
+    calc(var(--card-inset) + 1px) calc(100% - var(--card-cut-inner)),
+    calc(var(--card-inset) + 1px) calc(var(--card-step) + var(--card-rise) - 0.5px),
+    1px calc(var(--card-step) - 0.5px),
+    1px var(--card-cut-inner)
+  );
 }
 
 .data-card__header {
@@ -1566,29 +1669,41 @@ button.hud-body:focus-visible {
 
 /*
  * Dialog panel: the HUD frame without the stage. Dialogs are portaled outside the stage, so they carry their
- * own chamfered shape, lit edge (the 1px padding shows the gradient) and glass body.
+ * own lit edge (the frame's 1px padding shows the gradient), glass body and the stage's colour boost. The shape is
+ * the KPI card's, drawn by the outline shared with it: four cut corners, a shallow notch in the top edge with a
+ * gold bar on its floor, and the foot of the left side cut away with the vent's slanted bars, in gold, standing in
+ * the gap.
+ * The dialog itself is not clipped, only the frame inside it, so the vent beside the frame shows.
  */
 .hud-dialog {
-  padding: 1px;
+  --hud-accent: var(--neon-cyan);
+  --hud-outline-cut: 14px;
+  --hud-notch: 5px;
+  --hud-notch-slant: 8px;
+  --hud-notch-start: 21%;
+  --hud-notch-end: 57%;
+  /* The cut-away takes the foot of the dialog however tall it grows: room for the four bars and the corner's cut. */
+  --hud-step: max(50%, calc(100% - 4.75rem));
+  --hud-inset: 20px;
+  --hud-rise: 11px;
+  padding: 0;
   border: 0;
   border-radius: 0;
   box-shadow: none;
+  background: transparent;
+  filter: var(--neon-boost);
+}
+
+/* The frame is the dialog's grid item; see the note on the body's width below. */
+.hud-dialog__frame {
+  min-width: 0;
+  padding: 1px;
   background: linear-gradient(
     140deg,
     var(--neon-cyan),
-    color-mix(in srgb, var(--neon-cyan) 22%, transparent) 34%,
-    color-mix(in srgb, var(--neon-cyan) 22%, transparent) 66%,
+    color-mix(in srgb, var(--neon-cyan) 45%, transparent) 38%,
+    color-mix(in srgb, var(--neon-cyan) 45%, transparent) 62%,
     var(--neon-cyan)
-  );
-  clip-path: polygon(
-    0 var(--hud-cut),
-    var(--hud-cut) 0,
-    calc(100% - var(--hud-cut)) 0,
-    100% var(--hud-cut),
-    100% calc(100% - var(--hud-cut)),
-    calc(100% - var(--hud-cut)) 100%,
-    var(--hud-cut) 100%,
-    0 calc(100% - var(--hud-cut))
   );
 }
 
@@ -1599,12 +1714,17 @@ button.hud-body:focus-visible {
 }
 
 /*
- * The body is a grid item, whose automatic minimum width is its content's. Content that sizes itself to its container,
- * such as the zoomed file preview, would then stretch the dialog and be sized to the stretch, again and again.
+ * A grid item's automatic minimum width is its content's. Content that sizes itself to its container, such as the
+ * zoomed file preview, would then stretch the dialog and be sized to the stretch, again and again: hence the frame's
+ * zero minimum, and the body's.
  */
 .hud-dialog__body {
+  --hud-outline-cut: 13px;
+  position: relative;
   min-width: 0;
+  /* The panels' own glass: the blue wash from the top, the scan lines and the slanted surface. */
   background:
+    linear-gradient(180deg, color-mix(in srgb, var(--neon-cyan) 14%, transparent), transparent 38%),
     repeating-linear-gradient(
       0deg,
       color-mix(in srgb, var(--neon-cyan) 3%, transparent) 0 1px,
@@ -1616,29 +1736,50 @@ button.hud-body:focus-visible {
       var(--neon-surface) 58%,
       color-mix(in srgb, var(--neon-cyan) 4%, var(--neon-surface-deep))
     );
-  clip-path: polygon(
-    0 calc(var(--hud-cut) - 1px),
-    calc(var(--hud-cut) - 1px) 0,
-    calc(100% - var(--hud-cut) + 1px) 0,
-    100% calc(var(--hud-cut) - 1px),
-    100% calc(100% - var(--hud-cut) + 1px),
-    calc(100% - var(--hud-cut) + 1px) 100%,
-    calc(var(--hud-cut) - 1px) 100%,
-    0 calc(100% - var(--hud-cut) + 1px)
-  );
+}
+
+/* The gold bar on the floor of the notch. */
+.hud-dialog__body::before {
+  position: absolute;
+  top: var(--hud-notch);
+  left: calc(var(--hud-notch-start) + var(--hud-notch-slant));
+  right: calc(100% - var(--hud-notch-end));
+  height: 2px;
+  pointer-events: none;
+  content: '';
+  background: linear-gradient(90deg, transparent, var(--neon-gold), transparent);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--neon-gold) 60%, transparent);
 }
 
 .hud-dialog__body [data-slot='dialog-header'] {
   background: linear-gradient(
     90deg,
-    color-mix(in srgb, var(--neon-cyan) 16%, transparent),
-    transparent 80%
+    color-mix(in srgb, var(--neon-cyan) 22%, transparent),
+    transparent 85%
   );
 }
 
 .hud-dialog__body [data-slot='dialog-header'],
 .hud-dialog__body [data-slot='dialog-body'] {
   border-color: color-mix(in srgb, var(--neon-cyan) 22%, transparent);
+}
+
+/*
+ * The cut-away takes only the dialog's foot, below the title and the content, so those keep their own padding and
+ * line up with the right side. What stands at the foot starts clear of it: the actions, or the content of a dialog
+ * that has none, which steps in by as much on the right so it stays centred.
+ */
+.hud-dialog__body [data-slot='dialog-footer'] {
+  padding-left: calc(var(--hud-inset) + 0.5rem);
+}
+
+.hud-dialog__body [data-slot='dialog-body']:last-child {
+  padding-inline: calc(var(--hud-inset) + 0.5rem);
+}
+
+/* The dialog's vent is gold trim, like the bar in its notch; a KPI card's vent keeps its tone's colour. */
+.hud-dialog > .hud-vent {
+  --hud-accent: var(--neon-gold);
 }
 
 /* Toasts: the glass panel with a chamfered corner pair and a lit bottom line, like the pills. */
@@ -1648,7 +1789,7 @@ button.hud-body:focus-visible {
   font-size: 0.8125rem;
   font-weight: 600;
   letter-spacing: 0.04em;
-  color: var(--blue-50);
+  color: var(--hud-ink-strong);
   border: 0;
   border-radius: 0;
   background: linear-gradient(
@@ -1658,7 +1799,7 @@ button.hud-body:focus-visible {
   );
   box-shadow:
     inset 0 0 0 1px color-mix(in srgb, var(--neon-cyan) 45%, transparent),
-    inset 0 -2px 0 var(--blue-300);
+    inset 0 -2px 0 var(--hud-line);
   clip-path: polygon(
     var(--toast-cut) 0,
     100% 0,
@@ -1675,12 +1816,12 @@ button.hud-body:focus-visible {
   font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.06em;
-  color: var(--blue-50);
+  color: var(--hud-ink-strong);
   border-radius: 0;
   background: color-mix(in srgb, var(--neon-cyan) 14%, var(--neon-surface));
   box-shadow:
     inset 0 0 0 1px color-mix(in srgb, var(--neon-cyan) 45%, transparent),
-    inset 0 -2px 0 var(--blue-300);
+    inset 0 -2px 0 var(--hud-line);
 }
 
 [data-slot='tooltip-content'] [class*='rotate-45'] {
@@ -1691,17 +1832,10 @@ button.hud-body:focus-visible {
   padding: 0.2rem 0.65rem;
   font-family: var(--font-source-code-pro);
   font-size: 0.75rem;
-  color: var(--blue-100);
+  color: var(--hud-ink);
   background: color-mix(in srgb, var(--neon-cyan) 14%, transparent);
   border: 1px solid color-mix(in srgb, var(--neon-cyan) 38%, transparent);
-  clip-path: polygon(
-    6px 0,
-    100% 0,
-    100% calc(100% - 6px),
-    calc(100% - 6px) 100%,
-    0 100%,
-    0 6px
-  );
+  clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
 }
 
 .property-grid {
@@ -1713,8 +1847,7 @@ button.hud-body:focus-visible {
 .property-cell {
   min-width: 0;
   padding: 0.7rem 1.1rem 0.8rem;
-  box-shadow: inset -1px -1px 0
-    color-mix(in srgb, var(--neon-cyan) 14%, transparent);
+  box-shadow: inset -1px -1px 0 color-mix(in srgb, var(--neon-cyan) 14%, transparent);
   transition: background 160ms ease;
 }
 
@@ -1728,7 +1861,7 @@ button.hud-body:focus-visible {
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--blue-300);
+  color: var(--hud-ink-faint);
 }
 
 /* Table column headers: the same small lit capitals as the other labels. */
@@ -1790,21 +1923,18 @@ button.hud-body:focus-visible {
   background: none;
   border: 0;
   border-radius: 9999px;
+  /* Focus shows as the outline below, in place of the ring Aura's button draws. */
+  box-shadow: none;
   transform-origin: 0 0;
   transition:
     transform 420ms var(--agent-ease),
     filter 300ms ease;
-  filter: drop-shadow(
-    0 6px 14px color-mix(in srgb, var(--neon-cyan) 40%, transparent)
-  );
+  filter: drop-shadow(0 6px 14px color-mix(in srgb, var(--neon-cyan) 40%, transparent));
 }
 
 /* Flying up: the top-left corner goes to 0.75rem from the left and 0.5rem from the top of the panel. */
 .agent-helper[data-phase='OPEN'] .agent-helper__trigger {
-  transform: translate(
-      0.75rem,
-      calc(var(--agent-mascot-size) - var(--agent-panel-height) + 0.5rem)
-    )
+  transform: translate(0.75rem, calc(var(--agent-mascot-size) - var(--agent-panel-height) + 0.5rem))
     scale(calc(var(--agent-mascot-mini) / var(--agent-mascot-size)));
   filter: none;
 }
@@ -1816,77 +1946,6 @@ button.hud-body:focus-visible {
 
 .agent-helper[data-phase='CLOSED'] .agent-helper__trigger:is(:hover, :focus-visible) {
   transform: translateY(-3px);
-}
-
-/*
- * The mascot is five pictures on one canvas: the robot at rest, the same robot with its arm raised, the
- * raised hand, its smiling eyes and its round "thinking" eyes. Where the eyes and the wrist sit and how far
- * the head leans are printed by design/mascot/cut_sprites.py.
- */
-.agent-mascot {
-  --agent-eyes-origin: 44.3% 34%;
-  --agent-eyes-lean: -8deg;
-  --agent-wrist-origin: 73.6% 53.4%;
-  --agent-raise: 320ms ease;
-
-  position: relative;
-  display: block;
-  width: 100%;
-  height: 100%;
-  transform-origin: 50% 100%;
-  /* The body poses add up among themselves only, never with the page behind the mascot. */
-  isolation: isolate;
-  animation: agent-float 4s ease-in-out infinite;
-}
-
-.agent-mascot__layer {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  user-select: none;
-}
-
-/*
- * The two body poses fade into each other. They are added together instead of laid over each other, so the
- * robot keeps its full opacity through the fade: what the two share never thins out.
- */
-.agent-mascot__body {
-  mix-blend-mode: plus-lighter;
-  transition: opacity var(--agent-raise);
-}
-
-.agent-mascot__hand {
-  transform-origin: var(--agent-wrist-origin);
-  transition: opacity var(--agent-raise);
-}
-
-.agent-mascot__body--wave,
-.agent-mascot__hand {
-  opacity: 0;
-}
-
-/*
- * A quiet greeting while hovered or focused by keyboard, and while the mascot says who it is (data-greeting,
- * which also covers the one greeting it gives by itself): the arm fades up, the hand tilts from side to side
- * at the wrist, a little less each time, and stays up until the greeting is over.
- */
-@media (prefers-reduced-motion: no-preference) {
-  :is(.agent-helper__trigger:is(:hover, :focus-visible), .agent-helper[data-greeting='true'] .agent-helper__trigger)
-    .agent-mascot__body--rest {
-    opacity: 0;
-  }
-
-  :is(.agent-helper__trigger:is(:hover, :focus-visible), .agent-helper[data-greeting='true'] .agent-helper__trigger)
-    :is(.agent-mascot__body--wave, .agent-mascot__hand) {
-    opacity: 1;
-  }
-
-  :is(.agent-helper__trigger:is(:hover, :focus-visible), .agent-helper[data-greeting='true'] .agent-helper__trigger)
-    .agent-mascot__hand {
-    animation: agent-wave 1.8s ease-in-out 140ms both;
-  }
 }
 
 /*
@@ -1910,91 +1969,6 @@ button.hud-body:focus-visible {
   border-radius: 0;
 }
 
-/* Only the eyes of the current mood show; the other pair stays loaded so the swap never flickers. */
-.agent-mascot__eyes {
-  opacity: 0;
-  transform-origin: var(--agent-eyes-origin);
-  transition: opacity 160ms ease;
-}
-
-.agent-mascot[data-mood='idle'] .agent-mascot__eyes--idle,
-.agent-mascot[data-mood='think'] .agent-mascot__eyes--think {
-  opacity: 1;
-}
-
-.agent-mascot__eyes--idle {
-  animation: agent-blink 5.6s ease-in-out infinite;
-}
-
-.agent-mascot__eyes--think {
-  animation: agent-ponder 2.6s ease-in-out infinite;
-}
-
-@keyframes agent-float {
-  0%,
-  100% {
-    translate: 0 0;
-  }
-  50% {
-    translate: 0 -4px;
-  }
-}
-
-/* Each swing is smaller than the one before, so the hand comes to rest by itself. */
-@keyframes agent-wave {
-  0%,
-  100% {
-    rotate: 0deg;
-  }
-  22% {
-    rotate: 8deg;
-  }
-  48% {
-    rotate: -7deg;
-  }
-  74% {
-    rotate: 4deg;
-  }
-}
-
-/* The eyes close along the lean of the head: one blink, then a quick double blink. */
-@keyframes agent-blink {
-  0%,
-  41%,
-  47%,
-  84%,
-  89%,
-  94%,
-  100% {
-    transform: rotate(var(--agent-eyes-lean)) scaleY(1)
-      rotate(calc(-1 * var(--agent-eyes-lean)));
-  }
-  44%,
-  86.5%,
-  91.5% {
-    transform: rotate(var(--agent-eyes-lean)) scaleY(0.08)
-      rotate(calc(-1 * var(--agent-eyes-lean)));
-  }
-}
-
-/* Thinking: the round eyes look from one side to the other, with a blink on the way back. */
-@keyframes agent-ponder {
-  0%,
-  100% {
-    transform: translate(0, 0) scaleY(1);
-  }
-  35%,
-  55% {
-    transform: translate(-4.5%, 0.6%) scaleY(1);
-  }
-  78% {
-    transform: translate(-1%, 0.1%) scaleY(0.1);
-  }
-  88% {
-    transform: translate(0, 0) scaleY(1);
-  }
-}
-
 /* The panel: the glass look of the tooltips and toasts, growing out of the corner. */
 .agent-panel {
   position: absolute;
@@ -2003,7 +1977,7 @@ button.hud-body:focus-visible {
   flex-direction: column;
   overflow: hidden;
   font-family: var(--font-display);
-  color: var(--blue-50);
+  color: var(--hud-ink-strong);
   background: linear-gradient(
     160deg,
     color-mix(in srgb, var(--neon-cyan) 14%, var(--neon-surface)),
@@ -2011,7 +1985,7 @@ button.hud-body:focus-visible {
   );
   box-shadow:
     inset 0 0 0 1px color-mix(in srgb, var(--neon-cyan) 45%, transparent),
-    inset 0 -2px 0 var(--blue-300),
+    inset 0 -2px 0 var(--hud-line),
     0 12px 40px color-mix(in srgb, var(--neon-cyan) 18%, transparent);
   clip-path: polygon(
     12px 0,
@@ -2078,6 +2052,7 @@ button.hud-body:focus-visible {
 }
 
 .agent-panel__title {
+  flex: 1;
   margin: 0;
   min-width: 0;
   overflow: hidden;
@@ -2086,10 +2061,6 @@ button.hud-body:focus-visible {
   letter-spacing: 0.04em;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.agent-panel__title--grow {
-  flex: 1;
 }
 
 .agent-panel__body {
@@ -2108,7 +2079,7 @@ button.hud-body:focus-visible {
   padding: 0.5rem;
   font-size: 0.8125rem;
   text-align: center;
-  color: var(--blue-200);
+  color: var(--hud-ink-soft);
 }
 
 /* Chat: the conversation takes the free height and scrolls, the box stays at the bottom. */
@@ -2152,46 +2123,22 @@ button.hud-body:focus-visible {
   margin: 0;
 }
 
-/* An agent reply ends with a small copy button on the right. */
+/*
+ * An agent reply ends with the shared icon button on the right. Only its place is set here; once the reply is
+ * copied its bottom line brightens with the check.
+ */
 .agent-chat__message[data-role='AGENT']:has(.agent-chat__copy) {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.375rem;
 }
 
 .agent-chat__copy {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   align-self: flex-end;
-  width: 1.5rem;
-  height: 1.5rem;
-  padding: 0;
-  cursor: pointer;
-  color: var(--blue-200);
-  background: transparent;
-  border: 1px solid transparent;
-  transition:
-    color 160ms ease,
-    background 160ms ease,
-    border-color 160ms ease;
 }
 
-.agent-chat__copy:hover,
-.agent-chat__copy:focus-visible {
-  color: var(--blue-50);
-  background: color-mix(in srgb, var(--neon-cyan) 16%, transparent);
-  border-color: color-mix(in srgb, var(--neon-cyan) 55%, transparent);
-}
-
-.agent-chat__copy:focus-visible {
-  outline: 2px solid var(--neon-cyan);
-  outline-offset: 1px;
-}
-
-.agent-chat__copy[data-status='COPIED'] {
-  color: var(--blue-50);
-  border-color: var(--neon-cyan);
+.agent-chat__message button.agent-chat__copy--copied.hud-button[data-slot] {
+  --pill-line: var(--hud-line-strong);
 }
 
 /* Sample questions in an empty chat: a few outlined rows that send themselves when chosen. */
@@ -2226,36 +2173,36 @@ button.hud-body:focus-visible {
   animation-delay: 210ms;
 }
 
-.agent-chat__sample {
+/*
+ * A sample question is the shared outlined button, changed only where a sentence needs it: it fills the row, wraps
+ * instead of being cut off, and reads in sentence case from the left.
+ */
+.agent-chat__samples button.agent-chat__sample.hud-button[data-slot] {
+  align-items: flex-start;
+  justify-content: flex-start;
   width: 100%;
+  height: auto;
   padding: 0.5rem 0.75rem;
   font-size: 0.8125rem;
+  letter-spacing: 0.02em;
+  line-height: 1.35;
   text-align: left;
-  cursor: pointer;
-  color: var(--blue-100);
-  background: color-mix(in srgb, var(--neon-cyan) 8%, transparent);
-  border: 1px solid color-mix(in srgb, var(--neon-cyan) 38%, transparent);
+  text-transform: none;
+  white-space: normal;
   transition:
-    background 160ms ease,
-    border-color 160ms ease,
+    filter 160ms ease,
+    box-shadow 160ms ease,
     transform 160ms ease;
 }
 
 .agent-chat__sample::before {
-  content: '? ';
+  content: '?';
   font-weight: 600;
   color: var(--neon-cyan);
 }
 
-.agent-chat__sample:hover {
-  background: color-mix(in srgb, var(--neon-cyan) 20%, transparent);
-  border-color: var(--neon-cyan);
+.agent-chat__samples button.agent-chat__sample.hud-button[data-slot]:hover {
   transform: translateX(2px);
-}
-
-.agent-chat__sample:focus-visible {
-  outline: 2px solid var(--neon-cyan);
-  outline-offset: 1px;
 }
 
 /*
@@ -2278,7 +2225,7 @@ button.hud-body:focus-visible {
         color-mix(in srgb, var(--neon-cyan) 22%, transparent) 0%,
         color-mix(in srgb, var(--neon-cyan) 22%, transparent) 55%,
         var(--neon-cyan) 82%,
-        var(--blue-50) 92%,
+        var(--hud-spark) 92%,
         color-mix(in srgb, var(--neon-cyan) 22%, transparent) 100%
       )
       border-box;
@@ -2320,9 +2267,9 @@ button.hud-body:focus-visible {
   color: transparent;
   background: linear-gradient(
       100deg,
-      var(--blue-400) 30%,
-      var(--blue-50) 50%,
-      var(--blue-400) 70%
+      var(--neon-sky) 30%,
+      var(--hud-spark) 50%,
+      var(--neon-sky) 70%
     )
     0 0 / 250% 100%;
   background-clip: text;
@@ -2397,7 +2344,7 @@ button.hud-body:focus-visible {
 .hud-field-box {
   --field-cut: 8px;
   --field-edge: color-mix(in srgb, var(--neon-cyan) 55%, transparent);
-  --field-line: var(--blue-300);
+  --field-line: var(--hud-line);
 
   position: relative;
   display: flex;
@@ -2449,7 +2396,7 @@ button.hud-body:focus-visible {
 .agent-chat__form:focus-within,
 .hud-field-box:focus-within {
   --field-edge: var(--neon-cyan);
-  --field-line: var(--blue-100);
+  --field-line: var(--hud-line-strong);
 }
 
 /*
@@ -2477,7 +2424,7 @@ button.hud-body:focus-visible {
 }
 
 .hud-field-box .hud-field-box__control::placeholder {
-  color: var(--blue-300);
+  color: var(--hud-ink-faint);
 }
 
 /* Aura styles a textarea as a field of its own; here the form is the field. */
@@ -2499,7 +2446,7 @@ button.hud-body:focus-visible {
 }
 
 .agent-chat__form .agent-chat__input::placeholder {
-  color: var(--blue-300);
+  color: var(--hud-ink-faint);
 }
 
 /*
@@ -2507,18 +2454,16 @@ button.hud-body:focus-visible {
  * thinking bubble and the hero panels use. The button's own background becomes the moving frame and ::before is the
  * fill inside it. The long selector is on purpose: it has to beat the pill rules, hover included.
  */
-.neon-stage
-  .agent-chat__form
-  button.agent-chat__mic.hud-button[data-slot][data-listening='true'] {
+.neon-stage .agent-chat__form button.agent-chat__mic.hud-button[data-slot][data-listening='true'] {
   position: relative;
   isolation: isolate;
-  color: var(--blue-50);
+  color: var(--hud-ink-strong);
   background: conic-gradient(
     from var(--hud-angle),
     color-mix(in srgb, var(--neon-cyan) 30%, transparent) 0%,
     color-mix(in srgb, var(--neon-cyan) 30%, transparent) 55%,
     var(--neon-cyan) 82%,
-    var(--blue-50) 92%,
+    var(--hud-spark) 92%,
     color-mix(in srgb, var(--neon-cyan) 30%, transparent) 100%
   );
   box-shadow: none;
@@ -2537,7 +2482,7 @@ button.hud-body:focus-visible {
     color-mix(in srgb, var(--neon-cyan) 16%, var(--neon-surface-deep)),
     var(--neon-surface-deep)
   );
-  box-shadow: inset 0 -2px 0 var(--blue-300);
+  box-shadow: inset 0 -2px 0 var(--hud-line);
   clip-path: polygon(
     calc(var(--pill-cut) - 1px) 0,
     100% 0,
@@ -2554,15 +2499,10 @@ button.hud-body:focus-visible {
 }
 
 /*
- * Reduced motion: no bobbing, waving, blinking or flying; the panel still "animates" for a blink so its
+ * Reduced motion: no bobbing, isWaving, blinking or flying; the panel still "animates" for a blink so its
  * exit still ends.
  */
 @media (prefers-reduced-motion: reduce) {
-  .agent-mascot,
-  .agent-mascot__eyes {
-    animation: none;
-  }
-
   .agent-helper,
   .agent-helper__trigger {
     transition: none;
@@ -2586,19 +2526,17 @@ button.hud-body:focus-visible {
     animation-delay: 0s;
   }
 
-  .agent-chat__copy {
-    transition: none;
+  .agent-chat__samples li {
+    animation: none;
   }
 
-  .agent-chat__samples li,
-  .agent-chat__sample {
-    animation: none;
+  .agent-chat__samples button.agent-chat__sample.hud-button[data-slot] {
     transition: none;
   }
 
   .agent-chat__shimmer,
   .agent-chat__word {
-    color: var(--blue-100);
+    color: var(--hud-ink);
     background: none;
     animation: none;
   }
@@ -2664,7 +2602,7 @@ button.hud-body:focus-visible {
 
 .trend-chart__line {
   fill: none;
-  stroke: var(--blue-200);
+  stroke: var(--hud-ink-soft);
   stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -2676,7 +2614,7 @@ button.hud-body:focus-visible {
 }
 
 .trend-chart__dot {
-  fill: var(--blue-50);
+  fill: var(--hud-ink-strong);
   stroke: var(--neon-cyan);
   stroke-width: 1.5;
 }
@@ -2688,7 +2626,7 @@ button.hud-body:focus-visible {
   font-size: 0.625rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--blue-300);
+  color: var(--hud-ink-faint);
 }
 
 .timeseries-preview__stats {
@@ -2716,7 +2654,7 @@ button.hud-body:focus-visible {
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--blue-300);
+  color: var(--hud-ink-faint);
 }
 
 .timeseries-preview__stat dd {
@@ -2726,7 +2664,7 @@ button.hud-body:focus-visible {
   font-variant-numeric: tabular-nums;
   text-overflow: ellipsis;
   white-space: nowrap;
-  color: var(--blue-50);
+  color: var(--hud-ink-strong);
 }
 
 .timeseries-preview__stat[data-highlighted='true'] dd {
@@ -2737,20 +2675,30 @@ button.hud-body:focus-visible {
   margin-left: 0.2rem;
   font-size: 0.6875rem;
   font-weight: 500;
-  color: var(--blue-200);
+  color: var(--hud-ink-soft);
 }
 
-/* The preview as a button: a click opens the series in the chart. */
-.timeseries-open {
+/*
+ * The preview as a button: a click opens the series in the chart. It is Aura's button with the shape of the
+ * preview instead of a button's: a block as wide as the card, with the preview's own type inside.
+ */
+.data-card button.timeseries-open[data-slot] {
   position: relative;
   display: block;
   width: 100%;
+  height: auto;
   padding: 0;
+  font: inherit;
+  letter-spacing: normal;
   text-align: left;
-  cursor: pointer;
+  text-transform: none;
+  white-space: normal;
+  color: inherit;
   background: none;
   border: 0;
   border-bottom: 1px solid color-mix(in srgb, var(--neon-cyan) 16%, transparent);
+  border-radius: 0;
+  box-shadow: none;
 }
 
 .timeseries-open .timeseries-preview {
@@ -2763,7 +2711,7 @@ button.hud-body:focus-visible {
   background: color-mix(in srgb, var(--neon-cyan) 12%, transparent);
 }
 
-.timeseries-open:focus-visible {
+.data-card button.timeseries-open[data-slot]:focus-visible {
   outline: 2px solid var(--neon-cyan);
   outline-offset: -2px;
 }
@@ -2781,7 +2729,7 @@ button.hud-body:focus-visible {
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--blue-100);
+  color: var(--hud-ink);
   background: color-mix(in srgb, var(--neon-surface-deep) 85%, transparent);
   border: 1px solid color-mix(in srgb, var(--neon-cyan) 45%, transparent);
   opacity: 0;
@@ -2832,9 +2780,9 @@ button.hud-body:focus-visible {
   --chart-aurora-color-1: var(--success-foreground-strong);
   --chart-success-color-1: var(--success-foreground-strong);
   --chart-info-color-1: var(--blue-450);
-  --chart-neutral-color-1: var(--blue-50);
+  --chart-neutral-color-1: var(--hud-ink-strong);
 
-  --chart-band-ink: var(--blue-50);
+  --chart-band-ink: var(--hud-ink-strong);
   --chart-band-shade: var(--neon-surface-deep);
   --chart-band-glow-1: var(--blue-300);
   --chart-band-glow-2: var(--blue-450);
@@ -2854,21 +2802,44 @@ button.hud-body:focus-visible {
   border: 0;
 }
 
+/* On the light dialog the series are the deeper steps of the same hues, so each line reads on white. */
+:root:not(.dark) .timeseries-chart-dialog {
+  --chart-nordic-color-1: var(--mascot-blue);
+  --chart-fjord-color-1: var(--amber-650);
+  --chart-orange-color-1: var(--red-600);
+  --chart-dusk-color-1: var(--dusk-600);
+  --chart-aurora-color-1: var(--green-600);
+  --chart-success-color-1: var(--green-600);
+  --chart-info-color-1: var(--sky-650);
+}
+
 /*
  * The chart's own controls on the HUD pill look: cut corners, a gradient fill and a lit bottom line, in the same
  * type as the app's buttons. The chart styles its top bar with !important, so the top bar rules repeat it and
  * win on specificity. The primary action (Add data) is the brighter pill, as primary buttons are elsewhere.
+ * A press target that is a whole surface (the title, an alert, an event marker: .chart-plain-button) is left out,
+ * inside :where() so the rules weigh the same as before.
  */
 .timeseries-chart-dialog {
-  --pill: var(--neon-cyan);
-  --pill-line: var(--blue-300);
+  --pill: var(--hud-fill);
+  --pill-line: var(--hud-line);
   --pill-cut: 6px;
 }
 
 .timeseries-chart-dialog
-  :is(button[data-slot='button'], button[data-slot='tooltip-trigger'], .chart-topbar button:not([aria-label^='Chart title'])),
-.timeseries-chart-dialog .chart-topbar :is([data-slot='select-trigger'], [data-slot='popover-trigger'], [data-slot='dropdown-menu-trigger']) {
-  color: var(--blue-50) !important;
+  :is(
+    button[data-slot='button'],
+    button[data-slot='tooltip-trigger'],
+    .chart-topbar button:not([aria-label^='Chart title'])
+  ):where(:not(.chart-plain-button)),
+.timeseries-chart-dialog
+  .chart-topbar
+  :is(
+    [data-slot='select-trigger'],
+    [data-slot='popover-trigger'],
+    [data-slot='dropdown-menu-trigger']
+  ) {
+  color: var(--hud-ink-strong) !important;
   font-family: var(--font-display);
   font-size: 0.75rem;
   font-weight: 600;
@@ -2883,7 +2854,7 @@ button.hud-body:focus-visible {
   border-radius: 0 !important;
   box-shadow:
     inset 0 -2px 0 var(--pill-line),
-    inset 0 1px 0 color-mix(in srgb, var(--blue-100) 30%, transparent) !important;
+    inset 0 1px 0 color-mix(in srgb, var(--hud-sheen) 30%, transparent) !important;
   clip-path: polygon(
     var(--pill-cut) 0,
     100% 0,
@@ -2899,7 +2870,11 @@ button.hud-body:focus-visible {
 }
 
 .timeseries-chart-dialog
-  :is(button[data-slot='button'], button[data-slot='tooltip-trigger'], .chart-topbar button:not([aria-label^='Chart title'])):hover:not(:disabled) {
+  :is(
+    button[data-slot='button'],
+    button[data-slot='tooltip-trigger'],
+    .chart-topbar button:not([aria-label^='Chart title'])
+  ):where(:not(.chart-plain-button)):hover:not(:disabled) {
   background: linear-gradient(
     180deg,
     color-mix(in srgb, var(--pill) 75%, transparent),
@@ -2908,8 +2883,12 @@ button.hud-body:focus-visible {
 }
 
 /* A pressed toggle, such as the open panel on the rail, is the lit pill. */
-.timeseries-chart-dialog :is(button[aria-pressed='true'], button[data-state='on'], button[aria-expanded='true']):not(.bg-primary-background, [data-slot='select-trigger']) {
-  --pill-line: var(--blue-50);
+.timeseries-chart-dialog
+  :is(button[aria-pressed='true'], button[data-state='on'], button[aria-expanded='true']):not(
+    .bg-primary-background,
+    [data-slot='select-trigger']
+  ) {
+  --pill-line: var(--hud-ink-strong);
   background: linear-gradient(
     180deg,
     color-mix(in srgb, var(--pill) 85%, transparent),
@@ -2919,33 +2898,37 @@ button.hud-body:focus-visible {
 
 /* The primary action is the brighter pill and lights up on hover. */
 .timeseries-chart-dialog .chart-topbar .bg-primary-background:is(button) {
-  --pill-line: var(--blue-100);
+  --pill-line: var(--hud-line-strong);
   background: linear-gradient(
     180deg,
-    var(--blue-600),
-    color-mix(in srgb, var(--blue-600) 70%, var(--neon-surface-deep))
+    var(--neon-royal),
+    color-mix(in srgb, var(--neon-royal) 70%, var(--hud-lit-base))
   ) !important;
-  color: #fff !important;
+  color: var(--mountain-white) !important;
   font-weight: 700;
   filter: drop-shadow(0 0 8px color-mix(in srgb, var(--neon-cyan) 55%, transparent));
 }
 
 .timeseries-chart-dialog .chart-topbar .bg-primary-background:is(button):hover:not(:disabled) {
-  --pill-line: var(--blue-100);
+  --pill-line: var(--hud-line-strong);
   filter: brightness(1.2);
 }
 
-.timeseries-chart-dialog :is(button[data-slot='button'], button[data-slot='tooltip-trigger']):disabled {
+.timeseries-chart-dialog
+  :is(button[data-slot='button'], button[data-slot='tooltip-trigger']):disabled {
   filter: grayscale(0.6);
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-.timeseries-chart-dialog :is(button[data-slot='button'], button[data-slot='tooltip-trigger']):focus-visible {
+.timeseries-chart-dialog
+  :is(button[data-slot='button'], button[data-slot='tooltip-trigger']):where(
+    :not(.chart-plain-button)
+  ):focus-visible {
   outline: none;
   box-shadow:
     inset 0 -2px 0 var(--pill-line),
-    inset 0 0 0 2px var(--blue-200) !important;
+    inset 0 0 0 2px var(--hud-focus) !important;
 }
 
 /* The chart's title in the app's display type. */
@@ -2968,11 +2951,15 @@ button.hud-body:focus-visible {
  * hover and when focused.
  */
 .timeseries-chart-dialog
-  :is([data-slot='select-trigger'], input[data-slot='input-field'], [data-chart-time-range] [data-slot='date-time-input']) {
+  :is(
+    [data-slot='select-trigger'],
+    input[data-slot='input-field'],
+    [data-chart-time-range] [data-slot='date-time-input']
+  ) {
   --field-cut: 8px;
   --field-edge: color-mix(in srgb, var(--neon-cyan) 55%, transparent);
-  --field-line: var(--blue-300);
-  color: var(--base-foreground, var(--blue-50));
+  --field-line: var(--hud-line);
+  color: var(--base-foreground, var(--hud-ink-strong));
   border: 1px solid transparent !important;
   border-radius: 0 !important;
   background:
@@ -2996,24 +2983,32 @@ button.hud-body:focus-visible {
 }
 
 .timeseries-chart-dialog
-  :is([data-slot='select-trigger'], input[data-slot='input-field'], [data-chart-time-range] [data-slot='date-time-input']):hover {
+  :is(
+    [data-slot='select-trigger'],
+    input[data-slot='input-field'],
+    [data-chart-time-range] [data-slot='date-time-input']
+  ):hover {
   --field-edge: color-mix(in srgb, var(--neon-cyan) 85%, transparent);
 }
 
 .timeseries-chart-dialog
-  :is([data-slot='select-trigger'], input[data-slot='input-field'], [data-chart-time-range] [data-slot='date-time-input']):is(:focus-visible, :focus-within) {
+  :is(
+    [data-slot='select-trigger'],
+    input[data-slot='input-field'],
+    [data-chart-time-range] [data-slot='date-time-input']
+  ):is(:focus-visible, :focus-within) {
   --field-edge: var(--neon-cyan);
-  --field-line: var(--blue-100);
+  --field-line: var(--hud-line-strong);
   outline: none;
 }
 
 .timeseries-chart-dialog input[data-slot='input-field']::placeholder {
-  color: var(--blue-300);
+  color: var(--hud-ink-faint);
 }
 
 .timeseries-chart-dialog input[data-slot='input-field'][aria-invalid='true'] {
-  --field-edge: var(--red-400);
-  --field-line: var(--red-400);
+  --field-edge: var(--hud-danger-line);
+  --field-line: var(--hud-danger-line);
 }
 
 /* The Remove, Info and More columns, headings and buttons, sit in the middle of their cells. */
@@ -3027,9 +3022,9 @@ button.hud-body:focus-visible {
 
 /* Threshold and status labels are the app's pills: cut corners, a gradient fill, a lit bottom line. */
 .timeseries-chart-dialog .chart-pill {
-  --pill: var(--neon-cyan);
-  --pill-line: var(--blue-300);
-  --pill-text: var(--blue-50);
+  --pill: var(--hud-fill);
+  --pill-line: var(--hud-line);
+  --pill-text: var(--hud-ink-strong);
   --pill-cut: 5px;
   height: 1.375rem;
   padding: 0 0.6rem;
@@ -3048,7 +3043,7 @@ button.hud-body:focus-visible {
   );
   box-shadow:
     inset 0 -2px 0 var(--pill-line),
-    inset 0 1px 0 color-mix(in srgb, var(--blue-100) 30%, transparent);
+    inset 0 1px 0 color-mix(in srgb, var(--hud-sheen) 30%, transparent);
   clip-path: polygon(
     var(--pill-cut) 0,
     100% 0,
@@ -3060,69 +3055,77 @@ button.hud-body:focus-visible {
 }
 
 .timeseries-chart-dialog .chart-pill[data-tone='WARNING'] {
-  --pill: var(--neon-amber);
-  --pill-line: var(--amber-300);
-  --pill-text: var(--amber-50);
+  --pill: var(--hud-warning-fill);
+  --pill-line: var(--hud-warning-line);
+  --pill-text: var(--hud-warning-ink);
 }
 
 .timeseries-chart-dialog .chart-pill[data-tone='DANGER'] {
-  --pill: var(--neon-red);
-  --pill-line: var(--red-400);
-  --pill-text: var(--red-50);
+  --pill: var(--hud-danger-fill);
+  --pill-line: var(--hud-danger-line);
+  --pill-text: var(--hud-danger-ink);
 }
 
 .timeseries-chart-dialog .chart-pill[data-tone='SUCCESS'] {
-  --pill: var(--green-450);
-  --pill-line: var(--green-300);
-  --pill-text: var(--green-50);
+  --pill: var(--hud-success-fill);
+  --pill-line: var(--hud-success-line);
+  --pill-text: var(--hud-success-ink);
 }
 
 .timeseries-chart-dialog .chart-pill[data-tone='NEUTRAL'] {
-  --pill: var(--mountain-500);
-  --pill-line: var(--mountain-400);
-  --pill-text: var(--mountain-100);
+  --pill: var(--hud-neutral-fill);
+  --pill-line: var(--hud-neutral-line);
+  --pill-text: var(--hud-neutral-ink);
 }
 
 /* Checkboxes and radios: an outlined box in the field colours; checked, they are the lit pill with a white mark. */
-.timeseries-chart-dialog :is([data-slot='checkbox-item-control'], [data-slot='radio-item-control'], [role='checkbox'], [role='radio']) {
+.timeseries-chart-dialog
+  :is([data-slot='checkbox-item-control'], [role='checkbox'], [role='radio']) {
   border: 1px solid color-mix(in srgb, var(--neon-cyan) 65%, transparent) !important;
   border-radius: 0 !important;
   background: color-mix(in srgb, var(--neon-cyan) 12%, var(--neon-surface-deep)) !important;
-  color: #fff !important;
-  box-shadow: inset 0 -2px 0 color-mix(in srgb, var(--blue-300) 55%, transparent) !important;
+  color: var(--mountain-white) !important;
+  box-shadow: inset 0 -2px 0 color-mix(in srgb, var(--hud-line) 55%, transparent) !important;
   transition:
     border-color 160ms ease,
     box-shadow 160ms ease;
 }
 
-.timeseries-chart-dialog :is([data-slot='radio-item-control'], [role='radio']) {
+.timeseries-chart-dialog :is([role='radio']) {
   border-radius: 9999px !important;
   box-shadow: none !important;
 }
 
-.timeseries-chart-dialog :is([data-slot='checkbox-item-control'], [data-slot='radio-item-control'], [role='checkbox'], [role='radio']):hover {
+.timeseries-chart-dialog
+  :is([data-slot='checkbox-item-control'], [role='checkbox'], [role='radio']):hover {
   border-color: var(--neon-cyan) !important;
 }
 
-.timeseries-chart-dialog :is([data-checked], [data-indeterminate]):is([data-slot='checkbox-item-control'], [data-slot='radio-item-control'], [role='checkbox'], [role='radio']) {
-  border-color: var(--blue-100) !important;
+.timeseries-chart-dialog
+  :is([data-checked], [data-indeterminate]):is(
+    [data-slot='checkbox-item-control'],
+    [role='checkbox'],
+    [role='radio']
+  ) {
+  border-color: var(--hud-line-strong) !important;
   background: linear-gradient(
     180deg,
     color-mix(in srgb, var(--neon-cyan) 90%, transparent),
-    color-mix(in srgb, var(--neon-cyan) 45%, var(--neon-surface-deep))
+    color-mix(in srgb, var(--neon-cyan) 45%, var(--hud-lit-base))
   ) !important;
   box-shadow:
-    inset 0 -2px 0 var(--blue-100),
+    inset 0 -2px 0 var(--hud-line-strong),
     0 0 8px color-mix(in srgb, var(--neon-cyan) 50%, transparent) !important;
 }
 
-.timeseries-chart-dialog :is([data-slot='radio-item-control'], [role='radio']):is([data-checked]) {
+.timeseries-chart-dialog :is([role='radio']):is([data-checked]) {
   box-shadow: 0 0 8px color-mix(in srgb, var(--neon-cyan) 50%, transparent) !important;
 }
 
-.timeseries-chart-dialog :is([data-slot='checkbox-item-control'], [data-slot='radio-item-control'], [role='checkbox'], [role='radio']):focus-visible {
+.timeseries-chart-dialog
+  :is([data-slot='checkbox-item-control'], [role='checkbox'], [role='radio']):focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px var(--blue-200) !important;
+  box-shadow: 0 0 0 2px var(--hud-focus) !important;
 }
 
 /*
@@ -3131,12 +3134,12 @@ button.hud-body:focus-visible {
  * read against the header and the chart behind them.
  */
 :is(
-    [data-slot='popover-content']:has([data-slot='date-time-range-picker-content']),
-    [data-slot='dropdown-menu-content']:has([role='menuitemradio']),
-    [data-slot='select-content']
-  ) {
-  --pill: var(--neon-cyan);
-  --pill-line: var(--blue-300);
+  [data-slot='popover-content']:has([data-slot='date-time-range-picker-content']),
+  [data-slot='dropdown-menu-content']:has([role='menuitemradio']),
+  [data-slot='select-content']
+) {
+  --pill: var(--hud-fill);
+  --pill-line: var(--hud-line);
   --pill-cut: 6px;
   background: linear-gradient(
     180deg,
@@ -3145,10 +3148,10 @@ button.hud-body:focus-visible {
   ) !important;
   border: 1px solid color-mix(in srgb, var(--neon-cyan) 60%, transparent) !important;
   border-radius: 0 !important;
-  color: var(--blue-50);
+  color: var(--hud-ink-strong);
   box-shadow:
     0 0 0 1px color-mix(in srgb, var(--neon-surface-deep) 80%, transparent),
-    0 12px 36px rgb(0 0 0 / 0.6),
+    0 12px 36px var(--hud-shadow),
     0 0 22px color-mix(in srgb, var(--neon-cyan) 28%, transparent) !important;
 }
 
@@ -3160,13 +3163,16 @@ button.hud-body:focus-visible {
   text-transform: uppercase;
 }
 
-[data-slot='dropdown-menu-content']:has([role='menuitemradio']) [role='menuitemradio']:is(:hover, :focus) {
+[data-slot='dropdown-menu-content']:has([role='menuitemradio'])
+  [role='menuitemradio']:is(:hover, :focus) {
   background: color-mix(in srgb, var(--neon-cyan) 28%, transparent);
-  color: #fff;
+  color: var(--hud-ink-hover);
 }
 
-[data-slot='dropdown-menu-content']:has([role='menuitemradio']) [role='menuitemradio'][data-checked] svg {
-  color: var(--blue-100);
+[data-slot='dropdown-menu-content']:has([role='menuitemradio'])
+  [role='menuitemradio'][data-checked]
+  svg {
+  color: var(--hud-ink);
 }
 
 /* Date picker: shortcuts, month heading, days and time columns. */
@@ -3176,48 +3182,54 @@ button.hud-body:focus-visible {
 
 [data-slot='date-time-range-picker-content'] [data-slot='shortcuts-panel'] [data-slot='button'] {
   border-radius: 0;
-  color: var(--blue-100);
+  color: var(--hud-ink);
   font-size: 0.75rem;
 }
 
-[data-slot='date-time-range-picker-content'] [data-slot='shortcuts-panel'] [data-slot='button']:hover {
+[data-slot='date-time-range-picker-content']
+  [data-slot='shortcuts-panel']
+  [data-slot='button']:hover {
   background: color-mix(in srgb, var(--neon-cyan) 25%, transparent);
-  color: #fff;
+  color: var(--hud-ink-hover);
 }
 
 /* The shortcut that stands for the shown window, marked by the chart's range control. */
-[data-slot='date-time-range-picker-content'] [data-slot='shortcuts-panel'] [data-slot='button'][data-active] {
+[data-slot='date-time-range-picker-content']
+  [data-slot='shortcuts-panel']
+  [data-slot='button'][data-active] {
   background: color-mix(in srgb, var(--neon-cyan) 32%, transparent);
   box-shadow: inset 2px 0 0 var(--neon-cyan);
-  color: #fff;
+  color: var(--hud-ink-hover);
 }
 
 [data-slot='date-time-range-picker-content'] :is([role='gridcell'], [role='option']) {
   border-radius: 0;
 }
 
-[data-slot='date-time-range-picker-content'] :is([role='gridcell'], [role='option']):hover:not([aria-selected='true']) {
+[data-slot='date-time-range-picker-content']
+  :is([role='gridcell'], [role='option']):hover:not([aria-selected='true']) {
   background: color-mix(in srgb, var(--neon-cyan) 22%, transparent);
-  color: #fff;
+  color: var(--hud-ink-hover);
 }
 
 /* A chosen day or time is the lit pill; the days between are a soft tint of it. */
-[data-slot='date-time-range-picker-content'] :is([role='gridcell'], [role='option'])[aria-selected='true'] {
+[data-slot='date-time-range-picker-content']
+  :is([role='gridcell'], [role='option'])[aria-selected='true'] {
   background: linear-gradient(
     180deg,
     color-mix(in srgb, var(--neon-cyan) 90%, transparent),
-    color-mix(in srgb, var(--neon-cyan) 45%, var(--neon-surface-deep))
+    color-mix(in srgb, var(--neon-cyan) 45%, var(--hud-lit-base))
   ) !important;
-  color: #fff !important;
+  color: var(--mountain-white) !important;
   font-weight: 700;
   box-shadow:
-    inset 0 -2px 0 var(--blue-100),
+    inset 0 -2px 0 var(--hud-line-strong),
     0 0 8px color-mix(in srgb, var(--neon-cyan) 45%, transparent);
 }
 
 /* The Cancel and Next buttons of the picker are pills; Next is the primary one. */
 [data-slot='date-time-range-picker-content'] > :last-child [data-slot='button'] {
-  color: var(--blue-50);
+  color: var(--hud-ink-strong);
   font-family: var(--font-display);
   font-size: 0.75rem;
   font-weight: 600;
@@ -3227,17 +3239,23 @@ button.hud-body:focus-visible {
   border-radius: 0;
   background: linear-gradient(
     180deg,
-    color-mix(in srgb, var(--pill, var(--neon-cyan)) 40%, transparent),
-    color-mix(in srgb, var(--pill, var(--neon-cyan)) 12%, transparent)
+    color-mix(in srgb, var(--pill, var(--hud-fill)) 40%, transparent),
+    color-mix(in srgb, var(--pill, var(--hud-fill)) 12%, transparent)
   );
-  box-shadow: inset 0 -2px 0 var(--blue-300);
+  box-shadow: inset 0 -2px 0 var(--hud-line);
   clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
 }
 
-[data-slot='date-time-range-picker-content'] > :last-child [data-slot='button'].bg-primary-background {
-  color: #fff;
-  background: linear-gradient(180deg, var(--blue-600), color-mix(in srgb, var(--blue-600) 70%, var(--neon-surface-deep)));
-  box-shadow: inset 0 -2px 0 var(--blue-100);
+[data-slot='date-time-range-picker-content']
+  > :last-child
+  [data-slot='button'].bg-primary-background {
+  color: var(--mountain-white);
+  background: linear-gradient(
+    180deg,
+    var(--neon-royal),
+    color-mix(in srgb, var(--neon-royal) 70%, var(--hud-lit-base))
+  );
+  box-shadow: inset 0 -2px 0 var(--hud-line-strong);
 }
 
 /*
@@ -3290,15 +3308,16 @@ button.hud-body:focus-visible {
 }
 
 /*
- * The chart's empty, error and no-access boxes take the app's notice look: a cut-corner glass strip with a lit bar on
- * the left, the icon in a tinted chip and the title in the display type. The colour follows the variant, the way the
+ * The chart's empty, error and no-access boxes take the app's notice look: a glass strip with a lit bar on the left
+ * and the buttons' cut corners, the icon in a tinted chip and the title in the display type. The colour follows the variant, the way the
  * app alert does. Their action buttons are the pills above.
  */
 .timeseries-chart-dialog .chart-state {
-  --state-color: var(--blue-300);
-  --state-cut: 10px;
+  --state-color: var(--hud-line);
+  --alert-cut: 10px;
+  --alert-cut-inner: calc(var(--alert-cut) + 0.41px);
   position: relative;
-  color: var(--blue-50);
+  color: var(--hud-ink-strong);
   background:
     linear-gradient(
       90deg,
@@ -3306,10 +3325,42 @@ button.hud-body:focus-visible {
       color-mix(in srgb, var(--state-color) 4%, transparent) 70%
     ),
     color-mix(in srgb, var(--neon-surface-deep) 88%, transparent) !important;
-  border: 1px solid color-mix(in srgb, var(--state-color) 38%, transparent) !important;
+  border: 1px solid transparent !important;
   border-radius: 0 !important;
   box-shadow: 0 0 18px -8px color-mix(in srgb, var(--state-color) 70%, transparent);
-  clip-path: polygon(0 0, calc(100% - var(--state-cut)) 0, 100% var(--state-cut), 100% 100%, 0 100%);
+  clip-path: polygon(
+    var(--alert-cut) 0,
+    100% 0,
+    100% calc(100% - var(--alert-cut)),
+    calc(100% - var(--alert-cut)) 100%,
+    0 100%,
+    0 var(--alert-cut)
+  );
+}
+
+.timeseries-chart-dialog .chart-state::after {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  content: '';
+  background: color-mix(in srgb, var(--state-color) 38%, transparent);
+  clip-path: polygon(
+    evenodd,
+    var(--alert-cut) 0,
+    100% 0,
+    100% calc(100% - var(--alert-cut)),
+    calc(100% - var(--alert-cut)) 100%,
+    0 100%,
+    0 var(--alert-cut),
+    var(--alert-cut) 0,
+    var(--alert-cut-inner) 1px,
+    calc(100% - 1px) 1px,
+    calc(100% - 1px) calc(100% - var(--alert-cut-inner)),
+    calc(100% - var(--alert-cut-inner)) calc(100% - 1px),
+    1px calc(100% - 1px),
+    1px var(--alert-cut-inner),
+    var(--alert-cut-inner) 1px
+  );
 }
 
 .timeseries-chart-dialog .chart-state[data-variant='error'] {
@@ -3348,18 +3399,19 @@ button.hud-body:focus-visible {
 }
 
 .timeseries-chart-dialog .chart-state p:not(.chart-state__title) {
-  color: var(--blue-100);
+  color: var(--hud-ink);
 }
 
 /*
- * Aura alerts inside the chart take the app's alert look (see .app-alert): a cut-corner glass strip with a lit bar on
- * the left. The chart sets data-variant on them, which picks the colour.
+ * Aura alerts inside the chart take the app's alert look (see .app-alert): a glass strip with a lit bar on the left
+ * and a slanted right end. The chart sets data-variant on them, which picks the colour.
  */
 .timeseries-chart-dialog [data-slot='alert'][data-variant] {
   --alert-color: var(--neon-cyan);
-  --alert-cut: 10px;
+  --alert-slant: 14px;
+  --alert-slant-height: 4rem;
   position: relative;
-  color: var(--blue-50) !important;
+  color: var(--hud-ink-strong) !important;
   background:
     linear-gradient(
       90deg,
@@ -3371,7 +3423,30 @@ button.hud-body:focus-visible {
   border-radius: 0 !important;
   padding-left: 1.25rem;
   box-shadow: 0 0 18px -8px color-mix(in srgb, var(--alert-color) 70%, transparent);
-  clip-path: polygon(0 0, calc(100% - var(--alert-cut)) 0, 100% var(--alert-cut), 100% 100%, 0 100%);
+  clip-path: polygon(
+    0 0,
+    100% 0,
+    100% calc(100% - min(100%, var(--alert-slant-height))),
+    calc(100% - var(--alert-slant)) 100%,
+    0 100%
+  );
+}
+
+.timeseries-chart-dialog [data-slot='alert'][data-variant]::after {
+  position: absolute;
+  right: -1px;
+  bottom: -1px;
+  width: var(--alert-slant);
+  height: min(calc(100% + 2px), var(--alert-slant-height));
+  pointer-events: none;
+  content: '';
+  background: linear-gradient(
+    to bottom right,
+    transparent calc(50% - 1.5px),
+    color-mix(in srgb, var(--alert-color) 38%, transparent) calc(50% - 1.5px),
+    color-mix(in srgb, var(--alert-color) 38%, transparent) 50%,
+    transparent 50%
+  );
 }
 
 .timeseries-chart-dialog [data-slot='alert'][data-variant='error'] {

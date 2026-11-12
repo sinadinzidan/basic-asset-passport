@@ -1,11 +1,17 @@
 import { Alert, AlertDescription } from '@cognite/aura/components/alert';
 import { Button } from '@cognite/aura/components/button';
-import { CheckboxItem, CheckboxItemControl, CheckboxItemLabel } from '@cognite/aura/components/checkbox';
+import {
+  CheckboxItem,
+  CheckboxItemControl,
+  CheckboxItemLabel,
+} from '@cognite/aura/components/checkbox';
 import { Search } from '@cognite/aura/components/search';
 import { IconChartLine } from '@tabler/icons-react';
 import { useState } from 'react';
 
 import { SERIES_SEARCH_PAGE_SIZE } from '../../../constants/timeSeriesChart';
+import { StateSize } from '../../../enums/stateSize';
+import { StateVariant } from '../../../enums/stateVariant';
 import { useDebouncedText } from '../../../hooks/platform/useGlobalSearch';
 import { useSeriesSearch } from '../../../hooks/time-series-chart/useSeriesSearch';
 import { cn } from '../../../lib/utils';
@@ -17,26 +23,30 @@ import { MetadataText } from '../series/MetadataText';
 
 import { PanelFooter } from './PanelFooter';
 
-interface AddDataPanelProps {
+interface AddDataPanelProperties {
   existingIds: readonly string[];
   maxSeries: number;
   onAdd: (seriesIds: string[]) => void;
 }
 
-interface SeriesChoiceProps {
+interface SeriesChoiceProperties {
   definition: TimeSeriesDefinition;
   isAdded: boolean;
   isSelected: boolean;
   onToggle: () => void;
 }
 
-function SeriesChoice({ definition, isAdded, isSelected, onToggle }: SeriesChoiceProps) {
+function SeriesChoice({ definition, isAdded, isSelected, onToggle }: SeriesChoiceProperties) {
   const description = definition.description.trim();
-  const showsDescription = description !== '' && description.toLowerCase() !== definition.name.trim().toLowerCase();
+  const shouldShowDescription =
+    description !== '' && description.toLowerCase() !== definition.name.trim().toLowerCase();
   return (
     <li>
       <CheckboxItem
-        className={cn('w-full items-start rounded-md px-2 py-2 hover:bg-muted-background/50', isAdded && 'opacity-70')}
+        className={cn(
+          'w-full items-start rounded-md px-2 py-2 hover:bg-muted-background/50',
+          isAdded && 'opacity-70',
+        )}
       >
         <CheckboxItemControl
           className={CHECKBOX_CONTROL_CLASSES}
@@ -57,7 +67,7 @@ function SeriesChoice({ definition, isAdded, isSelected, onToggle }: SeriesChoic
               <span>
                 <MetadataText value={definition.tag} />
               </span>
-              {showsDescription ? <span>{description}</span> : null}
+              {shouldShowDescription ? <span>{description}</span> : null}
             </span>
           </span>
         </CheckboxItemLabel>
@@ -71,7 +81,7 @@ function SeriesChoice({ definition, isAdded, isSelected, onToggle }: SeriesChoic
  * confirm. A series already on the chart cannot be chosen and the chart's limit is stated rather than silently applied. The chart
  * shows it only while it is open, so the search and the selection start empty every time.
  */
-export function AddDataPanel({ existingIds, maxSeries, onAdd }: AddDataPanelProps) {
+export function AddDataPanel({ existingIds, maxSeries, onAdd }: AddDataPanelProperties) {
   const [searchText, setSearchText] = useState('');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [limitMessage, setLimitMessage] = useState<string | undefined>(undefined);
@@ -136,8 +146,8 @@ export function AddDataPanel({ existingIds, maxSeries, onAdd }: AddDataPanelProp
           <LoadingRows rows={5} />
         ) : results.length === 0 ? (
           <StateMessage
-            variant="noResults"
-            size="inline"
+            variant={StateVariant.NO_RESULTS}
+            size={StateSize.INLINE}
             icon={IconChartLine}
             title="No series match"
             description="Try a shorter name or a tag, or clear the search."
@@ -176,7 +186,13 @@ export function AddDataPanel({ existingIds, maxSeries, onAdd }: AddDataPanelProp
         ) : null}
       </div>
       <PanelFooter>
-        <Button type="button" size="sm" className="w-full" disabled={selectedIds.length === 0} onClick={handleConfirm}>
+        <Button
+          type="button"
+          size="sm"
+          className="w-full"
+          disabled={selectedIds.length === 0}
+          onClick={handleConfirm}
+        >
           {`Add ${selectedIds.length} series`}
         </Button>
       </PanelFooter>

@@ -1,3 +1,10 @@
+const LEGEND_COLUMN_COUNT = 2;
+const LEGEND_ROW_HEIGHT_PX = 18;
+const LEGEND_TOP_GAP_PX = 16;
+const BOTH_SIDES = 2;
+const TITLE_BASELINE_PX = 28;
+const SCOPE_BASELINE_PX = 48;
+const AS_OF_BASELINE_PX = 64;
 const IMAGE_HEADER_HEIGHT_PX = 74;
 const IMAGE_SCALE = 2;
 const IMAGE_PADDING_PX = 16;
@@ -38,7 +45,8 @@ export async function exportChartImage(
   const clone = svg.cloneNode(true);
   if (!(clone instanceof SVGSVGElement)) throw new Error('The chart image could not be created.');
   clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-  if (overlay) for (const child of Array.from(overlay.children)) clone.appendChild(child.cloneNode(true));
+  if (overlay)
+    for (const child of Array.from(overlay.children)) clone.appendChild(child.cloneNode(true));
   const markup = resolveCssVariables(new XMLSerializer().serializeToString(clone));
   const imageUrl = URL.createObjectURL(new Blob([markup], { type: 'image/svg+xml;charset=utf-8' }));
   try {
@@ -47,10 +55,11 @@ export async function exportChartImage(
     const background = style.getPropertyValue('--background').trim() || '#ffffff';
     const foreground = style.getPropertyValue('--foreground').trim() || '#000000';
     const muted = style.getPropertyValue('--muted-foreground').trim() || '#555555';
-    const legendRows = Math.ceil(details.legend.length / 2);
-    const totalHeight = IMAGE_HEADER_HEIGHT_PX + height + legendRows * 18 + IMAGE_PADDING_PX;
+    const legendRows = Math.ceil(details.legend.length / LEGEND_COLUMN_COUNT);
+    const totalHeight =
+      IMAGE_HEADER_HEIGHT_PX + height + legendRows * LEGEND_ROW_HEIGHT_PX + IMAGE_PADDING_PX;
     const canvas = document.createElement('canvas');
-    canvas.width = (width + IMAGE_PADDING_PX * 2) * IMAGE_SCALE;
+    canvas.width = (width + IMAGE_PADDING_PX * BOTH_SIDES) * IMAGE_SCALE;
     canvas.height = totalHeight * IMAGE_SCALE;
     const context = canvas.getContext('2d');
     if (!context) throw new Error('The chart image could not be created.');
@@ -59,18 +68,21 @@ export async function exportChartImage(
     context.fillRect(0, 0, canvas.width, canvas.height);
     context.fillStyle = foreground;
     context.font = '600 16px Outfit, sans-serif';
-    context.fillText(details.title, IMAGE_PADDING_PX, 28);
+    context.fillText(details.title, IMAGE_PADDING_PX, TITLE_BASELINE_PX);
     context.fillStyle = muted;
     context.font = '12px Outfit, sans-serif';
-    context.fillText(`${details.scope} · ${details.period}`, IMAGE_PADDING_PX, 48);
-    context.fillText(`As of ${details.asOf}`, IMAGE_PADDING_PX, 64);
+    context.fillText(`${details.scope} · ${details.period}`, IMAGE_PADDING_PX, SCOPE_BASELINE_PX);
+    context.fillText(`As of ${details.asOf}`, IMAGE_PADDING_PX, AS_OF_BASELINE_PX);
     context.drawImage(image, IMAGE_PADDING_PX, IMAGE_HEADER_HEIGHT_PX, width, height);
     context.fillStyle = foreground;
     details.legend.forEach((line, index) => {
       context.fillText(
         line,
-        IMAGE_PADDING_PX + (index % 2) * (width / 2),
-        IMAGE_HEADER_HEIGHT_PX + height + 16 + Math.floor(index / 2) * 18,
+        IMAGE_PADDING_PX + (index % LEGEND_COLUMN_COUNT) * (width / LEGEND_COLUMN_COUNT),
+        IMAGE_HEADER_HEIGHT_PX +
+          height +
+          LEGEND_TOP_GAP_PX +
+          Math.floor(index / LEGEND_COLUMN_COUNT) * LEGEND_ROW_HEIGHT_PX,
       );
     });
     const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/png'));

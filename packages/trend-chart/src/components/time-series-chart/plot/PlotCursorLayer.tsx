@@ -1,20 +1,27 @@
+import { HALF } from '../../../constants/mathConstants';
 import { ReadingKind } from '../../../enums/timeSeriesChart';
 import { formatChartTick } from '../../../lib/monitoring/chartModel';
 import type { PlotModel } from '../../../lib/monitoring/plotModel';
 import { timeToX, windowSpan } from '../../../lib/time-series-chart/plotNavigation';
 import type { PlotGeometry } from '../../../lib/time-series-chart/plotNavigation';
-import type { HoverReading, MarkerSeriesReading } from '../../../lib/time-series-chart/plotReadouts';
+import type {
+  HoverReading,
+  MarkerSeriesReading,
+} from '../../../lib/time-series-chart/plotReadouts';
 import { laneYPosition } from '../../../lib/time-series-chart/plotSeries';
 import { SURFACE_COLOR } from '../../general/charts/chartColors';
 
 import { CROSSHAIR_CHIP_MAX_SPAN_MS, CROSSHAIR_CHIP_WIDTH_PX } from './plotLayout';
+
+const CROSSHAIR_LABEL_TOP_OFFSET_PX = 3;
+const CROSSHAIR_LABEL_BOTTOM_OFFSET_PX = 16;
 
 export interface DragSelection {
   fromMs: number;
   toMs: number;
 }
 
-interface PlotCursorLayerProps {
+interface PlotCursorLayerProperties {
   model: PlotModel;
   geometry: PlotGeometry;
   width: number;
@@ -29,22 +36,35 @@ const HANDLE_WIDTH_PX = 10;
 const HANDLE_HEIGHT_PX = 14;
 const DOT_RADIUS = 4;
 
-function TimeChip({ atMs, x, geometry, width }: { atMs: number; x: number; geometry: PlotGeometry; width: number }) {
-  const label = formatChartTick(atMs, Math.min(windowSpan(geometry.window), CROSSHAIR_CHIP_MAX_SPAN_MS));
-  const half = CROSSHAIR_CHIP_WIDTH_PX / 2;
+function TimeChip({
+  atMs,
+  xCoordinate,
+  geometry,
+  width,
+}: {
+  atMs: number;
+  xCoordinate: number;
+  geometry: PlotGeometry;
+  width: number;
+}) {
+  const label = formatChartTick(
+    atMs,
+    Math.min(windowSpan(geometry.window), CROSSHAIR_CHIP_MAX_SPAN_MS),
+  );
+  const half = CROSSHAIR_CHIP_WIDTH_PX * HALF;
   return (
     <g>
       <rect
-        x={Math.min(Math.max(x - half, 0), width - CROSSHAIR_CHIP_WIDTH_PX)}
-        y={geometry.bottom + 3}
+        x={Math.min(Math.max(xCoordinate - half, 0), width - CROSSHAIR_CHIP_WIDTH_PX)}
+        y={geometry.bottom + CROSSHAIR_LABEL_TOP_OFFSET_PX}
         width={CROSSHAIR_CHIP_WIDTH_PX}
         height={CHIP_HEIGHT_PX}
         rx="9"
         fill={CURSOR_COLOR}
       />
       <text
-        x={Math.min(Math.max(x, half), width - half)}
-        y={geometry.bottom + 16}
+        x={Math.min(Math.max(xCoordinate, half), width - half)}
+        y={geometry.bottom + CROSSHAIR_LABEL_BOTTOM_OFFSET_PX}
         textAnchor="middle"
         fontSize="11"
         fill="var(--background)"
@@ -59,7 +79,14 @@ function TimeChip({ atMs, x, geometry, width }: { atMs: number; x: number; geome
  * The parts of the plot that move with the pointer: the hover crosshair with a dot on each series, or the vertical marker with the
  * reading of each series, and the span being dragged. Kept apart from the plot layer so a move redraws only this.
  */
-export function PlotCursorLayer({ model, geometry, width, hover, marker, selection }: PlotCursorLayerProps) {
+export function PlotCursorLayer({
+  model,
+  geometry,
+  width,
+  hover,
+  marker,
+  selection,
+}: PlotCursorLayerProperties) {
   const hoverX = hover ? timeToX(geometry, hover.atMs) : undefined;
   const markerX = marker ? timeToX(geometry, marker.atMs) : undefined;
 
@@ -78,12 +105,15 @@ export function PlotCursorLayer({ model, geometry, width, hover, marker, selecti
             strokeDasharray="4 3"
           />
           {hover.readings.map(({ entry, bucket }) => {
-            const y = bucket && bucket.average !== null ? laneYPosition(model, entry.id, bucket.average) : undefined;
-            return y === undefined || !bucket ? null : (
+            const yCoordinate =
+              bucket && bucket.average !== null
+                ? laneYPosition(model, entry.id, bucket.average)
+                : undefined;
+            return yCoordinate === undefined || !bucket ? null : (
               <circle
                 key={entry.id}
                 cx={timeToX(geometry, bucket.atMs)}
-                cy={y}
+                cy={yCoordinate}
                 r={DOT_RADIUS}
                 fill={entry.color}
                 stroke={SURFACE_COLOR}
@@ -91,7 +121,7 @@ export function PlotCursorLayer({ model, geometry, width, hover, marker, selecti
               />
             );
           })}
-          <TimeChip atMs={hover.atMs} x={hoverX} geometry={geometry} width={width} />
+          <TimeChip atMs={hover.atMs} xCoordinate={hoverX} geometry={geometry} width={width} />
         </g>
       ) : null}
 
@@ -107,17 +137,18 @@ export function PlotCursorLayer({ model, geometry, width, hover, marker, selecti
             strokeWidth="1.5"
           />
           <rect
-            x={markerX - HANDLE_WIDTH_PX / 2}
-            y={geometry.top - HANDLE_HEIGHT_PX / 2}
+            x={markerX - HANDLE_WIDTH_PX * HALF}
+            y={geometry.top - HANDLE_HEIGHT_PX * HALF}
             width={HANDLE_WIDTH_PX}
             height={HANDLE_HEIGHT_PX}
             rx="3"
             fill={CURSOR_COLOR}
           />
           {marker.readings.map(({ entry, reading }) => {
-            const y = reading.value === null ? undefined : laneYPosition(model, entry.id, reading.value);
-            if (y === undefined) return null;
-            const x =
+            const yCoordinate =
+              reading.value === null ? undefined : laneYPosition(model, entry.id, reading.value);
+            if (yCoordinate === undefined) return null;
+            const xCoordinate =
               reading.readingAt !== undefined && reading.kind === ReadingKind.NEAREST
                 ? timeToX(geometry, reading.readingAt)
                 : markerX;
@@ -125,8 +156,8 @@ export function PlotCursorLayer({ model, geometry, width, hover, marker, selecti
             return (
               <circle
                 key={entry.id}
-                cx={x}
-                cy={y}
+                cx={xCoordinate}
+                cy={yCoordinate}
                 r={DOT_RADIUS}
                 fill={isInterpolated ? SURFACE_COLOR : entry.color}
                 stroke={isInterpolated ? entry.color : SURFACE_COLOR}
@@ -135,7 +166,7 @@ export function PlotCursorLayer({ model, geometry, width, hover, marker, selecti
               />
             );
           })}
-          <TimeChip atMs={marker.atMs} x={markerX} geometry={geometry} width={width} />
+          <TimeChip atMs={marker.atMs} xCoordinate={markerX} geometry={geometry} width={width} />
         </g>
       ) : null}
 
@@ -143,7 +174,10 @@ export function PlotCursorLayer({ model, geometry, width, hover, marker, selecti
         <rect
           x={timeToX(geometry, selection.fromMs)}
           y={geometry.top}
-          width={Math.max(1, timeToX(geometry, selection.toMs) - timeToX(geometry, selection.fromMs))}
+          width={Math.max(
+            1,
+            timeToX(geometry, selection.toMs) - timeToX(geometry, selection.fromMs),
+          )}
           height={geometry.bottom - geometry.top}
           rx="6"
           fill="var(--active-background)"

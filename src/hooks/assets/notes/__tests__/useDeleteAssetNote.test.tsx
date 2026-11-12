@@ -4,10 +4,8 @@ import type { ComponentType, ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { makeMockClient } from '../../../../mocks/cogniteClient';
-import {
-  makeQueryClientWrapper,
-  makeTestQueryClient,
-} from '../../../../mocks/queryClientWrapper';
+import { makeQueryClientWrapper, makeTestQueryClient } from '../../../../mocks/QueryClientWrapper';
+import { AssetContext } from '../../useAssetContext';
 import { getAssetNotesQueryKey } from '../useAssetNotes';
 import {
   useDeleteAssetNote,
@@ -27,13 +25,14 @@ describe(useDeleteAssetNote.name, () => {
   beforeEach(() => {
     queryClient = makeTestQueryClient();
     mockContext = {
-      useAssetDataClient: vi.fn(() => client),
       deleteAssetNote: vi.fn(() => Promise.resolve()),
     };
     const QueryWrapper = makeQueryClientWrapper(queryClient);
     wrapper = ({ children }) => (
       <UseDeleteAssetNoteContext.Provider value={mockContext}>
-        <QueryWrapper>{children}</QueryWrapper>
+        <QueryWrapper>
+          <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
+        </QueryWrapper>
       </UseDeleteAssetNoteContext.Provider>
     );
   });
@@ -66,9 +65,7 @@ describe(useDeleteAssetNote.name, () => {
   });
 
   it('reports a failed delete and does not refresh the list', async () => {
-    vi.mocked(mockContext.deleteAssetNote).mockRejectedValue(
-      new Error('Forbidden'),
-    );
+    vi.mocked(mockContext.deleteAssetNote).mockRejectedValue(new Error('Forbidden'));
     const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
     const { result } = renderHook(() => useDeleteAssetNote(assetIdentifier), {
       wrapper,

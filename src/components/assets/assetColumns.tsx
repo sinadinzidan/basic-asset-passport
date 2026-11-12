@@ -19,17 +19,13 @@ export const ASSET_COLUMNS: ColumnDef<AssetListItem>[] = [
   {
     accessorKey: 'externalId',
     header: 'Functional location',
-    cell: ({ row }) => (
-      <span className="font-mono text-xs">{row.original.externalId}</span>
-    ),
+    cell: ({ row }) => <span className="font-mono text-xs">{row.original.externalId}</span>,
   },
   {
     accessorKey: 'name',
     header: 'Asset name',
     cell: ({ row }) => (
-      <span className="font-medium">
-        {row.original.name ?? UNNAMED_ASSET_LABEL}
-      </span>
+      <span className="font-medium">{row.original.name ?? UNNAMED_ASSET_LABEL}</span>
     ),
   },
   {
@@ -60,11 +56,7 @@ export const ASSET_COLUMNS: ColumnDef<AssetListItem>[] = [
     cell: ({ row }) => {
       const criticality = row.original.abcIndicatorName;
 
-      return criticality ? (
-        <CriticalityPill criticality={criticality} />
-      ) : (
-        NOT_PROVIDED_LABEL
-      );
+      return criticality ? <CriticalityPill criticality={criticality} /> : NOT_PROVIDED_LABEL;
     },
   },
 ];

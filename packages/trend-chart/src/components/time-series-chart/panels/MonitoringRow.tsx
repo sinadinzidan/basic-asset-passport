@@ -1,4 +1,8 @@
-import { CHART_STALE_AFTER_MS, SERIES_STATUS_LABELS, SERIES_STATUS_TONES } from '../../../constants/timeSeriesChart';
+import {
+  CHART_STALE_AFTER_MS,
+  SERIES_STATUS_LABELS,
+  SERIES_STATUS_TONES,
+} from '../../../constants/timeSeriesChart';
 import { PillSize } from '../../../enums/display';
 import { SeriesDataStatus } from '../../../enums/timeSeriesChart';
 import { MISSING_VALUE } from '../../../lib/format';
@@ -10,21 +14,23 @@ import { StatusPill } from '../../general/StatusPill';
 import { FACT_SEPARATOR, formatChartInstantShort } from './panelFormat';
 import { SeriesLabel } from './SeriesLabel';
 
-interface MonitoringRowProps {
+interface MonitoringRowProperties {
   series: ChartSeriesView;
   snapshot: MonitoringSnapshot | undefined;
   nowMs: number;
 }
 
 function ageText(snapshot: MonitoringSnapshot, nowMs: number): string {
-  const ageMs = snapshot.latestAt === undefined ? snapshot.ageMs : Math.max(0, nowMs - snapshot.latestAt);
+  const ageMs =
+    snapshot.latestAt === undefined ? snapshot.ageMs : Math.max(0, nowMs - snapshot.latestAt);
   return ageMs === undefined ? MISSING_VALUE : `${formatDuration(ageMs)} ago`;
 }
 
 function readingText(snapshot: MonitoringSnapshot, nowMs: number): string | undefined {
   if (snapshot.latestAt === undefined) return undefined;
   const facts = [formatChartInstantShort(snapshot.latestAt), ageText(snapshot, nowMs)];
-  if (snapshot.status === SeriesDataStatus.STALE) facts.push(`stale after ${formatDuration(CHART_STALE_AFTER_MS)}`);
+  if (snapshot.status === SeriesDataStatus.STALE)
+    facts.push(`stale after ${formatDuration(CHART_STALE_AFTER_MS)}`);
   return facts.join(FACT_SEPARATOR);
 }
 
@@ -40,7 +46,7 @@ function noteworthyStatus(
   return snapshot.status;
 }
 
-export function MonitoringRow({ series, snapshot, nowMs }: MonitoringRowProps) {
+export function MonitoringRow({ series, snapshot, nowMs }: MonitoringRowProperties) {
   const status = noteworthyStatus(series, snapshot);
   const reading = snapshot ? readingText(snapshot, nowMs) : undefined;
   return (
@@ -48,7 +54,11 @@ export function MonitoringRow({ series, snapshot, nowMs }: MonitoringRowProps) {
       <div className="flex items-center justify-between gap-2">
         <SeriesLabel series={series} />
         {status ? (
-          <StatusPill label={SERIES_STATUS_LABELS[status]} tone={SERIES_STATUS_TONES[status]} size={PillSize.SMALL} />
+          <StatusPill
+            label={SERIES_STATUS_LABELS[status]}
+            tone={SERIES_STATUS_TONES[status]}
+            size={PillSize.SMALL}
+          />
         ) : null}
       </div>
       {snapshot ? (

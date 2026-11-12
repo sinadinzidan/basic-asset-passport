@@ -1,6 +1,11 @@
 import { CHART_STALE_AFTER_MS } from '../../constants/timeSeriesChart';
 import { SeriesDataStatus } from '../../enums/timeSeriesChart';
-import type { ChartSeriesView, ChartThreshold, MonitoringSnapshot, TimeSeriesPoint } from '../../types/timeSeriesChart';
+import type {
+  ChartSeriesView,
+  ChartThreshold,
+  MonitoringSnapshot,
+  TimeSeriesPoint,
+} from '../../types/timeSeriesChart';
 
 import { isValidReading } from './statistics';
 import { convertValue } from './units';
@@ -48,7 +53,9 @@ export function convertThresholds(
   if (from === to) return [...thresholds];
   return thresholds.map((threshold) => {
     const converted = convertValue(threshold.value, from, to);
-    return converted === undefined ? threshold : { ...threshold, value: converted, unit: to ?? threshold.unit };
+    return converted === undefined
+      ? threshold
+      : { ...threshold, value: converted, unit: to ?? threshold.unit };
   });
 }
 
@@ -62,7 +69,8 @@ export function buildMonitoringSnapshots(
     const latest = view.points
       .filter(isValidReading)
       .reduce<(TimeSeriesPoint & { value: number }) | undefined>(
-        (found, point) => (found === undefined || point.timestamp > found.timestamp ? point : found),
+        (found, point) =>
+          found === undefined || point.timestamp > found.timestamp ? point : found,
         undefined,
       );
     return {

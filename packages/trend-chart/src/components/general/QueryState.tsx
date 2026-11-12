@@ -4,9 +4,11 @@ import { IconRefresh } from '@tabler/icons-react';
 import type { Icon } from '@tabler/icons-react';
 import type { ReactNode } from 'react';
 
+import { StateVariant } from '../../enums/stateVariant';
+
 import { StateMessage } from './StateMessage';
 
-interface QueryStateProps<Data> {
+interface QueryStateProperties<Data> {
   data: Data | undefined;
   isLoading: boolean;
   error: Error | null;
@@ -34,7 +36,7 @@ export function LoadingRows({ rows = DEFAULT_SKELETON_ROWS }: { rows?: number })
 export function ErrorState({ error, onRetry }: { error: Error; onRetry?: () => void }) {
   return (
     <StateMessage
-      variant="error"
+      variant={StateVariant.ERROR}
       title="This could not be loaded"
       description={error.message}
       action={
@@ -64,7 +66,7 @@ export function QueryState<Data>({
   emptyIcon,
   skeletonRows,
   children,
-}: QueryStateProps<Data>) {
+}: QueryStateProperties<Data>) {
   if (error) return <ErrorState error={error} onRetry={onRetry} />;
   if (isLoading || data === undefined) return <LoadingRows rows={skeletonRows} />;
   if (isEmpty?.(data)) {

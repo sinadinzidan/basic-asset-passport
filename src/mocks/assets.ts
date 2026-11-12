@@ -1,12 +1,6 @@
-import type {
-  AssetInstanceDetails,
-  AssetListItem,
-  AssetPage,
-} from '../types/asset';
+import type { AssetInstanceDetails, AssetListItem, AssetPage } from '../types/asset';
 
-export function makeAssetListItem(
-  overrides: Partial<AssetListItem> = {},
-): AssetListItem {
+export function makeAssetListItem(overrides: Partial<AssetListItem> = {}): AssetListItem {
   return {
     space: 'asset-instance-space',
     externalId: 'FLOC-100',

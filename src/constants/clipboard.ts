@@ -1,0 +1,1 @@
+export const COPY_CONFIRMATION_MS = 1800;

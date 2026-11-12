@@ -5,7 +5,7 @@ import { cn } from '../../../lib/utils';
 
 import { SWITCH_CLASSES } from './fieldStyles';
 
-interface SwitchFieldProps {
+interface SwitchFieldProperties {
   label: string;
   checked: boolean;
   onChange: (checked: boolean) => void;
@@ -14,7 +14,14 @@ interface SwitchFieldProps {
   className?: string;
 }
 
-export function SwitchField({ label, checked, onChange, description, isDisabled, className }: SwitchFieldProps) {
+export function SwitchField({
+  label,
+  checked,
+  onChange,
+  description,
+  isDisabled,
+  className,
+}: SwitchFieldProperties) {
   const id = useId();
   return (
     <div className={cn('flex min-w-0 flex-col gap-1', className)}>
@@ -25,9 +32,12 @@ export function SwitchField({ label, checked, onChange, description, isDisabled,
           className={SWITCH_CLASSES}
           checked={checked}
           disabled={isDisabled}
-          onCheckedChange={(next) => onChange(next)}
+          onCheckedChange={(isOn) => onChange(isOn)}
         />
-        <label htmlFor={id} className="text-sm leading-none font-medium text-foreground select-none">
+        <label
+          htmlFor={id}
+          className="text-sm leading-none font-medium text-foreground select-none"
+        >
           {label}
         </label>
       </div>

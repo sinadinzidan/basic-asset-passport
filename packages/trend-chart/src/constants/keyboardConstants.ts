@@ -1,0 +1,10 @@
+export const ENTER_KEY = 'Enter';
+export const ESCAPE_KEY = 'Escape';
+export const ARROW_LEFT_KEY = 'ArrowLeft';
+export const ARROW_RIGHT_KEY = 'ArrowRight';
+export const PAGE_UP_KEY = 'PageUp';
+export const PAGE_DOWN_KEY = 'PageDown';
+export const PLUS_KEY = '+';
+export const EQUALS_KEY = '=';
+export const MINUS_KEY = '-';
+export const UNDERSCORE_KEY = '_';

@@ -2,7 +2,20 @@ import { chartTimeZone, zonedFormat } from './timeZone';
 
 const MISSING_VALUE = '---';
 
-const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] as const;
+const MONTH_NAMES = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+] as const;
 
 const dateFormat = () => zonedFormat({ day: '2-digit', month: 'numeric', year: 'numeric' });
 const timeFormat = () => zonedFormat({ hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });

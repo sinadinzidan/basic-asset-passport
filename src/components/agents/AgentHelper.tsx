@@ -1,64 +1,40 @@
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@cognite/aura/components/tooltip';
-import { useState, type AnimationEvent, type KeyboardEvent } from 'react';
+import { AgentMascot, AgentMood } from '@adnoc/agent-mascot';
+import { Button } from '@cognite/aura/components/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@cognite/aura/components/tooltip';
+import type { AnimationEvent, KeyboardEvent } from 'react';
 
 import {
   ASSISTANT_GREETING,
   ASSISTANT_LABEL,
   GREETING_HOVER_DELAY_MS,
 } from '../../constants/agents';
-import { useAgentChatViewModel } from '../../hooks/agents/useAgentChatViewModel';
-import { useAgentGreeting } from '../../hooks/agents/useAgentGreeting';
+import { ESCAPE_KEY } from '../../constants/keyboard';
+import { PanelPhase } from '../../enums/panelPhase';
+import { useAgentHelperViewModel } from '../../hooks/agents/useAgentHelperViewModel';
 
 import { AgentChat } from './AgentChat';
-import { AgentMascot } from './AgentMascot';
-import { AgentPicker } from './AgentPicker';
+import { AgentStatus } from './AgentStatus';
 
-type PanelPhase = 'CLOSED' | 'OPEN' | 'CLOSING';
-
-/** The assistant's mascot in the corner of the app, and the chat panel it opens. */
 export function AgentHelper() {
-  const { agent, isSending } = useAgentChatViewModel();
-  const { isIntroShown, dismissIntro } = useAgentGreeting();
+  const {
+    agent,
+    isSending,
+    phase,
+    isOpen,
+    isGreeting,
+    toggle,
+    close,
+    closeIfOpen,
+    finishClosing,
+    changeGreetingOpen,
+    keepIntroGreeting,
+  } = useAgentHelperViewModel();
 
-  const [phase, setPhase] = useState<PanelPhase>('CLOSED');
-  const [isPointedAt, setIsPointedAt] = useState(false);
-
-  const isOpen = phase === 'OPEN';
-  // The mascot says who it is while it is pointed at or focused, and once by itself when the app opens.
-  const isGreeting = phase === 'CLOSED' && (isIntroShown || isPointedAt);
-
-  function stopGreeting(): void {
-    setIsPointedAt(false);
-    dismissIntro();
-  }
-  function toggle(): void {
-    stopGreeting();
-    setPhase(isOpen ? 'CLOSING' : 'OPEN');
-  }
-  function close(): void {
-    stopGreeting();
-    setPhase('CLOSING');
-  }
   function handleKeyDown(event: KeyboardEvent<HTMLDivElement>): void {
-    if (event.key === 'Escape' && isOpen) close();
+    if (event.key === ESCAPE_KEY) closeIfOpen();
   }
-  // The exit animation is what unmounts the panel, so it can fade out first.
   function handleAnimationEnd(event: AnimationEvent<HTMLElement>): void {
-    if (event.target === event.currentTarget && phase === 'CLOSING') {
-      setPhase('CLOSED');
-    }
-  }
-  function handleGreetingOpenChange(isGreetingOpen: boolean): void {
-    setIsPointedAt(isGreetingOpen);
-    if (!isGreetingOpen) dismissIntro();
-  }
-  // A pointer that arrives during the first greeting keeps it up for as long as it stays.
-  function handlePointerEnter(): void {
-    if (isIntroShown) setIsPointedAt(true);
+    if (event.target === event.currentTarget) finishClosing();
   }
 
   return (
@@ -66,10 +42,10 @@ export function AgentHelper() {
       className="agent-helper"
       data-greeting={isGreeting}
       data-phase={phase}
-      data-view={agent === null ? 'LIST' : 'CHAT'}
+      data-view={agent === null ? 'STATUS' : 'CHAT'}
       onKeyDown={handleKeyDown}
     >
-      {phase === 'CLOSED' ? null : (
+      {phase === PanelPhase.CLOSED ? null : (
         <section
           aria-label={ASSISTANT_LABEL}
           className="agent-panel"
@@ -77,32 +53,27 @@ export function AgentHelper() {
           onAnimationEnd={handleAnimationEnd}
           role="dialog"
         >
-          {agent === null ? (
-            <AgentPicker onClose={close} />
-          ) : (
-            <AgentChat onClose={close} />
-          )}
+          {agent === null ? <AgentStatus onClose={close} /> : <AgentChat onClose={close} />}
         </section>
       )}
-      <Tooltip
-        disableHoverableContent
-        onOpenChange={handleGreetingOpenChange}
-        open={isGreeting}
-      >
+      <Tooltip disableHoverableContent onOpenChange={changeGreetingOpen} open={isGreeting}>
         <TooltipTrigger
           data-slot="agent-helper-trigger"
           delay={GREETING_HOVER_DELAY_MS}
           render={
-            <button
+            <Button
               aria-expanded={isOpen}
               aria-label={ASSISTANT_LABEL}
-              className="agent-helper__trigger"
+              className="agent-helper__trigger agent-mascot-wave-on-hover"
               onClick={toggle}
-              onPointerEnter={handlePointerEnter}
-              type="button"
+              onPointerEnter={keepIntroGreeting}
+              variant="ghost"
             >
-              <AgentMascot mood={isSending ? 'think' : 'idle'} />
-            </button>
+              <AgentMascot
+                mood={isSending ? AgentMood.THINKING : AgentMood.IDLE}
+                isWaving={isGreeting}
+              />
+            </Button>
           }
         />
         <TooltipContent align="start" className="agent-greeting" side="right">

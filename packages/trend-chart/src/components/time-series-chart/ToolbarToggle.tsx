@@ -2,7 +2,7 @@ import { Button } from '@cognite/aura/components/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@cognite/aura/components/tooltip';
 import type { Icon } from '@tabler/icons-react';
 
-interface ToolbarToggleProps {
+interface ToolbarToggleProperties {
   label: string;
   icon: Icon;
   isActive?: boolean;
@@ -18,7 +18,7 @@ export function ToolbarToggle({
   isRunningTone = false,
   isDisabled = false,
   onClick,
-}: ToolbarToggleProps) {
+}: ToolbarToggleProperties) {
   return (
     <Tooltip>
       <TooltipTrigger

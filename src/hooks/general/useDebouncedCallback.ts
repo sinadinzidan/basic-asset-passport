@@ -1,10 +1,4 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useRef,
-} from 'react';
+import { createContext, useCallback, useContext, useEffect, useRef } from 'react';
 
 export type TimerHandle = ReturnType<typeof setTimeout>;
 
@@ -20,39 +14,35 @@ const defaultDeps: DebounceDeps = {
 
 export const DebounceContext = createContext<DebounceDeps>(defaultDeps);
 
-/**
- * Calls `callback` once `delayMs` has passed since the last `run`. A newer
- * `run` replaces a pending one, `cancel` drops it, and unmounting drops it too.
- */
-export function useDebouncedCallback<Args extends unknown[]>(
-  callback: (...args: Args) => void,
+export function useDebouncedCallback<CallbackArguments extends unknown[]>(
+  callback: (...callbackArguments: CallbackArguments) => void,
   delayMs: number,
 ) {
   const { setTimer, clearTimer } = useContext(DebounceContext);
-  const timerRef = useRef<TimerHandle | undefined>(undefined);
-  const callbackRef = useRef(callback);
 
-  useEffect(() => {
-    callbackRef.current = callback;
-  }, [callback]);
+  const timerReference = useRef<TimerHandle | undefined>(undefined);
+  const callbackReference = useRef(callback);
 
   const cancel = useCallback((): void => {
-    if (timerRef.current === undefined) return;
-    clearTimer(timerRef.current);
-    timerRef.current = undefined;
+    if (timerReference.current === undefined) return;
+    clearTimer(timerReference.current);
+    timerReference.current = undefined;
   }, [clearTimer]);
 
   const run = useCallback(
-    (...args: Args): void => {
+    (...callbackArguments: CallbackArguments): void => {
       cancel();
-      timerRef.current = setTimer(() => {
-        timerRef.current = undefined;
-        callbackRef.current(...args);
+      timerReference.current = setTimer(() => {
+        timerReference.current = undefined;
+        callbackReference.current(...callbackArguments);
       }, delayMs);
     },
     [cancel, setTimer, delayMs],
   );
 
+  useEffect(() => {
+    callbackReference.current = callback;
+  }, [callback]);
   useEffect(() => cancel, [cancel]);
 
   return { run, cancel };

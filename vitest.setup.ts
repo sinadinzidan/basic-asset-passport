@@ -9,5 +9,8 @@ Object.defineProperty(Element.prototype, 'animate', { value: undefined, configur
 if (typeof globalThis.localStorage === 'undefined') {
   const { localStorage, sessionStorage } = new Window();
   Object.defineProperty(globalThis, 'localStorage', { value: localStorage, configurable: true });
-  Object.defineProperty(globalThis, 'sessionStorage', { value: sessionStorage, configurable: true });
+  Object.defineProperty(globalThis, 'sessionStorage', {
+    value: sessionStorage,
+    configurable: true,
+  });
 }

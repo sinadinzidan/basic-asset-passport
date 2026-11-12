@@ -11,17 +11,31 @@ describe(StatTile.name, () => {
     expect(screen.getByText('4')).toBeInTheDocument();
   });
 
-  it('hides the decorative icon from assistive technology', () => {
-    const { container } = render(
-      <StatTile
-        label="Operating"
-        value="–"
-        icon={<svg data-testid="icon" />}
-      />,
-    );
+  it('groups the value under its label for assistive technology', () => {
+    render(<StatTile label="Operating" value={4} icon={<svg />} />);
 
-    expect(container.querySelector('[aria-hidden="true"]')).toContainElement(
-      screen.getByTestId('icon'),
-    );
+    expect(screen.getByRole('group', { name: 'Operating' })).toHaveTextContent('4');
+  });
+
+  it('is a notched card with a vent', () => {
+    const { container } = render(<StatTile label="Operating" value={4} icon={<svg />} />);
+
+    expect(container.firstElementChild).toHaveClass('hud-notched');
+    expect(container.querySelector('.hud-vent')).not.toBeNull();
+  });
+
+  it('heads the card with the label, marked by a diamond', () => {
+    const { container } = render(<StatTile label="Operating" value={4} icon={<svg />} />);
+
+    const heading = container.querySelector('.stat-tile__head');
+
+    expect(heading).toContainElement(screen.getByText('Operating'));
+    expect(heading?.querySelector('.hud-dot')).toHaveAttribute('aria-hidden', 'true');
+  });
+
+  it('hides the decorative icon from assistive technology', () => {
+    render(<StatTile label="Operating" value="–" icon={<svg data-testid="icon" />} />);
+
+    expect(screen.getByTestId('icon').closest('[aria-hidden="true"]')).not.toBeNull();
   });
 });

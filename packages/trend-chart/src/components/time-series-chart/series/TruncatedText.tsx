@@ -2,19 +2,22 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@cognite/aura/component
 
 import { cn } from '../../../lib/utils';
 
-interface TruncatedTextProps {
+interface TruncatedTextProperties {
   text: string;
   className?: string;
 }
 
-export function TruncatedText({ text, className }: TruncatedTextProps) {
+export function TruncatedText({ text, className }: TruncatedTextProperties) {
   return (
     <Tooltip>
       <TooltipTrigger
         render={
           <span
             tabIndex={0}
-            className={cn('block truncate rounded-sm focus-visible:outline-2 focus-visible:outline-ring', className)}
+            className={cn(
+              'block truncate rounded-sm focus-visible:outline-2 focus-visible:outline-ring',
+              className,
+            )}
           />
         }
       >

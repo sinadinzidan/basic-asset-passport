@@ -2,73 +2,51 @@ import { IconNote, IconPencil, IconTrash } from '@tabler/icons-react';
 import { useState } from 'react';
 
 import { UNKNOWN_AUTHOR_LABEL } from '../../../constants/notes';
+import { IconActionVariant } from '../../../enums/iconActionVariant';
+import { useUpdateAssetNote } from '../../../hooks/assets/notes/useUpdateAssetNote';
 import { formatNoteDate } from '../../../lib/formatNoteDate';
+import type { AssetIdentifier } from '../../../types/asset';
 import type { AssetNote, NewAssetNote } from '../../../types/note';
-import { GeneralButton } from '../../general/GeneralButton';
-import { GeneralDialog } from '../../general/GeneralDialog';
+import { ConfirmDeleteDialog } from '../../general/ConfirmDeleteDialog';
 import { IconActionButton } from '../../general/IconActionButton';
 
 import { AssetNoteEditForm } from './AssetNoteEditForm';
 
 type AssetNoteItemProps = {
+  assetIdentifier: AssetIdentifier;
   note: AssetNote;
-  isSaving: boolean;
   isDeleting: boolean;
-  saveErrorMessage: string | null;
-  /** Saves the edit; `onSaved` runs once it has been saved. */
-  onSave: (note: AssetNote, input: NewAssetNote, onSaved: () => void) => void;
-  onCancelEdit: () => void;
-  /** Resolves when the delete is over, whether it worked or not. */
+
   onDelete: (note: AssetNote) => Promise<void>;
 };
 
-export function AssetNoteItem({
-  note,
-  isSaving,
-  isDeleting,
-  saveErrorMessage,
-  onSave,
-  onCancelEdit,
-  onDelete,
-}: AssetNoteItemProps) {
+export function AssetNoteItem({ assetIdentifier, note, isDeleting, onDelete }: AssetNoteItemProps) {
+  const updateMutation = useUpdateAssetNote(assetIdentifier);
+
   const [isEditing, setIsEditing] = useState(false);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
-  const [isDeleteRunning, setIsDeleteRunning] = useState(false);
 
   function handleEditClick(): void {
     setIsEditing(true);
   }
-
   function handleEditCancel(): void {
     setIsEditing(false);
-    onCancelEdit();
+    updateMutation.reset();
   }
-
   function handleSave(input: NewAssetNote): void {
-    onSave(note, input, () => setIsEditing(false));
+    updateMutation.mutate(
+      { note: { space: note.space, externalId: note.externalId }, input },
+      { onSuccess: () => setIsEditing(false) },
+    );
   }
-
   function handleDeleteClick(): void {
     setIsConfirmingDelete(true);
   }
-
-  async function handleDeleteConfirm(): Promise<void> {
-    setIsDeleteRunning(true);
-    try {
-      await onDelete(note);
-    } finally {
-      setIsDeleteRunning(false);
-      setIsConfirmingDelete(false);
-    }
+  function handleDeleteConfirm(): Promise<void> {
+    return onDelete(note);
   }
-
-  function handleDeleteCancel(): void {
+  function handleDeleteClose(): void {
     setIsConfirmingDelete(false);
-  }
-
-  function handleConfirmOpenChange(isOpen: boolean): void {
-    // The dialog stays until the delete is over.
-    if (!isDeleteRunning) setIsConfirmingDelete(isOpen);
   }
 
   if (isEditing) {
@@ -76,8 +54,8 @@ export function AssetNoteItem({
       <article className="data-card">
         <AssetNoteEditForm
           note={note}
-          isSaving={isSaving}
-          errorMessage={saveErrorMessage}
+          isSaving={updateMutation.isPending}
+          errorMessage={updateMutation.isError ? updateMutation.error.message : null}
           onSave={handleSave}
           onCancel={handleEditCancel}
         />
@@ -98,8 +76,7 @@ export function AssetNoteItem({
         </div>
         <div className="flex shrink-0 items-center gap-2">
           <p className="data-card__id">
-            {note.author ?? UNKNOWN_AUTHOR_LABEL} ·{' '}
-            {formatNoteDate(note.createdTime)}
+            {note.author ?? UNKNOWN_AUTHOR_LABEL} · {formatNoteDate(note.createdTime)}
           </p>
           <IconActionButton
             icon={<IconPencil aria-hidden className="size-4" />}
@@ -112,38 +89,20 @@ export function AssetNoteItem({
             isDisabled={isDeleting}
             label={`Delete ${note.title}`}
             onClick={handleDeleteClick}
-            variant="destructive"
+            variant={IconActionVariant.DESTRUCTIVE}
           />
         </div>
       </header>
-      {note.body ? (
-        <p className="whitespace-pre-wrap break-words p-4">{note.body}</p>
-      ) : null}
-      <GeneralDialog
+      {note.body ? <p className="whitespace-pre-wrap break-words p-4">{note.body}</p> : null}
+      <ConfirmDeleteDialog
         isOpen={isConfirmingDelete}
-        onOpenChange={handleConfirmOpenChange}
         title="Delete note?"
-        footer={
-          <>
-            <GeneralButton
-              disabled={isDeleteRunning}
-              onClick={handleDeleteCancel}
-              variant="outline"
-            >
-              Cancel
-            </GeneralButton>
-            <GeneralButton
-              disabled={isDeleteRunning}
-              onClick={() => void handleDeleteConfirm()}
-              variant="destructive"
-            >
-              {isDeleteRunning ? 'Deleting...' : 'Delete note'}
-            </GeneralButton>
-          </>
-        }
+        confirmLabel="Delete note"
+        onConfirm={handleDeleteConfirm}
+        onClose={handleDeleteClose}
       >
         {note.title} will be deleted permanently. This cannot be undone.
-      </GeneralDialog>
+      </ConfirmDeleteDialog>
     </article>
   );
 }

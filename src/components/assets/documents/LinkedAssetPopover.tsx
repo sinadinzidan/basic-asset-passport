@@ -13,13 +13,17 @@ import {
   PLANT_PROPERTY_IDENTIFIER,
   STATUS_PROPERTY_IDENTIFIER,
 } from '../../../constants/assets';
-import { useAssetEquipmentDetails } from '../../../hooks/assets/useAssetEquipmentDetails';
+import {
+  LINKED_ASSET_ERROR_DESCRIPTION,
+  LINKED_ASSET_ERROR_TITLE,
+  LINKED_ASSET_LOADING_MESSAGE,
+} from '../../../constants/documents';
+import { LoadingNoticeVariant } from '../../../enums/loadingNoticeVariant';
+import { useAssetDetails } from '../../../hooks/assets/useAssetDetails';
 import { getPropertyValue } from '../../../lib/assetProperties';
 import { getStatusTone } from '../../../lib/assetStatus';
-import type {
-  AssetIdentifier,
-  AssetPropertyDisplay,
-} from '../../../types/asset';
+import { getErrorReason } from '../../../lib/errorReason';
+import type { AssetIdentifier, AssetPropertyDisplay } from '../../../types/asset';
 import { CriticalityPill } from '../../general/CriticalityPill';
 import { GeneralButton } from '../../general/GeneralButton';
 import { LoadingNotice } from '../../general/LoadingNotice';
@@ -27,59 +31,37 @@ import { RetryAlert } from '../../general/RetryAlert';
 import { StatusPill } from '../../general/StatusPill';
 import { AssetProperties } from '../AssetProperties';
 
-/** The asset a clicked annotation links to, and the annotation box the popover points at. */
 export type LinkedAssetTarget = {
   asset: AssetIdentifier;
   anchor: Element;
 };
 
 type LinkedAssetPopoverProps = {
-  /** Null while no annotation is clicked. */
   target: LinkedAssetTarget | null;
   onClose: () => void;
-  /** Opens the asset in the register; null where the app cannot, which leaves only the details. */
+
   onOpenAsset: ((asset: AssetIdentifier) => void) | null;
 };
 
-/**
- * What a diagram annotation links to, in a popover at the clicked box, with a
- * way to open that asset in the register.
- */
-export function LinkedAssetPopover({
-  target,
-  onClose,
-  onOpenAsset,
-}: LinkedAssetPopoverProps) {
+export function LinkedAssetPopover({ target, onClose, onOpenAsset }: LinkedAssetPopoverProps) {
   if (target === null) return null;
 
-  return (
-    <OpenLinkedAssetPopover
-      target={target}
-      onClose={onClose}
-      onOpenAsset={onOpenAsset}
-    />
-  );
+  return <OpenLinkedAssetPopover target={target} onClose={onClose} onOpenAsset={onOpenAsset} />;
 }
+
+const OUTSIDE_PRESS_REASON = 'outside-press';
 
 type OpenLinkedAssetPopoverProps = Omit<LinkedAssetPopoverProps, 'target'> & {
   target: LinkedAssetTarget;
 };
 
-function OpenLinkedAssetPopover({
-  target,
-  onClose,
-  onOpenAsset,
-}: OpenLinkedAssetPopoverProps) {
+function OpenLinkedAssetPopover({ target, onClose, onOpenAsset }: OpenLinkedAssetPopoverProps) {
   const { asset, anchor } = target;
-  const { data, isError, isFetching, isPending, refetch } =
-    useAssetEquipmentDetails(asset);
+  const { data, error, isError, isFetching, isPending, refetch } = useAssetDetails(asset);
 
-  const name = getPropertyValue(data?.asset, NAME_PROPERTY_IDENTIFIER);
-  const status = getPropertyValue(data?.asset, STATUS_PROPERTY_IDENTIFIER);
-  const criticality = getPropertyValue(
-    data?.asset,
-    CRITICALITY_PROPERTY_IDENTIFIER,
-  );
+  const name = getPropertyValue(data, NAME_PROPERTY_IDENTIFIER);
+  const status = getPropertyValue(data, STATUS_PROPERTY_IDENTIFIER);
+  const criticality = getPropertyValue(data, CRITICALITY_PROPERTY_IDENTIFIER);
   const details: AssetPropertyDisplay[] = [
     {
       identifier: 'externalId',
@@ -88,27 +70,24 @@ function OpenLinkedAssetPopover({
     },
     ...[PLANT_PROPERTY_IDENTIFIER, DESCRIPTION_PROPERTY_IDENTIFIER].flatMap(
       (identifier) =>
-        data?.asset.properties.filter(
-          (property) => property.identifier === identifier,
-        ) ?? [],
+        data?.properties.filter((property) => property.identifier === identifier) ?? [],
     ),
   ];
 
-  function handleOpenChange(
-    isOpen: boolean,
-    details: { reason: string; event: Event },
-  ): void {
+  function handleOpenChange(isOpen: boolean, eventDetails: { reason: string; event: Event }): void {
     if (isOpen) return;
-    // The click that opens the popover is also a press on the box it points at, which must not close it.
+
     const isPressOnBox =
-      details.reason === 'outside-press' &&
-      details.event.target instanceof Node &&
-      anchor.contains(details.event.target);
+      eventDetails.reason === OUTSIDE_PRESS_REASON &&
+      eventDetails.event.target instanceof Node &&
+      anchor.contains(eventDetails.event.target);
     if (!isPressOnBox) onClose();
   }
-
   function handleOpenAsset(): void {
     onOpenAsset?.(asset);
+  }
+  function handleRetry(): void {
+    void refetch();
   }
 
   return (
@@ -125,33 +104,29 @@ function OpenLinkedAssetPopover({
           <PopoverClose className="hud-button" />
         </PopoverHeaderContent>
         {isPending ? (
-          <LoadingNotice message="Loading asset..." variant="CARD" />
+          <LoadingNotice
+            message={LINKED_ASSET_LOADING_MESSAGE}
+            variant={LoadingNoticeVariant.CARD}
+          />
         ) : isError ? (
           <RetryAlert
-            title="Asset could not be loaded"
-            description="Check that the linked item is an asset in the register and that you can read it, then try again."
+            title={LINKED_ASSET_ERROR_TITLE}
+            description={LINKED_ASSET_ERROR_DESCRIPTION}
+            reason={getErrorReason(error)}
             isRetrying={isFetching}
-            onRetry={() => void refetch()}
+            onRetry={handleRetry}
           />
         ) : (
           <>
             {status || criticality ? (
               <div className="flex flex-wrap items-center gap-2">
-                {status ? (
-                  <StatusPill status={status} tone={getStatusTone(status)} />
-                ) : null}
-                {criticality ? (
-                  <CriticalityPill criticality={criticality} />
-                ) : null}
+                {status ? <StatusPill status={status} tone={getStatusTone(status)} /> : null}
+                {criticality ? <CriticalityPill criticality={criticality} /> : null}
               </div>
             ) : null}
             <AssetProperties properties={details} />
             {onOpenAsset ? (
-              <GeneralButton
-                className="self-start"
-                onClick={handleOpenAsset}
-                size="sm"
-              >
+              <GeneralButton className="self-start" onClick={handleOpenAsset} size="sm">
                 Open asset
               </GeneralButton>
             ) : null}

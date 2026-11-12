@@ -53,7 +53,7 @@ export function readMarker(
 ): MarkerSeriesReading[] {
   return series.map((entry) => ({
     entry,
-    reading: readingAt(entry.id, entry.points, atMs, { interpolate: isInterpolated }),
+    reading: readingAt(entry.id, entry.points, atMs, { isInterpolated }),
   }));
 }
 
@@ -67,7 +67,9 @@ export function describeMarkerReading({ entry, reading }: MarkerSeriesReading): 
     seriesId: entry.id,
     label: entry.label,
     color: entry.color,
-    value: isMissing ? READING_KIND_LABELS[ReadingKind.MISSING] : formatSignalWithUnit(reading.value, entry.unit),
+    value: isMissing
+      ? READING_KIND_LABELS[ReadingKind.MISSING]
+      : formatSignalWithUnit(reading.value, entry.unit),
     detail: isMissing ? undefined : `${READING_KIND_LABELS[reading.kind]}${nearestAt}`,
     kind: reading.kind,
     isMissing,

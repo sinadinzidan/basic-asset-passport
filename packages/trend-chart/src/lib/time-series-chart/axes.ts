@@ -6,11 +6,13 @@ export interface AxisLimitResult {
   error?: string;
 }
 
-function parseLimit(text: string): number | undefined | 'INVALID' {
+const INVALID_LIMIT = 'INVALID';
+
+function parseLimit(text: string): number | undefined | typeof INVALID_LIMIT {
   const trimmed = text.trim().replace(',', '.');
   if (trimmed.length === 0) return undefined;
   const parsed = Number(trimmed);
-  return Number.isFinite(parsed) ? parsed : 'INVALID';
+  return Number.isFinite(parsed) ? parsed : INVALID_LIMIT;
 }
 
 export function validateAxisLimits(
@@ -21,16 +23,19 @@ export function validateAxisLimits(
 ): AxisLimitResult {
   const min = parseLimit(minText);
   const max = parseLimit(maxText);
-  if (min === 'INVALID') return { setting: previous, error: 'The minimum must be a number.' };
-  if (max === 'INVALID') return { setting: previous, error: 'The maximum must be a number.' };
+  if (min === INVALID_LIMIT) return { setting: previous, error: 'The minimum must be a number.' };
+  if (max === INVALID_LIMIT) return { setting: previous, error: 'The maximum must be a number.' };
   if (min !== undefined && max !== undefined && min >= max)
     return { setting: previous, error: 'The minimum must be lower than the maximum.' };
-  if (min === undefined && max === undefined) return { setting: { seriesId, mode: AxisScaleMode.AUTO } };
+  if (min === undefined && max === undefined)
+    return { setting: { seriesId, mode: AxisScaleMode.AUTO } };
   return { setting: { seriesId, mode: AxisScaleMode.MANUAL, min, max } };
 }
 
 export function axisSettingFor(axes: readonly AxisSetting[], seriesId: string): AxisSetting {
-  return axes.find((setting) => setting.seriesId === seriesId) ?? { seriesId, mode: AxisScaleMode.AUTO };
+  return (
+    axes.find((setting) => setting.seriesId === seriesId) ?? { seriesId, mode: AxisScaleMode.AUTO }
+  );
 }
 
 export function applyAxisSetting(

@@ -10,11 +10,17 @@ import {
   ReadingKind,
   SeriesDataStatus,
   ThresholdLevel,
-  ThresholdSide,
   ThresholdSource,
 } from '../enums/timeSeriesChart';
 
-import { CHART_ALL_HISTORY_DAYS, CHART_MAX_SIGNALS, SIGNAL_SERIES_COLORS } from './monitoring';
+import {
+  MILLISECONDS_PER_MINUTE,
+  CHART_ALL_HISTORY_DAYS,
+  CHART_MAX_SIGNALS,
+  SIGNAL_SERIES_COLORS,
+} from './monitoring';
+
+const STALE_AFTER_MINUTES = 30;
 
 export const CHART_MAX_SERIES = CHART_MAX_SIGNALS;
 export const CHART_TITLE_MAX_LENGTH = 80;
@@ -28,7 +34,7 @@ export const CHART_DEFAULT_OVERLAYS: readonly ChartOverlay[] = [
 ];
 
 /** A reading is stale when the latest one is older than this. */
-export const CHART_STALE_AFTER_MS = 30 * 60 * 1000;
+export const CHART_STALE_AFTER_MS = STALE_AFTER_MINUTES * MILLISECONDS_PER_MINUTE;
 /** A gap is an interval between valid readings longer than this many typical steps. */
 export const CHART_GAP_STEP_FACTOR = 5;
 /** The marker reads the nearest reading when it is within this many typical steps; otherwise the value is missing. */
@@ -37,7 +43,14 @@ export const CHART_NEAREST_STEP_FACTOR = 1.5;
 export const CHART_INTERPOLATION_STEP_FACTOR = 3;
 export const CHART_MIN_PROFILE_POINTS = 3;
 
-export const CHART_LINE_WIDTHS: readonly number[] = [1.5, 2.25, 3.5];
+export const CHART_LINE_WIDTH_THIN = 1.5;
+const LINE_WIDTH_MEDIUM = 2.25;
+const LINE_WIDTH_THICK = 3.5;
+export const CHART_LINE_WIDTHS: readonly number[] = [
+  CHART_LINE_WIDTH_THIN,
+  LINE_WIDTH_MEDIUM,
+  LINE_WIDTH_THICK,
+];
 export const CHART_COLOR_PALETTE: readonly string[] = SIGNAL_SERIES_COLORS;
 export const CHART_WHEEL_ZOOM_FACTOR = 1.25;
 export const CHART_PAN_KEYBOARD_RATIO = 0.1;
@@ -48,7 +61,7 @@ export const CHART_MAX_SOURCE_POINTS = 4000;
 
 export const LIVE_INTERVAL_MS = 1000;
 export const LIVE_MAX_POINTS = 6000;
-export const LIVE_STEP_MS = 60 * 1000;
+export const LIVE_STEP_MS = MILLISECONDS_PER_MINUTE;
 
 export const ASSISTANT_PANEL_LABEL = 'Assistant';
 
@@ -75,7 +88,8 @@ export const CHART_OVERLAY_LABELS: Record<ChartOverlay, string> = {
 
 export const CHART_OVERLAY_DESCRIPTIONS: Record<ChartOverlay, string> = {
   [ChartOverlay.THRESHOLDS]: 'Alert and danger limits as lines, with readings outside them marked.',
-  [ChartOverlay.EVENT_MARKERS]: 'Events the host marks on the time axis, such as alarms or inspections.',
+  [ChartOverlay.EVENT_MARKERS]:
+    'Events the host marks on the time axis, such as alarms or inspections.',
   [ChartOverlay.DATA_GAPS]: 'Hatching where a series has no valid reading.',
   [ChartOverlay.MIN_MAX_BAND]: 'The spread between the lowest and highest reading in each bucket.',
 };
@@ -102,11 +116,6 @@ export const READING_KIND_LABELS: Record<ReadingKind, string> = {
 export const THRESHOLD_LEVEL_LABELS: Record<ThresholdLevel, string> = {
   [ThresholdLevel.ALERT]: 'Alert',
   [ThresholdLevel.DANGER]: 'Danger',
-};
-
-export const THRESHOLD_SIDE_LABELS: Record<ThresholdSide, string> = {
-  [ThresholdSide.UPPER]: 'high',
-  [ThresholdSide.LOWER]: 'low',
 };
 
 export const THRESHOLD_SOURCE_LABELS: Record<ThresholdSource, string> = {
@@ -178,21 +187,46 @@ export interface ChartRangePreset {
   range?: ChartRange;
 }
 
-const MINUTES_PER_DAY = 24 * 60;
+const MINUTES_PER_DAY = 1440;
 
 export const CHART_RANGE_PRESETS: readonly ChartRangePreset[] = [
-  { id: 'last-15-minutes', label: 'Last 15 minutes', minutes: 15, range: ChartRange.FIFTEEN_MINUTES },
+  {
+    id: 'last-15-minutes',
+    label: 'Last 15 minutes',
+    minutes: 15,
+    range: ChartRange.FIFTEEN_MINUTES,
+  },
   { id: 'last-hour', label: 'Last hour', minutes: 60, range: ChartRange.ONE_HOUR },
-  { id: 'last-6-hours', label: 'Last 6 hours', minutes: 6 * 60, range: ChartRange.SIX_HOURS },
-  { id: 'last-12-hours', label: 'Last 12 hours', minutes: 12 * 60, range: ChartRange.TWELVE_HOURS },
-  { id: 'last-24-hours', label: 'Last 24 hours', minutes: MINUTES_PER_DAY, range: ChartRange.ONE_DAY },
-  { id: 'last-2-days', label: 'Last 2 days', minutes: 2 * MINUTES_PER_DAY },
-  { id: 'last-7-days', label: 'Last 7 days', minutes: 7 * MINUTES_PER_DAY, range: ChartRange.ONE_WEEK },
-  { id: 'last-2-weeks', label: 'Last 2 weeks', minutes: 14 * MINUTES_PER_DAY },
-  { id: 'last-month', label: 'Last month', minutes: 30 * MINUTES_PER_DAY, range: ChartRange.ONE_MONTH },
-  { id: 'last-3-months', label: 'Last 3 months', minutes: 90 * MINUTES_PER_DAY },
-  { id: 'last-6-months', label: 'Last 6 months', minutes: 180 * MINUTES_PER_DAY },
-  { id: 'last-year', label: 'Last year', minutes: 365 * MINUTES_PER_DAY, range: ChartRange.ONE_YEAR },
+  { id: 'last-6-hours', label: 'Last 6 hours', minutes: 360, range: ChartRange.SIX_HOURS },
+  { id: 'last-12-hours', label: 'Last 12 hours', minutes: 720, range: ChartRange.TWELVE_HOURS },
+  {
+    id: 'last-24-hours',
+    label: 'Last 24 hours',
+    minutes: MINUTES_PER_DAY,
+    range: ChartRange.ONE_DAY,
+  },
+  { id: 'last-2-days', label: 'Last 2 days', minutes: 2880 },
+  {
+    id: 'last-7-days',
+    label: 'Last 7 days',
+    minutes: 10_080,
+    range: ChartRange.ONE_WEEK,
+  },
+  { id: 'last-2-weeks', label: 'Last 2 weeks', minutes: 20_160 },
+  {
+    id: 'last-month',
+    label: 'Last month',
+    minutes: 43_200,
+    range: ChartRange.ONE_MONTH,
+  },
+  { id: 'last-3-months', label: 'Last 3 months', minutes: 129_600 },
+  { id: 'last-6-months', label: 'Last 6 months', minutes: 259_200 },
+  {
+    id: 'last-year',
+    label: 'Last year',
+    minutes: 525_600,
+    range: ChartRange.ONE_YEAR,
+  },
   {
     id: 'all-history',
     label: 'All history',

@@ -8,7 +8,7 @@ import type { ChartSeriesView, DataProfile } from '../../../types/timeSeriesChar
 import { formatChartInstantShort } from './panelFormat';
 import { SeriesLabel } from './SeriesLabel';
 
-interface DataProfilingBlockProps {
+interface DataProfilingBlockProperties {
   series: ChartSeriesView;
   profile: DataProfile | undefined;
 }
@@ -37,7 +37,10 @@ function repeatedCount(profile: DataProfile, issue: DataQualityIssue): number | 
 /** A warning that only restates a count or the gaps already shown carries no news; one that says something else, such as stale data, does. */
 function isNews(profile: DataProfile, warning: ProfileWarning): boolean {
   const count = repeatedCount(profile, warning.issue);
-  return count === undefined || warning.message !== `${DATA_QUALITY_ISSUE_LABELS[warning.issue]}: ${count}`;
+  return (
+    count === undefined ||
+    warning.message !== `${DATA_QUALITY_ISSUE_LABELS[warning.issue]}: ${count}`
+  );
 }
 
 /** A warning always names its issue; a message that already starts with the name is shown as it is. */
@@ -64,7 +67,7 @@ function Fact({ label, value }: { label: string; value: string }) {
   );
 }
 
-export function DataProfilingBlock({ series, profile }: DataProfilingBlockProps) {
+export function DataProfilingBlock({ series, profile }: DataProfilingBlockProperties) {
   return (
     <li className="flex flex-col gap-3 py-3 last:pb-0">
       <SeriesLabel series={series} />
@@ -86,7 +89,8 @@ function ProfileFacts({ profile, unit }: { profile: DataProfile; unit: string })
   ].filter((entry) => entry.count > 0);
   const newsWarnings = profile.warnings.filter((warning) => isNews(profile, warning));
   const hiddenGapCount = Math.max(0, profile.gaps.length - VISIBLE_GAP_COUNT);
-  const isClean = issueCounts.length === 0 && profile.gaps.length === 0 && newsWarnings.length === 0;
+  const isClean =
+    issueCounts.length === 0 && profile.gaps.length === 0 && newsWarnings.length === 0;
   return (
     <>
       <dl aria-label="Statistics of the range" className="grid grid-cols-3 gap-x-3">
@@ -102,7 +106,9 @@ function ProfileFacts({ profile, unit }: { profile: DataProfile; unit: string })
       </dl>
       {profile.gaps.length > 0 ? (
         <div className="flex flex-col gap-1">
-          <p className="text-xs text-muted-foreground">{DATA_QUALITY_ISSUE_LABELS[DataQualityIssue.TIME_GAP]}</p>
+          <p className="text-xs text-muted-foreground">
+            {DATA_QUALITY_ISSUE_LABELS[DataQualityIssue.TIME_GAP]}
+          </p>
           <ul aria-label="Gaps" className="flex flex-col gap-1">
             {profile.gaps.slice(0, VISIBLE_GAP_COUNT).map((gap) => (
               <li
@@ -112,17 +118,24 @@ function ProfileFacts({ profile, unit }: { profile: DataProfile; unit: string })
                 <span>
                   {formatChartInstantShort(gap.from)} to {formatChartInstantShort(gap.to)}
                 </span>
-                <span className="shrink-0 text-muted-foreground">{formatDuration(gap.to - gap.from)}</span>
+                <span className="shrink-0 text-muted-foreground">
+                  {formatDuration(gap.to - gap.from)}
+                </span>
               </li>
             ))}
-            {hiddenGapCount > 0 ? <li className="text-xs text-muted-foreground">{hiddenGapCount} more</li> : null}
+            {hiddenGapCount > 0 ? (
+              <li className="text-xs text-muted-foreground">{hiddenGapCount} more</li>
+            ) : null}
           </ul>
         </div>
       ) : null}
       {newsWarnings.length > 0 ? (
         <ul aria-label="Data quality warnings" className="flex flex-col gap-1">
           {newsWarnings.map((warning) => (
-            <li key={`${warning.issue}-${warning.message}`} className="text-xs text-warning-foreground">
+            <li
+              key={`${warning.issue}-${warning.message}`}
+              className="text-xs text-warning-foreground"
+            >
               {warningText(warning)}
             </li>
           ))}

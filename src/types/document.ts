@@ -15,7 +15,6 @@ export type AssetDocument = {
 
 export type DocumentIdentifier = Pick<AssetDocument, 'space' | 'externalId'>;
 
-/** The outcome of uploading one file; `errorMessage` is null on success. */
 export type DocumentUploadResult = {
   fileName: string;
   errorMessage: string | null;
