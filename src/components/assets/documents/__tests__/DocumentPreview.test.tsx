@@ -12,12 +12,10 @@ import type {
   DocumentAnnotation,
 } from '../../../../cognite-file-viewer/types';
 import { AssetContext } from '../../../../hooks/assets/useAssetContext';
-import {
-  UseAssetDetailsContext,
-  type UseAssetDetailsContextType,
-} from '../../../../hooks/assets/useAssetDetails';
+import { UseAssetDetailsContext } from '../../../../hooks/assets/useAssetDetails';
 import { useNavigationState } from '../../../../hooks/general/useNavigationState';
 import { NavigationProvider } from '../../../../providers/general/NavigationProvider';
+import type { AssetDetailsService } from '../../../../services/assets/assetDetails';
 import { DocumentPreview } from '../DocumentPreview';
 import { DocumentViewerContext, type DocumentViewerContextType } from '../documentViewerContext';
 
@@ -238,7 +236,7 @@ describe(DocumentPreview.name, () => {
     });
 
     async function renderWithAssets() {
-      const detailsContext: UseAssetDetailsContextType = {
+      const detailsContext: AssetDetailsService = {
         getAssetDetails: vi.fn(() =>
           Promise.resolve(
             makeInstanceDetails({
@@ -254,7 +252,9 @@ describe(DocumentPreview.name, () => {
         <SdkWrapper>
           <QueryWrapper>
             <AssetContext.Provider value={client}>
-              <UseAssetDetailsContext.Provider value={detailsContext}>
+              <UseAssetDetailsContext.Provider
+                value={{ createAssetDetailsService: () => detailsContext }}
+              >
                 <NavigationProvider api={null}>
                   <DocumentViewerContext.Provider value={context}>
                     <DocumentPreview document={document} />

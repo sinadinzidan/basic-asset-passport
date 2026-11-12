@@ -12,12 +12,7 @@ import { DocumentOrigin } from '../../../../enums/documentOrigin';
 import { DocumentUploadStatus } from '../../../../enums/documentUploadStatus';
 import { TestPropertyType } from '../../../../enums/testPropertyType';
 import type { DocumentFileContextType } from '../../../../types/documentFileContext';
-import {
-  deleteAssetDocument,
-  listAssetDocuments,
-  listAssetLinkedFiles,
-  uploadAssetDocument,
-} from '../assetDocument';
+import { createAssetDocumentService } from '../assetDocument';
 
 const documentView = makeViewDefinition(
   'Document',
@@ -39,7 +34,7 @@ const documentReference = {
 };
 const assetIdentifier = { space: 'asset-space', externalId: 'FLOC-1' };
 
-describe(listAssetDocuments.name, () => {
+describe('listAssetDocuments', () => {
   let client: CogniteClient;
 
   beforeEach(() => {
@@ -54,7 +49,7 @@ describe(listAssetDocuments.name, () => {
       .mockResolvedValue(makeQueryResponse({ documents: [] }));
 
     // Act
-    await listAssetDocuments(client, assetIdentifier);
+    await createAssetDocumentService(client).listAssetDocuments(assetIdentifier);
 
     // Assert
     expect(query).toHaveBeenCalledWith({
@@ -130,9 +125,9 @@ describe(listAssetDocuments.name, () => {
     );
 
     // Act
-    const documents = await listAssetDocuments(client, assetIdentifier, DOCUMENT_QUERY_LIMIT, {
+    const documents = await createAssetDocumentService(client, {
       now: () => 3000,
-    });
+    }).listAssetDocuments(assetIdentifier, DOCUMENT_QUERY_LIMIT);
 
     // Assert
     expect(documents.hasMore).toBe(false);
@@ -176,9 +171,9 @@ describe(listAssetDocuments.name, () => {
       makeQueryResponse({ documents: [stale] }),
     );
 
-    const documents = await listAssetDocuments(client, assetIdentifier, DOCUMENT_QUERY_LIMIT, {
+    const documents = await createAssetDocumentService(client, {
       now: () => 1000 + DOCUMENT_PENDING_POLL_WINDOW_MS + 1,
-    });
+    }).listAssetDocuments(assetIdentifier, DOCUMENT_QUERY_LIMIT);
 
     expect(documents.items[0]?.uploadStatus).toBe(DocumentUploadStatus.INCOMPLETE);
   });
@@ -193,7 +188,10 @@ describe(listAssetDocuments.name, () => {
       }),
     );
 
-    const documents = await listAssetDocuments(client, assetIdentifier, 2);
+    const documents = await createAssetDocumentService(client).listAssetDocuments(
+      assetIdentifier,
+      2,
+    );
 
     expect(query.mock.calls[0]?.[0].with.documents?.limit).toBe(3);
     expect(documents.hasMore).toBe(true);
@@ -208,7 +206,7 @@ describe(listAssetDocuments.name, () => {
       }),
     );
 
-    const documents = await listAssetDocuments(client, assetIdentifier);
+    const documents = await createAssetDocumentService(client).listAssetDocuments(assetIdentifier);
 
     expect(documents.items[0]?.name).toBe('doc-3');
   });
@@ -216,9 +214,9 @@ describe(listAssetDocuments.name, () => {
   it('fails when the Document view is not in the data model', async () => {
     stubModelViews(client, []);
 
-    await expect(listAssetDocuments(client, assetIdentifier)).rejects.toThrow(
-      'The Document view was not found in the Asset_Passport data model.',
-    );
+    await expect(
+      createAssetDocumentService(client).listAssetDocuments(assetIdentifier),
+    ).rejects.toThrow('The Document view was not found in the Asset_Passport data model.');
   });
 });
 
@@ -241,7 +239,7 @@ const filesReference = {
   version: 'v1',
 };
 
-describe(listAssetLinkedFiles.name, () => {
+describe('listAssetLinkedFiles', () => {
   let client: CogniteClient;
 
   beforeEach(() => {
@@ -253,7 +251,7 @@ describe(listAssetLinkedFiles.name, () => {
       .spyOn(client.instances, 'query')
       .mockResolvedValue(makeQueryResponse({ files: [] }));
 
-    await listAssetLinkedFiles(client, assetIdentifier);
+    await createAssetDocumentService(client).listAssetLinkedFiles(assetIdentifier);
 
     expect(query).toHaveBeenCalledWith({
       with: {
@@ -325,9 +323,9 @@ describe(listAssetLinkedFiles.name, () => {
       makeQueryResponse({ files: [newer, older] }),
     );
 
-    const files = await listAssetLinkedFiles(client, assetIdentifier, DOCUMENT_QUERY_LIMIT, {
+    const files = await createAssetDocumentService(client, {
       now: () => 3000,
-    });
+    }).listAssetLinkedFiles(assetIdentifier, DOCUMENT_QUERY_LIMIT);
 
     expect(files.hasMore).toBe(false);
     expect(files.items).toEqual([
@@ -363,7 +361,7 @@ describe(listAssetLinkedFiles.name, () => {
       }),
     );
 
-    const files = await listAssetLinkedFiles(client, assetIdentifier);
+    const files = await createAssetDocumentService(client).listAssetLinkedFiles(assetIdentifier);
 
     expect(files.items[0]?.name).toBe('file-3');
   });
@@ -377,7 +375,7 @@ describe(listAssetLinkedFiles.name, () => {
       }),
     );
 
-    const files = await listAssetLinkedFiles(client, assetIdentifier, 2);
+    const files = await createAssetDocumentService(client).listAssetLinkedFiles(assetIdentifier, 2);
 
     expect(query.mock.calls[0]?.[0].with.files?.limit).toBe(3);
     expect(files.hasMore).toBe(true);
@@ -388,13 +386,13 @@ describe(listAssetLinkedFiles.name, () => {
     const retrieve = vi.spyOn(client.dataModels, 'retrieve');
     vi.spyOn(client.instances, 'query').mockResolvedValue(makeQueryResponse({ files: [] }));
 
-    await listAssetLinkedFiles(client, assetIdentifier);
+    await createAssetDocumentService(client).listAssetLinkedFiles(assetIdentifier);
 
     expect(retrieve).not.toHaveBeenCalled();
   });
 });
 
-describe(uploadAssetDocument.name, () => {
+describe('uploadAssetDocument', () => {
   let client: CogniteClient;
   let files: DocumentFileContextType;
 
@@ -417,9 +415,11 @@ describe(uploadAssetDocument.name, () => {
     const file = makeFile();
 
     // Act
-    await uploadAssetDocument(client, files, assetIdentifier, file, {
-      generateId: () => 'abc',
-    });
+    await createAssetDocumentService(client, { generateId: () => 'abc' }).uploadAssetDocument(
+      files,
+      assetIdentifier,
+      file,
+    );
 
     // Assert
     expect(upsert).toHaveBeenCalledWith({
@@ -454,7 +454,11 @@ describe(uploadAssetDocument.name, () => {
   it('uses a generic content type when the browser reports none', async () => {
     const upsert = vi.spyOn(client.instances, 'upsert').mockResolvedValue({ items: [] });
 
-    await uploadAssetDocument(client, files, assetIdentifier, makeFile('notes.xyz', ''));
+    await createAssetDocumentService(client).uploadAssetDocument(
+      files,
+      assetIdentifier,
+      makeFile('notes.xyz', ''),
+    );
 
     expect(upsert.mock.calls[0][0].items[0].sources?.[0].properties).toEqual(
       expect.objectContaining({ mimeType: 'application/octet-stream' }),
@@ -465,7 +469,11 @@ describe(uploadAssetDocument.name, () => {
     const upsert = vi.spyOn(client.instances, 'upsert');
 
     await expect(
-      uploadAssetDocument(client, files, assetIdentifier, new File([], 'empty.pdf')),
+      createAssetDocumentService(client).uploadAssetDocument(
+        files,
+        assetIdentifier,
+        new File([], 'empty.pdf'),
+      ),
     ).rejects.toThrow('The file is empty.');
     expect(upsert).not.toHaveBeenCalled();
   });
@@ -478,9 +486,11 @@ describe(uploadAssetDocument.name, () => {
 
     // Act & Assert
     await expect(
-      uploadAssetDocument(client, files, assetIdentifier, makeFile(), {
-        generateId: () => 'abc',
-      }),
+      createAssetDocumentService(client, { generateId: () => 'abc' }).uploadAssetDocument(
+        files,
+        assetIdentifier,
+        makeFile(),
+      ),
     ).rejects.toThrow('storage down');
     expect(remove).toHaveBeenCalledWith([
       {
@@ -496,29 +506,29 @@ describe(uploadAssetDocument.name, () => {
     vi.spyOn(client.instances, 'delete').mockRejectedValue(new Error('cleanup failed'));
     vi.mocked(files.requestUploadUrl).mockRejectedValue(new Error('no upload link'));
 
-    await expect(uploadAssetDocument(client, files, assetIdentifier, makeFile())).rejects.toThrow(
-      'no upload link',
-    );
+    await expect(
+      createAssetDocumentService(client).uploadAssetDocument(files, assetIdentifier, makeFile()),
+    ).rejects.toThrow('no upload link');
   });
 
   it('does not upload content when the node cannot be created', async () => {
     vi.spyOn(client.instances, 'upsert').mockRejectedValue(new Error('wrong asset'));
 
-    await expect(uploadAssetDocument(client, files, assetIdentifier, makeFile())).rejects.toThrow(
-      'wrong asset',
-    );
+    await expect(
+      createAssetDocumentService(client).uploadAssetDocument(files, assetIdentifier, makeFile()),
+    ).rejects.toThrow('wrong asset');
     expect(files.uploadContent).not.toHaveBeenCalled();
   });
 });
 
-describe(deleteAssetDocument.name, () => {
+describe('deleteAssetDocument', () => {
   it('deletes the document node', async () => {
     // Arrange
     const client = makeOfflineSdkClient();
     const remove = vi.spyOn(client.instances, 'delete').mockResolvedValue({});
 
     // Act
-    await deleteAssetDocument(client, {
+    await createAssetDocumentService(client).deleteAssetDocument({
       space: 'data',
       externalId: 'doc-1',
     });
@@ -534,7 +544,10 @@ describe(deleteAssetDocument.name, () => {
     vi.spyOn(client.instances, 'delete').mockRejectedValue(new Error('no access'));
 
     await expect(
-      deleteAssetDocument(client, { space: 'data', externalId: 'doc-1' }),
+      createAssetDocumentService(client).deleteAssetDocument({
+        space: 'data',
+        externalId: 'doc-1',
+      }),
     ).rejects.toThrow('no access');
   });
 });

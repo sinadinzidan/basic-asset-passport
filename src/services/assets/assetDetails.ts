@@ -5,57 +5,66 @@ import type { AssetContextType } from '../../types/assetContext';
 import { getMappedProperties, toInstanceDetails } from './instanceDetails';
 import { findAssetPassportView, isNodeInstance, toViewReference } from './viewHelpers';
 
-export async function getAssetDetails(
-  client: AssetContextType,
-  assetIdentifier: AssetIdentifier,
-): Promise<AssetInstanceDetails> {
-  const assetView = await findAssetPassportView(client, ASSET_VIEW_EXTERNAL_ID);
-  const assetViewReference = toViewReference(assetView);
-  const assetProperties = getMappedProperties(assetView);
-  const response = await client.instances.query({
-    with: {
-      asset: {
-        nodes: {
-          filter: {
-            and: [
-              {
-                equals: {
-                  property: ['node', 'space'],
-                  value: assetIdentifier.space,
+export interface AssetDetailsService {
+  getAssetDetails(assetIdentifier: AssetIdentifier): Promise<AssetInstanceDetails>;
+}
+
+class CdfAssetDetailsService implements AssetDetailsService {
+  constructor(private readonly client: AssetContextType) {}
+
+  getAssetDetails = async (assetIdentifier: AssetIdentifier): Promise<AssetInstanceDetails> => {
+    const assetView = await findAssetPassportView(this.client, ASSET_VIEW_EXTERNAL_ID);
+    const assetViewReference = toViewReference(assetView);
+    const assetProperties = getMappedProperties(assetView);
+    const response = await this.client.instances.query({
+      with: {
+        asset: {
+          nodes: {
+            filter: {
+              and: [
+                {
+                  equals: {
+                    property: ['node', 'space'],
+                    value: assetIdentifier.space,
+                  },
                 },
-              },
-              {
-                equals: {
-                  property: ['node', 'externalId'],
-                  value: assetIdentifier.externalId,
+                {
+                  equals: {
+                    property: ['node', 'externalId'],
+                    value: assetIdentifier.externalId,
+                  },
                 },
-              },
-              { hasData: [assetViewReference] },
-            ],
+                { hasData: [assetViewReference] },
+              ],
+            },
           },
+          limit: 1,
         },
-        limit: 1,
       },
-    },
-    select: {
-      asset: {
-        sources: [
-          {
-            source: assetViewReference,
-            properties: assetProperties.map(({ identifier }) => identifier),
-          },
-        ],
+      select: {
+        asset: {
+          sources: [
+            {
+              source: assetViewReference,
+              properties: assetProperties.map(({ identifier }) => identifier),
+            },
+          ],
+        },
       },
-    },
-  });
+    });
 
-  const assetNode = (response.items.asset ?? []).find(isNodeInstance);
+    const assetNode = (response.items.asset ?? []).find(isNodeInstance);
 
-  if (!assetNode) {
-    throw new Error(
-      `Asset ${assetIdentifier.externalId} was not found in ${assetIdentifier.space}.`,
-    );
-  }
+    if (!assetNode) {
+      throw new Error(
+        `Asset ${assetIdentifier.externalId} was not found in ${assetIdentifier.space}.`,
+      );
+    }
 
-  return toInstanceDetails(assetNode, assetView, assetProperties);
+    return toInstanceDetails(assetNode, assetView, assetProperties);
+  };
+}
+
+export function createAssetDetailsService(client: AssetContextType): AssetDetailsService {
+  return new CdfAssetDetailsService(client);
 }

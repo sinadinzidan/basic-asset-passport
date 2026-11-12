@@ -7,11 +7,9 @@ import { makeInstanceDetails } from '../../../../__mocks__/assets';
 import { makeMockClient } from '../../../../__mocks__/cogniteClient';
 import { makeLimitedList } from '../../../../__mocks__/lists';
 import { makeQueryClientWrapper } from '../../../../__mocks__/QueryClientWrapper';
-import {
-  UseAssetEquipmentContext,
-  type UseAssetEquipmentContextType,
-} from '../../../../hooks/assets/equipment/useAssetEquipment';
+import { UseAssetEquipmentContext } from '../../../../hooks/assets/equipment/useAssetEquipment';
 import { AssetContext } from '../../../../hooks/assets/useAssetContext';
+import type { AssetEquipmentService } from '../../../../services/assets/assetEquipment';
 import { AssetEquipment } from '../AssetEquipment';
 
 const assetContext = makeMockClient();
@@ -19,7 +17,7 @@ const assetContext = makeMockClient();
 const assetIdentifier = { space: 'asset-space', externalId: 'FLOC-1' };
 
 describe(AssetEquipment.name, () => {
-  let mockContext: UseAssetEquipmentContextType;
+  let mockContext: AssetEquipmentService;
   let wrapper: ComponentType<{ children: ReactNode }>;
 
   beforeEach(() => {
@@ -28,7 +26,7 @@ describe(AssetEquipment.name, () => {
     };
     const QueryWrapper = makeQueryClientWrapper();
     wrapper = ({ children }) => (
-      <UseAssetEquipmentContext.Provider value={mockContext}>
+      <UseAssetEquipmentContext.Provider value={{ createAssetEquipmentService: () => mockContext }}>
         <QueryWrapper>
           <AssetContext.Provider value={assetContext}>{children}</AssetContext.Provider>
         </QueryWrapper>
@@ -56,7 +54,6 @@ describe(AssetEquipment.name, () => {
 
     await screen.findByText('Equipment ID: P-1');
     expect(mockContext.listAssetEquipment).toHaveBeenCalledWith(
-      expect.anything(),
       assetIdentifier,
       expect.any(Number),
     );

@@ -8,13 +8,10 @@ import {
   makeQueryClientWrapper,
   makeTestQueryClient,
 } from '../../../../__mocks__/QueryClientWrapper';
+import type { AssetDocumentService } from '../../../../services/assets/documents/assetDocument';
 import { AssetContext } from '../../useAssetContext';
 import { getAssetDocumentsQueryKey } from '../useAssetDocuments';
-import {
-  useDeleteAssetDocument,
-  UseDeleteAssetDocumentContext,
-  type UseDeleteAssetDocumentContextType,
-} from '../useDeleteAssetDocument';
+import { useDeleteAssetDocument, UseDeleteAssetDocumentContext } from '../useDeleteAssetDocument';
 
 const assetIdentifier = { space: 'asset-space', externalId: 'FLOC-1' };
 const document = { space: 'data', externalId: 'doc-1' };
@@ -22,7 +19,7 @@ const document = { space: 'data', externalId: 'doc-1' };
 describe(useDeleteAssetDocument.name, () => {
   const client = makeMockClient();
   let queryClient: QueryClient;
-  let mockContext: UseDeleteAssetDocumentContextType;
+  let mockContext: Pick<AssetDocumentService, 'deleteAssetDocument'>;
   let wrapper: ComponentType<{ children: ReactNode }>;
 
   beforeEach(() => {
@@ -32,7 +29,9 @@ describe(useDeleteAssetDocument.name, () => {
     };
     const QueryWrapper = makeQueryClientWrapper(queryClient);
     wrapper = ({ children }) => (
-      <UseDeleteAssetDocumentContext.Provider value={mockContext}>
+      <UseDeleteAssetDocumentContext.Provider
+        value={{ createAssetDocumentService: () => mockContext }}
+      >
         <QueryWrapper>
           <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
         </QueryWrapper>
@@ -47,7 +46,7 @@ describe(useDeleteAssetDocument.name, () => {
       await result.current.mutateAsync(document);
     });
 
-    expect(mockContext.deleteAssetDocument).toHaveBeenCalledWith(client, document);
+    expect(mockContext.deleteAssetDocument).toHaveBeenCalledWith(document);
   });
 
   it('refreshes the documents of that asset after a delete', async () => {

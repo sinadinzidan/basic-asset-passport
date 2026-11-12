@@ -5,7 +5,7 @@ import { makeNodeInstance, makeQueryResponse, makeViewDefinition } from '../../.
 import { makeOfflineSdkClient, stubModelViews } from '../../../__mocks__/cogniteClient';
 import { ASSET_EQUIPMENT_QUERY_LIMIT } from '../../../constants/assets';
 import { TestPropertyType } from '../../../enums/testPropertyType';
-import { listAssetEquipment } from '../assetEquipment';
+import { createAssetEquipmentService } from '../assetEquipment';
 
 const equipmentView = makeViewDefinition('Equipment', {
   name: { label: 'Name' },
@@ -15,7 +15,7 @@ const equipmentView = makeViewDefinition('Equipment', {
 });
 const assetIdentifier = { space: 'instances', externalId: 'FLOC-1' };
 
-describe(listAssetEquipment.name, () => {
+describe('listAssetEquipment', () => {
   let client: CogniteClient;
 
   beforeEach(() => {
@@ -30,7 +30,7 @@ describe(listAssetEquipment.name, () => {
       .mockResolvedValue(makeQueryResponse({ equipment: [] }));
 
     // Act
-    await listAssetEquipment(client, assetIdentifier);
+    await createAssetEquipmentService(client).listAssetEquipment(assetIdentifier);
 
     // Assert
     const reference = expect.objectContaining({ externalId: 'Equipment' });
@@ -62,7 +62,7 @@ describe(listAssetEquipment.name, () => {
       .spyOn(client.instances, 'query')
       .mockResolvedValue(makeQueryResponse({ equipment: [] }));
 
-    await listAssetEquipment(client, assetIdentifier);
+    await createAssetEquipmentService(client).listAssetEquipment(assetIdentifier);
 
     expect(query.mock.calls[0]?.[0].with.equipment).toMatchObject({
       limit: ASSET_EQUIPMENT_QUERY_LIMIT + 1,
@@ -86,7 +86,7 @@ describe(listAssetEquipment.name, () => {
       .spyOn(client.instances, 'query')
       .mockResolvedValue(makeQueryResponse({ equipment: [] }));
 
-    await listAssetEquipment(client, assetIdentifier, 50);
+    await createAssetEquipmentService(client).listAssetEquipment(assetIdentifier, 50);
 
     expect(query.mock.calls[0]?.[0].with.equipment).toMatchObject({
       limit: 51,
@@ -99,7 +99,7 @@ describe(listAssetEquipment.name, () => {
     );
     vi.spyOn(client.instances, 'query').mockResolvedValue(makeQueryResponse({ equipment }));
 
-    const list = await listAssetEquipment(client, assetIdentifier);
+    const list = await createAssetEquipmentService(client).listAssetEquipment(assetIdentifier);
 
     expect(list.items).toHaveLength(ASSET_EQUIPMENT_QUERY_LIMIT);
     expect(list.hasMore).toBe(true);
@@ -113,7 +113,7 @@ describe(listAssetEquipment.name, () => {
     );
     vi.spyOn(client.instances, 'query').mockResolvedValue(makeQueryResponse({ equipment: [node] }));
 
-    const list = await listAssetEquipment(client, assetIdentifier);
+    const list = await createAssetEquipmentService(client).listAssetEquipment(assetIdentifier);
 
     expect(list.items).toEqual([
       {
@@ -146,7 +146,7 @@ describe(listAssetEquipment.name, () => {
       }),
     );
 
-    const list = await listAssetEquipment(client, assetIdentifier);
+    const list = await createAssetEquipmentService(client).listAssetEquipment(assetIdentifier);
 
     expect(list.items).toEqual([]);
   });
@@ -154,7 +154,9 @@ describe(listAssetEquipment.name, () => {
   it('returns an empty list when no equipment is linked', async () => {
     vi.spyOn(client.instances, 'query').mockResolvedValue(makeQueryResponse({}));
 
-    await expect(listAssetEquipment(client, assetIdentifier)).resolves.toEqual({
+    await expect(
+      createAssetEquipmentService(client).listAssetEquipment(assetIdentifier),
+    ).resolves.toEqual({
       items: [],
       hasMore: false,
     });
@@ -163,14 +165,16 @@ describe(listAssetEquipment.name, () => {
   it('fails with a readable message when the model has no Equipment view', async () => {
     stubModelViews(client, []);
 
-    await expect(listAssetEquipment(client, assetIdentifier)).rejects.toThrow(
-      'The Equipment view was not found in the Asset_Passport data model.',
-    );
+    await expect(
+      createAssetEquipmentService(client).listAssetEquipment(assetIdentifier),
+    ).rejects.toThrow('The Equipment view was not found in the Asset_Passport data model.');
   });
 
   it('propagates query failures', async () => {
     vi.spyOn(client.instances, 'query').mockRejectedValue(new Error('query failed'));
 
-    await expect(listAssetEquipment(client, assetIdentifier)).rejects.toThrow('query failed');
+    await expect(
+      createAssetEquipmentService(client).listAssetEquipment(assetIdentifier),
+    ).rejects.toThrow('query failed');
   });
 });

@@ -12,11 +12,19 @@ import {
   FILES_VIEW_EXTERNAL_ID,
 } from '../../../constants/documents';
 import { isKeyOfList } from '../../../lib/queryKeys';
-import { listAssetLinkedFiles } from '../../../services/assets/documents/assetDocument';
+import {
+  createAssetDocumentService,
+  type AssetDocumentService,
+} from '../../../services/assets/documents/assetDocument';
 import type { AssetIdentifier } from '../../../types/asset';
+import type { AssetContextType } from '../../../types/assetContext';
 import { useAssetContext } from '../useAssetContext';
 
-const defaultDeps = { listAssetLinkedFiles };
+const defaultDeps: {
+  createAssetDocumentService: (
+    client: AssetContextType,
+  ) => Pick<AssetDocumentService, 'listAssetLinkedFiles'>;
+} = { createAssetDocumentService };
 
 export type UseAssetLinkedFilesContextType = typeof defaultDeps;
 export const UseAssetLinkedFilesContext =
@@ -39,14 +47,15 @@ export function useAssetLinkedFiles(
   assetIdentifier: AssetIdentifier,
   limit: number = DOCUMENT_QUERY_LIMIT,
 ) {
-  const { listAssetLinkedFiles: loadFiles } = useContext(UseAssetLinkedFilesContext);
+  const { createAssetDocumentService } = useContext(UseAssetLinkedFilesContext);
   const client = useAssetContext();
+  const documentService = createAssetDocumentService(client);
 
   const listKey = getAssetLinkedFilesQueryKey(client.project, assetIdentifier);
 
   return useQuery({
     queryKey: [...listKey, limit],
-    queryFn: () => loadFiles(client, assetIdentifier, limit),
+    queryFn: () => documentService.listAssetLinkedFiles(assetIdentifier, limit),
     staleTime: DOCUMENT_QUERY_STALE_TIME_MS,
     placeholderData: (previousData, previousQuery) =>
       isKeyOfList(previousQuery?.queryKey, listKey) ? previousData : undefined,

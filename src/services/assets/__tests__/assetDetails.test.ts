@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { makeNodeInstance, makeQueryResponse, makeViewDefinition } from '../../../__mocks__/cdf';
 import { makeOfflineSdkClient, stubModelViews } from '../../../__mocks__/cogniteClient';
 import { TestPropertyType } from '../../../enums/testPropertyType';
-import { getAssetDetails } from '../assetDetails';
+import { createAssetDetailsService } from '../assetDetails';
 
 const assetView = makeViewDefinition('Asset', {
   name: { label: 'Name' },
@@ -15,7 +15,7 @@ const assetView = makeViewDefinition('Asset', {
 });
 const assetIdentifier = { space: 'instances', externalId: 'FLOC-1' };
 
-describe(getAssetDetails.name, () => {
+describe('getAssetDetails', () => {
   let client: CogniteClient;
 
   beforeEach(() => {
@@ -30,7 +30,9 @@ describe(getAssetDetails.name, () => {
       .mockResolvedValue(makeQueryResponse({ asset: [] }));
 
     // Act
-    await getAssetDetails(client, assetIdentifier).catch(() => {});
+    await createAssetDetailsService(client)
+      .getAssetDetails(assetIdentifier)
+      .catch(() => {});
 
     // Assert
     const request = query.mock.calls[0][0];
@@ -53,7 +55,9 @@ describe(getAssetDetails.name, () => {
       .spyOn(client.instances, 'query')
       .mockResolvedValue(makeQueryResponse({ asset: [] }));
 
-    await getAssetDetails(client, assetIdentifier).catch(() => {});
+    await createAssetDetailsService(client)
+      .getAssetDetails(assetIdentifier)
+      .catch(() => {});
 
     expect(query.mock.calls[0]?.[0].with.asset).toMatchObject({
       nodes: {
@@ -79,7 +83,7 @@ describe(getAssetDetails.name, () => {
     );
 
     // Act
-    const asset = await getAssetDetails(client, assetIdentifier);
+    const asset = await createAssetDetailsService(client).getAssetDetails(assetIdentifier);
 
     // Assert
     expect(asset).toEqual({
@@ -115,7 +119,7 @@ describe(getAssetDetails.name, () => {
     vi.spyOn(client.instances, 'query').mockResolvedValue(makeQueryResponse({ asset: [node] }));
 
     // Act
-    const asset = await getAssetDetails(client, assetIdentifier);
+    const asset = await createAssetDetailsService(client).getAssetDetails(assetIdentifier);
 
     // Assert
     expect(asset.properties).toEqual([
@@ -138,7 +142,7 @@ describe(getAssetDetails.name, () => {
     });
     vi.spyOn(client.instances, 'query').mockResolvedValue(makeQueryResponse({ asset: [node] }));
 
-    const asset = await getAssetDetails(client, assetIdentifier);
+    const asset = await createAssetDetailsService(client).getAssetDetails(assetIdentifier);
 
     expect(asset.properties.map(({ label }) => label)).toEqual(['plantCode', 'blankLabel']);
   });
@@ -146,9 +150,9 @@ describe(getAssetDetails.name, () => {
   it('throws when the response has no asset result set', async () => {
     vi.spyOn(client.instances, 'query').mockResolvedValue(makeQueryResponse({}));
 
-    await expect(getAssetDetails(client, assetIdentifier)).rejects.toThrow(
-      'Asset FLOC-1 was not found in instances.',
-    );
+    await expect(
+      createAssetDetailsService(client).getAssetDetails(assetIdentifier),
+    ).rejects.toThrow('Asset FLOC-1 was not found in instances.');
   });
 
   it('skips view properties that are not mapped to a container', async () => {
@@ -184,7 +188,9 @@ describe(getAssetDetails.name, () => {
       .mockResolvedValue(makeQueryResponse({ asset: [] }));
 
     // Act
-    await getAssetDetails(client, assetIdentifier).catch(() => {});
+    await createAssetDetailsService(client)
+      .getAssetDetails(assetIdentifier)
+      .catch(() => {});
 
     // Assert
     const { select } = query.mock.calls[0][0];
@@ -194,22 +200,24 @@ describe(getAssetDetails.name, () => {
   it('throws when the asset is not found', async () => {
     vi.spyOn(client.instances, 'query').mockResolvedValue(makeQueryResponse({ asset: [] }));
 
-    await expect(getAssetDetails(client, assetIdentifier)).rejects.toThrow(
-      'Asset FLOC-1 was not found in instances.',
-    );
+    await expect(
+      createAssetDetailsService(client).getAssetDetails(assetIdentifier),
+    ).rejects.toThrow('Asset FLOC-1 was not found in instances.');
   });
 
   it('throws when the Asset view does not exist', async () => {
     stubModelViews(client, []);
 
-    await expect(getAssetDetails(client, assetIdentifier)).rejects.toThrow(
-      'The Asset view was not found in the Asset_Passport data model.',
-    );
+    await expect(
+      createAssetDetailsService(client).getAssetDetails(assetIdentifier),
+    ).rejects.toThrow('The Asset view was not found in the Asset_Passport data model.');
   });
 
   it('propagates query failures', async () => {
     vi.spyOn(client.instances, 'query').mockRejectedValue(new Error('query failed'));
 
-    await expect(getAssetDetails(client, assetIdentifier)).rejects.toThrow('query failed');
+    await expect(
+      createAssetDetailsService(client).getAssetDetails(assetIdentifier),
+    ).rejects.toThrow('query failed');
   });
 });

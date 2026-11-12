@@ -7,18 +7,15 @@ import { makeMockClient } from '../../../../__mocks__/cogniteClient';
 import { makeLimitedList } from '../../../../__mocks__/lists';
 import { makeQueryClientWrapper } from '../../../../__mocks__/QueryClientWrapper';
 import { ASSET_EQUIPMENT_QUERY_LIMIT } from '../../../../constants/assets';
+import type { AssetEquipmentService } from '../../../../services/assets/assetEquipment';
 import { AssetContext } from '../../useAssetContext';
-import {
-  useAssetEquipment,
-  UseAssetEquipmentContext,
-  type UseAssetEquipmentContextType,
-} from '../useAssetEquipment';
+import { useAssetEquipment, UseAssetEquipmentContext } from '../useAssetEquipment';
 
 const assetIdentifier = { space: 'asset-space', externalId: 'FLOC-1' };
 
 describe(useAssetEquipment.name, () => {
   const client = makeMockClient();
-  let mockContext: UseAssetEquipmentContextType;
+  let mockContext: AssetEquipmentService;
   let wrapper: ComponentType<{ children: ReactNode }>;
 
   beforeEach(() => {
@@ -29,7 +26,7 @@ describe(useAssetEquipment.name, () => {
     };
     const QueryWrapper = makeQueryClientWrapper();
     wrapper = ({ children }) => (
-      <UseAssetEquipmentContext.Provider value={mockContext}>
+      <UseAssetEquipmentContext.Provider value={{ createAssetEquipmentService: () => mockContext }}>
         <QueryWrapper>
           <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
         </QueryWrapper>
@@ -53,7 +50,6 @@ describe(useAssetEquipment.name, () => {
 
     await waitFor(() => expect(result.current.data?.items).toHaveLength(1));
     expect(mockContext.listAssetEquipment).toHaveBeenCalledWith(
-      client,
       assetIdentifier,
       ASSET_EQUIPMENT_QUERY_LIMIT,
     );

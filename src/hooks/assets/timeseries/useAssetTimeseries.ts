@@ -12,11 +12,11 @@ import {
   TIMESERIES_VIEW_EXTERNAL_ID,
 } from '../../../constants/timeseries';
 import { isKeyOfList } from '../../../lib/queryKeys';
-import { listAssetTimeseries } from '../../../services/assets/timeseries/assetTimeseries';
+import { createAssetTimeseriesService } from '../../../services/assets/timeseries/assetTimeseries';
 import type { AssetIdentifier } from '../../../types/asset';
 import { useAssetContext } from '../useAssetContext';
 
-const defaultDeps = { listAssetTimeseries };
+const defaultDeps = { createAssetTimeseriesService };
 
 export type UseAssetTimeseriesContextType = typeof defaultDeps;
 export const UseAssetTimeseriesContext = createContext<UseAssetTimeseriesContextType>(defaultDeps);
@@ -38,14 +38,15 @@ export function useAssetTimeseries(
   assetIdentifier: AssetIdentifier,
   limit: number = TIMESERIES_QUERY_LIMIT,
 ) {
-  const { listAssetTimeseries: loadTimeseries } = useContext(UseAssetTimeseriesContext);
+  const { createAssetTimeseriesService } = useContext(UseAssetTimeseriesContext);
   const client = useAssetContext();
+  const timeseriesService = createAssetTimeseriesService(client);
 
   const listKey = getAssetTimeseriesQueryKey(client.project, assetIdentifier);
 
   return useQuery({
     queryKey: [...listKey, limit],
-    queryFn: () => loadTimeseries(client, assetIdentifier, limit),
+    queryFn: () => timeseriesService.listAssetTimeseries(assetIdentifier, limit),
     staleTime: TIMESERIES_QUERY_STALE_TIME_MS,
     placeholderData: (previousData, previousQuery) =>
       isKeyOfList(previousQuery?.queryKey, listKey) ? previousData : undefined,

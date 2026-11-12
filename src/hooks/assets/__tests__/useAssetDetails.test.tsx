@@ -5,19 +5,16 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { makeInstanceDetails } from '../../../__mocks__/assets';
 import { makeMockClient } from '../../../__mocks__/cogniteClient';
 import { makeQueryClientWrapper } from '../../../__mocks__/QueryClientWrapper';
+import type { AssetDetailsService } from '../../../services/assets/assetDetails';
 import { AssetContext } from '../useAssetContext';
-import {
-  useAssetDetails,
-  UseAssetDetailsContext,
-  type UseAssetDetailsContextType,
-} from '../useAssetDetails';
+import { useAssetDetails, UseAssetDetailsContext } from '../useAssetDetails';
 
 const assetIdentifier = { space: 'asset-space', externalId: 'asset-1' };
 
 describe(useAssetDetails.name, () => {
   const client = makeMockClient();
   const details = makeInstanceDetails();
-  let mockContext: UseAssetDetailsContextType;
+  let mockContext: AssetDetailsService;
   let wrapper: ComponentType<{ children: ReactNode }>;
 
   beforeEach(() => {
@@ -26,7 +23,7 @@ describe(useAssetDetails.name, () => {
     };
     const QueryWrapper = makeQueryClientWrapper();
     wrapper = ({ children }) => (
-      <UseAssetDetailsContext.Provider value={mockContext}>
+      <UseAssetDetailsContext.Provider value={{ createAssetDetailsService: () => mockContext }}>
         <QueryWrapper>
           <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
         </QueryWrapper>
@@ -45,7 +42,7 @@ describe(useAssetDetails.name, () => {
     const { result } = renderHook(() => useAssetDetails(assetIdentifier), { wrapper });
 
     await waitFor(() => expect(result.current.data).toEqual(details));
-    expect(mockContext.getAssetDetails).toHaveBeenCalledWith(client, assetIdentifier);
+    expect(mockContext.getAssetDetails).toHaveBeenCalledWith(assetIdentifier);
   });
 
   it('reports a failed load as an error', async () => {

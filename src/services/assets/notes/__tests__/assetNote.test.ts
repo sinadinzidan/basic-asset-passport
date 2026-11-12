@@ -6,7 +6,7 @@ import { makeOfflineSdkClient, stubModelViews } from '../../../../__mocks__/cogn
 import { NOTE_INSTANCE_SPACE, NOTE_QUERY_LIMIT } from '../../../../constants/notes';
 import { TestPropertyType } from '../../../../enums/testPropertyType';
 import { SORT_BY_EXTERNAL_ID, SORT_BY_NEWEST } from '../../querySort';
-import { createAssetNote, deleteAssetNote, listAssetNotes, updateAssetNote } from '../assetNote';
+import { createAssetNoteService } from '../assetNote';
 
 const noteView = makeViewDefinition(
   'Note',
@@ -22,7 +22,7 @@ const noteReference = {
 };
 const assetIdentifier = { space: 'asset-space', externalId: 'FLOC-1' };
 
-describe(listAssetNotes.name, () => {
+describe('listAssetNotes', () => {
   let client: CogniteClient;
 
   beforeEach(() => {
@@ -37,7 +37,7 @@ describe(listAssetNotes.name, () => {
       .mockResolvedValue(makeQueryResponse({ notes: [] }));
 
     // Act
-    await listAssetNotes(client, assetIdentifier);
+    await createAssetNoteService(client).listAssetNotes(assetIdentifier);
 
     // Assert
     expect(query).toHaveBeenCalledWith({
@@ -82,7 +82,7 @@ describe(listAssetNotes.name, () => {
     );
 
     // Act
-    const notes = await listAssetNotes(client, assetIdentifier, 2);
+    const notes = await createAssetNoteService(client).listAssetNotes(assetIdentifier, 2);
 
     // Assert
     expect(query.mock.calls[0]?.[0].with.notes?.limit).toBe(3);
@@ -100,7 +100,7 @@ describe(listAssetNotes.name, () => {
     );
 
     // Act
-    const notes = await listAssetNotes(client, assetIdentifier);
+    const notes = await createAssetNoteService(client).listAssetNotes(assetIdentifier);
 
     // Assert
     expect(notes.hasMore).toBe(false);
@@ -128,7 +128,7 @@ describe(listAssetNotes.name, () => {
     stubModelViews(client, [noteView]);
     vi.spyOn(client.instances, 'query').mockResolvedValue(makeQueryResponse({}));
 
-    await expect(listAssetNotes(client, assetIdentifier)).resolves.toEqual({
+    await expect(createAssetNoteService(client).listAssetNotes(assetIdentifier)).resolves.toEqual({
       items: [],
       hasMore: false,
     });
@@ -137,7 +137,7 @@ describe(listAssetNotes.name, () => {
   it('fails when the Note view is not in the data model', async () => {
     stubModelViews(client, [makeViewDefinition('Asset')]);
 
-    await expect(listAssetNotes(client, assetIdentifier)).rejects.toThrow(
+    await expect(createAssetNoteService(client).listAssetNotes(assetIdentifier)).rejects.toThrow(
       'The Note view was not found in the Asset_Passport data model.',
     );
   });
@@ -146,11 +146,13 @@ describe(listAssetNotes.name, () => {
     stubModelViews(client, [noteView]);
     vi.spyOn(client.instances, 'query').mockRejectedValue(new Error('query failed'));
 
-    await expect(listAssetNotes(client, assetIdentifier)).rejects.toThrow('query failed');
+    await expect(createAssetNoteService(client).listAssetNotes(assetIdentifier)).rejects.toThrow(
+      'query failed',
+    );
   });
 });
 
-describe(createAssetNote.name, () => {
+describe('createAssetNote', () => {
   let client: CogniteClient;
   const generateId = () => 'abc-123';
 
@@ -169,12 +171,10 @@ describe(createAssetNote.name, () => {
     const upsert = vi.spyOn(client.instances, 'upsert').mockResolvedValue({ items: [] });
 
     // Act
-    await createAssetNote(
-      client,
-      assetIdentifier,
-      { title: ' Inspection ', body: ' Looks fine ' },
-      { generateId },
-    );
+    await createAssetNoteService(client, { generateId }).createAssetNote(assetIdentifier, {
+      title: ' Inspection ',
+      body: ' Looks fine ',
+    });
 
     // Assert
     expect(upsert).toHaveBeenCalledWith({
@@ -206,7 +206,10 @@ describe(createAssetNote.name, () => {
   it('saves a note without text with an empty text, as an edit does', async () => {
     const upsert = vi.spyOn(client.instances, 'upsert').mockResolvedValue({ items: [] });
 
-    await createAssetNote(client, assetIdentifier, { title: 'Title', body: '  ' }, { generateId });
+    await createAssetNoteService(client, { generateId }).createAssetNote(assetIdentifier, {
+      title: 'Title',
+      body: '  ',
+    });
 
     expect(upsert.mock.calls[0]?.[0].items[0]).toMatchObject({
       sources: [{ properties: { title: 'Title', body: '' } }],
@@ -217,7 +220,10 @@ describe(createAssetNote.name, () => {
     const upsert = vi.spyOn(client.instances, 'upsert').mockResolvedValue({ items: [] });
     vi.spyOn(client.profiles, 'me').mockRejectedValue(new Error('no profile'));
 
-    await createAssetNote(client, assetIdentifier, { title: 'Title', body: '' }, { generateId });
+    await createAssetNoteService(client, { generateId }).createAssetNote(assetIdentifier, {
+      title: 'Title',
+      body: '',
+    });
 
     expect(upsert).toHaveBeenCalledTimes(1);
     const serialized = JSON.stringify(upsert.mock.calls[0][0]);
@@ -229,7 +235,7 @@ describe(createAssetNote.name, () => {
     const upsert = vi.spyOn(client.instances, 'upsert');
 
     await expect(
-      createAssetNote(client, assetIdentifier, { title: ' ', body: '' }),
+      createAssetNoteService(client).createAssetNote(assetIdentifier, { title: ' ', body: '' }),
     ).rejects.toThrow('A note needs a title');
     expect(upsert).not.toHaveBeenCalled();
   });
@@ -238,7 +244,7 @@ describe(createAssetNote.name, () => {
     stubModelViews(client, []);
 
     await expect(
-      createAssetNote(client, assetIdentifier, { title: 'Title', body: '' }),
+      createAssetNoteService(client).createAssetNote(assetIdentifier, { title: 'Title', body: '' }),
     ).rejects.toThrow('The Note view was not found in the Asset_Passport data model.');
   });
 
@@ -246,7 +252,10 @@ describe(createAssetNote.name, () => {
     vi.spyOn(client.instances, 'upsert').mockRejectedValue(new Error('Forbidden'));
 
     await expect(
-      createAssetNote(client, assetIdentifier, { title: 'Title', body: '' }, { generateId }),
+      createAssetNoteService(client, { generateId }).createAssetNote(assetIdentifier, {
+        title: 'Title',
+        body: '',
+      }),
     ).rejects.toThrow('Forbidden');
   });
 });
@@ -258,7 +267,7 @@ function makeNote(externalId: string, createdTime: number, properties: Record<st
   };
 }
 
-describe(updateAssetNote.name, () => {
+describe('updateAssetNote', () => {
   let client: CogniteClient;
   const note = { space: NOTE_INSTANCE_SPACE, externalId: 'note-1' };
 
@@ -272,7 +281,7 @@ describe(updateAssetNote.name, () => {
     const upsert = vi.spyOn(client.instances, 'upsert').mockResolvedValue({ items: [] });
 
     // Act
-    await updateAssetNote(client, note, {
+    await createAssetNoteService(client).updateAssetNote(note, {
       title: ' New title ',
       body: ' New text ',
     });
@@ -301,7 +310,7 @@ describe(updateAssetNote.name, () => {
   it('saves an emptied text as an empty string, which reads back as no text', async () => {
     const upsert = vi.spyOn(client.instances, 'upsert').mockResolvedValue({ items: [] });
 
-    await updateAssetNote(client, note, { title: 'Title', body: '  ' });
+    await createAssetNoteService(client).updateAssetNote(note, { title: 'Title', body: '  ' });
 
     const [request] = upsert.mock.calls[0];
     expect(request.items[0]).toMatchObject({
@@ -312,30 +321,30 @@ describe(updateAssetNote.name, () => {
   it('rejects an invalid note before calling CDF', async () => {
     const upsert = vi.spyOn(client.instances, 'upsert');
 
-    await expect(updateAssetNote(client, note, { title: ' ', body: 'Text' })).rejects.toThrow(
-      'A note needs a title',
-    );
+    await expect(
+      createAssetNoteService(client).updateAssetNote(note, { title: ' ', body: 'Text' }),
+    ).rejects.toThrow('A note needs a title');
     expect(upsert).not.toHaveBeenCalled();
   });
 
   it('fails when the Note view is not in the data model', async () => {
     stubModelViews(client, []);
 
-    await expect(updateAssetNote(client, note, { title: 'Title', body: '' })).rejects.toThrow(
-      'The Note view was not found in the Asset_Passport data model.',
-    );
+    await expect(
+      createAssetNoteService(client).updateAssetNote(note, { title: 'Title', body: '' }),
+    ).rejects.toThrow('The Note view was not found in the Asset_Passport data model.');
   });
 
   it('propagates a failed write', async () => {
     vi.spyOn(client.instances, 'upsert').mockRejectedValue(new Error('Forbidden'));
 
-    await expect(updateAssetNote(client, note, { title: 'Title', body: '' })).rejects.toThrow(
-      'Forbidden',
-    );
+    await expect(
+      createAssetNoteService(client).updateAssetNote(note, { title: 'Title', body: '' }),
+    ).rejects.toThrow('Forbidden');
   });
 });
 
-describe(deleteAssetNote.name, () => {
+describe('deleteAssetNote', () => {
   let client: CogniteClient;
 
   beforeEach(() => {
@@ -347,7 +356,7 @@ describe(deleteAssetNote.name, () => {
       items: [],
     });
 
-    await deleteAssetNote(client, {
+    await createAssetNoteService(client).deleteAssetNote({
       space: NOTE_INSTANCE_SPACE,
       externalId: 'note-1',
     });
@@ -360,8 +369,8 @@ describe(deleteAssetNote.name, () => {
   it('propagates a failed delete', async () => {
     vi.spyOn(client.instances, 'delete').mockRejectedValue(new Error('Forbidden'));
 
-    await expect(deleteAssetNote(client, { space: 'data', externalId: 'note-1' })).rejects.toThrow(
-      'Forbidden',
-    );
+    await expect(
+      createAssetNoteService(client).deleteAssetNote({ space: 'data', externalId: 'note-1' }),
+    ).rejects.toThrow('Forbidden');
   });
 });

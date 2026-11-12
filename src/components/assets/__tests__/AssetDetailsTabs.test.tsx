@@ -11,13 +11,11 @@ import { makeLimitedList } from '../../../__mocks__/lists';
 import { makeNavigationStore } from '../../../__mocks__/navigation';
 import { makeQueryClientWrapper } from '../../../__mocks__/QueryClientWrapper';
 import { AssetTab } from '../../../enums/assetTab';
-import {
-  UseAssetEquipmentContext,
-  type UseAssetEquipmentContextType,
-} from '../../../hooks/assets/equipment/useAssetEquipment';
+import { UseAssetEquipmentContext } from '../../../hooks/assets/equipment/useAssetEquipment';
 import { AssetContext } from '../../../hooks/assets/useAssetContext';
 import type { AssetDetailsTabCounts } from '../../../hooks/assets/useAssetDetailsTabCounts';
 import { NavigationStoreContext } from '../../../hooks/general/useNavigationState';
+import type { AssetEquipmentService } from '../../../services/assets/assetEquipment';
 import type { NavigationStore } from '../../../types/navigation';
 import { AssetDetailsTabs } from '../AssetDetailsTabs';
 
@@ -28,7 +26,7 @@ const asset = makeInstanceDetails({
 });
 
 describe(AssetDetailsTabs.name, () => {
-  let equipmentContext: UseAssetEquipmentContextType;
+  let equipmentContext: AssetEquipmentService;
   let wrapper: ComponentType<{ children: ReactNode }>;
   let store: StoreApi<NavigationStore>;
 
@@ -44,7 +42,9 @@ describe(AssetDetailsTabs.name, () => {
     const QueryWrapper = makeQueryClientWrapper();
     wrapper = ({ children }) => (
       <NavigationStoreContext.Provider value={store}>
-        <UseAssetEquipmentContext.Provider value={equipmentContext}>
+        <UseAssetEquipmentContext.Provider
+          value={{ createAssetEquipmentService: () => equipmentContext }}
+        >
           <QueryWrapper>
             <AssetContext.Provider value={assetContext}>{children}</AssetContext.Provider>
           </QueryWrapper>
@@ -76,7 +76,6 @@ describe(AssetDetailsTabs.name, () => {
 
     expect(await screen.findByText('Equipment ID: P-1')).toBeInTheDocument();
     expect(equipmentContext.listAssetEquipment).toHaveBeenCalledWith(
-      expect.anything(),
       { space: asset.space, externalId: asset.externalId },
       expect.any(Number),
     );

@@ -3,8 +3,12 @@ import { createContext, useContext } from 'react';
 
 import { DOCUMENT_UPLOAD_FAILED_MESSAGE } from '../../../constants/documents';
 import { formatDocumentsUploadedMessage } from '../../../lib/documentUploadMessage';
-import { uploadAssetDocument } from '../../../services/assets/documents/assetDocument';
+import {
+  createAssetDocumentService,
+  type AssetDocumentService,
+} from '../../../services/assets/documents/assetDocument';
 import type { AssetIdentifier } from '../../../types/asset';
+import type { AssetContextType } from '../../../types/assetContext';
 import type { DocumentUploadResult } from '../../../types/document';
 import { useSuccessToast } from '../../general/useSuccessToast';
 import { useAssetContext } from '../useAssetContext';
@@ -12,10 +16,12 @@ import { useAssetContext } from '../useAssetContext';
 import { getAssetDocumentsQueryKey } from './useAssetDocuments';
 import { useDocumentFileContext } from './useDocumentFileContext';
 
-const defaultDeps = {
-  useSuccessToast,
-  uploadAssetDocument,
-};
+const defaultDeps: {
+  useSuccessToast: typeof useSuccessToast;
+  createAssetDocumentService: (
+    client: AssetContextType,
+  ) => Pick<AssetDocumentService, 'uploadAssetDocument'>;
+} = { useSuccessToast, createAssetDocumentService };
 
 export type UseUploadAssetDocumentsContextType = typeof defaultDeps;
 export const UseUploadAssetDocumentsContext =
@@ -29,13 +35,14 @@ export function getUploadAssetDocumentsMutationKey(
 }
 
 export function useUploadAssetDocuments(assetIdentifier: AssetIdentifier) {
-  const { useSuccessToast: useToast, uploadAssetDocument: uploadDocument } = useContext(
+  const { useSuccessToast: useToast, createAssetDocumentService } = useContext(
     UseUploadAssetDocumentsContext,
   );
   const client = useAssetContext();
   const fileClient = useDocumentFileContext();
   const showSuccessToast = useToast();
   const queryClient = useQueryClient();
+  const documentService = createAssetDocumentService(client);
 
   return useMutation({
     mutationKey: getUploadAssetDocumentsMutationKey(client.project, assetIdentifier),
@@ -43,7 +50,7 @@ export function useUploadAssetDocuments(assetIdentifier: AssetIdentifier) {
       Promise.all(
         files.map(async (file): Promise<DocumentUploadResult> => {
           try {
-            await uploadDocument(client, fileClient, assetIdentifier, file);
+            await documentService.uploadAssetDocument(fileClient, assetIdentifier, file);
             return { fileName: file.name, errorMessage: null };
           } catch (error) {
             return {

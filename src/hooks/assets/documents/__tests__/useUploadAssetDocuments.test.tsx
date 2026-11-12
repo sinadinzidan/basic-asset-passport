@@ -8,6 +8,7 @@ import {
   makeQueryClientWrapper,
   makeTestQueryClient,
 } from '../../../../__mocks__/QueryClientWrapper';
+import type { AssetDocumentService } from '../../../../services/assets/documents/assetDocument';
 import type { DocumentFileContextType } from '../../../../types/documentFileContext';
 import type { ShowSuccessToast } from '../../../general/useSuccessToast';
 import { AssetContext } from '../../useAssetContext';
@@ -27,7 +28,8 @@ describe(useUploadAssetDocuments.name, () => {
   const client = makeMockClient();
   const fileClient = {} as Partial<DocumentFileContextType> as DocumentFileContextType;
   let queryClient: QueryClient;
-  let mockContext: UseUploadAssetDocumentsContextType;
+  let mockContext: Pick<UseUploadAssetDocumentsContextType, 'useSuccessToast'> &
+    Pick<AssetDocumentService, 'uploadAssetDocument'>;
   let showSuccessToast: Mock<ShowSuccessToast>;
   let wrapper: ComponentType<{ children: ReactNode }>;
 
@@ -40,7 +42,12 @@ describe(useUploadAssetDocuments.name, () => {
     };
     const QueryWrapper = makeQueryClientWrapper(queryClient);
     wrapper = ({ children }) => (
-      <UseUploadAssetDocumentsContext.Provider value={mockContext}>
+      <UseUploadAssetDocumentsContext.Provider
+        value={{
+          useSuccessToast: mockContext.useSuccessToast,
+          createAssetDocumentService: () => mockContext,
+        }}
+      >
         <QueryWrapper>
           <DocumentFileContext.Provider value={fileClient}>
             <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
@@ -68,13 +75,11 @@ describe(useUploadAssetDocuments.name, () => {
 
     // Assert
     expect(mockContext.uploadAssetDocument).toHaveBeenCalledWith(
-      client,
       fileClient,
       assetIdentifier,
       first,
     );
     expect(mockContext.uploadAssetDocument).toHaveBeenCalledWith(
-      client,
       fileClient,
       assetIdentifier,
       second,
@@ -87,11 +92,10 @@ describe(useUploadAssetDocuments.name, () => {
 
   it('keeps uploading the other files when one fails', async () => {
     // Arrange
-    vi.mocked(mockContext.uploadAssetDocument).mockImplementation(
-      (_client, _files, _asset, file) =>
-        file.name === REJECTED_FILE_NAME
-          ? Promise.reject(new Error('The file is empty.'))
-          : Promise.resolve(),
+    vi.mocked(mockContext.uploadAssetDocument).mockImplementation((_files, _asset, file) =>
+      file.name === REJECTED_FILE_NAME
+        ? Promise.reject(new Error('The file is empty.'))
+        : Promise.resolve(),
     );
     const { result } = renderHook(() => useUploadAssetDocuments(assetIdentifier), { wrapper });
 
@@ -139,11 +143,10 @@ describe(useUploadAssetDocuments.name, () => {
   });
 
   it('only counts the files that uploaded', async () => {
-    vi.mocked(mockContext.uploadAssetDocument).mockImplementation(
-      (_client, _files, _asset, file) =>
-        file.name === REJECTED_FILE_NAME
-          ? Promise.reject(new Error('The file is empty.'))
-          : Promise.resolve(),
+    vi.mocked(mockContext.uploadAssetDocument).mockImplementation((_files, _asset, file) =>
+      file.name === REJECTED_FILE_NAME
+        ? Promise.reject(new Error('The file is empty.'))
+        : Promise.resolve(),
     );
     const { result } = renderHook(() => useUploadAssetDocuments(assetIdentifier), { wrapper });
 
