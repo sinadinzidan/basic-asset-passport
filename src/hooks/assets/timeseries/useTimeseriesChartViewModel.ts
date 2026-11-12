@@ -7,7 +7,7 @@ import {
   type ChartConfiguration,
   type ChartDataSource,
 } from '@flows/trend-chart';
-import { createContext, useContext, useMemo } from 'react';
+import { createContext, useContext, useMemo, useState } from 'react';
 
 import {
   CHART_MOCK_SOURCE_NAME,
@@ -20,9 +20,7 @@ import { useNavigationState } from '../../general/useNavigationState';
 
 import { useTimeseriesContext } from './useTimeseriesContext';
 
-const defaultDeps = {
-  now: () => Date.now(),
-};
+const defaultDeps = { now: () => Date.now() };
 
 export type UseTimeseriesChartViewModelContextType = typeof defaultDeps;
 export const UseTimeseriesChartViewModelContext =
@@ -37,27 +35,28 @@ export function useTimeseriesChartViewModel(
   const changeTimeseriesChart = useNavigationState((store) => store.actions.changeTimeseriesChart);
   const client = useTimeseriesContext();
 
-  const isOpen = options !== null;
+  const [nowMs, setNowMs] = useState(() => currentMinuteMs(now));
 
+  const isOpen = options !== null;
+  const isSimulated = client.isSimulated === true;
   const source = useMemo<ChartDataSource>(
     () => ({
       adapter: createTimeseriesChartAdapter(client, series, {
-        sourceName: client.isSimulated ? CHART_MOCK_SOURCE_NAME : CHART_SOURCE_NAME,
-        isSimulated: client.isSimulated === true,
+        sourceName: isSimulated ? CHART_MOCK_SOURCE_NAME : CHART_SOURCE_NAME,
+        isSimulated,
       }),
       scopeKey: `timeseries:${client.project}:${assetIdentifier.space}:${assetIdentifier.externalId}`,
     }),
-    [client, series, assetIdentifier.space, assetIdentifier.externalId],
+    [client, isSimulated, series, assetIdentifier.space, assetIdentifier.externalId],
   );
   const configuration = useMemo<ChartConfiguration | null>(
     () => (options ? parseConfiguration(options, createChartConfiguration([])) : null),
     [options],
   );
 
-  const { nowMs } = useMemo(() => ({ isOpen, nowMs: currentMinuteMs(now) }), [isOpen, now]);
-
   function openSeries(seriesId: string, title: string): void {
     const endMs = currentMinuteMs(now);
+    setNowMs(endMs);
     changeTimeseriesChart(
       serialiseConfiguration(
         createChartConfiguration([seriesId], {

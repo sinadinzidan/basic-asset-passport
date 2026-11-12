@@ -132,6 +132,28 @@ describe(useTimeseriesChartViewModel.name, () => {
     expect(result.current.nowMs).toBe(NOW_MINUTE_MS);
   });
 
+  it('takes the time again when a chart is opened later', () => {
+    const { result, rerender } = renderViewModel();
+    const laterMs = NOW_MINUTE_MS + 2 * 60 * 60 * 1000;
+    context.now = () => laterMs;
+    rerender();
+
+    act(() => result.current.openSeries('ts:PI.1', 'Pressure'));
+
+    expect(result.current.nowMs).toBe(laterMs);
+  });
+
+  it('keeps the time still while the chart stays open', () => {
+    const { result, rerender } = renderViewModel();
+    act(() => result.current.openSeries('ts:PI.1', 'Pressure'));
+    context.now = () => NOW_MS + 5 * 60 * 1000;
+    rerender();
+
+    act(() => result.current.setConfiguration(createChartConfiguration(['ts:PI.1'])));
+
+    expect(result.current.nowMs).toBe(NOW_MINUTE_MS);
+  });
+
   it('scopes the data source to the project and the asset', () => {
     const { result } = renderViewModel();
 
