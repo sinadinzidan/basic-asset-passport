@@ -8,10 +8,15 @@ Preserve unrelated behavior; do not perform unrequested migrations.
 These conventions follow the team's `project-standard` repository
 (frontend standards 01-06 and 08), adapted to Flows. Where Flows or Aura
 guidance conflicts with a rule from that repository, Flows and Aura win and the
-rule is left out. The Flows guidance that counts is Cognite's published
-architecture reference,
-https://docs.cognite.com/cdf/flows/concepts/architecture-best-practices; where
-the template's `AGENTS.md` differs from that page, the page wins. If a request conflicts with a convention, say so and ask
+rule is left out. Cognite's own sources do not always agree. When they
+conflict, follow them in this order: the certification review
+(`flows-review-checks` and `code-quality`, pulled fresh with
+`npx @cognite/cli@latest apps skills pull`), then the published architecture
+reference
+(https://docs.cognite.com/cdf/flows/concepts/architecture-best-practices), then
+the template's `AGENTS.md`. Folders stay grouped by type (`components/`,
+`hooks/`, `services/`), which is the layout the review checks; the
+reference's feature-folder shape is not used. If a request conflicts with a convention, say so and ask
 before deviating.
 
 ## Folder and file structure
@@ -365,7 +370,7 @@ export function AssetList({ page, search }: AssetListProps) {
 - Use stable record identifiers as React keys.
 - Follow ESLint import grouping and ordering. Use `import type` for types.
 - Prefer named exports, retaining defaults required by existing tooling.
-  Avoid unnecessary barrels, circular imports, or new path aliases.
+  Avoid circular imports and new path aliases.
 - Never store tokens or credentials in `localStorage`, `sessionStorage` or any
   place script can read; get them from the host. Never use
   `dangerouslySetInnerHTML` with user data. Keep `manifest.json` network
