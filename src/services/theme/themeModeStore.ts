@@ -8,44 +8,32 @@ import type { ThemeModeStorage, ThemeModeStore } from '../../types/theme';
 
 const THEME_MODES: ReadonlySet<string> = new Set(Object.values(ThemeMode));
 
-class BrowserThemeModeStore implements ThemeModeStore {
-  private readonly listeners = new Set<() => void>();
-
-  private currentThemeMode: ThemeMode;
-
-  constructor(
-    private readonly getStorage: () => ThemeModeStorage,
-    private readonly rootElement: Element,
-  ) {
-    this.currentThemeMode = readSavedThemeMode(getStorage) ?? DEFAULT_THEME_MODE;
-    applyThemeMode(rootElement, this.currentThemeMode);
-  }
-
-  getThemeMode = (): ThemeMode => this.currentThemeMode;
-
-  setThemeMode = (themeMode: ThemeMode): void => {
-    if (themeMode === this.currentThemeMode) return;
-
-    this.currentThemeMode = themeMode;
-    applyThemeMode(this.rootElement, themeMode);
-    saveThemeMode(this.getStorage, themeMode);
-    this.listeners.forEach((onChange) => onChange());
-  };
-
-  subscribe = (onChange: () => void): (() => void) => {
-    this.listeners.add(onChange);
-
-    return () => {
-      this.listeners.delete(onChange);
-    };
-  };
-}
-
 export function createThemeModeStore(
   getStorage: () => ThemeModeStorage,
   rootElement: Element,
 ): ThemeModeStore {
-  return new BrowserThemeModeStore(getStorage, rootElement);
+  const listeners = new Set<() => void>();
+  let currentThemeMode = readSavedThemeMode(getStorage) ?? DEFAULT_THEME_MODE;
+
+  applyThemeMode(rootElement, currentThemeMode);
+
+  return {
+    getThemeMode: () => currentThemeMode,
+    setThemeMode: (themeMode: ThemeMode) => {
+      if (themeMode === currentThemeMode) return;
+
+      currentThemeMode = themeMode;
+      applyThemeMode(rootElement, themeMode);
+      saveThemeMode(getStorage, themeMode);
+      listeners.forEach((onChange) => onChange());
+    },
+    subscribe: (onChange: () => void) => {
+      listeners.add(onChange);
+      return () => {
+        listeners.delete(onChange);
+      };
+    },
+  };
 }
 
 function applyThemeMode(rootElement: Element, themeMode: ThemeMode): void {
