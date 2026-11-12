@@ -509,6 +509,10 @@ the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines
   through `client.instances.aggregate()` (a `count` of the nodes the list's filter matches), with the
   count's query key under the list's own so that whatever refreshes a list counts it again. Query keys include
   the project, data model, view and cursor or asset identity.
+- What CDF and the host return is checked where it enters the app (Zod schemas in `src/schemas/`). A
+  listed property that is not of the expected type fails the load, which shows the usual error with Retry,
+  rather than appearing as a missing value. A note is checked the same way before it is written. The space,
+  model, view and property names are kept in one place, `src/config/model.ts`.
 - Throttled (429) and temporary gateway (502, 503, 504) responses are retried
   up to 3 times with exponential backoff and jitter, capped at 15 seconds;
   other errors are shown at once.

@@ -8,7 +8,10 @@ Preserve unrelated behavior; do not perform unrequested migrations.
 These conventions follow the team's `project-standard` repository
 (frontend standards 01-06 and 08), adapted to Flows. Where Flows or Aura
 guidance conflicts with a rule from that repository, Flows and Aura win and the
-rule is left out. If a request conflicts with a convention, say so and ask
+rule is left out. The Flows guidance that counts is Cognite's published
+architecture reference,
+https://docs.cognite.com/cdf/flows/concepts/architecture-best-practices; where
+the template's `AGENTS.md` differs from that page, the page wins. If a request conflicts with a convention, say so and ask
 before deviating.
 
 ## Folder and file structure
@@ -41,7 +44,8 @@ before deviating.
   in `src/app/` once it exists.
 - Use `src/hooks/<feature>/useAssetList.ts` for React queries and behavior,
   `src/services/<feature>/asset.ts` for SDK operations,
-  `src/types/equipment.ts` for data contracts,
+  `src/types/equipment.ts` for data contracts, `src/schemas/asset.ts` for Zod
+  schemas, `src/config/model.ts` for the data-model identifiers,
   `src/enums/equipmentHealth.ts` for shared domain enums, and
   `src/constants/dashboard.ts` for meaningful configuration.
 - Keep mock datasets and reusable test factories in `src/__mocks__/`, separate
@@ -186,7 +190,7 @@ export function AssetList({ page, search }: AssetListProps) {
   server data and the Flows host for shareable state, as in `AGENTS.md`.
 - Transient state may remain local. Share state through context/storage when
   consumers must stay synchronized; do not add a store solely for isolated
-  local state. This qualifies the template's blanket ViewModel state ban.
+  local state.
 - A ViewModel that a single component calls holds its transient state with
   `useState` directly (`useAgentComposerViewModel`'s draft). Do not wrap
   `useState` in a `use<Name>State` hook only to keep it out of the ViewModel.
@@ -239,24 +243,29 @@ export function AssetList({ page, search }: AssetListProps) {
 - Use host integration for project context and credentials. Never hardcode
   credentials, tokens, or deployment-specific runtime project context.
 - Include project and relevant filters in query keys.
-- A service is an interface implemented by a class, as the Flows template
-  says. The file exports the interface and a `create<Name>` factory and keeps
-  the class to itself, so nothing outside the file names the concrete class.
-  Methods are arrow properties, so one can be passed on without losing `this`.
-  A clock, ID generator or `fetch` the service needs goes into its constructor
-  through the factory's `overrides`, not into each call.
-- Business logic lives in a `use<Name>ViewModel` hook, as the Flows template
-  says: a component that loads data, runs a mutation or derives what to show
-  takes the data, flags and commands from its ViewModel and only renders
-  (`useAssetTableViewModel`, `useAssetNoteListViewModel`). A ViewModel exposes
-  commands (`retry`, `deleteNote`, `showMore`), not the raw query or mutation.
-  Local view state stays in the component: form input, an open dialog, zoom.
-- A hook gets the factory through its deps context and builds the service from
-  the signed-in client (`createAssetNoteService(client)`), typed to the methods
-  it uses (`Pick<AssetNoteService, 'listAssetNotes'>`). A test supplies
-  `{ createAssetNoteService: () => mockService }`.
-- Pure helpers a service is built from (filters, sorts, parsers, the view
-  lookup) stay plain functions that take what they need as arguments.
+- Keep data access thin, as Cognite's architecture reference says: a typed
+  service function that takes the client (`listAssetNotes(client, asset)`) and
+  a query hook that calls it. Do not wrap a read in an interface and a class.
+  Promote a function to a class only when it has grown real logic that needs
+  swapping, and say why.
+- A hook returns a narrow state and named commands, never the TanStack Query
+  object: a query hook returns `toQueryState(query)` (`data`, `error`,
+  `isPending`, `isError`, `isFetching`, `isLoadingMore`, `retry`); a mutation
+  hook returns its command and flags (`addNote`, `isAdding`, `error`).
+  `useQuery` and `useMutation` appear only in hooks, never in a `.tsx` file.
+- Business logic lives in a `use<Name>ViewModel` hook: a component that loads
+  data, runs a mutation or derives what to show takes the data, flags and
+  commands from its ViewModel and only renders (`useAssetTableViewModel`,
+  `useAssetNoteListViewModel`). Local view state stays in the component: form
+  input, an open dialog, zoom.
+- Parse with Zod at the two seams where data crosses the app's edge: what the
+  SDK or the host returns (`AssetListPropertiesSchema.parse(...)`) and what a
+  form sends to the SDK (`NewAssetNoteSchema`). Schemas live in
+  `src/schemas/<area>.ts`. A value of the wrong shape fails the query, so it
+  shows as an error with Retry and never as wrong or missing data. Code past
+  the seam receives typed values and does not re-check them.
+- Every space, model, view and property identifier comes from `MODEL` in
+  `src/config/model.ts`. Do not write one as a string literal anywhere else.
 - Keep mocks separate from real CDF services. Do not add empty abstractions.
 - Every list of an asset (notes, documents, existing files, timeseries,
   equipment, search matches) is read with a limit and sorted on the server,
