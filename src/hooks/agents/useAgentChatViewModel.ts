@@ -17,7 +17,7 @@ export type UseAgentChatViewModelContextType = typeof defaultDeps;
 export const UseAgentChatViewModelContext =
   createContext<UseAgentChatViewModelContextType>(defaultDeps);
 
-export type AgentChatViewModel = {
+type AgentChatViewModel = {
   agent: CdfAgent | null;
   messages: ChatMessage[];
   isSending: boolean;

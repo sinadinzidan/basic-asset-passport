@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useRef } from 'react';
 
-export type TimerHandle = ReturnType<typeof setTimeout>;
+type TimerHandle = ReturnType<typeof setTimeout>;
 
 export type DebounceDeps = {
   setTimer: (callback: () => void, delayMs: number) => TimerHandle;

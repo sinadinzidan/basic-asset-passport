@@ -14,7 +14,7 @@ const defaultDeps = {
 export type UseCopyToClipboardContextType = typeof defaultDeps;
 export const UseCopyToClipboardContext = createContext<UseCopyToClipboardContextType>(defaultDeps);
 
-export type CopyToClipboard = {
+type CopyToClipboard = {
   status: CopyStatus;
   copy: (text: string) => Promise<void>;
 };

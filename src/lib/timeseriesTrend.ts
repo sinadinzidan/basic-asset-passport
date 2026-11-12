@@ -6,21 +6,21 @@ const MIDDLE_SHARE = 0.5;
 
 const ROUNDING_SCALE = 100;
 
-export type TrendSummary = {
+type TrendSummary = {
   latest: number;
   minimum: number;
   maximum: number;
   average: number;
 };
 
-export type SparklineGeometry = {
+type SparklineGeometry = {
   linePath: string;
   areaPath: string;
   lastPoint: { x: number; y: number };
   gridLines: number[];
 };
 
-export type SparklineSize = { width: number; height: number; padding: number };
+type SparklineSize = { width: number; height: number; padding: number };
 
 export function summarizeTrend(points: TimeseriesPoint[]): TrendSummary | null {
   const last = points[points.length - 1];

@@ -13,7 +13,7 @@ import { useTimeseriesContext } from './useTimeseriesContext';
 
 const defaultDeps = { now: () => Date.now() };
 
-export type UseTimeseriesTrendsContextType = typeof defaultDeps;
+type UseTimeseriesTrendsContextType = typeof defaultDeps;
 export const UseTimeseriesTrendsContext =
   createContext<UseTimeseriesTrendsContextType>(defaultDeps);
 

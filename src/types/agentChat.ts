@@ -4,7 +4,7 @@ export type AgentChatState = {
   conversations: Record<string, AgentConversation>;
 };
 
-export type AgentChatActions = {
+type AgentChatActions = {
   addUserMessage: (agentExternalId: string, message: ChatMessage) => void;
   receiveReply: (agentExternalId: string, message: ChatMessage, cursor: string | null) => void;
   failSend: (agentExternalId: string, errorMessage: string) => void;

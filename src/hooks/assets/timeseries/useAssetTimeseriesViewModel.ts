@@ -14,8 +14,8 @@ import { useTimeseriesTrends } from './useTimeseriesTrends';
 
 const defaultDeps = { useAssetTimeseries, useTimeseriesTrends };
 
-export type UseAssetTimeseriesViewModelContextType = typeof defaultDeps;
-export const UseAssetTimeseriesViewModelContext =
+type UseAssetTimeseriesViewModelContextType = typeof defaultDeps;
+const UseAssetTimeseriesViewModelContext =
   createContext<UseAssetTimeseriesViewModelContextType>(defaultDeps);
 
 const NO_TIMESERIES: AssetInstanceDetails[] = [];

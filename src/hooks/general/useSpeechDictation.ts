@@ -20,7 +20,7 @@ const defaultDeps = {
 export type UseSpeechDictationContextType = typeof defaultDeps;
 export const UseSpeechDictationContext = createContext<UseSpeechDictationContextType>(defaultDeps);
 
-export type SpeechDictation = {
+type SpeechDictation = {
   isSupported: boolean;
   isListening: boolean;
   failure: DictationFailure | null;

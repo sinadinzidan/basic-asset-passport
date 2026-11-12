@@ -9,11 +9,11 @@ const defaultDeps: { themeModeStore: ThemeModeStore } = {
   themeModeStore: createThemeModeStore(() => window.localStorage, document.documentElement),
 };
 
-export type UseThemeModeViewModelContextType = typeof defaultDeps;
+type UseThemeModeViewModelContextType = typeof defaultDeps;
 export const UseThemeModeViewModelContext =
   createContext<UseThemeModeViewModelContextType>(defaultDeps);
 
-export type ThemeModeViewModel = {
+type ThemeModeViewModel = {
   themeMode: ThemeMode;
   toggleLabel: string;
   toggleThemeMode: () => void;

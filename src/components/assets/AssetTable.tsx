@@ -3,6 +3,7 @@ import type { Row } from '@tanstack/react-table';
 
 import {
   ASSET_QUERY_LIMIT,
+  ASSET_REGISTER_DESCRIPTION,
   ASSET_SEARCH_TRUNCATED_MESSAGE,
   ASSETS_EMPTY_DESCRIPTION,
   ASSETS_EMPTY_TITLE,
@@ -88,7 +89,7 @@ export function AssetTable() {
       <PageHeader
         kicker="Asset intelligence"
         title="Asset register"
-        description="Browse functional locations and open an asset to review its properties and linked equipment."
+        description={ASSET_REGISTER_DESCRIPTION}
       />
 
       <AssetsKPIs />

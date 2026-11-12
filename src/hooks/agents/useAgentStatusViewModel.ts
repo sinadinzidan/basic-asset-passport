@@ -2,7 +2,7 @@ import { getErrorReason } from '../../lib/errorReason';
 
 import { useFocusedAgent } from './useFocusedAgent';
 
-export type AgentStatusViewModel = {
+type AgentStatusViewModel = {
   isLoading: boolean;
   isError: boolean;
   errorReason: string | null;

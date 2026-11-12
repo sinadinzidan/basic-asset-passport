@@ -11,7 +11,7 @@ export type NavigationState = {
   isAssistantOpen?: boolean;
 };
 
-export type NavigationActions = {
+type NavigationActions = {
   changeSearchQuery: (searchQuery: string) => void;
   goToNextRegisterPage: (nextCursor: string) => void;
   goToPreviousRegisterPage: () => void;

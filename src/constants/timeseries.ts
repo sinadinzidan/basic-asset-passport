@@ -20,7 +20,7 @@ export const TREND_REQUEST_CHUNK_SIZE = 50;
 export const NUMERIC_TIMESERIES_TYPE = 'numeric';
 export const TIMESERIES_TYPE_PROPERTY = 'type';
 
-export const TIMESERIES_UNIT_PROPERTY = 'engunits';
+const TIMESERIES_UNIT_PROPERTY = 'engunits';
 export const OWE_LIMIT_MIN_PROPERTY = 'oweLimitMin';
 export const OWE_LIMIT_MAX_PROPERTY = 'oweLimitMax';
 export const DLE_LIMIT_MIN_PROPERTY = 'dleLimitMin';

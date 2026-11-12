@@ -13,7 +13,7 @@ const defaultDeps = { updateAssetNote };
 export type UseUpdateAssetNoteContextType = typeof defaultDeps;
 export const UseUpdateAssetNoteContext = createContext<UseUpdateAssetNoteContextType>(defaultDeps);
 
-export type UpdateAssetNoteRequest = {
+type UpdateAssetNoteRequest = {
   note: NoteIdentifier;
   input: NewAssetNote;
 };

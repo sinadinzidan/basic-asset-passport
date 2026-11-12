@@ -9,7 +9,7 @@ const defaultDeps = { startTimeout };
 export type UseAgentGreetingContextType = typeof defaultDeps;
 export const UseAgentGreetingContext = createContext<UseAgentGreetingContextType>(defaultDeps);
 
-export type AgentGreeting = {
+type AgentGreeting = {
   isIntroShown: boolean;
   dismissIntro: () => void;
 };

@@ -21,7 +21,7 @@ const defaultDeps = {
 export type UseAssetsKPICountsContextType = typeof defaultDeps;
 export const UseAssetsKPICountsContext = createContext<UseAssetsKPICountsContextType>(defaultDeps);
 
-export type AssetsKPICounts = {
+type AssetsKPICounts = {
   assets: CountState;
   operating: CountState;
   equipment: CountState;

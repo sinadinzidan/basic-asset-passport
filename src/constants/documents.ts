@@ -7,9 +7,9 @@ export const DOCUMENT_INSTANCE_SPACE = ASSET_PASSPORT_INSTANCE_SPACE;
 export const DOCUMENT_EXTERNAL_ID_PREFIX = 'doc-';
 export const DOCUMENT_QUERY_LIMIT = 100;
 
-export const FILES_VIEW_SPACE = 'sp-dm-idi-rmdm';
+const FILES_VIEW_SPACE = 'sp-dm-idi-rmdm';
 export const FILES_VIEW_EXTERNAL_ID = 'Files';
-export const FILES_VIEW_VERSION = 'v1';
+const FILES_VIEW_VERSION = 'v1';
 export const FILES_VIEW = {
   space: FILES_VIEW_SPACE,
   externalId: FILES_VIEW_EXTERNAL_ID,
@@ -17,10 +17,10 @@ export const FILES_VIEW = {
 };
 export const FILES_ASSETS_PROPERTY = 'assets';
 export const DOCUMENT_QUERY_STALE_TIME_MS = 30_000;
-export const DOCUMENT_MAX_FILE_SIZE_MB = 50;
+const DOCUMENT_MAX_FILE_SIZE_MB = 50;
 export const DOCUMENT_MAX_FILE_SIZE_BYTES =
   DOCUMENT_MAX_FILE_SIZE_MB * BYTES_PER_KILOBYTE * BYTES_PER_KILOBYTE;
-export const DOCUMENT_MAX_FILE_SIZE_LABEL = `${DOCUMENT_MAX_FILE_SIZE_MB} MB`;
+const DOCUMENT_MAX_FILE_SIZE_LABEL = `${DOCUMENT_MAX_FILE_SIZE_MB} MB`;
 export const DEFAULT_DOCUMENT_MIME_TYPE = 'application/octet-stream';
 export const DOCUMENT_PENDING_POLL_MS = 2_000;
 const DOCUMENT_PENDING_POLL_WINDOW_MINUTES = 2;
