@@ -112,42 +112,42 @@ export function AgentChat({ onClose }: AgentChatProps) {
             {DICTATION_FAILURE_MESSAGES[dictation.failure]}
           </AppAlert>
         ) : null}
-        <Label className="agent-chat__label" htmlFor={messageId}>
-          Message
-        </Label>
-        <form className="agent-chat__form" onSubmit={handleSubmit}>
-          <Textarea
-            className="agent-chat__input"
-            id={messageId}
-            onChange={handleChange}
-            onKeyDown={handleKeyDown}
-            placeholder="Ask a question"
-            rows={1}
-            value={draft}
-          />
-          {dictation.isSupported ? (
-            <GeneralButton
-              aria-label={dictation.isListening ? 'Stop dictation' : 'Start dictation'}
-              aria-pressed={dictation.isListening}
-              className="agent-chat__mic"
-              data-listening={dictation.isListening}
-              onClick={toggleDictation}
-              size="icon-sm"
-              type="button"
-              variant="outline"
-            >
-              {dictation.isListening ? (
-                <IconPlayerStopFilled aria-hidden className="size-4" />
-              ) : (
-                <IconMicrophone aria-hidden className="size-4" />
-              )}
+        <div className="flex flex-none flex-col gap-1.5">
+          <Label htmlFor={messageId}>Message</Label>
+          <form className="agent-chat__form" onSubmit={handleSubmit}>
+            <Textarea
+              className="agent-chat__input"
+              id={messageId}
+              onChange={handleChange}
+              onKeyDown={handleKeyDown}
+              placeholder="Ask a question"
+              rows={1}
+              value={draft}
+            />
+            {dictation.isSupported ? (
+              <GeneralButton
+                aria-label={dictation.isListening ? 'Stop dictation' : 'Start dictation'}
+                aria-pressed={dictation.isListening}
+                className="agent-chat__mic"
+                data-listening={dictation.isListening}
+                onClick={toggleDictation}
+                size="icon-sm"
+                type="button"
+                variant="outline"
+              >
+                {dictation.isListening ? (
+                  <IconPlayerStopFilled aria-hidden className="size-4" />
+                ) : (
+                  <IconMicrophone aria-hidden className="size-4" />
+                )}
+              </GeneralButton>
+            ) : null}
+            <GeneralButton disabled={!canSend} size="sm" type="submit">
+              <IconSend aria-hidden className="size-4" />
+              Send
             </GeneralButton>
-          ) : null}
-          <GeneralButton disabled={!canSend} size="sm" type="submit">
-            <IconSend aria-hidden className="size-4" />
-            Send
-          </GeneralButton>
-        </form>
+          </form>
+        </div>
       </div>
     </>
   );
