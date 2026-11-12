@@ -161,7 +161,7 @@
       "source": "cognitedata/builder-skills",
       "sourceType": "github",
       "skillPath": "skills/reveal-3d/SKILL.md",
-      "computedHash": "989e2bd8dc20566271ce71be92f167a4f6d4a2f590e2c250aa11e3ef5382c9d0"
+      "computedHash": "a03379d46d0e7dcd9e9b966a6cf61972a6f9b1043b3a7fcd09b579d8d51ad5a1"
     },
     "security": {
       "source": "cognitedata/builder-skills",
