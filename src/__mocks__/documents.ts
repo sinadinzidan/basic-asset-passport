@@ -11,8 +11,8 @@ export function makeAssetDocument(overrides: Partial<AssetDocument> = {}): Asset
     isUploaded: true,
     uploadStatus: DocumentUploadStatus.UPLOADED,
     origin: DocumentOrigin.APP,
-    uploadedTime: new Date(2026, 10, 5, 12).getTime(),
-    createdTime: new Date(2026, 10, 5, 12).getTime(),
+    uploadedTime: Date.UTC(2026, 10, 5, 12),
+    createdTime: Date.UTC(2026, 10, 5, 12),
     ...overrides,
   };
 }
