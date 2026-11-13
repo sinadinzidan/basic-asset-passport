@@ -8,7 +8,8 @@ count for certification. Round 8 re-checks the 1.0.0 production release (Zod val
 boundaries, the navigation refactor and the bundle split); design round 7 covers the UI (with a walkthrough on real CDF data); it has not
 changed visually since (rounds 5 and 4 were the first reviews on the current template).
 
-Code review rounds 11 to 13 score the current app (notes, documents, timeseries, the assistant) against the
+Code review rounds 11 to 14 score the current app (notes, documents, timeseries, the assistant) against the
 certification checks pulled on the day. Round 11 found two blocking items; round 12 re-checks after the fixes and
-reports none; round 13 closes the round-12 findings and leaves one should-fix (the Aura theme, kept on purpose) and
-one nice-to-fix (majors held back by Aura). Round 13 is the latest code review. Design review round 8 scores the current app (average 4.4); its walkthrough was done in mock mode, not on real CDF data.
+reports none; round 13 closes the round-12 findings; round 14 re-runs every check after the design-review fixes and
+finds nothing new. It leaves one should-fix (the Aura theme, kept on purpose) and one nice-to-fix (majors held back by
+Aura). Round 14 is the latest code review. Design review rounds 8 and 9 score the current app; round 9 (average 4.5) is the latest. Both walkthroughs were done in mock mode, not on real CDF data.
