@@ -50,7 +50,9 @@ describe(useAssetDocumentListViewModel.name, () => {
     const QueryWrapper = makeQueryClientWrapper();
 
     wrapper = ({ children }) => (
-      <UseAssetDocumentsContext.Provider value={{ createAssetDocumentService: () => deps }}>
+      <UseAssetDocumentsContext.Provider
+        value={{ now: () => Date.now(), createAssetDocumentService: () => deps }}
+      >
         <UseAssetLinkedFilesContext.Provider value={{ createAssetDocumentService: () => deps }}>
           <UseDeleteAssetDocumentContext.Provider
             value={{ createAssetDocumentService: () => deps }}

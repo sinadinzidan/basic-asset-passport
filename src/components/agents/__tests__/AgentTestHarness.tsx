@@ -9,7 +9,7 @@ import {
   UseAgentGreetingContext,
   type UseAgentGreetingContextType,
 } from '../../../hooks/agents/useAgentGreeting';
-import { getAgentQueryKey , UseFocusedAgentContext } from '../../../hooks/agents/useFocusedAgent';
+import { getAgentQueryKey, UseFocusedAgentContext } from '../../../hooks/agents/useFocusedAgent';
 import { UseCopyToClipboardContext } from '../../../hooks/general/useCopyToClipboard';
 import { UseSpeechDictationContext } from '../../../hooks/general/useSpeechDictation';
 import { NavigationProvider } from '../../../providers/general/NavigationProvider';

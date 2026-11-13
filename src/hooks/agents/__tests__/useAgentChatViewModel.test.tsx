@@ -15,7 +15,7 @@ import {
   useAgentChatViewModel,
 } from '../useAgentChatViewModel';
 import { AgentContext } from '../useAgentContext';
-import { getAgentQueryKey , UseFocusedAgentContext } from '../useFocusedAgent';
+import { getAgentQueryKey, UseFocusedAgentContext } from '../useFocusedAgent';
 
 describe(useAgentChatViewModel.name, () => {
   let chat: AgentContextType['chat'];

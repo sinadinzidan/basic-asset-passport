@@ -52,7 +52,7 @@ describe(`${AssetDetailsTabs.name} documents`, () => {
             }}
           >
             <UseAssetDocumentsContext.Provider
-              value={{ createAssetDocumentService: () => listContext }}
+              value={{ now: () => Date.now(), createAssetDocumentService: () => listContext }}
             >
               <QueryWrapper>
                 <AssetContext.Provider value={client}>{children}</AssetContext.Provider>

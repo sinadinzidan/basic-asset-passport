@@ -297,7 +297,7 @@ describe(Assets.name, () => {
       <AssetContext.Provider value={client}>
         <DocumentFileContext.Provider value={{ requestUploadUrl: vi.fn(), uploadContent: vi.fn() }}>
           <UseAssetDocumentsContext.Provider
-            value={{ createAssetDocumentService: () => documentsContext }}
+            value={{ now: () => Date.now(), createAssetDocumentService: () => documentsContext }}
           >
             <DocumentPreviewContext.Provider value={() => <OpenOtherAssetButton />}>
               <RegisterWithState api={api} initialState={initialState} />

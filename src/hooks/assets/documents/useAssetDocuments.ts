@@ -12,14 +12,14 @@ import {
 } from '../../../services/assets/documents/assetDocument';
 import type { AssetIdentifier } from '../../../types/asset';
 import type { AssetContextType } from '../../../types/assetContext';
-import { useClock } from '../../general/useClock';
 import { useAssetContext } from '../useAssetContext';
 
 const defaultDeps: {
   createAssetDocumentService: (
     client: AssetContextType,
   ) => Pick<AssetDocumentService, 'listAssetDocuments'>;
-} = { createAssetDocumentService };
+  now: () => number;
+} = { createAssetDocumentService, now: () => Date.now() };
 
 export type UseAssetDocumentsContextType = typeof defaultDeps;
 export const UseAssetDocumentsContext = createContext<UseAssetDocumentsContextType>(defaultDeps);
@@ -41,8 +41,7 @@ export function useAssetDocuments(
   assetIdentifier: AssetIdentifier,
   limit: number = DOCUMENT_QUERY_LIMIT,
 ) {
-  const { createAssetDocumentService } = useContext(UseAssetDocumentsContext);
-  const now = useClock();
+  const { createAssetDocumentService, now } = useContext(UseAssetDocumentsContext);
   const client = useAssetContext();
   const documentService = createAssetDocumentService(client);
 

@@ -28,7 +28,9 @@ describe(useAssetDocuments.name, () => {
     const QueryWrapper = makeQueryClientWrapper();
 
     wrapper = ({ children }) => (
-      <UseAssetDocumentsContext.Provider value={{ createAssetDocumentService: () => mockContext }}>
+      <UseAssetDocumentsContext.Provider
+        value={{ now: () => Date.now(), createAssetDocumentService: () => mockContext }}
+      >
         <QueryWrapper>
           <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
         </QueryWrapper>
@@ -107,6 +109,32 @@ describe(useAssetDocuments.name, () => {
     // Assert
     expect(result.current.data).toBeUndefined();
     expect(result.current.isPending).toBe(true);
+  });
+
+  it('reads the time from its injected clock to pace the re-reads', async () => {
+    const now = vi.fn(() => Date.now());
+    const QueryWrapper = makeQueryClientWrapper();
+
+    vi.mocked(mockContext.listAssetDocuments).mockResolvedValue(
+      makeLimitedList([
+        makeAssetDocument({ isUploaded: false, uploadStatus: DocumentUploadStatus.PROCESSING }),
+      ]),
+    );
+
+    const { result } = renderHook(() => useAssetDocuments(assetIdentifier), {
+      wrapper: ({ children }: { children: ReactNode }) => (
+        <UseAssetDocumentsContext.Provider
+          value={{ now, createAssetDocumentService: () => mockContext }}
+        >
+          <QueryWrapper>
+            <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
+          </QueryWrapper>
+        </UseAssetDocumentsContext.Provider>
+      ),
+    });
+
+    await waitFor(() => expect(result.current.isPending).toBe(false));
+    expect(now).toHaveBeenCalled();
   });
 
   it('reports a failed load', async () => {

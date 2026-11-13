@@ -41,7 +41,9 @@ describe(AssetDocuments.name, () => {
     const QueryWrapper = makeQueryClientWrapper();
 
     wrapper = ({ children }) => (
-      <UseAssetDocumentsContext.Provider value={{ createAssetDocumentService: () => listContext }}>
+      <UseAssetDocumentsContext.Provider
+        value={{ now: () => Date.now(), createAssetDocumentService: () => listContext }}
+      >
         <UseAssetLinkedFilesContext.Provider
           value={{ createAssetDocumentService: () => linkedContext }}
         >
