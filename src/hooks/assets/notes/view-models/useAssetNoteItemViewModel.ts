@@ -9,7 +9,7 @@ import {
 import type { AssetContextType } from '../../../../types/assetContext';
 import type { NewAssetNote, NoteIdentifier } from '../../../../types/note';
 import { useSuccessToast } from '../../../general/useSuccessToast';
-import { useAssetContext } from '../../useAssetContext';
+import { useAssetClient } from '../../useAssetClient';
 import { useSelectedAsset } from '../../useSelectedAsset';
 import { getAssetNotesQueryKey } from '../useAssetNotes';
 
@@ -24,7 +24,7 @@ export const UseAssetNoteItemViewModelContext =
 export function useAssetNoteItemViewModel({ space, externalId }: NoteIdentifier) {
   const { createAssetNoteService } = useContext(UseAssetNoteItemViewModelContext);
   const assetIdentifier = useSelectedAsset();
-  const client = useAssetContext();
+  const client = useAssetClient();
   const queryClient = useQueryClient();
   const showSuccessToast = useSuccessToast();
   const noteService = createAssetNoteService(client);

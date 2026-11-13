@@ -3,9 +3,9 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { makeAssetDocument } from '../../../../__mocks__/documents';
 import {
-  DocumentPreviewContext,
+  DocumentPreviewRendererContext,
   type RenderDocumentPreview,
-} from '../../../../hooks/assets/documents/useDocumentPreview';
+} from '../../../../hooks/assets/documents/useDocumentPreviewRenderer';
 import { DocumentPreviewDialog } from '../DocumentPreviewDialog';
 
 describe(DocumentPreviewDialog.name, () => {
@@ -67,12 +67,12 @@ type RenderOptions = {
 
 function renderDialog({ isOpen, preview = () => null }: RenderOptions) {
   render(
-    <DocumentPreviewContext.Provider value={preview}>
+    <DocumentPreviewRendererContext.Provider value={preview}>
       <DocumentPreviewDialog
         document={makeAssetDocument()}
         isOpen={isOpen}
         onOpenChange={vi.fn()}
       />
-    </DocumentPreviewContext.Provider>,
+    </DocumentPreviewRendererContext.Provider>,
   );
 }

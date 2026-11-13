@@ -6,7 +6,7 @@ import { makeAssetListItem, makeAssetPage } from '../../../__mocks__/assets';
 import { makeMockClient } from '../../../__mocks__/cogniteClient';
 import { makeQueryClientWrapper } from '../../../__mocks__/QueryClientWrapper';
 import type { AssetService } from '../../../services/assets/asset';
-import { AssetContext } from '../useAssetContext';
+import { AssetClientContext } from '../useAssetClient';
 import { useAssets, UseAssetsContext } from '../useAssets';
 
 describe(useAssets.name, () => {
@@ -24,7 +24,7 @@ describe(useAssets.name, () => {
     wrapper = ({ children }) => (
       <UseAssetsContext.Provider value={{ createAssetService: () => mockContext }}>
         <QueryWrapper>
-          <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
+          <AssetClientContext.Provider value={client}>{children}</AssetClientContext.Provider>
         </QueryWrapper>
       </UseAssetsContext.Provider>
     );

@@ -6,7 +6,7 @@ import { makeInstanceDetails } from '../../../__mocks__/assets';
 import { makeMockClient } from '../../../__mocks__/cogniteClient';
 import { makeQueryClientWrapper } from '../../../__mocks__/QueryClientWrapper';
 import type { AssetDetailsService } from '../../../services/assets/assetDetails';
-import { AssetContext } from '../useAssetContext';
+import { AssetClientContext } from '../useAssetClient';
 import { useAssetDetails, UseAssetDetailsContext } from '../useAssetDetails';
 
 const assetIdentifier = { space: 'asset-space', externalId: 'asset-1' };
@@ -26,7 +26,7 @@ describe(useAssetDetails.name, () => {
     wrapper = ({ children }) => (
       <UseAssetDetailsContext.Provider value={{ createAssetDetailsService: () => mockContext }}>
         <QueryWrapper>
-          <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
+          <AssetClientContext.Provider value={client}>{children}</AssetClientContext.Provider>
         </QueryWrapper>
       </UseAssetDetailsContext.Provider>
     );

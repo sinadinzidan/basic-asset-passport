@@ -6,7 +6,7 @@ import { ASSET_QUERY_STALE_TIME_MS } from '../../constants/assets';
 import { toQueryState } from '../../lib/queryState';
 import { createAssetService } from '../../services/assets/asset';
 
-import { useAssetContext } from './useAssetContext';
+import { useAssetClient } from './useAssetClient';
 
 const defaultDeps = { createAssetService };
 
@@ -15,7 +15,7 @@ export const UseAssetsContext = createContext<UseAssetsContextType>(defaultDeps)
 
 export function useAssets(cursor?: string, searchText: string = '') {
   const { createAssetService } = useContext(UseAssetsContext);
-  const client = useAssetContext();
+  const client = useAssetClient();
   const assetService = createAssetService(client);
 
   const searchQuery = searchText.trim();

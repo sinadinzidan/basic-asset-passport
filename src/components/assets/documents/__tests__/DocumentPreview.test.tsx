@@ -11,7 +11,7 @@ import type {
   CogniteFileViewerProps as CogniteFileViewerProperties,
   DocumentAnnotation,
 } from '../../../../cognite-file-viewer/types';
-import { AssetContext } from '../../../../hooks/assets/useAssetContext';
+import { AssetClientContext } from '../../../../hooks/assets/useAssetClient';
 import { UseAssetDetailsContext } from '../../../../hooks/assets/useAssetDetails';
 import { useNavigationState } from '../../../../hooks/general/useNavigationState';
 import { NavigationProvider } from '../../../../providers/general/NavigationProvider';
@@ -257,7 +257,7 @@ describe(DocumentPreview.name, () => {
       const view = render(
         <SdkWrapper>
           <QueryWrapper>
-            <AssetContext.Provider value={client}>
+            <AssetClientContext.Provider value={client}>
               <UseAssetDetailsContext.Provider
                 value={{ createAssetDetailsService: () => detailsContext }}
               >
@@ -268,7 +268,7 @@ describe(DocumentPreview.name, () => {
                   <SelectedAssetProbe />
                 </NavigationProvider>
               </UseAssetDetailsContext.Provider>
-            </AssetContext.Provider>
+            </AssetClientContext.Provider>
           </QueryWrapper>
         </SdkWrapper>,
       );

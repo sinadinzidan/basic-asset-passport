@@ -10,7 +10,7 @@ import { toQueryState } from '../../../lib/queryState';
 import { getTimeseriesKey } from '../../../lib/timeseriesProperties';
 import type { TimeseriesIdentifier, TimeseriesTrend } from '../../../types/timeseries';
 
-import { useTimeseriesContext } from './useTimeseriesContext';
+import { useTimeseriesClient } from './useTimeseriesClient';
 
 const defaultDeps = { now: () => Date.now() };
 
@@ -20,7 +20,7 @@ export const UseTimeseriesTrendsContext =
 
 export function useTimeseriesTrends(identifiers: TimeseriesIdentifier[]) {
   const { now } = useContext(UseTimeseriesTrendsContext);
-  const client = useTimeseriesContext();
+  const client = useTimeseriesClient();
 
   const query = useQuery({
     queryKey: [

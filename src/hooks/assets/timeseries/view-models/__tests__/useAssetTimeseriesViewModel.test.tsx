@@ -12,9 +12,9 @@ import { getTimeseriesKey } from '../../../../../lib/timeseriesProperties';
 import type { AssetTimeseriesService } from '../../../../../services/assets/timeseries/assetTimeseries';
 import type { TimeseriesContextType } from '../../../../../types/timeseries';
 import { NavigationStoreContext } from '../../../../general/useNavigationState';
-import { AssetContext } from '../../../useAssetContext';
+import { AssetClientContext } from '../../../useAssetClient';
 import { UseAssetTimeseriesContext } from '../../useAssetTimeseries';
-import { TimeseriesContext } from '../../useTimeseriesContext';
+import { TimeseriesClientContext } from '../../useTimeseriesClient';
 import { UseTimeseriesTrendsContext } from '../../useTimeseriesTrends';
 import { useAssetTimeseriesViewModel } from '../useAssetTimeseriesViewModel';
 
@@ -66,13 +66,13 @@ describe(useAssetTimeseriesViewModel.name, () => {
           }}
         >
           <QueryWrapper>
-            <TimeseriesContext.Provider value={datapoints}>
-              <AssetContext.Provider value={assetContext}>
+            <TimeseriesClientContext.Provider value={datapoints}>
+              <AssetClientContext.Provider value={assetContext}>
                 <NavigationStoreContext.Provider value={navigationStore}>
                   {children}
                 </NavigationStoreContext.Provider>
-              </AssetContext.Provider>
-            </TimeseriesContext.Provider>
+              </AssetClientContext.Provider>
+            </TimeseriesClientContext.Provider>
           </QueryWrapper>
         </UseTimeseriesTrendsContext.Provider>
       </UseAssetTimeseriesContext.Provider>

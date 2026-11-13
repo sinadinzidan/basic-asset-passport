@@ -11,9 +11,9 @@ import {
 import type { AssetDocumentService } from '../../../../services/assets/documents/assetDocument';
 import type { DocumentFileContextType } from '../../../../types/documentFileContext';
 import type { ShowSuccessToast } from '../../../general/useSuccessToast';
-import { AssetContext } from '../../useAssetContext';
+import { AssetClientContext } from '../../useAssetClient';
 import { getAssetDocumentsQueryKey } from '../useAssetDocuments';
-import { DocumentFileContext } from '../useDocumentFileContext';
+import { DocumentFileClientContext } from '../useDocumentFileClient';
 import {
   useUploadAssetDocuments,
   UseUploadAssetDocumentsContext,
@@ -50,9 +50,9 @@ describe(useUploadAssetDocuments.name, () => {
         }}
       >
         <QueryWrapper>
-          <DocumentFileContext.Provider value={fileClient}>
-            <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
-          </DocumentFileContext.Provider>
+          <DocumentFileClientContext.Provider value={fileClient}>
+            <AssetClientContext.Provider value={client}>{children}</AssetClientContext.Provider>
+          </DocumentFileClientContext.Provider>
         </QueryWrapper>
       </UseUploadAssetDocumentsContext.Provider>
     );

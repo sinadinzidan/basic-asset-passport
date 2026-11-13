@@ -8,11 +8,11 @@ import type { AssetIdentifier } from '../../types/asset';
 import type { CountState } from '../../types/countState';
 
 import { getAssetDocumentsQueryKey } from './documents/useAssetDocuments';
-import { getAssetLinkedFilesQueryKey } from './documents/useAssetLinkedFiles';
+import { getAssetExistingFilesQueryKey } from './documents/useAssetExistingFiles';
 import { getAssetEquipmentQueryKey } from './equipment/useAssetEquipment';
 import { getAssetNotesQueryKey } from './notes/useAssetNotes';
 import { getAssetTimeseriesQueryKey } from './timeseries/useAssetTimeseries';
-import { useAssetContext } from './useAssetContext';
+import { useAssetClient } from './useAssetClient';
 
 const defaultDeps = { createAssetDetailsTabCountService };
 
@@ -29,7 +29,7 @@ export type AssetDetailsTabCounts = {
 
 export function useAssetDetailsTabCounts(assetIdentifier: AssetIdentifier): AssetDetailsTabCounts {
   const { createAssetDetailsTabCountService } = useContext(UseAssetDetailsTabCountsContext);
-  const client = useAssetContext();
+  const client = useAssetClient();
   const countService = createAssetDetailsTabCountService(client);
 
   const equipment = useQuery({
@@ -57,7 +57,7 @@ export function useAssetDetailsTabCounts(assetIdentifier: AssetIdentifier): Asse
   });
   const linkedFiles = useQuery({
     queryKey: [
-      ...getAssetLinkedFilesQueryKey(client.project, assetIdentifier),
+      ...getAssetExistingFilesQueryKey(client.project, assetIdentifier),
       COUNT_QUERY_KEY_PART,
     ],
     queryFn: () => countService.countAssetLinkedFiles(assetIdentifier),

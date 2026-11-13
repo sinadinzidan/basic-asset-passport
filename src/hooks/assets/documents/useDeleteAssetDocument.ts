@@ -8,7 +8,7 @@ import {
 import type { AssetIdentifier } from '../../../types/asset';
 import type { AssetContextType } from '../../../types/assetContext';
 import type { DocumentIdentifier } from '../../../types/document';
-import { useAssetContext } from '../useAssetContext';
+import { useAssetClient } from '../useAssetClient';
 
 import { getAssetDocumentsQueryKey } from './useAssetDocuments';
 
@@ -24,7 +24,7 @@ export const UseDeleteAssetDocumentContext =
 
 export function useDeleteAssetDocument(assetIdentifier: AssetIdentifier) {
   const { createAssetDocumentService } = useContext(UseDeleteAssetDocumentContext);
-  const client = useAssetContext();
+  const client = useAssetClient();
   const queryClient = useQueryClient();
   const documentService = createAssetDocumentService(client);
 

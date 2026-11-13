@@ -8,9 +8,9 @@ import { makeLimitedList } from '../../../../__mocks__/lists';
 import { makeNavigationStore } from '../../../../__mocks__/navigation';
 import { makeQueryClientWrapper } from '../../../../__mocks__/QueryClientWrapper';
 import { UseAssetDocumentsContext } from '../../../../hooks/assets/documents/useAssetDocuments';
-import { UseAssetLinkedFilesContext } from '../../../../hooks/assets/documents/useAssetLinkedFiles';
-import { DocumentFileContext } from '../../../../hooks/assets/documents/useDocumentFileContext';
-import { AssetContext } from '../../../../hooks/assets/useAssetContext';
+import { UseAssetExistingFilesContext } from '../../../../hooks/assets/documents/useAssetExistingFiles';
+import { DocumentFileClientContext } from '../../../../hooks/assets/documents/useDocumentFileClient';
+import { AssetClientContext } from '../../../../hooks/assets/useAssetClient';
 import { NavigationStoreContext } from '../../../../hooks/general/useNavigationState';
 import type { AssetDocumentService } from '../../../../services/assets/documents/assetDocument';
 import type { DocumentFileContextType } from '../../../../types/documentFileContext';
@@ -44,19 +44,19 @@ describe(AssetDocuments.name, () => {
       <UseAssetDocumentsContext.Provider
         value={{ now: () => Date.now(), createAssetDocumentService: () => listContext }}
       >
-        <UseAssetLinkedFilesContext.Provider
+        <UseAssetExistingFilesContext.Provider
           value={{ createAssetDocumentService: () => linkedContext }}
         >
           <QueryWrapper>
-            <AssetContext.Provider value={client}>
-              <DocumentFileContext.Provider value={files}>
+            <AssetClientContext.Provider value={client}>
+              <DocumentFileClientContext.Provider value={files}>
                 <NavigationStoreContext.Provider value={navigationStore}>
                   {children}
                 </NavigationStoreContext.Provider>
-              </DocumentFileContext.Provider>
-            </AssetContext.Provider>
+              </DocumentFileClientContext.Provider>
+            </AssetClientContext.Provider>
           </QueryWrapper>
-        </UseAssetLinkedFilesContext.Provider>
+        </UseAssetExistingFilesContext.Provider>
       </UseAssetDocumentsContext.Provider>
     );
   });

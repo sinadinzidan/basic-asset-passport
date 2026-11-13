@@ -7,7 +7,7 @@ import { toQueryState } from '../../lib/queryState';
 import { createAssetDetailsService } from '../../services/assets/assetDetails';
 import type { AssetIdentifier } from '../../types/asset';
 
-import { useAssetContext } from './useAssetContext';
+import { useAssetClient } from './useAssetClient';
 
 const defaultDeps = { createAssetDetailsService };
 
@@ -16,7 +16,7 @@ export const UseAssetDetailsContext = createContext<UseAssetDetailsContextType>(
 
 export function useAssetDetails(assetIdentifier: AssetIdentifier) {
   const { createAssetDetailsService } = useContext(UseAssetDetailsContext);
-  const client = useAssetContext();
+  const client = useAssetClient();
   const detailsService = createAssetDetailsService(client);
 
   const query = useQuery({

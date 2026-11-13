@@ -11,7 +11,7 @@ import { makeMockClient } from '../../../__mocks__/cogniteClient';
 import { makeNavigationStore } from '../../../__mocks__/navigation';
 import { makeQueryClientWrapper } from '../../../__mocks__/QueryClientWrapper';
 import { ASSET_SEARCH_LIMIT } from '../../../constants/assets';
-import { AssetContext } from '../../../hooks/assets/useAssetContext';
+import { AssetClientContext } from '../../../hooks/assets/useAssetClient';
 import { UseAssetsContext } from '../../../hooks/assets/useAssets';
 import { UseAssetsKPICountsContext } from '../../../hooks/assets/useAssetsKPICounts';
 import { DebounceContext, type DebounceDeps } from '../../../hooks/general/useDebouncedCallback';
@@ -51,7 +51,7 @@ describe(AssetTable.name, () => {
               value={{ createAssetsKPICountService: () => countsContext }}
             >
               <QueryWrapper>
-                <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
+                <AssetClientContext.Provider value={client}>{children}</AssetClientContext.Provider>
               </QueryWrapper>
             </UseAssetsKPICountsContext.Provider>
           </UseAssetsContext.Provider>

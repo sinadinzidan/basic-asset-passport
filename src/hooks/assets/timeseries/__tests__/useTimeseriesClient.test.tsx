@@ -3,18 +3,20 @@ import type { ReactNode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
 import type { TimeseriesContextType } from '../../../../types/timeseries';
-import { TimeseriesContext, useTimeseriesContext } from '../useTimeseriesContext';
+import { TimeseriesClientContext, useTimeseriesClient } from '../useTimeseriesClient';
 
-describe(useTimeseriesContext.name, () => {
+describe(useTimeseriesClient.name, () => {
   it('returns the client from the provider', () => {
     const client: TimeseriesContextType = {
       project: 'p',
       getTrends: vi.fn(),
     };
 
-    const { result } = renderHook(() => useTimeseriesContext(), {
+    const { result } = renderHook(() => useTimeseriesClient(), {
       wrapper: ({ children }: { children: ReactNode }) => (
-        <TimeseriesContext.Provider value={client}>{children}</TimeseriesContext.Provider>
+        <TimeseriesClientContext.Provider value={client}>
+          {children}
+        </TimeseriesClientContext.Provider>
       ),
     });
 
@@ -24,8 +26,8 @@ describe(useTimeseriesContext.name, () => {
   it('fails clearly when used outside a provider', () => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
 
-    expect(() => renderHook(() => useTimeseriesContext())).toThrow(
-      'useTimeseriesContext must be used inside',
+    expect(() => renderHook(() => useTimeseriesClient())).toThrow(
+      'useTimeseriesClient must be used inside',
     );
   });
 });

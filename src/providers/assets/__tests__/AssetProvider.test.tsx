@@ -8,10 +8,10 @@ import {
   DocumentViewerContext,
   type DocumentViewerContextType,
 } from '../../../components/assets/documents/documentViewerContext';
-import { useDocumentFileContext } from '../../../hooks/assets/documents/useDocumentFileContext';
-import { useDocumentPreview } from '../../../hooks/assets/documents/useDocumentPreview';
-import { useTimeseriesContext } from '../../../hooks/assets/timeseries/useTimeseriesContext';
-import { useAssetContext } from '../../../hooks/assets/useAssetContext';
+import { useDocumentFileClient } from '../../../hooks/assets/documents/useDocumentFileClient';
+import { useDocumentPreviewRenderer } from '../../../hooks/assets/documents/useDocumentPreviewRenderer';
+import { useTimeseriesClient } from '../../../hooks/assets/timeseries/useTimeseriesClient';
+import { useAssetClient } from '../../../hooks/assets/useAssetClient';
 import { NavigationProvider } from '../../general/NavigationProvider';
 import { AssetProvider } from '../AssetProvider';
 
@@ -25,10 +25,10 @@ describe(AssetProvider.name, () => {
   });
 
   it('gives its children the signed-in client to read assets with', async () => {
-    let assetContext: ReturnType<typeof useAssetContext> | undefined;
+    let assetContext: ReturnType<typeof useAssetClient> | undefined;
 
     function AssetProbe() {
-      assetContext = useAssetContext();
+      assetContext = useAssetClient();
 
       return <p>Assets of {assetContext.project}</p>;
     }
@@ -51,7 +51,7 @@ describe(AssetProvider.name, () => {
 
   it('gives its children the datapoints of the signed-in project', async () => {
     function TimeseriesProbe() {
-      return <p>Timeseries of {useTimeseriesContext().project}</p>;
+      return <p>Timeseries of {useTimeseriesClient().project}</p>;
     }
 
     render(
@@ -70,10 +70,10 @@ describe(AssetProvider.name, () => {
       status: 200,
       headers: {},
     });
-    let files: ReturnType<typeof useDocumentFileContext> | undefined;
+    let files: ReturnType<typeof useDocumentFileClient> | undefined;
 
     function FilesProbe() {
-      files = useDocumentFileContext();
+      files = useDocumentFileClient();
 
       return <p>Files ready</p>;
     }
@@ -96,7 +96,7 @@ describe(AssetProvider.name, () => {
     };
 
     function PreviewProbe() {
-      const renderPreview = useDocumentPreview();
+      const renderPreview = useDocumentPreviewRenderer();
 
       return renderPreview ? renderPreview(document) : <p>No preview</p>;
     }

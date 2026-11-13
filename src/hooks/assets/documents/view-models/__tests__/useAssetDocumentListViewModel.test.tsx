@@ -12,11 +12,11 @@ import { DocumentOrigin } from '../../../../../enums/documentOrigin';
 import type { AssetDocumentService } from '../../../../../services/assets/documents/assetDocument';
 import type { DocumentFileContextType } from '../../../../../types/documentFileContext';
 import { NavigationStoreContext } from '../../../../general/useNavigationState';
-import { AssetContext } from '../../../useAssetContext';
+import { AssetClientContext } from '../../../useAssetClient';
 import { UseAssetDocumentsContext } from '../../useAssetDocuments';
-import { UseAssetLinkedFilesContext } from '../../useAssetLinkedFiles';
+import { UseAssetExistingFilesContext } from '../../useAssetExistingFiles';
 import { UseDeleteAssetDocumentContext } from '../../useDeleteAssetDocument';
-import { DocumentFileContext } from '../../useDocumentFileContext';
+import { DocumentFileClientContext } from '../../useDocumentFileClient';
 import {
   useUploadAssetDocuments,
   UseUploadAssetDocumentsContext,
@@ -53,12 +53,12 @@ describe(useAssetDocumentListViewModel.name, () => {
       <UseAssetDocumentsContext.Provider
         value={{ now: () => Date.now(), createAssetDocumentService: () => deps }}
       >
-        <UseAssetLinkedFilesContext.Provider value={{ createAssetDocumentService: () => deps }}>
+        <UseAssetExistingFilesContext.Provider value={{ createAssetDocumentService: () => deps }}>
           <UseDeleteAssetDocumentContext.Provider
             value={{ createAssetDocumentService: () => deps }}
           >
             <QueryWrapper>
-              <AssetContext.Provider value={client}>
+              <AssetClientContext.Provider value={client}>
                 <NavigationStoreContext.Provider value={navigationStore}>
                   <UseUploadAssetDocumentsContext.Provider
                     value={{
@@ -66,15 +66,15 @@ describe(useAssetDocumentListViewModel.name, () => {
                       createAssetDocumentService: () => deps,
                     }}
                   >
-                    <DocumentFileContext.Provider value={documentFileContext}>
+                    <DocumentFileClientContext.Provider value={documentFileContext}>
                       {children}
-                    </DocumentFileContext.Provider>
+                    </DocumentFileClientContext.Provider>
                   </UseUploadAssetDocumentsContext.Provider>
                 </NavigationStoreContext.Provider>
-              </AssetContext.Provider>
+              </AssetClientContext.Provider>
             </QueryWrapper>
           </UseDeleteAssetDocumentContext.Provider>
-        </UseAssetLinkedFilesContext.Provider>
+        </UseAssetExistingFilesContext.Provider>
       </UseAssetDocumentsContext.Provider>
     );
   });

@@ -7,7 +7,7 @@ import { makeNavigationStore } from '../../../../../__mocks__/navigation';
 import { makeQueryClientWrapper } from '../../../../../__mocks__/QueryClientWrapper';
 import type { AssetNoteService } from '../../../../../services/assets/notes/assetNote';
 import { NavigationStoreContext } from '../../../../general/useNavigationState';
-import { AssetContext } from '../../../useAssetContext';
+import { AssetClientContext } from '../../../useAssetClient';
 import { UseAddAssetNoteContext } from '../../useAddAssetNote';
 import { useAssetNoteAddViewModel } from '../useAssetNoteAddViewModel';
 
@@ -28,11 +28,11 @@ describe(useAssetNoteAddViewModel.name, () => {
     wrapper = ({ children }) => (
       <UseAddAssetNoteContext.Provider value={{ createAssetNoteService: () => noteService }}>
         <QueryWrapper>
-          <AssetContext.Provider value={client}>
+          <AssetClientContext.Provider value={client}>
             <NavigationStoreContext.Provider value={navigationStore}>
               {children}
             </NavigationStoreContext.Provider>
-          </AssetContext.Provider>
+          </AssetClientContext.Provider>
         </QueryWrapper>
       </UseAddAssetNoteContext.Provider>
     );

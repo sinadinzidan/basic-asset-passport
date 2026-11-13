@@ -9,7 +9,7 @@ import { makeNavigationStore } from '../../../../../__mocks__/navigation';
 import { makeQueryClientWrapper } from '../../../../../__mocks__/QueryClientWrapper';
 import type { AssetEquipmentService } from '../../../../../services/assets/assetEquipment';
 import { NavigationStoreContext } from '../../../../general/useNavigationState';
-import { AssetContext } from '../../../useAssetContext';
+import { AssetClientContext } from '../../../useAssetClient';
 import { UseAssetEquipmentContext } from '../../useAssetEquipment';
 import { useAssetEquipmentViewModel } from '../useAssetEquipmentViewModel';
 
@@ -34,11 +34,11 @@ describe(useAssetEquipmentViewModel.name, () => {
         value={{ createAssetEquipmentService: () => equipmentService }}
       >
         <QueryWrapper>
-          <AssetContext.Provider value={client}>
+          <AssetClientContext.Provider value={client}>
             <NavigationStoreContext.Provider value={navigationStore}>
               {children}
             </NavigationStoreContext.Provider>
-          </AssetContext.Provider>
+          </AssetClientContext.Provider>
         </QueryWrapper>
       </UseAssetEquipmentContext.Provider>
     );

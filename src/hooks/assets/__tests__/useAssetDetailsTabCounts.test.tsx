@@ -7,7 +7,7 @@ import { makeMockClient } from '../../../__mocks__/cogniteClient';
 import { makeQueryClientWrapper, makeTestQueryClient } from '../../../__mocks__/QueryClientWrapper';
 import type { AssetDetailsTabCountService } from '../../../services/assets/assetDetailsTabCounts';
 import { getAssetNotesQueryKey } from '../notes/useAssetNotes';
-import { AssetContext } from '../useAssetContext';
+import { AssetClientContext } from '../useAssetClient';
 import {
   UseAssetDetailsTabCountsContext,
   useAssetDetailsTabCounts,
@@ -38,7 +38,7 @@ describe(useAssetDetailsTabCounts.name, () => {
         value={{ createAssetDetailsTabCountService: () => context }}
       >
         <QueryWrapper>
-          <AssetContext.Provider value={assetContext}>{children}</AssetContext.Provider>
+          <AssetClientContext.Provider value={assetContext}>{children}</AssetClientContext.Provider>
         </QueryWrapper>
       </UseAssetDetailsTabCountsContext.Provider>
     );

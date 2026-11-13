@@ -12,7 +12,7 @@ import { NOTE_QUERY_LIMIT } from '../../../../constants/notes';
 import { UseAssetNotesContext } from '../../../../hooks/assets/notes/useAssetNotes';
 import { UseDeleteAssetNoteContext } from '../../../../hooks/assets/notes/useDeleteAssetNote';
 import { UseAssetNoteItemViewModelContext } from '../../../../hooks/assets/notes/view-models/useAssetNoteItemViewModel';
-import { AssetContext } from '../../../../hooks/assets/useAssetContext';
+import { AssetClientContext } from '../../../../hooks/assets/useAssetClient';
 import { NavigationStoreContext } from '../../../../hooks/general/useNavigationState';
 import type { AssetNoteService } from '../../../../services/assets/notes/assetNote';
 import { AssetNoteList } from '../AssetNoteList';
@@ -49,11 +49,11 @@ describe(AssetNoteList.name, () => {
             value={{ createAssetNoteService: () => deleteContext }}
           >
             <QueryWrapper>
-              <AssetContext.Provider value={client}>
+              <AssetClientContext.Provider value={client}>
                 <NavigationStoreContext.Provider value={navigationStore}>
                   {children}
                 </NavigationStoreContext.Provider>
-              </AssetContext.Provider>
+              </AssetClientContext.Provider>
             </QueryWrapper>
           </UseDeleteAssetNoteContext.Provider>
         </UseAssetNoteItemViewModelContext.Provider>

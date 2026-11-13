@@ -17,7 +17,7 @@ import { UseAddAssetNoteContext } from '../../../hooks/assets/notes/useAddAssetN
 import { UseAssetNotesContext } from '../../../hooks/assets/notes/useAssetNotes';
 import { UseDeleteAssetNoteContext } from '../../../hooks/assets/notes/useDeleteAssetNote';
 import { UseAssetNoteItemViewModelContext } from '../../../hooks/assets/notes/view-models/useAssetNoteItemViewModel';
-import { AssetContext } from '../../../hooks/assets/useAssetContext';
+import { AssetClientContext } from '../../../hooks/assets/useAssetClient';
 import { NavigationStoreContext } from '../../../hooks/general/useNavigationState';
 import type { AssetNoteService } from '../../../services/assets/notes/assetNote';
 import type { NavigationStore } from '../../../types/navigation';
@@ -64,7 +64,9 @@ describe(`${AssetDetailsTabs.name} notes`, () => {
                 value={{ createAssetNoteService: () => deleteContext }}
               >
                 <QueryWrapper>
-                  <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
+                  <AssetClientContext.Provider value={client}>
+                    {children}
+                  </AssetClientContext.Provider>
                 </QueryWrapper>
               </UseDeleteAssetNoteContext.Provider>
             </UseAssetNoteItemViewModelContext.Provider>

@@ -11,7 +11,7 @@ import {
 import { NOTE_DELETED_MESSAGE } from '../../../../constants/notes';
 import type { AssetNoteService } from '../../../../services/assets/notes/assetNote';
 import { SuccessToastContext, type ShowSuccessToast } from '../../../general/useSuccessToast';
-import { AssetContext } from '../../useAssetContext';
+import { AssetClientContext } from '../../useAssetClient';
 import { getAssetNotesQueryKey } from '../useAssetNotes';
 import { useDeleteAssetNote, UseDeleteAssetNoteContext } from '../useDeleteAssetNote';
 
@@ -37,7 +37,7 @@ describe(useDeleteAssetNote.name, () => {
       <UseDeleteAssetNoteContext.Provider value={{ createAssetNoteService: () => mockContext }}>
         <QueryWrapper>
           <SuccessToastContext.Provider value={showSuccessToast}>
-            <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
+            <AssetClientContext.Provider value={client}>{children}</AssetClientContext.Provider>
           </SuccessToastContext.Provider>
         </QueryWrapper>
       </UseDeleteAssetNoteContext.Provider>

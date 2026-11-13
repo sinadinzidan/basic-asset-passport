@@ -4,10 +4,10 @@ import { DOCUMENT_QUERY_LIMIT } from '../../../../constants/documents';
 import { isSameInstance } from '../../../../lib/instanceKey';
 import type { AssetDocument } from '../../../../types/document';
 import { useListLimit } from '../../../general/useListLimit';
-import { useAssetContext } from '../../useAssetContext';
+import { useAssetClient } from '../../useAssetClient';
 import { useSelectedAsset } from '../../useSelectedAsset';
 import { useAssetDocuments } from '../useAssetDocuments';
-import { useAssetLinkedFiles } from '../useAssetLinkedFiles';
+import { useAssetExistingFiles } from '../useAssetExistingFiles';
 import { useDeleteAssetDocument } from '../useDeleteAssetDocument';
 import { getUploadAssetDocumentsMutationKey } from '../useUploadAssetDocuments';
 
@@ -18,9 +18,9 @@ export function useAssetDocumentListViewModel() {
   const documentLimit = useListLimit(DOCUMENT_QUERY_LIMIT);
   const linkedFileLimit = useListLimit(DOCUMENT_QUERY_LIMIT);
   const documents = useAssetDocuments(assetIdentifier, documentLimit.limit);
-  const linkedFiles = useAssetLinkedFiles(assetIdentifier, linkedFileLimit.limit);
+  const linkedFiles = useAssetExistingFiles(assetIdentifier, linkedFileLimit.limit);
   const deletion = useDeleteAssetDocument(assetIdentifier);
-  const client = useAssetContext();
+  const client = useAssetClient();
   const pendingUploads = useMutationState({
     filters: {
       mutationKey: getUploadAssetDocumentsMutationKey(client.project, assetIdentifier),

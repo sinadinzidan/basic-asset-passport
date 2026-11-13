@@ -6,7 +6,7 @@ import { makeAssetsKPICountsContext } from '../../../__mocks__/assetsKPICounts';
 import { makeMockClient } from '../../../__mocks__/cogniteClient';
 import { makeQueryClientWrapper } from '../../../__mocks__/QueryClientWrapper';
 import type { AssetsKPICountService } from '../../../services/assets/assetsKPICounts';
-import { AssetContext } from '../useAssetContext';
+import { AssetClientContext } from '../useAssetClient';
 import { UseAssetsKPICountsContext, useAssetsKPICounts } from '../useAssetsKPICounts';
 
 describe(useAssetsKPICounts.name, () => {
@@ -19,11 +19,11 @@ describe(useAssetsKPICounts.name, () => {
     const QueryWrapper = makeQueryClientWrapper();
 
     wrapper = ({ children }) => (
-      <AssetContext.Provider value={client}>
+      <AssetClientContext.Provider value={client}>
         <UseAssetsKPICountsContext.Provider value={{ createAssetsKPICountService: () => context }}>
           <QueryWrapper>{children}</QueryWrapper>
         </UseAssetsKPICountsContext.Provider>
-      </AssetContext.Provider>
+      </AssetClientContext.Provider>
     );
   });
 

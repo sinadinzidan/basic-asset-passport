@@ -7,9 +7,9 @@ import { makeAssetDocument } from '../../../../__mocks__/documents';
 import { DocumentOrigin } from '../../../../enums/documentOrigin';
 import { DocumentUploadStatus } from '../../../../enums/documentUploadStatus';
 import {
-  DocumentPreviewContext,
+  DocumentPreviewRendererContext,
   type RenderDocumentPreview,
-} from '../../../../hooks/assets/documents/useDocumentPreview';
+} from '../../../../hooks/assets/documents/useDocumentPreviewRenderer';
 import type { AssetDocument } from '../../../../types/document';
 import { AssetDocumentItem } from '../AssetDocumentItem';
 
@@ -29,9 +29,9 @@ describe(AssetDocumentItem.name, () => {
   beforeEach(() => {
     onDelete = vi.fn(() => Promise.resolve());
     wrapper = ({ children }) => (
-      <DocumentPreviewContext.Provider value={renderPreviewStub}>
+      <DocumentPreviewRendererContext.Provider value={renderPreviewStub}>
         {children}
-      </DocumentPreviewContext.Provider>
+      </DocumentPreviewRendererContext.Provider>
     );
   });
 

@@ -8,8 +8,8 @@ import { makeQueryClientWrapper } from '../../../../../__mocks__/QueryClientWrap
 import type { AssetDocumentService } from '../../../../../services/assets/documents/assetDocument';
 import type { DocumentFileContextType } from '../../../../../types/documentFileContext';
 import { NavigationStoreContext } from '../../../../general/useNavigationState';
-import { AssetContext } from '../../../useAssetContext';
-import { DocumentFileContext } from '../../useDocumentFileContext';
+import { AssetClientContext } from '../../../useAssetClient';
+import { DocumentFileClientContext } from '../../useDocumentFileClient';
 import { UseUploadAssetDocumentsContext } from '../../useUploadAssetDocuments';
 import { useAssetDocumentUploadViewModel } from '../useAssetDocumentUploadViewModel';
 
@@ -41,13 +41,13 @@ describe(useAssetDocumentUploadViewModel.name, () => {
         }}
       >
         <QueryWrapper>
-          <DocumentFileContext.Provider value={fileClient}>
-            <AssetContext.Provider value={client}>
+          <DocumentFileClientContext.Provider value={fileClient}>
+            <AssetClientContext.Provider value={client}>
               <NavigationStoreContext.Provider value={navigationStore}>
                 {children}
               </NavigationStoreContext.Provider>
-            </AssetContext.Provider>
-          </DocumentFileContext.Provider>
+            </AssetClientContext.Provider>
+          </DocumentFileClientContext.Provider>
         </QueryWrapper>
       </UseUploadAssetDocumentsContext.Provider>
     );

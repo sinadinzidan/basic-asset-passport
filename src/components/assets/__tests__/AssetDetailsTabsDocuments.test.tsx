@@ -14,8 +14,8 @@ import { makeQueryClientWrapper } from '../../../__mocks__/QueryClientWrapper';
 import { DOCUMENT_QUERY_LIMIT } from '../../../constants/documents';
 import { AssetTab } from '../../../enums/assetTab';
 import { UseAssetDocumentsContext } from '../../../hooks/assets/documents/useAssetDocuments';
-import { DocumentFileContext } from '../../../hooks/assets/documents/useDocumentFileContext';
-import { AssetContext } from '../../../hooks/assets/useAssetContext';
+import { DocumentFileClientContext } from '../../../hooks/assets/documents/useDocumentFileClient';
+import { AssetClientContext } from '../../../hooks/assets/useAssetClient';
 import { NavigationStoreContext } from '../../../hooks/general/useNavigationState';
 import type { AssetDocumentService } from '../../../services/assets/documents/assetDocument';
 import type { NavigationStore } from '../../../types/navigation';
@@ -44,8 +44,8 @@ describe(`${AssetDetailsTabs.name} documents`, () => {
 
     wrapper = ({ children }) => (
       <NavigationStoreContext.Provider value={store}>
-        <AssetContext.Provider value={client}>
-          <DocumentFileContext.Provider
+        <AssetClientContext.Provider value={client}>
+          <DocumentFileClientContext.Provider
             value={{
               requestUploadUrl: vi.fn(),
               uploadContent: vi.fn(),
@@ -55,11 +55,11 @@ describe(`${AssetDetailsTabs.name} documents`, () => {
               value={{ now: () => Date.now(), createAssetDocumentService: () => listContext }}
             >
               <QueryWrapper>
-                <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
+                <AssetClientContext.Provider value={client}>{children}</AssetClientContext.Provider>
               </QueryWrapper>
             </UseAssetDocumentsContext.Provider>
-          </DocumentFileContext.Provider>
-        </AssetContext.Provider>
+          </DocumentFileClientContext.Provider>
+        </AssetClientContext.Provider>
       </NavigationStoreContext.Provider>
     );
   });

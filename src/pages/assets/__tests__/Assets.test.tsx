@@ -12,9 +12,9 @@ import { makeLimitedList } from '../../../__mocks__/lists';
 import { makeQueryClientWrapper } from '../../../__mocks__/QueryClientWrapper';
 import { AssetTab } from '../../../enums/assetTab';
 import { UseAssetDocumentsContext } from '../../../hooks/assets/documents/useAssetDocuments';
-import { DocumentFileContext } from '../../../hooks/assets/documents/useDocumentFileContext';
-import { DocumentPreviewContext } from '../../../hooks/assets/documents/useDocumentPreview';
-import { AssetContext } from '../../../hooks/assets/useAssetContext';
+import { DocumentFileClientContext } from '../../../hooks/assets/documents/useDocumentFileClient';
+import { DocumentPreviewRendererContext } from '../../../hooks/assets/documents/useDocumentPreviewRenderer';
+import { AssetClientContext } from '../../../hooks/assets/useAssetClient';
 import { UseAssetDetailsContext } from '../../../hooks/assets/useAssetDetails';
 import { UseAssetDetailsTabCountsContext } from '../../../hooks/assets/useAssetDetailsTabCounts';
 import { UseAssetsContext } from '../../../hooks/assets/useAssets';
@@ -72,7 +72,9 @@ describe(Assets.name, () => {
                 value={{ createAssetsKPICountService: () => registerCountsContext }}
               >
                 <QueryWrapper>
-                  <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
+                  <AssetClientContext.Provider value={client}>
+                    {children}
+                  </AssetClientContext.Provider>
                 </QueryWrapper>
               </UseAssetsKPICountsContext.Provider>
             </UseAssetDetailsTabCountsContext.Provider>
@@ -294,17 +296,19 @@ describe(Assets.name, () => {
       );
     }
     render(
-      <AssetContext.Provider value={client}>
-        <DocumentFileContext.Provider value={{ requestUploadUrl: vi.fn(), uploadContent: vi.fn() }}>
+      <AssetClientContext.Provider value={client}>
+        <DocumentFileClientContext.Provider
+          value={{ requestUploadUrl: vi.fn(), uploadContent: vi.fn() }}
+        >
           <UseAssetDocumentsContext.Provider
             value={{ now: () => Date.now(), createAssetDocumentService: () => documentsContext }}
           >
-            <DocumentPreviewContext.Provider value={() => <OpenOtherAssetButton />}>
+            <DocumentPreviewRendererContext.Provider value={() => <OpenOtherAssetButton />}>
               <RegisterWithState api={api} initialState={initialState} />
-            </DocumentPreviewContext.Provider>
+            </DocumentPreviewRendererContext.Provider>
           </UseAssetDocumentsContext.Provider>
-        </DocumentFileContext.Provider>
-      </AssetContext.Provider>,
+        </DocumentFileClientContext.Provider>
+      </AssetClientContext.Provider>,
       { wrapper },
     );
 

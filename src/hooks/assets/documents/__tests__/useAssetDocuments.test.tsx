@@ -11,7 +11,7 @@ import { DocumentUploadStatus } from '../../../../enums/documentUploadStatus';
 import type { AssetDocumentService } from '../../../../services/assets/documents/assetDocument';
 import type { AssetDocument } from '../../../../types/document';
 import type { LimitedList } from '../../../../types/list';
-import { AssetContext } from '../../useAssetContext';
+import { AssetClientContext } from '../../useAssetClient';
 import { useAssetDocuments, UseAssetDocumentsContext } from '../useAssetDocuments';
 
 const assetIdentifier = { space: 'asset-space', externalId: 'FLOC-1' };
@@ -32,7 +32,7 @@ describe(useAssetDocuments.name, () => {
         value={{ now: () => Date.now(), createAssetDocumentService: () => mockContext }}
       >
         <QueryWrapper>
-          <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
+          <AssetClientContext.Provider value={client}>{children}</AssetClientContext.Provider>
         </QueryWrapper>
       </UseAssetDocumentsContext.Provider>
     );
@@ -127,7 +127,7 @@ describe(useAssetDocuments.name, () => {
           value={{ now, createAssetDocumentService: () => mockContext }}
         >
           <QueryWrapper>
-            <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
+            <AssetClientContext.Provider value={client}>{children}</AssetClientContext.Provider>
           </QueryWrapper>
         </UseAssetDocumentsContext.Provider>
       ),

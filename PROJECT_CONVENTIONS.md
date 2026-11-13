@@ -283,12 +283,12 @@ export function AssetList({ page, search }: AssetListProps) {
   inject it into services. Do not create hidden global clients.
 - A value a provider supplies is read through its reader hook, called
   directly: `const { project, getAgent } = useAgentClient();`. The readers
-  (`useAssetContext`, `useDocumentFileContext`, `useTimeseriesContext`,
+  (`useAssetClient`, `useDocumentFileClient`, `useTimeseriesClient`,
   `useAgentClient`) throw outside their provider. The context is already the
   injection point, so never pass a reader through a per-hook deps context
-  (`const { useAssetContext: useClient } = useContext(UseAssetsContext)`).
+  (`const { useAssetClient: useClient } = useContext(UseAssetsContext)`).
   A test supplies the value with the context's own provider
-  (`<AssetContext.Provider value={makeMockClient()}>`).
+  (`<AssetClientContext.Provider value={makeMockClient()}>`).
 - Keep a per-hook deps context (`Use<Name>Context`) only for what no provider
   supplies: service functions, clocks, timers, ID generators. Delete it when
   nothing is left in it.

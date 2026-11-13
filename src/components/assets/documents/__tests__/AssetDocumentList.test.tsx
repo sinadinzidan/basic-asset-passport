@@ -12,13 +12,13 @@ import { DOCUMENT_QUERY_LIMIT } from '../../../../constants/documents';
 import { DocumentOrigin } from '../../../../enums/documentOrigin';
 import { DocumentUploadStatus } from '../../../../enums/documentUploadStatus';
 import { UseAssetDocumentsContext } from '../../../../hooks/assets/documents/useAssetDocuments';
-import { UseAssetLinkedFilesContext } from '../../../../hooks/assets/documents/useAssetLinkedFiles';
+import { UseAssetExistingFilesContext } from '../../../../hooks/assets/documents/useAssetExistingFiles';
 import { UseDeleteAssetDocumentContext } from '../../../../hooks/assets/documents/useDeleteAssetDocument';
 import {
-  DocumentPreviewContext,
+  DocumentPreviewRendererContext,
   type RenderDocumentPreview,
-} from '../../../../hooks/assets/documents/useDocumentPreview';
-import { AssetContext } from '../../../../hooks/assets/useAssetContext';
+} from '../../../../hooks/assets/documents/useDocumentPreviewRenderer';
+import { AssetClientContext } from '../../../../hooks/assets/useAssetClient';
 import { NavigationStoreContext } from '../../../../hooks/general/useNavigationState';
 import type { AssetDocumentService } from '../../../../services/assets/documents/assetDocument';
 import { AssetDocumentList } from '../AssetDocumentList';
@@ -51,23 +51,23 @@ describe(AssetDocumentList.name, () => {
       <UseAssetDocumentsContext.Provider
         value={{ now: () => Date.now(), createAssetDocumentService: () => listContext }}
       >
-        <UseAssetLinkedFilesContext.Provider
+        <UseAssetExistingFilesContext.Provider
           value={{ createAssetDocumentService: () => linkedContext }}
         >
-          <DocumentPreviewContext.Provider value={renderPreviewStub}>
+          <DocumentPreviewRendererContext.Provider value={renderPreviewStub}>
             <UseDeleteAssetDocumentContext.Provider
               value={{ createAssetDocumentService: () => deleteContext }}
             >
               <QueryWrapper>
-                <AssetContext.Provider value={client}>
+                <AssetClientContext.Provider value={client}>
                   <NavigationStoreContext.Provider value={navigationStore}>
                     {children}
                   </NavigationStoreContext.Provider>
-                </AssetContext.Provider>
+                </AssetClientContext.Provider>
               </QueryWrapper>
             </UseDeleteAssetDocumentContext.Provider>
-          </DocumentPreviewContext.Provider>
-        </UseAssetLinkedFilesContext.Provider>
+          </DocumentPreviewRendererContext.Provider>
+        </UseAssetExistingFilesContext.Provider>
       </UseAssetDocumentsContext.Provider>
     );
   });

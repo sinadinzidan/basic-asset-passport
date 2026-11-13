@@ -3,18 +3,20 @@ import type { ReactNode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
 import type { DocumentFileContextType } from '../../../../types/documentFileContext';
-import { DocumentFileContext, useDocumentFileContext } from '../useDocumentFileContext';
+import { DocumentFileClientContext, useDocumentFileClient } from '../useDocumentFileClient';
 
-describe(useDocumentFileContext.name, () => {
+describe(useDocumentFileClient.name, () => {
   it('returns the file client from the provider', () => {
     const fileClient: DocumentFileContextType = {
       requestUploadUrl: vi.fn(),
       uploadContent: vi.fn(),
     };
 
-    const { result } = renderHook(() => useDocumentFileContext(), {
+    const { result } = renderHook(() => useDocumentFileClient(), {
       wrapper: ({ children }: { children: ReactNode }) => (
-        <DocumentFileContext.Provider value={fileClient}>{children}</DocumentFileContext.Provider>
+        <DocumentFileClientContext.Provider value={fileClient}>
+          {children}
+        </DocumentFileClientContext.Provider>
       ),
     });
 
@@ -24,8 +26,8 @@ describe(useDocumentFileContext.name, () => {
   it('fails clearly when used outside a provider', () => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
 
-    expect(() => renderHook(() => useDocumentFileContext())).toThrow(
-      'useDocumentFileContext must be used inside',
+    expect(() => renderHook(() => useDocumentFileClient())).toThrow(
+      'useDocumentFileClient must be used inside',
     );
   });
 });

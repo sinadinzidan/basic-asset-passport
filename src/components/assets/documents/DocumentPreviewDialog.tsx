@@ -2,7 +2,7 @@ import { IconEyeOff } from '@tabler/icons-react';
 
 import { DOCUMENT_PREVIEW_UNAVAILABLE_MESSAGE } from '../../../constants/documents';
 import { DialogSize } from '../../../enums/dialogSize';
-import { useDocumentPreview } from '../../../hooks/assets/documents/useDocumentPreview';
+import { useDocumentPreviewRenderer } from '../../../hooks/assets/documents/useDocumentPreviewRenderer';
 import type { AssetDocument } from '../../../types/document';
 import { GeneralDialog } from '../../general';
 
@@ -17,7 +17,7 @@ export function DocumentPreviewDialog({
   isOpen,
   onOpenChange,
 }: DocumentPreviewDialogProps) {
-  const renderPreview = useDocumentPreview();
+  const renderPreview = useDocumentPreviewRenderer();
 
   return (
     <GeneralDialog

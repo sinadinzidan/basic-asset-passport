@@ -6,12 +6,12 @@ import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 import { makeMockClient } from '../../../../__mocks__/cogniteClient';
 import { makeNavigationStore } from '../../../../__mocks__/navigation';
 import { makeQueryClientWrapper } from '../../../../__mocks__/QueryClientWrapper';
-import { DocumentFileContext } from '../../../../hooks/assets/documents/useDocumentFileContext';
+import { DocumentFileClientContext } from '../../../../hooks/assets/documents/useDocumentFileClient';
 import {
   UseUploadAssetDocumentsContext,
   type UseUploadAssetDocumentsContextType,
 } from '../../../../hooks/assets/documents/useUploadAssetDocuments';
-import { AssetContext } from '../../../../hooks/assets/useAssetContext';
+import { AssetClientContext } from '../../../../hooks/assets/useAssetClient';
 import { NavigationStoreContext } from '../../../../hooks/general/useNavigationState';
 import type { ShowSuccessToast } from '../../../../hooks/general/useSuccessToast';
 import type { AssetDocumentService } from '../../../../services/assets/documents/assetDocument';
@@ -48,13 +48,13 @@ describe(AssetDocumentUpload.name, () => {
         }}
       >
         <QueryWrapper>
-          <AssetContext.Provider value={assetContext}>
-            <DocumentFileContext.Provider value={documentFileContext}>
+          <AssetClientContext.Provider value={assetContext}>
+            <DocumentFileClientContext.Provider value={documentFileContext}>
               <NavigationStoreContext.Provider value={navigationStore}>
                 {children}
               </NavigationStoreContext.Provider>
-            </DocumentFileContext.Provider>
-          </AssetContext.Provider>
+            </DocumentFileClientContext.Provider>
+          </AssetClientContext.Provider>
         </QueryWrapper>
       </UseUploadAssetDocumentsContext.Provider>
     );

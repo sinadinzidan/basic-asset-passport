@@ -13,7 +13,7 @@ import { makeQueryClientWrapper } from '../../../__mocks__/QueryClientWrapper';
 import { MODEL } from '../../../config/model';
 import { AssetTab } from '../../../enums/assetTab';
 import { UseAssetEquipmentContext } from '../../../hooks/assets/equipment/useAssetEquipment';
-import { AssetContext } from '../../../hooks/assets/useAssetContext';
+import { AssetClientContext } from '../../../hooks/assets/useAssetClient';
 import { UseAssetDetailsContext } from '../../../hooks/assets/useAssetDetails';
 import { UseAssetDetailsTabCountsContext } from '../../../hooks/assets/useAssetDetailsTabCounts';
 import { NavigationStoreContext } from '../../../hooks/general/useNavigationState';
@@ -75,7 +75,9 @@ describe(AssetDetails.name, () => {
               value={{ createAssetEquipmentService: () => equipmentContext }}
             >
               <QueryWrapper>
-                <AssetContext.Provider value={assetContext}>{children}</AssetContext.Provider>
+                <AssetClientContext.Provider value={assetContext}>
+                  {children}
+                </AssetClientContext.Provider>
               </QueryWrapper>
             </UseAssetEquipmentContext.Provider>
           </UseAssetDetailsTabCountsContext.Provider>

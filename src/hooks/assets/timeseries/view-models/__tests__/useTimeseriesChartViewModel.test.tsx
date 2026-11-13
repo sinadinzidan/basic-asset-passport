@@ -11,7 +11,7 @@ import { createNavigationStore } from '../../../../../store/navigation';
 import type { NavigationStore } from '../../../../../types/navigation';
 import type { TimeseriesContextType } from '../../../../../types/timeseries';
 import { NavigationStoreContext } from '../../../../general/useNavigationState';
-import { TimeseriesContext } from '../../useTimeseriesContext';
+import { TimeseriesClientContext } from '../../useTimeseriesClient';
 import {
   UseTimeseriesChartViewModelContext,
   type UseTimeseriesChartViewModelContextType,
@@ -45,7 +45,9 @@ describe(useTimeseriesChartViewModel.name, () => {
     wrapper = ({ children }) => (
       <NavigationStoreContext.Provider value={store}>
         <UseTimeseriesChartViewModelContext.Provider value={context}>
-          <TimeseriesContext.Provider value={client}>{children}</TimeseriesContext.Provider>
+          <TimeseriesClientContext.Provider value={client}>
+            {children}
+          </TimeseriesClientContext.Provider>
         </UseTimeseriesChartViewModelContext.Provider>
       </NavigationStoreContext.Provider>
     );

@@ -8,7 +8,7 @@ import { makeLimitedList } from '../../../../__mocks__/lists';
 import { makeQueryClientWrapper } from '../../../../__mocks__/QueryClientWrapper';
 import { TIMESERIES_QUERY_LIMIT } from '../../../../constants/timeseries';
 import type { AssetTimeseriesService } from '../../../../services/assets/timeseries/assetTimeseries';
-import { AssetContext } from '../../useAssetContext';
+import { AssetClientContext } from '../../useAssetClient';
 import { useAssetTimeseries, UseAssetTimeseriesContext } from '../useAssetTimeseries';
 
 const assetIdentifier = { space: 'asset-space', externalId: 'FLOC-1' };
@@ -31,7 +31,7 @@ describe(useAssetTimeseries.name, () => {
         value={{ createAssetTimeseriesService: () => mockContext }}
       >
         <QueryWrapper>
-          <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
+          <AssetClientContext.Provider value={client}>{children}</AssetClientContext.Provider>
         </QueryWrapper>
       </UseAssetTimeseriesContext.Provider>
     );

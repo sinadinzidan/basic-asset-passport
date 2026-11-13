@@ -8,7 +8,7 @@ import { makeLimitedList } from '../../../../__mocks__/lists';
 import { makeQueryClientWrapper } from '../../../../__mocks__/QueryClientWrapper';
 import { ASSET_EQUIPMENT_QUERY_LIMIT } from '../../../../constants/assets';
 import type { AssetEquipmentService } from '../../../../services/assets/assetEquipment';
-import { AssetContext } from '../../useAssetContext';
+import { AssetClientContext } from '../../useAssetClient';
 import { useAssetEquipment, UseAssetEquipmentContext } from '../useAssetEquipment';
 
 const assetIdentifier = { space: 'asset-space', externalId: 'FLOC-1' };
@@ -29,7 +29,7 @@ describe(useAssetEquipment.name, () => {
     wrapper = ({ children }) => (
       <UseAssetEquipmentContext.Provider value={{ createAssetEquipmentService: () => mockContext }}>
         <QueryWrapper>
-          <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
+          <AssetClientContext.Provider value={client}>{children}</AssetClientContext.Provider>
         </QueryWrapper>
       </UseAssetEquipmentContext.Provider>
     );

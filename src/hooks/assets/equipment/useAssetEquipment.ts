@@ -7,7 +7,7 @@ import { isKeyOfList } from '../../../lib/queryKeys';
 import { toQueryState } from '../../../lib/queryState';
 import { createAssetEquipmentService } from '../../../services/assets/assetEquipment';
 import type { AssetIdentifier } from '../../../types/asset';
-import { useAssetContext } from '../useAssetContext';
+import { useAssetClient } from '../useAssetClient';
 
 const defaultDeps = { createAssetEquipmentService };
 
@@ -32,7 +32,7 @@ export function useAssetEquipment(
   limit: number = ASSET_EQUIPMENT_QUERY_LIMIT,
 ) {
   const { createAssetEquipmentService } = useContext(UseAssetEquipmentContext);
-  const client = useAssetContext();
+  const client = useAssetClient();
   const equipmentService = createAssetEquipmentService(client);
 
   const listKey = getAssetEquipmentQueryKey(client.project, assetIdentifier);

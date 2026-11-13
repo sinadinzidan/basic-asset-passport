@@ -18,7 +18,7 @@ import { createTimeseriesChartAdapter } from '../../../../services/assets/timese
 import type { AssetInstanceDetails } from '../../../../types/asset';
 import { useNavigationState } from '../../../general/useNavigationState';
 import { useSelectedAsset } from '../../useSelectedAsset';
-import { useTimeseriesContext } from '../useTimeseriesContext';
+import { useTimeseriesClient } from '../useTimeseriesClient';
 
 const defaultDeps = { now: () => Date.now() };
 
@@ -31,7 +31,7 @@ export function useTimeseriesChartViewModel(series: readonly AssetInstanceDetail
   const { now } = useContext(UseTimeseriesChartViewModelContext);
   const options = useNavigationState((store) => store.navigationState.timeseriesChart ?? null);
   const changeTimeseriesChart = useNavigationState((store) => store.actions.changeTimeseriesChart);
-  const client = useTimeseriesContext();
+  const client = useTimeseriesClient();
 
   const [nowMs, setNowMs] = useState(() => currentMinuteMs(now));
 

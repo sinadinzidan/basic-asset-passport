@@ -10,7 +10,7 @@ const SHOWN_PROPERTY_IDENTIFIERS = [
   MODEL.properties.asset.description,
 ];
 
-export function useLinkedAssetViewModel(asset: AssetIdentifier) {
+export function useAnnotatedAssetViewModel(asset: AssetIdentifier) {
   const { data, error, isError, isFetching, isPending, retry } = useAssetDetails(asset);
 
   const details: AssetPropertyDisplay[] = [

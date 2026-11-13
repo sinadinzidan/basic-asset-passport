@@ -14,7 +14,7 @@ import { NOTE_UPDATED_MESSAGE } from '../../../../../constants/notes';
 import type { AssetNoteService } from '../../../../../services/assets/notes/assetNote';
 import { NavigationStoreContext } from '../../../../general/useNavigationState';
 import { SuccessToastContext, type ShowSuccessToast } from '../../../../general/useSuccessToast';
-import { AssetContext } from '../../../useAssetContext';
+import { AssetClientContext } from '../../../useAssetClient';
 import { getAssetNotesQueryKey } from '../../useAssetNotes';
 import {
   useAssetNoteItemViewModel,
@@ -44,13 +44,13 @@ describe(useAssetNoteItemViewModel.name, () => {
         value={{ createAssetNoteService: () => noteService }}
       >
         <QueryWrapper>
-          <AssetContext.Provider value={client}>
+          <AssetClientContext.Provider value={client}>
             <NavigationStoreContext.Provider value={navigationStore}>
               <SuccessToastContext.Provider value={showSuccessToast}>
                 {children}
               </SuccessToastContext.Provider>
             </NavigationStoreContext.Provider>
-          </AssetContext.Provider>
+          </AssetClientContext.Provider>
         </QueryWrapper>
       </UseAssetNoteItemViewModelContext.Provider>
     );

@@ -10,7 +10,7 @@ import type { AssetIdentifier } from '../../../types/asset';
 import type { AssetContextType } from '../../../types/assetContext';
 import type { NoteIdentifier } from '../../../types/note';
 import { useSuccessToast } from '../../general/useSuccessToast';
-import { useAssetContext } from '../useAssetContext';
+import { useAssetClient } from '../useAssetClient';
 
 import { getAssetNotesQueryKey } from './useAssetNotes';
 
@@ -23,7 +23,7 @@ export const UseDeleteAssetNoteContext = createContext<UseDeleteAssetNoteContext
 
 export function useDeleteAssetNote(assetIdentifier: AssetIdentifier) {
   const { createAssetNoteService } = useContext(UseDeleteAssetNoteContext);
-  const client = useAssetContext();
+  const client = useAssetClient();
   const queryClient = useQueryClient();
   const showSuccessToast = useSuccessToast();
   const noteService = createAssetNoteService(client);

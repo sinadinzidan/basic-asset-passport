@@ -9,7 +9,7 @@ import { makeLimitedList } from '../../../../__mocks__/lists';
 import { makeNavigationStore } from '../../../../__mocks__/navigation';
 import { makeQueryClientWrapper } from '../../../../__mocks__/QueryClientWrapper';
 import { UseAssetEquipmentContext } from '../../../../hooks/assets/equipment/useAssetEquipment';
-import { AssetContext } from '../../../../hooks/assets/useAssetContext';
+import { AssetClientContext } from '../../../../hooks/assets/useAssetClient';
 import { NavigationStoreContext } from '../../../../hooks/general/useNavigationState';
 import type { AssetEquipmentService } from '../../../../services/assets/assetEquipment';
 import { AssetEquipment } from '../AssetEquipment';
@@ -33,11 +33,11 @@ describe(AssetEquipment.name, () => {
     wrapper = ({ children }) => (
       <UseAssetEquipmentContext.Provider value={{ createAssetEquipmentService: () => mockContext }}>
         <QueryWrapper>
-          <AssetContext.Provider value={assetContext}>
+          <AssetClientContext.Provider value={assetContext}>
             <NavigationStoreContext.Provider value={navigationStore}>
               {children}
             </NavigationStoreContext.Provider>
-          </AssetContext.Provider>
+          </AssetClientContext.Provider>
         </QueryWrapper>
       </UseAssetEquipmentContext.Provider>
     );

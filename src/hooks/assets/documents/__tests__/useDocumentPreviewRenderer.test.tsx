@@ -3,14 +3,14 @@ import type { ReactNode } from 'react';
 import { describe, expect, it } from 'vitest';
 
 import {
-  DocumentPreviewContext,
-  useDocumentPreview,
+  DocumentPreviewRendererContext,
+  useDocumentPreviewRenderer,
   type RenderDocumentPreview,
-} from '../useDocumentPreview';
+} from '../useDocumentPreviewRenderer';
 
-describe(useDocumentPreview.name, () => {
+describe(useDocumentPreviewRenderer.name, () => {
   it('has no preview where none is supplied, as in mock mode', () => {
-    const { result } = renderHook(() => useDocumentPreview());
+    const { result } = renderHook(() => useDocumentPreviewRenderer());
 
     expect(result.current).toBeNull();
   });
@@ -18,12 +18,12 @@ describe(useDocumentPreview.name, () => {
   it('gives the preview its provider supplies', () => {
     const renderPreview: RenderDocumentPreview = (document) => document.externalId;
     const wrapper = ({ children }: { children: ReactNode }) => (
-      <DocumentPreviewContext.Provider value={renderPreview}>
+      <DocumentPreviewRendererContext.Provider value={renderPreview}>
         {children}
-      </DocumentPreviewContext.Provider>
+      </DocumentPreviewRendererContext.Provider>
     );
 
-    const { result } = renderHook(() => useDocumentPreview(), { wrapper });
+    const { result } = renderHook(() => useDocumentPreviewRenderer(), { wrapper });
 
     expect(result.current).toBe(renderPreview);
   });

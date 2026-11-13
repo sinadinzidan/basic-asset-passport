@@ -12,7 +12,7 @@ import {
 } from '../../../services/assets/documents/assetDocument';
 import type { AssetIdentifier } from '../../../types/asset';
 import type { AssetContextType } from '../../../types/assetContext';
-import { useAssetContext } from '../useAssetContext';
+import { useAssetClient } from '../useAssetClient';
 
 const defaultDeps: {
   createAssetDocumentService: (
@@ -42,7 +42,7 @@ export function useAssetDocuments(
   limit: number = DOCUMENT_QUERY_LIMIT,
 ) {
   const { createAssetDocumentService, now } = useContext(UseAssetDocumentsContext);
-  const client = useAssetContext();
+  const client = useAssetClient();
   const documentService = createAssetDocumentService(client);
 
   const listKey = getAssetDocumentsQueryKey(client.project, assetIdentifier);

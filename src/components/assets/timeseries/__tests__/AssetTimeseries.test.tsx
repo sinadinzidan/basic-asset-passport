@@ -10,13 +10,13 @@ import { makeLimitedList } from '../../../../__mocks__/lists';
 import { makeQueryClientWrapper } from '../../../../__mocks__/QueryClientWrapper';
 import { TIMESERIES_QUERY_LIMIT } from '../../../../constants/timeseries';
 import { UseAssetTimeseriesContext } from '../../../../hooks/assets/timeseries/useAssetTimeseries';
-import { TimeseriesContext } from '../../../../hooks/assets/timeseries/useTimeseriesContext';
+import { TimeseriesClientContext } from '../../../../hooks/assets/timeseries/useTimeseriesClient';
 import { UseTimeseriesTrendsContext } from '../../../../hooks/assets/timeseries/useTimeseriesTrends';
 import {
   UseTimeseriesChartViewModelContext,
   type UseTimeseriesChartViewModelContextType,
 } from '../../../../hooks/assets/timeseries/view-models/useTimeseriesChartViewModel';
-import { AssetContext } from '../../../../hooks/assets/useAssetContext';
+import { AssetClientContext } from '../../../../hooks/assets/useAssetClient';
 import { NavigationStoreContext } from '../../../../hooks/general/useNavigationState';
 import { DEFAULT_NAVIGATION_STATE } from '../../../../lib/navigationState';
 import type { AssetTimeseriesService } from '../../../../services/assets/timeseries/assetTimeseries';
@@ -86,9 +86,11 @@ describe(AssetTimeseries.name, () => {
               }}
             >
               <QueryWrapper>
-                <TimeseriesContext.Provider value={datapoints}>
-                  <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
-                </TimeseriesContext.Provider>
+                <TimeseriesClientContext.Provider value={datapoints}>
+                  <AssetClientContext.Provider value={client}>
+                    {children}
+                  </AssetClientContext.Provider>
+                </TimeseriesClientContext.Provider>
               </QueryWrapper>
             </UseTimeseriesTrendsContext.Provider>
           </UseTimeseriesChartViewModelContext.Provider>

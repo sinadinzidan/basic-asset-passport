@@ -8,7 +8,7 @@ import {
   PREVIEW_MAX_ZOOM,
   PREVIEW_MIN_ZOOM,
 } from '../../../constants/documents';
-import type { DocumentPreviewProps } from '../../../hooks/assets/documents/useDocumentPreview';
+import type { DocumentPreviewProps } from '../../../hooks/assets/documents/useDocumentPreviewRenderer';
 import { useNavigationState } from '../../../hooks/general/useNavigationState';
 
 import { DocumentPreviewControls } from './DocumentPreviewControls';

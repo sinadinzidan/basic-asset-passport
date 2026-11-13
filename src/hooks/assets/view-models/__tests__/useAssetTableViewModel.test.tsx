@@ -10,7 +10,7 @@ import { makeQueryClientWrapper } from '../../../../__mocks__/QueryClientWrapper
 import type { AssetService } from '../../../../services/assets/asset';
 import type { NavigationState, NavigationStore } from '../../../../types/navigation';
 import { NavigationStoreContext } from '../../../general/useNavigationState';
-import { AssetContext } from '../../useAssetContext';
+import { AssetClientContext } from '../../useAssetClient';
 import { UseAssetsContext } from '../../useAssets';
 import { useAssetTableViewModel } from '../useAssetTableViewModel';
 
@@ -31,7 +31,7 @@ describe(useAssetTableViewModel.name, () => {
       <NavigationStoreContext.Provider value={store}>
         <UseAssetsContext.Provider value={{ createAssetService: () => assetService }}>
           <QueryWrapper>
-            <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
+            <AssetClientContext.Provider value={client}>{children}</AssetClientContext.Provider>
           </QueryWrapper>
         </UseAssetsContext.Provider>
       </NavigationStoreContext.Provider>

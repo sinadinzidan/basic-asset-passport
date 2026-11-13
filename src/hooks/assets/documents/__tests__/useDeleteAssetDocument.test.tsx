@@ -9,7 +9,7 @@ import {
   makeTestQueryClient,
 } from '../../../../__mocks__/QueryClientWrapper';
 import type { AssetDocumentService } from '../../../../services/assets/documents/assetDocument';
-import { AssetContext } from '../../useAssetContext';
+import { AssetClientContext } from '../../useAssetClient';
 import { getAssetDocumentsQueryKey } from '../useAssetDocuments';
 import { useDeleteAssetDocument, UseDeleteAssetDocumentContext } from '../useDeleteAssetDocument';
 
@@ -34,7 +34,7 @@ describe(useDeleteAssetDocument.name, () => {
         value={{ createAssetDocumentService: () => mockContext }}
       >
         <QueryWrapper>
-          <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
+          <AssetClientContext.Provider value={client}>{children}</AssetClientContext.Provider>
         </QueryWrapper>
       </UseDeleteAssetDocumentContext.Provider>
     );

@@ -11,7 +11,7 @@ import {
 } from '../../../services/assets/documents/assetDocument';
 import type { AssetIdentifier } from '../../../types/asset';
 import type { AssetContextType } from '../../../types/assetContext';
-import { useAssetContext } from '../useAssetContext';
+import { useAssetClient } from '../useAssetClient';
 
 const defaultDeps: {
   createAssetDocumentService: (
@@ -19,11 +19,11 @@ const defaultDeps: {
   ) => Pick<AssetDocumentService, 'listAssetLinkedFiles'>;
 } = { createAssetDocumentService };
 
-export type UseAssetLinkedFilesContextType = typeof defaultDeps;
-export const UseAssetLinkedFilesContext =
-  createContext<UseAssetLinkedFilesContextType>(defaultDeps);
+export type UseAssetExistingFilesContextType = typeof defaultDeps;
+export const UseAssetExistingFilesContext =
+  createContext<UseAssetExistingFilesContextType>(defaultDeps);
 
-export function getAssetLinkedFilesQueryKey(project: string, assetIdentifier: AssetIdentifier) {
+export function getAssetExistingFilesQueryKey(project: string, assetIdentifier: AssetIdentifier) {
   return [
     'asset-linked-files',
     project,
@@ -36,15 +36,15 @@ export function getAssetLinkedFilesQueryKey(project: string, assetIdentifier: As
   ];
 }
 
-export function useAssetLinkedFiles(
+export function useAssetExistingFiles(
   assetIdentifier: AssetIdentifier,
   limit: number = DOCUMENT_QUERY_LIMIT,
 ) {
-  const { createAssetDocumentService } = useContext(UseAssetLinkedFilesContext);
-  const client = useAssetContext();
+  const { createAssetDocumentService } = useContext(UseAssetExistingFilesContext);
+  const client = useAssetClient();
   const documentService = createAssetDocumentService(client);
 
-  const listKey = getAssetLinkedFilesQueryKey(client.project, assetIdentifier);
+  const listKey = getAssetExistingFilesQueryKey(client.project, assetIdentifier);
 
   const query = useQuery({
     queryKey: [...listKey, limit],

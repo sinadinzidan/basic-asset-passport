@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { makeInstanceDetails } from '../../../../__mocks__/assets';
 import { makeMockClient } from '../../../../__mocks__/cogniteClient';
 import { makeQueryClientWrapper } from '../../../../__mocks__/QueryClientWrapper';
-import { AssetContext } from '../../../../hooks/assets/useAssetContext';
+import { AssetClientContext } from '../../../../hooks/assets/useAssetClient';
 import { UseAssetDetailsContext } from '../../../../hooks/assets/useAssetDetails';
 import type { AssetDetailsService } from '../../../../services/assets/assetDetails';
 import { LinkedAssetPopover } from '../LinkedAssetPopover';
@@ -48,7 +48,7 @@ describe(LinkedAssetPopover.name, () => {
     wrapper = ({ children }) => (
       <UseAssetDetailsContext.Provider value={{ createAssetDetailsService: () => context }}>
         <QueryWrapper>
-          <AssetContext.Provider value={assetContext}>{children}</AssetContext.Provider>
+          <AssetClientContext.Provider value={assetContext}>{children}</AssetClientContext.Provider>
         </QueryWrapper>
       </UseAssetDetailsContext.Provider>
     );

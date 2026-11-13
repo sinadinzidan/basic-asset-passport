@@ -6,9 +6,9 @@ import { makeInstanceDetails } from '../../../../../__mocks__/assets';
 import { makeMockClient } from '../../../../../__mocks__/cogniteClient';
 import { makeQueryClientWrapper } from '../../../../../__mocks__/QueryClientWrapper';
 import type { AssetDetailsService } from '../../../../../services/assets/assetDetails';
-import { AssetContext } from '../../../useAssetContext';
+import { AssetClientContext } from '../../../useAssetClient';
 import { UseAssetDetailsContext } from '../../../useAssetDetails';
-import { useLinkedAssetViewModel } from '../useLinkedAssetViewModel';
+import { useAnnotatedAssetViewModel } from '../useAnnotatedAssetViewModel';
 
 const linkedAsset = { space: 'asset-space', externalId: 'FLOC-9' };
 const FUNCTIONAL_LOCATION = {
@@ -17,7 +17,7 @@ const FUNCTIONAL_LOCATION = {
   value: 'FLOC-9',
 };
 
-describe(useLinkedAssetViewModel.name, () => {
+describe(useAnnotatedAssetViewModel.name, () => {
   const client = makeMockClient();
   let detailsService: AssetDetailsService;
   let wrapper: ComponentType<{ children: ReactNode }>;
@@ -45,14 +45,14 @@ describe(useLinkedAssetViewModel.name, () => {
     wrapper = ({ children }) => (
       <UseAssetDetailsContext.Provider value={{ createAssetDetailsService: () => detailsService }}>
         <QueryWrapper>
-          <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
+          <AssetClientContext.Provider value={client}>{children}</AssetClientContext.Provider>
         </QueryWrapper>
       </UseAssetDetailsContext.Provider>
     );
   });
 
   it('is pending, knowing only the functional location, until the asset arrives', async () => {
-    const { result } = renderHook(() => useLinkedAssetViewModel(linkedAsset), { wrapper });
+    const { result } = renderHook(() => useAnnotatedAssetViewModel(linkedAsset), { wrapper });
 
     expect(result.current.isPending).toBe(true);
     expect(result.current.title).toBe('FLOC-9');
@@ -61,7 +61,7 @@ describe(useLinkedAssetViewModel.name, () => {
   });
 
   it('gives the name, status and criticality, and the plant and description after the location', async () => {
-    const { result } = renderHook(() => useLinkedAssetViewModel(linkedAsset), { wrapper });
+    const { result } = renderHook(() => useAnnotatedAssetViewModel(linkedAsset), { wrapper });
 
     await waitFor(() => expect(result.current.title).toBe('Feed Pump 9'));
     expect(result.current.status).toBe('Operating');
@@ -75,7 +75,7 @@ describe(useLinkedAssetViewModel.name, () => {
 
   it('reports a failed load with its error and reads again on retry', async () => {
     vi.mocked(detailsService.getAssetDetails).mockRejectedValueOnce(new Error('no access'));
-    const { result } = renderHook(() => useLinkedAssetViewModel(linkedAsset), { wrapper });
+    const { result } = renderHook(() => useAnnotatedAssetViewModel(linkedAsset), { wrapper });
 
     await waitFor(() => expect(result.current.isError).toBe(true));
     expect(result.current.error).toEqual(new Error('no access'));

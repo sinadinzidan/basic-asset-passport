@@ -6,8 +6,8 @@ export type DocumentPreviewProps = { document: DocumentIdentifier };
 
 export type RenderDocumentPreview = (document: DocumentIdentifier) => ReactNode;
 
-export const DocumentPreviewContext = createContext<RenderDocumentPreview | null>(null);
+export const DocumentPreviewRendererContext = createContext<RenderDocumentPreview | null>(null);
 
-export function useDocumentPreview(): RenderDocumentPreview | null {
-  return useContext(DocumentPreviewContext);
+export function useDocumentPreviewRenderer(): RenderDocumentPreview | null {
+  return useContext(DocumentPreviewRendererContext);
 }

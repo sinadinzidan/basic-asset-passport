@@ -13,7 +13,7 @@ import { makeMockClient } from '../../../__mocks__/cogniteClient';
 import { makeNavigationStore } from '../../../__mocks__/navigation';
 import { makeQueryClientWrapper, makeTestQueryClient } from '../../../__mocks__/QueryClientWrapper';
 import { ASSET_SEARCH_LIMIT } from '../../../constants/assets';
-import { AssetContext } from '../../../hooks/assets/useAssetContext';
+import { AssetClientContext } from '../../../hooks/assets/useAssetClient';
 import { UseAssetsContext } from '../../../hooks/assets/useAssets';
 import { UseAssetsKPICountsContext } from '../../../hooks/assets/useAssetsKPICounts';
 import { NavigationStoreContext } from '../../../hooks/general/useNavigationState';
@@ -79,7 +79,9 @@ describe('AssetTable rows', () => {
             value={{ createAssetsKPICountService: () => countsContext }}
           >
             <QueryWrapper>
-              <AssetContext.Provider value={assetContext}>{children}</AssetContext.Provider>
+              <AssetClientContext.Provider value={assetContext}>
+                {children}
+              </AssetClientContext.Provider>
             </QueryWrapper>
           </UseAssetsKPICountsContext.Provider>
         </UseAssetsContext.Provider>

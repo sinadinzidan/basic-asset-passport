@@ -13,7 +13,7 @@ import {
   LINKED_ASSET_PENDING_TITLE,
 } from '../../../constants/documents';
 import { LoadingNoticeVariant } from '../../../enums/loadingNoticeVariant';
-import { useLinkedAssetViewModel } from '../../../hooks/assets/documents/view-models/useLinkedAssetViewModel';
+import { useAnnotatedAssetViewModel } from '../../../hooks/assets/documents/view-models/useAnnotatedAssetViewModel';
 import { getStatusTone } from '../../../lib/assetStatus';
 import { getErrorReason } from '../../../lib/errorReason';
 import type { AssetIdentifier } from '../../../types/asset';
@@ -52,7 +52,7 @@ type OpenLinkedAssetPopoverProps = Omit<LinkedAssetPopoverProps, 'target'> & {
 function OpenLinkedAssetPopover({ target, onClose, onOpenAsset }: OpenLinkedAssetPopoverProps) {
   const { asset, anchor } = target;
   const { title, status, criticality, details, error, isError, isFetching, isPending, retry } =
-    useLinkedAssetViewModel(asset);
+    useAnnotatedAssetViewModel(asset);
 
   function handleOpenChange(isOpen: boolean, eventDetails: { reason: string; event: Event }): void {
     if (isOpen) return;

@@ -9,7 +9,7 @@ import { makeNavigationStore } from '../../../../__mocks__/navigation';
 import { makeQueryClientWrapper } from '../../../../__mocks__/QueryClientWrapper';
 import type { AssetDetailsService } from '../../../../services/assets/assetDetails';
 import { NavigationStoreContext } from '../../../general/useNavigationState';
-import { AssetContext } from '../../useAssetContext';
+import { AssetClientContext } from '../../useAssetClient';
 import { UseAssetDetailsContext } from '../../useAssetDetails';
 import { UseAssetDetailsTabCountsContext } from '../../useAssetDetailsTabCounts';
 import { useAssetDetailsViewModel } from '../useAssetDetailsViewModel';
@@ -46,11 +46,11 @@ describe(useAssetDetailsViewModel.name, () => {
           value={{ createAssetDetailsTabCountService: () => countService }}
         >
           <QueryWrapper>
-            <AssetContext.Provider value={client}>
+            <AssetClientContext.Provider value={client}>
               <NavigationStoreContext.Provider value={navigationStore}>
                 {children}
               </NavigationStoreContext.Provider>
-            </AssetContext.Provider>
+            </AssetClientContext.Provider>
           </QueryWrapper>
         </UseAssetDetailsTabCountsContext.Provider>
       </UseAssetDetailsContext.Provider>

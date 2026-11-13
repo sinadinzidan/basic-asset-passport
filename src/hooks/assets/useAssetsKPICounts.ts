@@ -6,7 +6,7 @@ import { toCountState } from '../../lib/countBadge';
 import { createAssetsKPICountService } from '../../services/assets/assetsKPICounts';
 import type { CountState } from '../../types/countState';
 
-import { useAssetContext } from './useAssetContext';
+import { useAssetClient } from './useAssetClient';
 
 const defaultDeps = { createAssetsKPICountService };
 
@@ -24,7 +24,7 @@ type AssetsKPICounts = {
 
 export function useAssetsKPICounts(): AssetsKPICounts {
   const { createAssetsKPICountService } = useContext(UseAssetsKPICountsContext);
-  const client = useAssetContext();
+  const client = useAssetClient();
   const countService = createAssetsKPICountService(client);
 
   const assets = useQuery({

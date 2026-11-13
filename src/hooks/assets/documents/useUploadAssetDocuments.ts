@@ -11,10 +11,10 @@ import type { AssetIdentifier } from '../../../types/asset';
 import type { AssetContextType } from '../../../types/assetContext';
 import type { DocumentUploadResult } from '../../../types/document';
 import { useSuccessToast } from '../../general/useSuccessToast';
-import { useAssetContext } from '../useAssetContext';
+import { useAssetClient } from '../useAssetClient';
 
 import { getAssetDocumentsQueryKey } from './useAssetDocuments';
-import { useDocumentFileContext } from './useDocumentFileContext';
+import { useDocumentFileClient } from './useDocumentFileClient';
 
 const defaultDeps: {
   useSuccessToast: typeof useSuccessToast;
@@ -41,8 +41,8 @@ export function useUploadAssetDocuments(assetIdentifier: AssetIdentifier) {
   const { useSuccessToast: useToast, createAssetDocumentService } = useContext(
     UseUploadAssetDocumentsContext,
   );
-  const client = useAssetContext();
-  const fileClient = useDocumentFileContext();
+  const client = useAssetClient();
+  const fileClient = useDocumentFileClient();
   const showSuccessToast = useToast();
   const queryClient = useQueryClient();
   const documentService = createAssetDocumentService(client);

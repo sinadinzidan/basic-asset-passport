@@ -11,7 +11,7 @@ import {
 } from '../../../services/assets/notes/assetNote';
 import type { AssetIdentifier } from '../../../types/asset';
 import type { AssetContextType } from '../../../types/assetContext';
-import { useAssetContext } from '../useAssetContext';
+import { useAssetClient } from '../useAssetClient';
 
 const defaultDeps: {
   createAssetNoteService: (client: AssetContextType) => Pick<AssetNoteService, 'listAssetNotes'>;
@@ -35,7 +35,7 @@ export function getAssetNotesQueryKey(project: string, assetIdentifier: AssetIde
 
 export function useAssetNotes(assetIdentifier: AssetIdentifier, limit: number = NOTE_QUERY_LIMIT) {
   const { createAssetNoteService } = useContext(UseAssetNotesContext);
-  const client = useAssetContext();
+  const client = useAssetClient();
   const noteService = createAssetNoteService(client);
 
   const listKey = getAssetNotesQueryKey(client.project, assetIdentifier);

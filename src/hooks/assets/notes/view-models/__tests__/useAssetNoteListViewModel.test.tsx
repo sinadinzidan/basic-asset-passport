@@ -10,7 +10,7 @@ import { makeQueryClientWrapper } from '../../../../../__mocks__/QueryClientWrap
 import { NOTE_QUERY_LIMIT } from '../../../../../constants/notes';
 import type { AssetNoteService } from '../../../../../services/assets/notes/assetNote';
 import { NavigationStoreContext } from '../../../../general/useNavigationState';
-import { AssetContext } from '../../../useAssetContext';
+import { AssetClientContext } from '../../../useAssetClient';
 import { UseAssetNotesContext } from '../../useAssetNotes';
 import { UseDeleteAssetNoteContext } from '../../useDeleteAssetNote';
 import { useAssetNoteListViewModel } from '../useAssetNoteListViewModel';
@@ -36,11 +36,11 @@ describe(useAssetNoteListViewModel.name, () => {
       <UseAssetNotesContext.Provider value={{ createAssetNoteService: () => noteService }}>
         <UseDeleteAssetNoteContext.Provider value={{ createAssetNoteService: () => noteService }}>
           <QueryWrapper>
-            <AssetContext.Provider value={client}>
+            <AssetClientContext.Provider value={client}>
               <NavigationStoreContext.Provider value={navigationStore}>
                 {children}
               </NavigationStoreContext.Provider>
-            </AssetContext.Provider>
+            </AssetClientContext.Provider>
           </QueryWrapper>
         </UseDeleteAssetNoteContext.Provider>
       </UseAssetNotesContext.Provider>

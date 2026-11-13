@@ -6,7 +6,7 @@ import { makeQueryClientWrapper } from '../../../../__mocks__/QueryClientWrapper
 import { TREND_GRANULARITY, TREND_WINDOW_MS } from '../../../../constants/timeseries';
 import { getTimeseriesKey } from '../../../../lib/timeseriesProperties';
 import type { TimeseriesContextType } from '../../../../types/timeseries';
-import { TimeseriesContext } from '../useTimeseriesContext';
+import { TimeseriesClientContext } from '../useTimeseriesClient';
 import { useTimeseriesTrends, UseTimeseriesTrendsContext } from '../useTimeseriesTrends';
 
 const NOW = 1_800_000_000_000;
@@ -27,11 +27,11 @@ describe(useTimeseriesTrends.name, () => {
     const QueryWrapper = makeQueryClientWrapper();
 
     wrapper = ({ children }) => (
-      <TimeseriesContext.Provider value={client}>
+      <TimeseriesClientContext.Provider value={client}>
         <UseTimeseriesTrendsContext.Provider value={{ now: () => NOW }}>
           <QueryWrapper>{children}</QueryWrapper>
         </UseTimeseriesTrendsContext.Provider>
-      </TimeseriesContext.Provider>
+      </TimeseriesClientContext.Provider>
     );
   });
 

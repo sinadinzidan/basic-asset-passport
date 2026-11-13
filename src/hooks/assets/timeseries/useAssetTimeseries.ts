@@ -10,7 +10,7 @@ import { isKeyOfList } from '../../../lib/queryKeys';
 import { toQueryState } from '../../../lib/queryState';
 import { createAssetTimeseriesService } from '../../../services/assets/timeseries/assetTimeseries';
 import type { AssetIdentifier } from '../../../types/asset';
-import { useAssetContext } from '../useAssetContext';
+import { useAssetClient } from '../useAssetClient';
 
 const defaultDeps = { createAssetTimeseriesService };
 
@@ -35,7 +35,7 @@ export function useAssetTimeseries(
   limit: number = TIMESERIES_QUERY_LIMIT,
 ) {
   const { createAssetTimeseriesService } = useContext(UseAssetTimeseriesContext);
-  const client = useAssetContext();
+  const client = useAssetClient();
   const timeseriesService = createAssetTimeseriesService(client);
 
   const listKey = getAssetTimeseriesQueryKey(client.project, assetIdentifier);

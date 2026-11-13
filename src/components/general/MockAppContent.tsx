@@ -1,7 +1,7 @@
 import { AgentClientContext } from '../../hooks/agents/useAgentClient';
-import { DocumentFileContext } from '../../hooks/assets/documents/useDocumentFileContext';
-import { TimeseriesContext } from '../../hooks/assets/timeseries/useTimeseriesContext';
-import { AssetContext } from '../../hooks/assets/useAssetContext';
+import { DocumentFileClientContext } from '../../hooks/assets/documents/useDocumentFileClient';
+import { TimeseriesClientContext } from '../../hooks/assets/timeseries/useTimeseriesClient';
+import { AssetClientContext } from '../../hooks/assets/useAssetClient';
 import { Assets } from '../../pages/assets/Assets';
 import { NavigationProvider } from '../../providers/general/NavigationProvider';
 import type { MockContexts } from '../../types/mockContext';
@@ -17,13 +17,13 @@ export function MockAppContent({ mockContexts }: MockAppContentProps) {
   return (
     <NavigationProvider api={null}>
       <MockModeNotice />
-      <AssetContext.Provider value={mockContexts.assetContext}>
-        <DocumentFileContext.Provider value={mockContexts.documentFileContext}>
-          <TimeseriesContext.Provider value={mockContexts.timeseriesContext}>
+      <AssetClientContext.Provider value={mockContexts.assetContext}>
+        <DocumentFileClientContext.Provider value={mockContexts.documentFileContext}>
+          <TimeseriesClientContext.Provider value={mockContexts.timeseriesContext}>
             <Assets />
-          </TimeseriesContext.Provider>
-        </DocumentFileContext.Provider>
-      </AssetContext.Provider>
+          </TimeseriesClientContext.Provider>
+        </DocumentFileClientContext.Provider>
+      </AssetClientContext.Provider>
       <AgentClientContext.Provider value={mockContexts.agentContext}>
         <AgentHelper />
       </AgentClientContext.Provider>

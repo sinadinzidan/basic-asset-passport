@@ -3,15 +3,15 @@ import type { ReactNode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
 import { makeMockClient } from '../../../__mocks__/cogniteClient';
-import { AssetContext, useAssetContext } from '../useAssetContext';
+import { AssetClientContext, useAssetClient } from '../useAssetClient';
 
-describe(useAssetContext.name, () => {
+describe(useAssetClient.name, () => {
   it('returns the client from the provider', () => {
     const client = makeMockClient();
 
-    const { result } = renderHook(() => useAssetContext(), {
+    const { result } = renderHook(() => useAssetClient(), {
       wrapper: ({ children }: { children: ReactNode }) => (
-        <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
+        <AssetClientContext.Provider value={client}>{children}</AssetClientContext.Provider>
       ),
     });
 
@@ -21,8 +21,6 @@ describe(useAssetContext.name, () => {
   it('fails clearly when used outside a provider', () => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
 
-    expect(() => renderHook(() => useAssetContext())).toThrow(
-      'useAssetContext must be used inside',
-    );
+    expect(() => renderHook(() => useAssetClient())).toThrow('useAssetClient must be used inside');
   });
 });

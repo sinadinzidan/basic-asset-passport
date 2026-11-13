@@ -10,7 +10,7 @@ import { NOTE_QUERY_LIMIT } from '../../../../constants/notes';
 import type { AssetNoteService } from '../../../../services/assets/notes/assetNote';
 import type { LimitedList } from '../../../../types/list';
 import type { AssetNote } from '../../../../types/note';
-import { AssetContext } from '../../useAssetContext';
+import { AssetClientContext } from '../../useAssetClient';
 import { useAssetNotes, UseAssetNotesContext } from '../useAssetNotes';
 
 const assetIdentifier = { space: 'asset-space', externalId: 'FLOC-1' };
@@ -29,7 +29,7 @@ describe(useAssetNotes.name, () => {
     wrapper = ({ children }) => (
       <UseAssetNotesContext.Provider value={{ createAssetNoteService: () => mockContext }}>
         <QueryWrapper>
-          <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
+          <AssetClientContext.Provider value={client}>{children}</AssetClientContext.Provider>
         </QueryWrapper>
       </UseAssetNotesContext.Provider>
     );
