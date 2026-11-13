@@ -8,11 +8,11 @@ export const ASSET_SEARCH_DEBOUNCE_MS = 300;
 export const ASSET_QUERY_STALE_TIME_MS = 30_000;
 export const COUNT_QUERY_STALE_TIME_MS = 30_000;
 export const COUNT_QUERY_KEY_PART = 'count';
-export const KPI_ASSETS_LABEL = 'Assets';
-export const KPI_OPERATING_LABEL = 'Operating';
-export const KPI_EQUIPMENT_LABEL = 'Equipment';
-export const KPI_COUNTS_ERROR_TITLE = 'Some counts could not be loaded';
-export const KPI_COUNTS_ERROR_DESCRIPTION =
+export const SUMMARY_ASSETS_LABEL = 'Assets';
+export const SUMMARY_OPERATING_LABEL = 'Operating';
+export const SUMMARY_EQUIPMENT_LABEL = 'Equipment';
+export const SUMMARY_COUNTS_ERROR_TITLE = 'Some counts could not be loaded';
+export const SUMMARY_COUNTS_ERROR_DESCRIPTION =
   'Check access to the Asset and Equipment views, then try again.';
 export const ASSET_REGISTER_DESCRIPTION =
   'Browse functional locations and open an asset to review its properties and linked equipment.';

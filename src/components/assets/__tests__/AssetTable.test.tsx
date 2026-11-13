@@ -6,18 +6,18 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { StoreApi } from 'zustand';
 
 import { makeAssetListItem, makeAssetPage } from '../../../__mocks__/assets';
-import { makeAssetsKPICountsContext } from '../../../__mocks__/assetsKPICounts';
 import { makeMockClient } from '../../../__mocks__/cogniteClient';
 import { makeNavigationStore } from '../../../__mocks__/navigation';
 import { makeQueryClientWrapper } from '../../../__mocks__/QueryClientWrapper';
+import { makeRegisterSummaryContext } from '../../../__mocks__/registerSummary';
 import { ASSET_SEARCH_LIMIT } from '../../../constants/assets';
 import { AssetClientContext } from '../../../hooks/assets/useAssetClient';
 import { UseAssetsContext } from '../../../hooks/assets/useAssets';
-import { UseAssetsKPICountsContext } from '../../../hooks/assets/useAssetsKPICounts';
+import { UseRegisterSummaryContext } from '../../../hooks/assets/useRegisterSummary';
 import { DebounceContext, type DebounceDeps } from '../../../hooks/general/useDebouncedCallback';
 import { NavigationStoreContext } from '../../../hooks/general/useNavigationState';
 import type { AssetService } from '../../../services/assets/asset';
-import type { AssetsKPICountService } from '../../../services/assets/assetsKPICounts';
+import type { RegisterSummaryService } from '../../../services/assets/registerSummary';
 import type { NavigationState, NavigationStore } from '../../../types/navigation';
 import { AssetTable } from '../AssetTable';
 
@@ -30,7 +30,7 @@ const immediateDebounce: DebounceDeps = {
 describe(AssetTable.name, () => {
   const client = makeMockClient();
   let mockContext: AssetService;
-  let countsContext: AssetsKPICountService;
+  let countsContext: RegisterSummaryService;
   let wrapper: ComponentType<{ children: ReactNode }>;
   let store: StoreApi<NavigationStore>;
 
@@ -39,7 +39,7 @@ describe(AssetTable.name, () => {
       listAssets: vi.fn(() => Promise.resolve(makeAssetPage())),
       searchAssets: vi.fn(() => Promise.resolve(makeAssetPage())),
     };
-    countsContext = makeAssetsKPICountsContext();
+    countsContext = makeRegisterSummaryContext();
     store = makeNavigationStore();
     const QueryWrapper = makeQueryClientWrapper();
 
@@ -47,13 +47,13 @@ describe(AssetTable.name, () => {
       <NavigationStoreContext.Provider value={store}>
         <DebounceContext.Provider value={immediateDebounce}>
           <UseAssetsContext.Provider value={{ createAssetService: () => mockContext }}>
-            <UseAssetsKPICountsContext.Provider
-              value={{ createAssetsKPICountService: () => countsContext }}
+            <UseRegisterSummaryContext.Provider
+              value={{ createRegisterSummaryService: () => countsContext }}
             >
               <QueryWrapper>
                 <AssetClientContext.Provider value={client}>{children}</AssetClientContext.Provider>
               </QueryWrapper>
-            </UseAssetsKPICountsContext.Provider>
+            </UseRegisterSummaryContext.Provider>
           </UseAssetsContext.Provider>
         </DebounceContext.Provider>
       </NavigationStoreContext.Provider>

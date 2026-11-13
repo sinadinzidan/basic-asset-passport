@@ -1502,7 +1502,7 @@
   --hud-tint: 6%;
 }
 
-/* A KPI card: its label as a kicker with a hairline running to the icon, the figure under it, clear of the cut-away. */
+/* A summary card: its label as a kicker with a hairline running to the icon, the figure under it, clear of the cut-away. */
 .hud-body.stat-tile {
   padding: 1.35rem 1.4rem 1.1rem calc(var(--hud-inset) + 1.1rem);
 }
@@ -1670,7 +1670,7 @@
 /*
  * Dialog panel: the HUD frame without the stage. Dialogs are portaled outside the stage, so they carry their
  * own lit edge (the frame's 1px padding shows the gradient), glass body and the stage's colour boost. The shape is
- * the KPI card's, drawn by the outline shared with it: four cut corners, a shallow notch in the top edge with a
+ * the summary card's, drawn by the outline shared with it: four cut corners, a shallow notch in the top edge with a
  * gold bar on its floor, and the foot of the left side cut away with the vent's slanted bars, in gold, standing in
  * the gap.
  * The dialog itself is not clipped, only the frame inside it, so the vent beside the frame shows.
@@ -1777,7 +1777,7 @@
   padding-inline: calc(var(--hud-inset) + 0.5rem);
 }
 
-/* The dialog's vent is gold trim, like the bar in its notch; a KPI card's vent keeps its tone's colour. */
+/* The dialog's vent is gold trim, like the bar in its notch; a summary card's vent keeps its tone's colour. */
 .hud-dialog > .hud-vent {
   --hud-accent: var(--neon-gold);
 }

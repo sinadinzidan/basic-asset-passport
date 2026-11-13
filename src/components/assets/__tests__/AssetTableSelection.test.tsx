@@ -8,14 +8,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { StoreApi } from 'zustand';
 
 import { makeAssetListItem, makeAssetPage } from '../../../__mocks__/assets';
-import { makeAssetsKPICountsContext } from '../../../__mocks__/assetsKPICounts';
 import { makeMockClient } from '../../../__mocks__/cogniteClient';
 import { makeNavigationStore } from '../../../__mocks__/navigation';
 import { makeQueryClientWrapper, makeTestQueryClient } from '../../../__mocks__/QueryClientWrapper';
+import { makeRegisterSummaryContext } from '../../../__mocks__/registerSummary';
 import { ASSET_SEARCH_LIMIT } from '../../../constants/assets';
 import { AssetClientContext } from '../../../hooks/assets/useAssetClient';
 import { UseAssetsContext } from '../../../hooks/assets/useAssets';
-import { UseAssetsKPICountsContext } from '../../../hooks/assets/useAssetsKPICounts';
+import { UseRegisterSummaryContext } from '../../../hooks/assets/useRegisterSummary';
 import { NavigationStoreContext } from '../../../hooks/general/useNavigationState';
 import type { AssetService } from '../../../services/assets/asset';
 import type { AssetListItem } from '../../../types/asset';
@@ -70,20 +70,20 @@ describe('AssetTable rows', () => {
     store = makeNavigationStore();
     queryClient = makeTestQueryClient();
     const QueryWrapper = makeQueryClientWrapper(queryClient);
-    const countsContext = makeAssetsKPICountsContext();
+    const countsContext = makeRegisterSummaryContext();
 
     wrapper = ({ children }) => (
       <NavigationStoreContext.Provider value={store}>
         <UseAssetsContext.Provider value={{ createAssetService: () => mockContext }}>
-          <UseAssetsKPICountsContext.Provider
-            value={{ createAssetsKPICountService: () => countsContext }}
+          <UseRegisterSummaryContext.Provider
+            value={{ createRegisterSummaryService: () => countsContext }}
           >
             <QueryWrapper>
               <AssetClientContext.Provider value={assetContext}>
                 {children}
               </AssetClientContext.Provider>
             </QueryWrapper>
-          </UseAssetsKPICountsContext.Provider>
+          </UseRegisterSummaryContext.Provider>
         </UseAssetsContext.Provider>
       </NavigationStoreContext.Provider>
     );

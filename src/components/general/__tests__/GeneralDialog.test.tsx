@@ -37,7 +37,7 @@ describe(GeneralDialog.name, () => {
     expect(screen.getByRole('button', { name: 'Close' })).toHaveClass('hud-button');
   });
 
-  it('stands a vent of slanted bars in its cut-away, like a KPI card, hidden from assistive technology', () => {
+  it('stands a vent of slanted bars in its cut-away, like a summary card, hidden from assistive technology', () => {
     renderDialog();
 
     const vent = screen.getByRole('dialog').querySelector('.hud-vent');

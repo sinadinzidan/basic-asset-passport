@@ -3,34 +3,34 @@ import userEvent from '@testing-library/user-event';
 import type { ComponentType, ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { makeAssetsKPICountsContext } from '../../../__mocks__/assetsKPICounts';
 import { makeMockClient } from '../../../__mocks__/cogniteClient';
 import { makeQueryClientWrapper } from '../../../__mocks__/QueryClientWrapper';
+import { makeRegisterSummaryContext } from '../../../__mocks__/registerSummary';
 import { AssetClientContext } from '../../../hooks/assets/useAssetClient';
-import { UseAssetsKPICountsContext } from '../../../hooks/assets/useAssetsKPICounts';
-import type { AssetsKPICountService } from '../../../services/assets/assetsKPICounts';
-import { AssetsKPIs } from '../AssetsKPIs';
+import { UseRegisterSummaryContext } from '../../../hooks/assets/useRegisterSummary';
+import type { RegisterSummaryService } from '../../../services/assets/registerSummary';
+import { RegisterSummary } from '../RegisterSummary';
 
-describe(AssetsKPIs.name, () => {
+describe(RegisterSummary.name, () => {
   const client = makeMockClient();
-  let context: AssetsKPICountService;
+  let context: RegisterSummaryService;
   let wrapper: ComponentType<{ children: ReactNode }>;
 
   beforeEach(() => {
-    context = makeAssetsKPICountsContext();
+    context = makeRegisterSummaryContext();
     const QueryWrapper = makeQueryClientWrapper();
 
     wrapper = ({ children }) => (
       <AssetClientContext.Provider value={client}>
-        <UseAssetsKPICountsContext.Provider value={{ createAssetsKPICountService: () => context }}>
+        <UseRegisterSummaryContext.Provider value={{ createRegisterSummaryService: () => context }}>
           <QueryWrapper>{children}</QueryWrapper>
-        </UseAssetsKPICountsContext.Provider>
+        </UseRegisterSummaryContext.Provider>
       </AssetClientContext.Provider>
     );
   });
 
   it('shows three cards for the whole register: assets, operating and equipment', async () => {
-    render(<AssetsKPIs />, { wrapper });
+    render(<RegisterSummary />, { wrapper });
 
     const summary = screen.getByRole('region', { name: 'Register summary' });
 
@@ -51,7 +51,7 @@ describe(AssetsKPIs.name, () => {
     vi.mocked(context.countOperatingAssets).mockReturnValue(new Promise(() => {}));
     vi.mocked(context.countAllEquipment).mockReturnValue(new Promise(() => {}));
 
-    render(<AssetsKPIs />, { wrapper });
+    render(<RegisterSummary />, { wrapper });
 
     expect(screen.getAllByText('–')).toHaveLength(3);
   });
@@ -59,7 +59,7 @@ describe(AssetsKPIs.name, () => {
   it('shows a placeholder only in the card whose count could not be read', async () => {
     vi.mocked(context.countAllEquipment).mockRejectedValue(new Error('forbidden'));
 
-    render(<AssetsKPIs />, { wrapper });
+    render(<RegisterSummary />, { wrapper });
 
     expect(
       await within(screen.getByRole('group', { name: 'Assets' })).findByText('4,210'),
@@ -75,7 +75,7 @@ describe(AssetsKPIs.name, () => {
   it('says that a count could not be read, with the reason', async () => {
     vi.mocked(context.countAllEquipment).mockRejectedValue(new Error('forbidden'));
 
-    render(<AssetsKPIs />, { wrapper });
+    render(<RegisterSummary />, { wrapper });
 
     const alert = await screen.findByRole('alert');
 
@@ -84,7 +84,7 @@ describe(AssetsKPIs.name, () => {
   });
 
   it('shows no error while every count can be read', async () => {
-    render(<AssetsKPIs />, { wrapper });
+    render(<RegisterSummary />, { wrapper });
 
     await screen.findByText('18,500');
 
@@ -93,7 +93,7 @@ describe(AssetsKPIs.name, () => {
 
   it('reads a failed count again on Retry', async () => {
     vi.mocked(context.countAllEquipment).mockRejectedValueOnce(new Error('forbidden'));
-    render(<AssetsKPIs />, { wrapper });
+    render(<RegisterSummary />, { wrapper });
 
     await userEvent.click(await screen.findByRole('button', { name: 'Retry' }));
 

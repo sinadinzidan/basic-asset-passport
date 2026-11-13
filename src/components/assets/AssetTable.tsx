@@ -26,8 +26,8 @@ import {
 import { ASSET_COLUMNS } from './AssetColumns';
 import { ASSET_GRID_CLASS_NAME } from './assetGridClassName';
 import { AssetSearchField } from './AssetSearchField';
-import { AssetsKPIs } from './AssetsKPIs';
 import { AssetTableEmptyState } from './AssetTableEmptyState';
+import { RegisterSummary } from './RegisterSummary';
 
 export function AssetTable() {
   const {
@@ -62,7 +62,7 @@ export function AssetTable() {
         description={ASSET_REGISTER_DESCRIPTION}
       />
 
-      <AssetsKPIs />
+      <RegisterSummary />
 
       <HudPanel shape={HudShape.SCREEN} bodyClassName="hud-flush">
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-default px-5 py-4">

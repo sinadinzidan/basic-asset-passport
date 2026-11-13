@@ -5,11 +5,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { makeAssetDetailsTabCountsContext } from '../../../__mocks__/assetDetailsTabCounts';
 import { makeAssetListItem, makeAssetPage, makeInstanceDetails } from '../../../__mocks__/assets';
-import { makeAssetsKPICountsContext } from '../../../__mocks__/assetsKPICounts';
 import { makeMockClient } from '../../../__mocks__/cogniteClient';
 import { makeAssetDocument } from '../../../__mocks__/documents';
 import { makeLimitedList } from '../../../__mocks__/lists';
 import { makeQueryClientWrapper } from '../../../__mocks__/QueryClientWrapper';
+import { makeRegisterSummaryContext } from '../../../__mocks__/registerSummary';
 import { AssetTab } from '../../../enums/assetTab';
 import { UseAssetDocumentsContext } from '../../../hooks/assets/documents/useAssetDocuments';
 import { DocumentFileClientContext } from '../../../hooks/assets/documents/useDocumentFileClient';
@@ -18,7 +18,7 @@ import { AssetClientContext } from '../../../hooks/assets/useAssetClient';
 import { UseAssetDetailsContext } from '../../../hooks/assets/useAssetDetails';
 import { UseAssetDetailsTabCountsContext } from '../../../hooks/assets/useAssetDetailsTabCounts';
 import { UseAssetsContext } from '../../../hooks/assets/useAssets';
-import { UseAssetsKPICountsContext } from '../../../hooks/assets/useAssetsKPICounts';
+import { UseRegisterSummaryContext } from '../../../hooks/assets/useRegisterSummary';
 import { DebounceContext, type DebounceDeps } from '../../../hooks/general/useDebouncedCallback';
 import { useNavigationState } from '../../../hooks/general/useNavigationState';
 import { NavigationProvider } from '../../../providers/general/NavigationProvider';
@@ -56,7 +56,7 @@ describe(Assets.name, () => {
       syncInternalState: vi.fn<StateSyncApi['syncInternalState']>(() => Promise.resolve(true)),
     };
     const tabCountsContext = makeAssetDetailsTabCountsContext();
-    const registerCountsContext = makeAssetsKPICountsContext();
+    const registerCountsContext = makeRegisterSummaryContext();
     const QueryWrapper = makeQueryClientWrapper();
 
     wrapper = ({ children }) => (
@@ -68,15 +68,15 @@ describe(Assets.name, () => {
             <UseAssetDetailsTabCountsContext.Provider
               value={{ createAssetDetailsTabCountService: () => tabCountsContext }}
             >
-              <UseAssetsKPICountsContext.Provider
-                value={{ createAssetsKPICountService: () => registerCountsContext }}
+              <UseRegisterSummaryContext.Provider
+                value={{ createRegisterSummaryService: () => registerCountsContext }}
               >
                 <QueryWrapper>
                   <AssetClientContext.Provider value={client}>
                     {children}
                   </AssetClientContext.Provider>
                 </QueryWrapper>
-              </UseAssetsKPICountsContext.Provider>
+              </UseRegisterSummaryContext.Provider>
             </UseAssetDetailsTabCountsContext.Provider>
           </UseAssetDetailsContext.Provider>
         </UseAssetsContext.Provider>

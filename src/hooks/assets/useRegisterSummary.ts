@@ -3,17 +3,17 @@ import { createContext, useContext } from 'react';
 
 import { COUNT_QUERY_KEY_PART, COUNT_QUERY_STALE_TIME_MS } from '../../constants/assets';
 import { toCountState } from '../../lib/countBadge';
-import { createAssetsKPICountService } from '../../services/assets/assetsKPICounts';
+import { createRegisterSummaryService } from '../../services/assets/registerSummary';
 import type { CountState } from '../../types/countState';
 
 import { useAssetClient } from './useAssetClient';
 
-const defaultDeps = { createAssetsKPICountService };
+const defaultDeps = { createRegisterSummaryService };
 
-export type UseAssetsKPICountsContextType = typeof defaultDeps;
-export const UseAssetsKPICountsContext = createContext<UseAssetsKPICountsContextType>(defaultDeps);
+export type UseRegisterSummaryContextType = typeof defaultDeps;
+export const UseRegisterSummaryContext = createContext<UseRegisterSummaryContextType>(defaultDeps);
 
-type AssetsKPICounts = {
+type RegisterSummaryCounts = {
   assets: CountState;
   operating: CountState;
   equipment: CountState;
@@ -22,23 +22,23 @@ type AssetsKPICounts = {
   retry: () => void;
 };
 
-export function useAssetsKPICounts(): AssetsKPICounts {
-  const { createAssetsKPICountService } = useContext(UseAssetsKPICountsContext);
+export function useRegisterSummary(): RegisterSummaryCounts {
+  const { createRegisterSummaryService } = useContext(UseRegisterSummaryContext);
   const client = useAssetClient();
-  const countService = createAssetsKPICountService(client);
+  const countService = createRegisterSummaryService(client);
 
   const assets = useQuery({
-    queryKey: getAssetsKPICountQueryKey(client.project, 'assets'),
+    queryKey: getRegisterSummaryQueryKey(client.project, 'assets'),
     queryFn: () => countService.countAllAssets(),
     staleTime: COUNT_QUERY_STALE_TIME_MS,
   });
   const operating = useQuery({
-    queryKey: getAssetsKPICountQueryKey(client.project, 'operating'),
+    queryKey: getRegisterSummaryQueryKey(client.project, 'operating'),
     queryFn: () => countService.countOperatingAssets(),
     staleTime: COUNT_QUERY_STALE_TIME_MS,
   });
   const equipment = useQuery({
-    queryKey: getAssetsKPICountQueryKey(client.project, 'equipment'),
+    queryKey: getRegisterSummaryQueryKey(client.project, 'equipment'),
     queryFn: () => countService.countAllEquipment(),
     staleTime: COUNT_QUERY_STALE_TIME_MS,
   });
@@ -59,6 +59,6 @@ export function useAssetsKPICounts(): AssetsKPICounts {
   };
 }
 
-function getAssetsKPICountQueryKey(project: string, card: string) {
+function getRegisterSummaryQueryKey(project: string, card: string) {
   return ['asset-register', project, COUNT_QUERY_KEY_PART, card] as const;
 }

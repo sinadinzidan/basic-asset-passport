@@ -9,9 +9,9 @@ import { createAssetService } from '../../services/assets/asset';
 import { createAssetDetailsService } from '../../services/assets/assetDetails';
 import { createAssetDetailsTabCountService } from '../../services/assets/assetDetailsTabCounts';
 import { createAssetEquipmentService } from '../../services/assets/assetEquipment';
-import { createAssetsKPICountService } from '../../services/assets/assetsKPICounts';
 import { createAssetDocumentService } from '../../services/assets/documents/assetDocument';
 import { createAssetNoteService } from '../../services/assets/notes/assetNote';
+import { createRegisterSummaryService } from '../../services/assets/registerSummary';
 import { createAssetTimeseriesService } from '../../services/assets/timeseries/assetTimeseries';
 import { listAssetPassportViews } from '../../services/assets/viewHelpers';
 import type { AssetListItem } from '../../types/asset';
@@ -394,7 +394,7 @@ describe(`${makeMockAssetContext.name} notes`, () => {
   it('counts every asset of the register', async () => {
     const client = makeMockAssetContext(0);
 
-    await expect(createAssetsKPICountService(client).countAllAssets()).resolves.toBe(
+    await expect(createRegisterSummaryService(client).countAllAssets()).resolves.toBe(
       MOCK_ASSETS.length,
     );
   });
@@ -403,7 +403,7 @@ describe(`${makeMockAssetContext.name} notes`, () => {
     const client = makeMockAssetContext(0);
     const listed = await listEveryAsset(client);
 
-    const operating = await createAssetsKPICountService(client).countOperatingAssets();
+    const operating = await createRegisterSummaryService(client).countOperatingAssets();
 
     expect(operating).toBe(listed.filter((asset) => isOperatingStatus(asset.flocStatus)).length);
     expect(operating).toBeGreaterThan(0);
@@ -413,7 +413,7 @@ describe(`${makeMockAssetContext.name} notes`, () => {
   it('counts the equipment of every asset', async () => {
     const client = makeMockAssetContext(0);
 
-    const total = await createAssetsKPICountService(client).countAllEquipment();
+    const total = await createRegisterSummaryService(client).countAllEquipment();
 
     expect(total).toBe(
       [...MOCK_EQUIPMENT_BY_ASSET_ID.values()].reduce(

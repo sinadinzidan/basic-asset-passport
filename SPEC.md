@@ -477,7 +477,7 @@ the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines
   credentials are never part of it.
 - Toasts (short confirmations such as "1 document uploaded.") use the same
   glass, chamfered look and appear bottom-right; errors stay inline.
-- Dialogs take the KPI card's outline on the panels' own bright blue glass, with a lit cyan edge: four cut
+- Dialogs take the summary card's outline on the panels' own bright blue glass, with a lit cyan edge: four cut
   corners, a shallow notch in the top edge with a gold bar on its floor, and the foot of the left side cut away
   with the vent's four slanted bars, in gold, standing in the gap, however tall the dialog grows. Full-width
   dividers split it into a header (title), a body and a footer of actions. The title and the content keep the
