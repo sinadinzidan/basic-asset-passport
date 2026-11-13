@@ -71,7 +71,7 @@ describe(AssetDetailsTabs.name, () => {
     expect(screen.getByText('Asset ID: A-GF-G307-FFS2-RSHT2-FIREFIGHT')).toBeInTheDocument();
   });
 
-  it('lists the equipment of the asset on the equipments tab', async () => {
+  it('lists the equipment of the asset on the equipment tab', async () => {
     renderTabs(AssetTab.EQUIPMENTS);
 
     expect(await screen.findByText('Equipment ID: P-1')).toBeInTheDocument();
@@ -97,7 +97,7 @@ describe(AssetDetailsTabs.name, () => {
       },
     });
 
-    expect(screen.getByRole('tab', { name: /equipments/i })).toHaveTextContent('3');
+    expect(screen.getByRole('tab', { name: /equipment/i })).toHaveTextContent('3');
     expect(screen.getByRole('tab', { name: /timeseries/i })).toHaveTextContent('4');
     expect(screen.getByRole('tab', { name: /notes/i })).toHaveTextContent('2');
     expect(screen.getByRole('tab', { name: /documents/i })).toHaveTextContent('7');
@@ -111,7 +111,7 @@ describe(AssetDetailsTabs.name, () => {
       },
     });
 
-    expect(screen.getByRole('tab', { name: /equipments/i })).toHaveTextContent(/^Equipments1,500$/);
+    expect(screen.getByRole('tab', { name: /equipment/i })).toHaveTextContent(/^Equipment1,500$/);
   });
 
   it('shows a zero for a list with nothing in it', () => {
@@ -128,7 +128,7 @@ describe(AssetDetailsTabs.name, () => {
   it('shows no count on a tab whose list could not be counted, and leaves it open', () => {
     renderTabs(AssetTab.PROPERTIES);
 
-    for (const name of ['Equipments', 'Timeseries', 'Notes', 'Documents']) {
+    for (const name of ['Equipment', 'Timeseries', 'Notes', 'Documents']) {
       const tab = screen.getByRole('tab', { name });
       expect(tab).toHaveTextContent(new RegExp(`^${name}$`));
       expect(tab).not.toHaveAttribute('aria-disabled', 'true');
@@ -145,7 +145,7 @@ describe(AssetDetailsTabs.name, () => {
       },
     });
 
-    for (const name of ['Equipments', 'Timeseries', 'Documents']) {
+    for (const name of ['Equipment', 'Timeseries', 'Documents']) {
       const tab = screen.getByRole('tab', { name });
       expect(tab).toHaveAttribute('aria-disabled', 'true');
       expect(tab).toHaveTextContent(new RegExp(`^${name}$`));
@@ -156,7 +156,7 @@ describe(AssetDetailsTabs.name, () => {
     );
   });
 
-  it('does not disable the equipments tab that is open while the equipment is being counted', async () => {
+  it('does not disable the equipment tab that is open while the equipment is being counted', async () => {
     renderTabs(AssetTab.EQUIPMENTS, {
       tabCounts: {
         ...NO_TAB_COUNTS,
@@ -165,7 +165,7 @@ describe(AssetDetailsTabs.name, () => {
     });
 
     expect(await screen.findByText('Equipment ID: P-1')).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: 'Equipments' })).not.toHaveAttribute(
+    expect(screen.getByRole('tab', { name: 'Equipment' })).not.toHaveAttribute(
       'aria-disabled',
       'true',
     );
@@ -190,7 +190,7 @@ describe(AssetDetailsTabs.name, () => {
   it('opens the tab the user selects', async () => {
     renderTabs(AssetTab.PROPERTIES);
 
-    await userEvent.click(screen.getByRole('tab', { name: /equipments/i }));
+    await userEvent.click(screen.getByRole('tab', { name: /equipment/i }));
 
     expect(store.getState().navigationState.activeAssetTab).toBe(AssetTab.EQUIPMENTS);
     expect(await screen.findByText('Equipment ID: P-1')).toBeInTheDocument();

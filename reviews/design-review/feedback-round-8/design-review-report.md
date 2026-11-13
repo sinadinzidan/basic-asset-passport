@@ -60,3 +60,11 @@ None.
 - Q4: confirm note add, edit and delete with a message, as upload does; show a character count in the note dialog.
 - Q7 / Q10: raise small controls toward 40 px on touch devices.
 - Walk the three tasks, the assistant and a shared link on real CDF data in Fusion, and try a screen reader.
+
+## After the review
+
+Two of the nice-to-fix items were taken up on the owner's request, after the scores above were set. The scores were not changed.
+
+- **Q3:** the Status column menu is now named "Status options" (the header is a plain label, still centred) and the tab reads "Equipment".
+- **Q10, contrast:** quiet text in the chart dialog now takes the theme's own muted ink, set on the dialog in `src/styles.css`; the scan reports no contrast failure there in either theme. No change to `packages/trend-chart` was needed.
+- **Q10, still open:** the invalid `aria-expanded` and the Base UI console error both come from `DateTimeRangePicker` in `@cognite/aura` itself, which renders its popover trigger as a `div`. It can only be fixed in Aura.

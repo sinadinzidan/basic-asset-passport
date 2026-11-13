@@ -16,7 +16,7 @@ describe('ASSET_TAB_LABELS', () => {
   it('labels every tab for display', () => {
     expect(ASSET_TAB_LABELS).toEqual({
       [AssetTab.PROPERTIES]: 'Properties',
-      [AssetTab.EQUIPMENTS]: 'Equipments',
+      [AssetTab.EQUIPMENTS]: 'Equipment',
       [AssetTab.TIMESERIES]: 'Timeseries',
       [AssetTab.NOTES]: 'Notes',
       [AssetTab.DOCUMENTS]: 'Documents',

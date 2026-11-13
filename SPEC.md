@@ -81,7 +81,7 @@ the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines
   Criticality is shown as its own value (for example "A - High criticality")
   with a colour by class: A red, B amber, C green, anything else grey.
 - Five tabs: Properties ("Asset ID: <external ID>", exactly as stored, then the
-  asset's properties in the same grid of label and value cells as each equipment), Equipments (the
+  asset's properties in the same grid of label and value cells as each equipment), Equipment (the
   `Equipment` nodes whose `asset` relation points to the asset, sorted by name on the server, the first 1000,
   loaded when the tab opens, with a count badge on the tab; when the asset has more than 1,000, the tab says "Showing the
   first 1,000 equipment, sorted by name. This asset has more."), Timeseries (see below), Notes and Documents (see below). Each equipment is a card with its name,
@@ -99,7 +99,7 @@ the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines
 
 ## Asset timeseries
 
-- The Timeseries tab, between Equipments and Notes, lists the time series linked to the open asset: the
+- The Timeseries tab, between Equipment and Notes, lists the time series linked to the open asset: the
   `PI_Timeseries` nodes (`sp-dm-idi-rmdm`, `v1`, referenced by the `Asset_Passport` model) whose `assets`
   relation list contains the asset, sorted by name on the server, 200 at a time: when the asset has more, a
   "Show more timeseries" button under the cards reads the next 200 while the cards already shown stay.

@@ -7,6 +7,7 @@ export const ASSET_GRID_CLASS_NAME = [
   "[&_[data-slot='data-grid-row']]:transition-colors",
   "[&_[data-slot='data-grid-column-header']:hover]:bg-brand/10",
   "[&_[data-slot='data-grid-row']:hover]:bg-brand/10",
-  "[&_[data-slot='data-grid-header-row']_[aria-colindex='5']]:justify-center",
-  "[&_[data-slot='data-grid-header-row']_[aria-colindex='5']]:text-center",
+  "[&_[data-slot='data-grid-header-row']_[aria-colindex='5']>div:first-child]:flex-1",
+  "[&_[data-slot='data-grid-header-row']_[aria-colindex='5']>div:first-child]:justify-center",
+  "[&_[data-slot='data-grid-header-row']_[aria-colindex='5']>div:first-child]:pl-12",
 ].join(' ');

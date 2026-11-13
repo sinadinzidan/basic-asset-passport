@@ -4,6 +4,7 @@ import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
 import { makeAssetListItem } from '../../../__mocks__/assets';
+import { FUNCTIONAL_LOCATION_LABEL } from '../../../constants/labels';
 import type { AssetListItem } from '../../../types/asset';
 import { ASSET_COLUMNS } from '../AssetColumns';
 
@@ -112,5 +113,16 @@ describe('ASSET_COLUMNS', () => {
     renderCell(4, makeAssetListItem({ flocStatus: null }));
 
     expect(screen.getByText('Not provided')).toBeInTheDocument();
+  });
+
+  it('gives every column a plain text header, which also names its options menu', () => {
+    expect(ASSET_COLUMNS.map((column) => column.header)).toEqual([
+      'Plant',
+      FUNCTIONAL_LOCATION_LABEL,
+      'Asset name',
+      'Description',
+      'Status',
+      'Criticality',
+    ]);
   });
 });

@@ -169,11 +169,11 @@ describe(AssetDetails.name, () => {
   it('shows the count of each tab once it is counted', async () => {
     renderRegister();
 
-    expect(await screen.findByRole('tab', { name: /equipments/i })).toBeInTheDocument();
+    expect(await screen.findByRole('tab', { name: /equipment/i })).toBeInTheDocument();
     expect(await screen.findByRole('tab', { name: /timeseries/i })).toHaveTextContent(
       /^Timeseries3$/,
     );
-    expect(screen.getByRole('tab', { name: /equipments/i })).toHaveTextContent(/^Equipments1$/);
+    expect(screen.getByRole('tab', { name: /equipment/i })).toHaveTextContent(/^Equipment1$/);
     expect(screen.getByRole('tab', { name: /notes/i })).toHaveTextContent(/^Notes2$/);
     expect(screen.getByRole('tab', { name: /documents/i })).toHaveTextContent(/^Documents4$/);
   });
@@ -181,7 +181,7 @@ describe(AssetDetails.name, () => {
   it('opens the selected tab', async () => {
     renderRegister();
 
-    await userEvent.click(await screen.findByRole('tab', { name: /equipments/i }));
+    await userEvent.click(await screen.findByRole('tab', { name: /equipment/i }));
 
     expect(store.getState().navigationState.activeAssetTab).toBe(AssetTab.EQUIPMENTS);
     expect(await screen.findByText('Equipment ID: P-1')).toBeInTheDocument();

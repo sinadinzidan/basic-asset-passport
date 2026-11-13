@@ -2770,6 +2770,8 @@
   --muted-background: color-mix(in srgb, var(--neon-surface-deep) 78%, var(--neon-cyan));
   --active-background: color-mix(in srgb, var(--neon-cyan) 20%, var(--neon-surface-deep));
   --border: color-mix(in srgb, var(--neon-cyan) 30%, transparent);
+  /* Quiet text on the dialog's lighter panels needs more contrast than Aura's grey gives. */
+  --muted-foreground: var(--hud-ink-muted);
   --chart-gridlines: color-mix(in srgb, var(--neon-cyan) 34%, transparent);
 
   /* Eight series colours that read on navy; the chart picks them in this order. */
@@ -2804,6 +2806,7 @@
 
 /* On the light dialog the series are the deeper steps of the same hues, so each line reads on white. */
 :root:not(.dark) .timeseries-chart-dialog {
+  --muted-foreground: var(--mascot-blue);
   --chart-nordic-color-1: var(--mascot-blue);
   --chart-fjord-color-1: var(--amber-650);
   --chart-orange-color-1: var(--red-600);

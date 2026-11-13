@@ -39,7 +39,7 @@ export const ASSET_COLUMNS: ColumnDef<AssetListItem>[] = [
   },
   {
     accessorKey: 'flocStatus',
-    header: () => <div className="w-full text-center">Status</div>,
+    header: 'Status',
     cell: ({ row }) => {
       const status = row.original.flocStatus;
 

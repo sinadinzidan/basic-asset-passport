@@ -8,7 +8,7 @@ export enum AssetTab {
 
 export const ASSET_TAB_LABELS: Record<AssetTab, string> = {
   [AssetTab.PROPERTIES]: 'Properties',
-  [AssetTab.EQUIPMENTS]: 'Equipments',
+  [AssetTab.EQUIPMENTS]: 'Equipment',
   [AssetTab.TIMESERIES]: 'Timeseries',
   [AssetTab.NOTES]: 'Notes',
   [AssetTab.DOCUMENTS]: 'Documents',

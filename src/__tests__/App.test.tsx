@@ -201,13 +201,13 @@ describe(App.name, () => {
 
     renderApp(deps);
 
-    expect(await screen.findByRole('tab', { name: /equipments/i })).toHaveAttribute(
+    expect(await screen.findByRole('tab', { name: /equipment/i })).toHaveAttribute(
       'aria-selected',
       'true',
     );
     await waitFor(() =>
       expect(
-        screen.getByRole('tab', { name: /equipments/i }).querySelectorAll('[data-slot="badge"]'),
+        screen.getByRole('tab', { name: /equipment/i }).querySelectorAll('[data-slot="badge"]'),
       ).toHaveLength(1),
     );
     expect(await screen.findByText('Equipment ID: equipment-node-100')).toBeInTheDocument();
