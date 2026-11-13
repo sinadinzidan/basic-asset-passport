@@ -3,15 +3,15 @@ import type { ReactNode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
 import { makeAgentContext } from '../../../__mocks__/agents';
-import { AgentContext, useAgentContext } from '../useAgentContext';
+import { AgentClientContext, useAgentClient } from '../useAgentClient';
 
-describe(useAgentContext.name, () => {
+describe(useAgentClient.name, () => {
   it('returns the agent context from the provider', () => {
     const agentContext = makeAgentContext();
 
-    const { result } = renderHook(() => useAgentContext(), {
+    const { result } = renderHook(() => useAgentClient(), {
       wrapper: ({ children }: { children: ReactNode }) => (
-        <AgentContext.Provider value={agentContext}>{children}</AgentContext.Provider>
+        <AgentClientContext.Provider value={agentContext}>{children}</AgentClientContext.Provider>
       ),
     });
 
@@ -21,8 +21,6 @@ describe(useAgentContext.name, () => {
   it('fails clearly when used outside a provider', () => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
 
-    expect(() => renderHook(() => useAgentContext())).toThrow(
-      'useAgentContext must be used inside',
-    );
+    expect(() => renderHook(() => useAgentClient())).toThrow('useAgentClient must be used inside');
   });
 });

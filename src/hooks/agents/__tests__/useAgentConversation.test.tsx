@@ -10,17 +10,17 @@ import {
   getConversation,
   INITIAL_AGENT_CHAT_STATE,
 } from '../../../store/agents';
-import { AgentChatStoreContext, useAgentChatState } from '../useAgentChatState';
+import { AgentChatStoreContext, useAgentConversation } from '../useAgentConversation';
 
 const AGENT_EXTERNAL_ID = makeCdfAgent().externalId;
 const question = { id: 'm1', role: ChatMessageRole.USER, text: 'Hi' };
 
-describe(useAgentChatState.name, () => {
+describe(useAgentConversation.name, () => {
   it('reads the app store when no store is supplied', () => {
     agentChatStore.setState(INITIAL_AGENT_CHAT_STATE);
 
     const { result } = renderHook(() =>
-      useAgentChatState((store) => getConversation(store, AGENT_EXTERNAL_ID).messages),
+      useAgentConversation((store) => getConversation(store, AGENT_EXTERNAL_ID).messages),
     );
 
     expect(result.current).toEqual([]);
@@ -35,7 +35,7 @@ describe(useAgentChatState.name, () => {
     });
 
     const { result } = renderHook(
-      () => useAgentChatState((state) => getConversation(state, AGENT_EXTERNAL_ID).messages),
+      () => useAgentConversation((state) => getConversation(state, AGENT_EXTERNAL_ID).messages),
       {
         wrapper: ({ children }) => (
           <AgentChatStoreContext.Provider value={store}>{children}</AgentChatStoreContext.Provider>

@@ -11,9 +11,9 @@ import {
 import { ChatMessageRole } from '../../../../enums/chatMessageRole';
 import { createAgentChatStore } from '../../../../store/agents';
 import type { AgentContextType } from '../../../../types/agent';
-import { AgentChatStoreContext } from '../../useAgentChatState';
-import { AgentContext } from '../../useAgentContext';
-import { getAgentQueryKey, UseFocusedAgentContext } from '../../useFocusedAgent';
+import { AgentClientContext } from '../../useAgentClient';
+import { AgentChatStoreContext } from '../../useAgentConversation';
+import { getAgentQueryKey, UseDalilAgentContext } from '../../useDalilAgent';
 import {
   UseAgentChatViewModelContext,
   type UseAgentChatViewModelContextType,
@@ -48,15 +48,17 @@ describe(useAgentChatViewModel.name, () => {
     };
     wrapper = ({ children }) => (
       <UseAgentChatViewModelContext.Provider value={context}>
-        <UseFocusedAgentContext.Provider
+        <UseDalilAgentContext.Provider
           value={{ focusedAgentExternalId: makeCdfAgent().externalId }}
         >
           <AgentChatStoreContext.Provider value={chatStore}>
             <QueryWrapper>
-              <AgentContext.Provider value={agentContext}>{children}</AgentContext.Provider>
+              <AgentClientContext.Provider value={agentContext}>
+                {children}
+              </AgentClientContext.Provider>
             </QueryWrapper>
           </AgentChatStoreContext.Provider>
-        </UseFocusedAgentContext.Provider>
+        </UseDalilAgentContext.Provider>
       </UseAgentChatViewModelContext.Provider>
     );
   });

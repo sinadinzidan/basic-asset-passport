@@ -4,9 +4,9 @@ import { SEND_FAILED_FALLBACK_MESSAGE } from '../../../constants/agents';
 import { ChatMessageRole } from '../../../enums/chatMessageRole';
 import { getConversation } from '../../../store/agents';
 import type { CdfAgent, ChatMessage } from '../../../types/agent';
-import { useAgentChatState } from '../useAgentChatState';
-import { useAgentContext } from '../useAgentContext';
-import { useFocusedAgent } from '../useFocusedAgent';
+import { useAgentClient } from '../useAgentClient';
+import { useAgentConversation } from '../useAgentConversation';
+import { useDalilAgent } from '../useDalilAgent';
 
 const defaultDeps = {
   createMessageId: (): string => crypto.randomUUID(),
@@ -28,16 +28,16 @@ type AgentChatViewModel = {
 
 export function useAgentChatViewModel(): AgentChatViewModel {
   const { createMessageId } = useContext(UseAgentChatViewModelContext);
-  const client = useAgentContext();
-  const { data: focusedAgent } = useFocusedAgent(false);
-  const conversation = useAgentChatState((store) =>
+  const client = useAgentClient();
+  const { data: focusedAgent } = useDalilAgent(false);
+  const conversation = useAgentConversation((store) =>
     getConversation(store, focusedAgent?.externalId ?? ''),
   );
-  const addUserMessage = useAgentChatState((store) => store.addUserMessage);
-  const receiveReply = useAgentChatState((store) => store.receiveReply);
-  const failSend = useAgentChatState((store) => store.failSend);
-  const retrySend = useAgentChatState((store) => store.retrySend);
-  const resetConversation = useAgentChatState((store) => store.resetConversation);
+  const addUserMessage = useAgentConversation((store) => store.addUserMessage);
+  const receiveReply = useAgentConversation((store) => store.receiveReply);
+  const failSend = useAgentConversation((store) => store.failSend);
+  const retrySend = useAgentConversation((store) => store.retrySend);
+  const resetConversation = useAgentConversation((store) => store.resetConversation);
 
   const agent = focusedAgent ?? null;
 

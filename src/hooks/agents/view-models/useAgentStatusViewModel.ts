@@ -1,5 +1,5 @@
 import { getErrorReason } from '../../../lib/errorReason';
-import { useFocusedAgent } from '../useFocusedAgent';
+import { useDalilAgent } from '../useDalilAgent';
 
 type AgentStatusViewModel = {
   isLoading: boolean;
@@ -11,7 +11,7 @@ type AgentStatusViewModel = {
 };
 
 export function useAgentStatusViewModel(): AgentStatusViewModel {
-  const { data, error, isPending, isError, isFetching, retry } = useFocusedAgent(true);
+  const { data, error, isPending, isError, isFetching, retry } = useDalilAgent(true);
 
   return {
     isLoading: isPending,

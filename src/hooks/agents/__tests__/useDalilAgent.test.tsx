@@ -6,10 +6,10 @@ import { makeAgentContext, makeCdfAgent } from '../../../__mocks__/agents';
 import { makeQueryClientWrapper } from '../../../__mocks__/QueryClientWrapper';
 import { FOCUSED_AGENT_EXTERNAL_ID } from '../../../constants/agents';
 import type { AgentContextType } from '../../../types/agent';
-import { AgentContext } from '../useAgentContext';
-import { UseFocusedAgentContext, useFocusedAgent } from '../useFocusedAgent';
+import { AgentClientContext } from '../useAgentClient';
+import { UseDalilAgentContext, useDalilAgent } from '../useDalilAgent';
 
-describe(useFocusedAgent.name, () => {
+describe(useDalilAgent.name, () => {
   let getAgent: AgentContextType['getAgent'];
   let QueryWrapper: ComponentType<{ children: ReactNode }>;
   let wrapper: ComponentType<{ children: ReactNode }>;
@@ -20,29 +20,29 @@ describe(useFocusedAgent.name, () => {
 
     QueryWrapper = makeQueryClientWrapper();
     wrapper = ({ children }) => (
-      <AgentContext.Provider value={agentContext}>
-        <UseFocusedAgentContext.Provider
+      <AgentClientContext.Provider value={agentContext}>
+        <UseDalilAgentContext.Provider
           value={{ focusedAgentExternalId: makeCdfAgent().externalId }}
         >
           <QueryWrapper>{children}</QueryWrapper>
-        </UseFocusedAgentContext.Provider>
-      </AgentContext.Provider>
+        </UseDalilAgentContext.Provider>
+      </AgentClientContext.Provider>
     );
   });
 
   it('looks up the agent the app is focused on', async () => {
-    const { result } = renderHook(() => useFocusedAgent(true), { wrapper });
+    const { result } = renderHook(() => useDalilAgent(true), { wrapper });
 
     await waitFor(() => expect(result.current.data).toEqual(makeCdfAgent()));
     expect(getAgent).toHaveBeenCalledExactlyOnceWith(makeCdfAgent().externalId);
   });
 
   it('looks up the configured agent when no other is supplied', async () => {
-    const { result } = renderHook(() => useFocusedAgent(true), {
+    const { result } = renderHook(() => useDalilAgent(true), {
       wrapper: ({ children }) => (
-        <AgentContext.Provider value={makeAgentContext({ getAgent })}>
+        <AgentClientContext.Provider value={makeAgentContext({ getAgent })}>
           <QueryWrapper>{children}</QueryWrapper>
-        </AgentContext.Provider>
+        </AgentClientContext.Provider>
       ),
     });
 
@@ -51,7 +51,7 @@ describe(useFocusedAgent.name, () => {
   });
 
   it('does not look the agent up when it only follows the lookup', () => {
-    const { result } = renderHook(() => useFocusedAgent(false), { wrapper });
+    const { result } = renderHook(() => useDalilAgent(false), { wrapper });
 
     expect(result.current.data).toBeUndefined();
     expect(getAgent).not.toHaveBeenCalled();
@@ -59,7 +59,7 @@ describe(useFocusedAgent.name, () => {
 
   it('receives the agent that another reader looked up', async () => {
     const { result } = renderHook(
-      () => ({ follower: useFocusedAgent(false), reader: useFocusedAgent(true) }),
+      () => ({ follower: useDalilAgent(false), reader: useDalilAgent(true) }),
       { wrapper },
     );
 
@@ -68,7 +68,7 @@ describe(useFocusedAgent.name, () => {
   });
 
   it('is loading until the agent arrives', async () => {
-    const { result } = renderHook(() => useFocusedAgent(true), { wrapper });
+    const { result } = renderHook(() => useDalilAgent(true), { wrapper });
 
     expect(result.current.isPending).toBe(true);
     await waitFor(() => expect(result.current.isPending).toBe(false));
@@ -77,7 +77,7 @@ describe(useFocusedAgent.name, () => {
   it('returns null when the project has no such agent', async () => {
     vi.mocked(getAgent).mockResolvedValue(null);
 
-    const { result } = renderHook(() => useFocusedAgent(true), { wrapper });
+    const { result } = renderHook(() => useDalilAgent(true), { wrapper });
 
     await waitFor(() => expect(result.current.isPending).toBe(false));
     expect(result.current.data).toBeNull();
@@ -86,7 +86,7 @@ describe(useFocusedAgent.name, () => {
   it('reports a failure to look the agent up', async () => {
     vi.mocked(getAgent).mockRejectedValue(new Error('no access'));
 
-    const { result } = renderHook(() => useFocusedAgent(true), { wrapper });
+    const { result } = renderHook(() => useDalilAgent(true), { wrapper });
 
     await waitFor(() => expect(result.current.isError).toBe(true));
     expect(result.current.error?.message).toBe('no access');

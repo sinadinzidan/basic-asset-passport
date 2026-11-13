@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { makeOfflineSdkClient } from '../../../__mocks__/cogniteClient';
 import { makeCogniteSdkWrapper } from '../../../__mocks__/CogniteSdkWrapper';
-import { useAgentContext } from '../../../hooks/agents/useAgentContext';
+import { useAgentClient } from '../../../hooks/agents/useAgentClient';
 import type { AgentContextType } from '../../../types/agent';
 import { AgentProvider } from '../AgentProvider';
 
@@ -18,7 +18,7 @@ describe(AgentProvider.name, () => {
   });
 
   function AgentProbe() {
-    const agentContext = useAgentContext();
+    const agentContext = useAgentClient();
 
     seenContexts.push(agentContext);
 

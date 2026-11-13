@@ -282,9 +282,9 @@ export function AssetList({ page, search }: AssetListProps) {
   Obtain the authenticated client through the existing Flows provider and
   inject it into services. Do not create hidden global clients.
 - A value a provider supplies is read through its reader hook, called
-  directly: `const { project, getAgent } = useAgentContext();`. The readers
+  directly: `const { project, getAgent } = useAgentClient();`. The readers
   (`useAssetContext`, `useDocumentFileContext`, `useTimeseriesContext`,
-  `useAgentContext`) throw outside their provider. The context is already the
+  `useAgentClient`) throw outside their provider. The context is already the
   injection point, so never pass a reader through a per-hook deps context
   (`const { useAssetContext: useClient } = useContext(UseAssetsContext)`).
   A test supplies the value with the context's own provider

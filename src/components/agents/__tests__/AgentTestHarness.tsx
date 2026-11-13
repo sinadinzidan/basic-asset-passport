@@ -2,13 +2,13 @@ import type { ComponentType, ReactNode } from 'react';
 
 import { makeCdfAgent } from '../../../__mocks__/agents';
 import { makeQueryClientWrapper, makeTestQueryClient } from '../../../__mocks__/QueryClientWrapper';
-import { AgentChatStoreContext } from '../../../hooks/agents/useAgentChatState';
-import { AgentContext } from '../../../hooks/agents/useAgentContext';
+import { AgentClientContext } from '../../../hooks/agents/useAgentClient';
+import { AgentChatStoreContext } from '../../../hooks/agents/useAgentConversation';
 import {
   UseAgentGreetingContext,
   type UseAgentGreetingContextType,
 } from '../../../hooks/agents/useAgentGreeting';
-import { getAgentQueryKey, UseFocusedAgentContext } from '../../../hooks/agents/useFocusedAgent';
+import { getAgentQueryKey, UseDalilAgentContext } from '../../../hooks/agents/useDalilAgent';
 import { UseAgentChatViewModelContext } from '../../../hooks/agents/view-models/useAgentChatViewModel';
 import { UseCopyToClipboardContext } from '../../../hooks/general/useCopyToClipboard';
 import { UseSpeechDictationContext } from '../../../hooks/general/useSpeechDictation';
@@ -59,8 +59,8 @@ export function makeAgentWrapper({
 
   return function AgentWrapper({ children }) {
     return (
-      <AgentContext.Provider value={client}>
-        <UseFocusedAgentContext.Provider
+      <AgentClientContext.Provider value={client}>
+        <UseDalilAgentContext.Provider
           value={{ focusedAgentExternalId: makeCdfAgent().externalId }}
         >
           <UseAgentChatViewModelContext.Provider value={chatContext}>
@@ -82,8 +82,8 @@ export function makeAgentWrapper({
               </UseSpeechDictationContext.Provider>
             </AgentChatStoreContext.Provider>
           </UseAgentChatViewModelContext.Provider>
-        </UseFocusedAgentContext.Provider>
-      </AgentContext.Provider>
+        </UseDalilAgentContext.Provider>
+      </AgentClientContext.Provider>
     );
   };
 }

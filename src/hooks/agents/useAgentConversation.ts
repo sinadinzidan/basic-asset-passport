@@ -6,6 +6,6 @@ import type { AgentChatStore } from '../../types/agentChat';
 
 export const AgentChatStoreContext = createContext<StoreApi<AgentChatStore>>(agentChatStore);
 
-export function useAgentChatState<Slice>(select: (store: AgentChatStore) => Slice): Slice {
+export function useAgentConversation<Slice>(select: (store: AgentChatStore) => Slice): Slice {
   return useStore(useContext(AgentChatStoreContext), select);
 }

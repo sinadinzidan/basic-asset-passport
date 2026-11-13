@@ -5,8 +5,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { makeAgentContext, makeCdfAgent } from '../../../../__mocks__/agents';
 import { makeQueryClientWrapper } from '../../../../__mocks__/QueryClientWrapper';
 import type { AgentContextType } from '../../../../types/agent';
-import { AgentContext } from '../../useAgentContext';
-import { UseFocusedAgentContext, useFocusedAgent } from '../../useFocusedAgent';
+import { AgentClientContext } from '../../useAgentClient';
+import { UseDalilAgentContext, useDalilAgent } from '../../useDalilAgent';
 import { useAgentStatusViewModel } from '../useAgentStatusViewModel';
 
 describe(useAgentStatusViewModel.name, () => {
@@ -19,13 +19,13 @@ describe(useAgentStatusViewModel.name, () => {
     const QueryWrapper = makeQueryClientWrapper();
 
     wrapper = ({ children }) => (
-      <AgentContext.Provider value={agentContext}>
-        <UseFocusedAgentContext.Provider
+      <AgentClientContext.Provider value={agentContext}>
+        <UseDalilAgentContext.Provider
           value={{ focusedAgentExternalId: makeCdfAgent().externalId }}
         >
           <QueryWrapper>{children}</QueryWrapper>
-        </UseFocusedAgentContext.Provider>
-      </AgentContext.Provider>
+        </UseDalilAgentContext.Provider>
+      </AgentClientContext.Provider>
     );
   });
 
@@ -41,7 +41,7 @@ describe(useAgentStatusViewModel.name, () => {
     const { result } = renderHook(
       () => ({
         picker: useAgentStatusViewModel(),
-        followedAgent: useFocusedAgent(false).data ?? null,
+        followedAgent: useDalilAgent(false).data ?? null,
       }),
       { wrapper },
     );
@@ -57,7 +57,7 @@ describe(useAgentStatusViewModel.name, () => {
     const { result } = renderHook(
       () => ({
         picker: useAgentStatusViewModel(),
-        followedAgent: useFocusedAgent(false).data ?? null,
+        followedAgent: useDalilAgent(false).data ?? null,
       }),
       { wrapper },
     );
@@ -95,7 +95,7 @@ describe(useAgentStatusViewModel.name, () => {
     const { result } = renderHook(
       () => ({
         picker: useAgentStatusViewModel(),
-        followedAgent: useFocusedAgent(false).data ?? null,
+        followedAgent: useDalilAgent(false).data ?? null,
       }),
       { wrapper },
     );

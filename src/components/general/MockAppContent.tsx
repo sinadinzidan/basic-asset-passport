@@ -1,4 +1,4 @@
-import { AgentContext } from '../../hooks/agents/useAgentContext';
+import { AgentClientContext } from '../../hooks/agents/useAgentClient';
 import { DocumentFileContext } from '../../hooks/assets/documents/useDocumentFileContext';
 import { TimeseriesContext } from '../../hooks/assets/timeseries/useTimeseriesContext';
 import { AssetContext } from '../../hooks/assets/useAssetContext';
@@ -24,9 +24,9 @@ export function MockAppContent({ mockContexts }: MockAppContentProps) {
           </TimeseriesContext.Provider>
         </DocumentFileContext.Provider>
       </AssetContext.Provider>
-      <AgentContext.Provider value={mockContexts.agentContext}>
+      <AgentClientContext.Provider value={mockContexts.agentContext}>
         <AgentHelper />
-      </AgentContext.Provider>
+      </AgentClientContext.Provider>
     </NavigationProvider>
   );
 }
