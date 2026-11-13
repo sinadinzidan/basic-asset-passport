@@ -1,13 +1,16 @@
+import { useMutationState } from '@tanstack/react-query';
+
 import { DOCUMENT_QUERY_LIMIT } from '../../../constants/documents';
 import { isSameInstance } from '../../../lib/instanceKey';
 import type { AssetDocument } from '../../../types/document';
 import { useListLimit } from '../../general/useListLimit';
+import { useAssetContext } from '../useAssetContext';
 import { useSelectedAsset } from '../useSelectedAsset';
 
 import { useAssetDocuments } from './useAssetDocuments';
 import { useAssetLinkedFiles } from './useAssetLinkedFiles';
 import { useDeleteAssetDocument } from './useDeleteAssetDocument';
-import { useUploadingDocumentNames } from './useUploadingDocumentNames';
+import { getUploadAssetDocumentsMutationKey } from './useUploadAssetDocuments';
 
 const NO_DOCUMENTS: AssetDocument[] = [];
 
@@ -18,8 +21,16 @@ export function useAssetDocumentListViewModel() {
   const documents = useAssetDocuments(assetIdentifier, documentLimit.limit);
   const linkedFiles = useAssetLinkedFiles(assetIdentifier, linkedFileLimit.limit);
   const deletion = useDeleteAssetDocument(assetIdentifier);
-  const uploadingNames = useUploadingDocumentNames(assetIdentifier);
+  const client = useAssetContext();
+  const pendingUploads = useMutationState({
+    filters: {
+      mutationKey: getUploadAssetDocumentsMutationKey(client.project, assetIdentifier),
+      status: 'pending',
+    },
+    select: (mutation) => mutation.state.variables,
+  });
 
+  const uploadingNames = pendingUploads.flatMap(getFileNames);
   const uploadedDocuments = documents.data?.items ?? NO_DOCUMENTS;
   const existingFiles = linkedFiles.data?.items ?? NO_DOCUMENTS;
   const hasNothingToShow =
@@ -65,4 +76,10 @@ export function useAssetDocumentListViewModel() {
     deleteDocument,
     isDeleting,
   };
+}
+
+function getFileNames(variables: unknown): string[] {
+  if (!Array.isArray(variables)) return [];
+
+  return variables.flatMap((value: unknown) => (value instanceof File ? [value.name] : []));
 }

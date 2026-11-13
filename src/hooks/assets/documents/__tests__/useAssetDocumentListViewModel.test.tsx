@@ -11,13 +11,21 @@ import { DOCUMENT_QUERY_LIMIT } from '../../../../constants/documents';
 import { DocumentOrigin } from '../../../../enums/documentOrigin';
 import { NavigationStoreContext } from '../../../../hooks/general/useNavigationState';
 import type { AssetDocumentService } from '../../../../services/assets/documents/assetDocument';
+import type { DocumentFileContextType } from '../../../../types/documentFileContext';
 import { AssetContext } from '../../useAssetContext';
 import { useAssetDocumentListViewModel } from '../useAssetDocumentListViewModel';
 import { UseAssetDocumentsContext } from '../useAssetDocuments';
 import { UseAssetLinkedFilesContext } from '../useAssetLinkedFiles';
 import { UseDeleteAssetDocumentContext } from '../useDeleteAssetDocument';
+import { DocumentFileContext } from '../useDocumentFileContext';
+import {
+  useUploadAssetDocuments,
+  UseUploadAssetDocumentsContext,
+} from '../useUploadAssetDocuments';
 
 const assetIdentifier = { space: 'asset-space', externalId: 'FLOC-1' };
+const otherAsset = { space: 'asset-space', externalId: 'FLOC-2' };
+const documentFileContext = {} as Partial<DocumentFileContextType> as DocumentFileContextType;
 
 const navigationStore = makeNavigationStore({ selectedAsset: assetIdentifier });
 const uploaded = makeAssetDocument();
@@ -27,7 +35,8 @@ describe(useAssetDocumentListViewModel.name, () => {
   const client = makeMockClient();
   let documentService: Pick<AssetDocumentService, 'listAssetDocuments'> &
     Pick<AssetDocumentService, 'listAssetLinkedFiles'> &
-    Pick<AssetDocumentService, 'deleteAssetDocument'>;
+    Pick<AssetDocumentService, 'deleteAssetDocument'> &
+    Pick<AssetDocumentService, 'uploadAssetDocument'>;
   let wrapper: ComponentType<{ children: ReactNode }>;
 
   beforeEach(() => {
@@ -35,6 +44,7 @@ describe(useAssetDocumentListViewModel.name, () => {
       listAssetDocuments: vi.fn(() => Promise.resolve(makeLimitedList([uploaded], true))),
       listAssetLinkedFiles: vi.fn(() => Promise.resolve(makeLimitedList([existing]))),
       deleteAssetDocument: vi.fn(() => Promise.resolve()),
+      uploadAssetDocument: vi.fn(() => new Promise<void>(() => {})),
     };
     const deps = documentService;
     const QueryWrapper = makeQueryClientWrapper();
@@ -48,7 +58,16 @@ describe(useAssetDocumentListViewModel.name, () => {
             <QueryWrapper>
               <AssetContext.Provider value={client}>
                 <NavigationStoreContext.Provider value={navigationStore}>
-                  {children}
+                  <UseUploadAssetDocumentsContext.Provider
+                    value={{
+                      useSuccessToast: () => vi.fn(),
+                      createAssetDocumentService: () => deps,
+                    }}
+                  >
+                    <DocumentFileContext.Provider value={documentFileContext}>
+                      {children}
+                    </DocumentFileContext.Provider>
+                  </UseUploadAssetDocumentsContext.Provider>
                 </NavigationStoreContext.Provider>
               </AssetContext.Provider>
             </QueryWrapper>
@@ -171,4 +190,50 @@ describe(useAssetDocumentListViewModel.name, () => {
 
     await waitFor(() => expect(result.current.documents).toEqual([uploaded]));
   });
+
+  it('lists no uploading files when nothing is uploading', async () => {
+    const { result } = renderViewModel();
+
+    await waitFor(() => expect(result.current.isPending).toBe(false));
+    expect(result.current.uploadingNames).toEqual([]);
+  });
+
+  it('lists the files being uploaded to the asset', async () => {
+    const { result } = renderHook(
+      () => ({
+        viewModel: useAssetDocumentListViewModel(),
+        uploads: useUploadAssetDocuments(assetIdentifier),
+      }),
+      { wrapper },
+    );
+
+    act(() => {
+      void result.current.uploads.upload([makeFile('a.pdf'), makeFile('b.pdf')]);
+    });
+
+    await waitFor(() =>
+      expect(result.current.viewModel.uploadingNames).toEqual(['a.pdf', 'b.pdf']),
+    );
+  });
+
+  it('does not list files being uploaded to another asset', async () => {
+    const { result } = renderHook(
+      () => ({
+        viewModel: useAssetDocumentListViewModel(),
+        uploads: useUploadAssetDocuments(otherAsset),
+      }),
+      { wrapper },
+    );
+
+    act(() => {
+      void result.current.uploads.upload([makeFile('a.pdf')]);
+    });
+
+    await waitFor(() => expect(result.current.uploads.isUploading).toBe(true));
+    expect(result.current.viewModel.uploadingNames).toEqual([]);
+  });
 });
+
+function makeFile(name: string): File {
+  return new File(['content'], name, { type: 'application/pdf' });
+}
