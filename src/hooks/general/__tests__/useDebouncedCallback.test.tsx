@@ -16,7 +16,9 @@ describe(useDebouncedCallback.name, () => {
     deps = {
       setTimer: vi.fn((callback: () => void) => {
         const handle = nextHandle++;
+
         scheduled.set(handle, callback);
+
         return handle;
       }),
       clearTimer: vi.fn((handle: number) => {
@@ -63,6 +65,7 @@ describe(useDebouncedCallback.name, () => {
       wrapper,
       initialProps: { callback: first },
     });
+
     act(() => result.current.run('pump'));
 
     rerender({ callback: second });
@@ -77,6 +80,7 @@ describe(useDebouncedCallback.name, () => {
     const { result } = renderHook(() => useDebouncedCallback(callback, 300), {
       wrapper,
     });
+
     act(() => result.current.run('pump'));
 
     act(() => result.current.cancel());
@@ -88,6 +92,7 @@ describe(useDebouncedCallback.name, () => {
   it('drops a pending call when the component unmounts', () => {
     const callback = vi.fn();
     const { result, unmount } = renderHook(() => useDebouncedCallback(callback, 300), { wrapper });
+
     act(() => result.current.run('pump'));
 
     unmount();
@@ -97,6 +102,7 @@ describe(useDebouncedCallback.name, () => {
 
   function fireScheduled(): void {
     for (const callback of [...scheduled.values()]) callback();
+
     scheduled.clear();
   }
 });

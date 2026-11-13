@@ -32,6 +32,7 @@ describe(useAssetDetailsTabCounts.name, () => {
     };
     queryClient = makeTestQueryClient();
     const QueryWrapper = makeQueryClientWrapper(queryClient);
+
     wrapper = ({ children }) => (
       <UseAssetDetailsTabCountsContext.Provider
         value={{ createAssetDetailsTabCountService: () => context }}
@@ -126,6 +127,7 @@ describe(useAssetDetailsTabCounts.name, () => {
     const { result } = renderHook(() => useAssetDetailsTabCounts(assetIdentifier), {
       wrapper,
     });
+
     await waitFor(() => expect(result.current.notes.count).toBe(2));
     vi.mocked(context.countAssetNotes).mockResolvedValue(3);
 
@@ -140,6 +142,7 @@ describe(useAssetDetailsTabCounts.name, () => {
     const { result, rerender } = renderHook(() => useAssetDetailsTabCounts(assetIdentifier), {
       wrapper,
     });
+
     await waitFor(() => expect(result.current.notes.count).toBe(2));
 
     rerender();

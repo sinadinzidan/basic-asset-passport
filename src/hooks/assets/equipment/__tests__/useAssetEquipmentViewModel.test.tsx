@@ -28,6 +28,7 @@ describe(useAssetEquipmentViewModel.name, () => {
       listAssetEquipment: vi.fn(() => Promise.resolve(makeLimitedList([pump], true))),
     };
     const QueryWrapper = makeQueryClientWrapper();
+
     wrapper = ({ children }) => (
       <UseAssetEquipmentContext.Provider
         value={{ createAssetEquipmentService: () => equipmentService }}
@@ -62,6 +63,7 @@ describe(useAssetEquipmentViewModel.name, () => {
   it('reports a failed load with its error and reads again on retry', async () => {
     vi.mocked(equipmentService.listAssetEquipment).mockRejectedValueOnce(new Error('no access'));
     const { result } = renderHook(() => useAssetEquipmentViewModel(), { wrapper });
+
     await waitFor(() => expect(result.current.isError).toBe(true));
     expect(result.current.error).toEqual(new Error('no access'));
 

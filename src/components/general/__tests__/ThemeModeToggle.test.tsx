@@ -24,6 +24,7 @@ describe(ThemeModeToggle.name, () => {
   it('switches the mode when pressed, and then offers the way back', async () => {
     const user = userEvent.setup();
     const themeModeStore = makeThemeModeStore(ThemeMode.DARK);
+
     renderToggle(themeModeStore);
 
     await user.click(screen.getByRole('button', { name: 'Switch to light mode' }));
@@ -34,8 +35,10 @@ describe(ThemeModeToggle.name, () => {
 
   it('shows the icon of the mode it switches to', async () => {
     const user = userEvent.setup();
+
     renderToggle(makeThemeModeStore(ThemeMode.DARK));
     const button = screen.getByRole('button', { name: 'Switch to light mode' });
+
     expect(button.querySelector('.tabler-icon-sun')).not.toBeNull();
 
     await user.click(button);

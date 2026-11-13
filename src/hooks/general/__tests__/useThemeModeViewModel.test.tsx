@@ -28,6 +28,7 @@ describe(useThemeModeViewModel.name, () => {
 
   it('offers light mode while dark, and dark mode while light', () => {
     const { result } = renderHook(() => useThemeModeViewModel(), { wrapper });
+
     expect(result.current.toggleLabel).toBe('Switch to light mode');
 
     act(() => result.current.toggleThemeMode());

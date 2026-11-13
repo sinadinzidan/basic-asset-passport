@@ -39,6 +39,7 @@ describe(useAssetDetailsViewModel.name, () => {
     };
     const countService = makeAssetDetailsTabCountsContext();
     const QueryWrapper = makeQueryClientWrapper();
+
     wrapper = ({ children }) => (
       <UseAssetDetailsContext.Provider value={{ createAssetDetailsService: () => detailsService }}>
         <UseAssetDetailsTabCountsContext.Provider
@@ -96,6 +97,7 @@ describe(useAssetDetailsViewModel.name, () => {
   it('reports a failed load with its error and reads again on retry', async () => {
     vi.mocked(detailsService.getAssetDetails).mockRejectedValueOnce(new Error('no access'));
     const { result } = renderHook(() => useAssetDetailsViewModel(), { wrapper });
+
     await waitFor(() => expect(result.current.isError).toBe(true));
     expect(result.current.error).toEqual(new Error('no access'));
 

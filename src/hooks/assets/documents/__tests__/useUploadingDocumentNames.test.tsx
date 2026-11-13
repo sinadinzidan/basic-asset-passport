@@ -31,6 +31,7 @@ describe(useUploadingDocumentNames.name, () => {
       uploadAssetDocument: vi.fn(() => new Promise<void>(() => {})),
     };
     const QueryWrapper = makeQueryClientWrapper();
+
     wrapper = ({ children }) => (
       <UseUploadAssetDocumentsContext.Provider
         value={{

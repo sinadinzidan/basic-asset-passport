@@ -22,6 +22,7 @@ describe(NeonStage.name, () => {
     const { container } = render(<NeonStage>Content</NeonStage>);
 
     const traces = container.querySelectorAll('.neon-trace');
+
     expect(traces).toHaveLength(GRID_TRACES.length);
     expect(container.querySelectorAll('.neon-trace[data-axis="ROW"]').length).toBeGreaterThan(0);
     expect(container.querySelectorAll('.neon-trace[data-axis="COLUMN"]').length).toBeGreaterThan(0);
@@ -32,6 +33,7 @@ describe(NeonStage.name, () => {
 
     const [trace] = GRID_TRACES;
     const element = container.querySelector('.neon-trace');
+
     expect(element).toHaveStyle({
       '--trace-line': String(trace?.line),
       '--trace-from': String(trace?.from),

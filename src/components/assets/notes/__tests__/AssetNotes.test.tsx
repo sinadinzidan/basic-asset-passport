@@ -38,6 +38,7 @@ describe(AssetNotes.name, () => {
       deleteAssetNote: vi.fn(() => Promise.resolve()),
     };
     const QueryWrapper = makeQueryClientWrapper();
+
     wrapper = ({ children }) => (
       <UseAssetNotesContext.Provider value={{ createAssetNoteService: () => listContext }}>
         <UseAddAssetNoteContext.Provider value={{ createAssetNoteService: () => addContext }}>

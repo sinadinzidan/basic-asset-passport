@@ -14,10 +14,13 @@ describe(AssetSearchField.name, () => {
   beforeEach(() => {
     scheduled = new Map();
     let nextHandle = 1;
+
     deps = {
       setTimer: vi.fn((callback: () => void) => {
         const handle = nextHandle++;
+
         scheduled.set(handle, callback);
+
         return handle;
       }),
       clearTimer: vi.fn((handle: number) => {
@@ -46,6 +49,7 @@ describe(AssetSearchField.name, () => {
   it('keeps the spaces being typed when its own search is applied', async () => {
     const onChange = vi.fn();
     const { rerender } = render(<AssetSearchField value="" onChange={onChange} />, { wrapper });
+
     await userEvent.type(screen.getByRole('searchbox'), 'pump ');
     fireScheduled();
 
@@ -56,6 +60,7 @@ describe(AssetSearchField.name, () => {
 
   it('shows what is typed at once but applies it only after the pause', async () => {
     const onChange = vi.fn();
+
     render(<AssetSearchField value="" onChange={onChange} />, { wrapper });
 
     await userEvent.type(screen.getByRole('searchbox', { name: 'Search assets' }), 'pu');
@@ -68,6 +73,7 @@ describe(AssetSearchField.name, () => {
 
   it('applies the text without the spaces around it', async () => {
     const onChange = vi.fn();
+
     render(<AssetSearchField value="" onChange={onChange} />, { wrapper });
 
     await userEvent.type(screen.getByRole('searchbox'), '  pump  ');
@@ -78,6 +84,7 @@ describe(AssetSearchField.name, () => {
 
   it('applies Enter at once', async () => {
     const onChange = vi.fn();
+
     render(<AssetSearchField value="" onChange={onChange} />, { wrapper });
 
     await userEvent.type(screen.getByRole('searchbox'), 'pump{Enter}');
@@ -88,6 +95,7 @@ describe(AssetSearchField.name, () => {
 
   it('clears the search at once from the clear button', async () => {
     const onChange = vi.fn();
+
     render(<AssetSearchField value="pump" onChange={onChange} />, { wrapper });
     await userEvent.click(screen.getByRole('searchbox'));
 
@@ -99,6 +107,7 @@ describe(AssetSearchField.name, () => {
 
   function fireScheduled(): void {
     for (const callback of [...scheduled.values()]) callback();
+
     scheduled.clear();
   }
 });

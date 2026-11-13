@@ -31,6 +31,7 @@ describe(AssetDocuments.name, () => {
       requestUploadUrl: vi.fn(() => Promise.resolve('https://upload.test/doc-1')),
       uploadContent: vi.fn(() => Promise.resolve()),
     };
+
     listContext = {
       listAssetDocuments: vi.fn(() => Promise.resolve(makeLimitedList([makeAssetDocument()]))),
     };
@@ -38,6 +39,7 @@ describe(AssetDocuments.name, () => {
       listAssetLinkedFiles: vi.fn(() => Promise.resolve(makeLimitedList([]))),
     };
     const QueryWrapper = makeQueryClientWrapper();
+
     wrapper = ({ children }) => (
       <UseAssetDocumentsContext.Provider value={{ createAssetDocumentService: () => listContext }}>
         <UseAssetLinkedFilesContext.Provider
@@ -62,6 +64,7 @@ describe(AssetDocuments.name, () => {
 
     const upload = screen.getByRole('region', { name: 'Upload documents' });
     const document = await screen.findByRole('heading', { name: 'Pump manual.pdf' });
+
     expect(upload.compareDocumentPosition(document)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
   });
 

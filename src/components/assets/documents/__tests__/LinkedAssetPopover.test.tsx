@@ -44,6 +44,7 @@ describe(LinkedAssetPopover.name, () => {
       ),
     };
     const QueryWrapper = makeQueryClientWrapper();
+
     wrapper = ({ children }) => (
       <UseAssetDetailsContext.Provider value={{ createAssetDetailsService: () => context }}>
         <QueryWrapper>
@@ -64,7 +65,9 @@ describe(LinkedAssetPopover.name, () => {
       onOpenAsset: vi.fn(),
       ...overrides,
     };
+
     render(<LinkedAssetPopover {...properties} />, { wrapper });
+
     return properties;
   }
 
@@ -119,6 +122,7 @@ describe(LinkedAssetPopover.name, () => {
   it('closes from its close button without opening the asset', async () => {
     const user = userEvent.setup();
     const { onClose, onOpenAsset } = renderPopover();
+
     await screen.findByRole('heading', { name: 'Feed Pump 9' });
 
     await user.click(screen.getByRole('button', { name: 'Close' }));
@@ -130,6 +134,7 @@ describe(LinkedAssetPopover.name, () => {
   it('closes on Escape', async () => {
     const user = userEvent.setup();
     const { onClose } = renderPopover();
+
     await screen.findByRole('heading', { name: 'Feed Pump 9' });
 
     await user.keyboard('{Escape}');
@@ -140,6 +145,7 @@ describe(LinkedAssetPopover.name, () => {
   it('stays open when the clicked box itself is pressed', async () => {
     const user = userEvent.setup();
     const { onClose } = renderPopover();
+
     await screen.findByRole('heading', { name: 'Feed Pump 9' });
 
     await user.click(anchor);
@@ -150,8 +156,10 @@ describe(LinkedAssetPopover.name, () => {
   it('closes when something else on the page is pressed', async () => {
     const user = userEvent.setup();
     const outside = document.createElement('div');
+
     document.body.appendChild(outside);
     const { onClose } = renderPopover();
+
     await screen.findByRole('heading', { name: 'Feed Pump 9' });
 
     await user.click(outside);

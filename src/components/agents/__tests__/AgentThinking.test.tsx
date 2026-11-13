@@ -7,11 +7,13 @@ import { AgentThinking } from '../AgentThinking';
 describe(AgentThinking.name, () => {
   function renderThinking() {
     let tick: () => void = () => {};
+
     render(
       <UseRotatingWordContext.Provider
         value={{
           startTicker: (onTick) => {
             tick = onTick;
+
             return () => {};
           },
           pickStartIndex: () => 0,
@@ -20,6 +22,7 @@ describe(AgentThinking.name, () => {
         <AgentThinking />
       </UseRotatingWordContext.Provider>,
     );
+
     return { tick: () => act(() => tick()) };
   }
 
@@ -36,6 +39,7 @@ describe(AgentThinking.name, () => {
         ?.textContent;
 
     const first = visible();
+
     tick();
 
     expect(first).toMatch(/\.\.\.$/);

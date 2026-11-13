@@ -14,6 +14,7 @@ describe(HudPanel.name, () => {
 
   it('uses the cyan tone unless another is given', () => {
     const { container, rerender } = render(<HudPanel>Content</HudPanel>);
+
     expect(container.firstElementChild).toHaveClass('tone-cyan');
 
     rerender(<HudPanel tone={HudTone.RED}>Content</HudPanel>);
@@ -23,6 +24,7 @@ describe(HudPanel.name, () => {
 
   it('shows a tag only when given', () => {
     const { container, rerender } = render(<HudPanel>Content</HudPanel>);
+
     expect(container.querySelector('.hud-tag')).toBeNull();
 
     rerender(<HudPanel tag="Live feed">Content</HudPanel>);

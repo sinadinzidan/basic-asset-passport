@@ -33,9 +33,11 @@ describe(QueuedTaskRunner.name, () => {
     const results = tasks.map((task, index) =>
       runner.schedule(() => {
         started.push(index);
+
         return task.promise;
       }),
     );
+
     await flush();
 
     expect(started).toEqual([0, 1]);
@@ -57,12 +59,15 @@ describe(QueuedTaskRunner.name, () => {
     const first = runner.schedule(() => blocker.promise);
     const second = runner.schedule(() => {
       started.push('second');
+
       return Promise.resolve('second');
     });
     const third = runner.schedule(() => {
       started.push('third');
+
       return Promise.resolve('third');
     });
+
     blocker.resolve('first');
     await Promise.all([first, second, third]);
 
@@ -86,14 +91,17 @@ describe(QueuedTaskRunner.name, () => {
     const first = runner.schedule(() => blocker.promise);
     const waiting = runner.schedule(() => {
       started.push('waiting');
+
       return Promise.resolve('waiting');
     });
 
     blocker.resolve('first');
     const late = runner.schedule(() => {
       started.push('late');
+
       return Promise.resolve('late');
     });
+
     await Promise.all([first, waiting, late]);
 
     expect(started).toEqual(['waiting', 'late']);
@@ -108,9 +116,11 @@ describe('cdfTaskRunner', () => {
     const results = tasks.map((task) =>
       cdfTaskRunner.schedule(() => {
         startedCount += 1;
+
         return task.promise;
       }),
     );
+
     await flush();
 
     expect(startedCount).toBe(CDF_MAX_CONCURRENT_REQUESTS);

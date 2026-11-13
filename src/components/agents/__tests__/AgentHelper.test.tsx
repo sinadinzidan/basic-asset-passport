@@ -24,22 +24,27 @@ describe(AgentHelper.name, () => {
   /** Renders the helper with its greeting waits held, so a test ends each one itself. */
   function renderWithGreetingWaits(): { finish: () => void } {
     let finishWait = (): void => {};
+
     render(<AgentHelper />, {
       wrapper: makeAgentWrapper({
         client,
         startGreetingTimeout: (onDone) => {
           finishWait = onDone;
+
           return () => {};
         },
       }),
     });
+
     return { finish: () => finishWait() };
   }
 
   async function openPanel() {
     const user = userEvent.setup();
+
     render(<AgentHelper />, { wrapper: makeAgentWrapper({ client }) });
     await user.click(screen.getByRole('button', { name: 'Dalil AI assistant' }));
+
     return user;
   }
 
@@ -66,6 +71,7 @@ describe(AgentHelper.name, () => {
 
   it('greets by name when the mascot is focused', async () => {
     const user = userEvent.setup();
+
     render(<AgentHelper />, { wrapper: makeAgentWrapper({ client }) });
 
     await user.tab();
@@ -78,6 +84,7 @@ describe(AgentHelper.name, () => {
     const user = userEvent.setup();
     const { container } = render(<AgentHelper />, { wrapper: makeAgentWrapper({ client }) });
     const mascot = container.querySelector('.agent-mascot');
+
     expect(mascot).toHaveAttribute('data-waving', 'false');
 
     await user.tab();
@@ -105,6 +112,7 @@ describe(AgentHelper.name, () => {
   it('keeps greeting past the first greeting while the pointer stays on the mascot', async () => {
     const user = userEvent.setup();
     const waits = renderWithGreetingWaits();
+
     act(() => waits.finish());
     await screen.findByText(GREETING);
 
@@ -118,6 +126,7 @@ describe(AgentHelper.name, () => {
   it('stops greeting when the panel opens', async () => {
     const user = userEvent.setup();
     const waits = renderWithGreetingWaits();
+
     act(() => waits.finish());
     await screen.findByText(GREETING);
 
@@ -225,6 +234,7 @@ describe(AgentHelper.name, () => {
 
   it('comes back to the same conversation after the helper is closed', async () => {
     const user = await openPanel();
+
     await screen.findByRole('heading', { name: 'Dalil AI' });
     await user.type(screen.getByRole('textbox', { name: 'Message' }), 'Hi');
     await user.click(screen.getByRole('button', { name: 'Send' }));
@@ -248,6 +258,7 @@ describe(AgentHelper.name, () => {
 
     it('syncs that the panel is open when it opens', async () => {
       const user = userEvent.setup();
+
       render(<AgentHelper />, { wrapper: makeAgentWrapper({ client, hostApi: api }) });
 
       await user.click(screen.getByRole('button', { name: 'Dalil AI assistant' }));
@@ -259,6 +270,7 @@ describe(AgentHelper.name, () => {
 
     it('syncs that the panel is closed when it closes', async () => {
       const user = userEvent.setup();
+
       render(<AgentHelper />, { wrapper: makeAgentWrapper({ client, hostApi: api }) });
       await user.click(screen.getByRole('button', { name: 'Dalil AI assistant' }));
 
@@ -290,13 +302,17 @@ describe(AgentHelper.name, () => {
 
 function helper(): HTMLElement {
   const element = document.querySelector<HTMLElement>('.agent-helper');
+
   if (element === null) throw new Error('The helper is not rendered');
+
   return element;
 }
 
 /** Browsers fire this when the exit animation ends; jsdom runs no animations. */
 async function finishClosing(): Promise<void> {
   const panel = screen.queryByRole('dialog');
+
   if (panel !== null) fireEvent.animationEnd(panel);
+
   await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
 }

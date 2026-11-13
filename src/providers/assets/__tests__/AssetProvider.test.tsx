@@ -26,6 +26,7 @@ describe(AssetProvider.name, () => {
 
   it('gives its children the signed-in client to read assets with', async () => {
     let assetContext: ReturnType<typeof useAssetContext> | undefined;
+
     function AssetProbe() {
       assetContext = useAssetContext();
 
@@ -70,6 +71,7 @@ describe(AssetProvider.name, () => {
       headers: {},
     });
     let files: ReturnType<typeof useDocumentFileContext> | undefined;
+
     function FilesProbe() {
       files = useDocumentFileContext();
 
@@ -92,6 +94,7 @@ describe(AssetProvider.name, () => {
       CogniteFileViewer: ({ source }) =>
         'externalId' in source ? <p>Viewing {source.externalId}</p> : null,
     };
+
     function PreviewProbe() {
       const renderPreview = useDocumentPreview();
 

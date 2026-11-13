@@ -85,6 +85,7 @@ describe(makeMockAssetContext.name, () => {
 
     do {
       const page = await createAssetService(client).listAssets(cursor);
+
       externalIds.push(...page.items.map((item) => item.externalId));
       cursor = page.nextCursor ?? undefined;
     } while (cursor !== undefined);
@@ -189,6 +190,7 @@ describe('mock client requests', () => {
 
     const [node] = response.items.assets;
     const [properties] = Object.values(node.properties ?? {}).flatMap(Object.values);
+
     expect(Object.keys(properties)).toEqual(
       expect.arrayContaining(['name', 'sourceSystem', 'metadata']),
     );
@@ -198,7 +200,9 @@ describe('mock client requests', () => {
     const view = (await listAssetPassportViews(client)).find(
       ({ externalId }) => externalId === MODEL.views.asset,
     );
+
     if (!view) throw new Error('The mock Asset view is missing.');
+
     const request: QueryRequest = {
       with: { assets: { nodes: {}, limit: 1 } },
       select: {
@@ -222,6 +226,7 @@ describe('mock client requests', () => {
 
     const [node] = response.items.assets;
     const [properties] = Object.values(node.properties ?? {}).flatMap(Object.values);
+
     expect(Object.keys(properties)).toEqual(['name']);
   });
 
@@ -442,6 +447,7 @@ describe(`${makeMockAssetContext.name} notes`, () => {
     });
     const afterCreate = await createAssetDetailsTabCountService(client).countAssetNotes(firstAsset);
     const [newest] = (await createAssetNoteService(client).listAssetNotes(firstAsset)).items;
+
     await createAssetNoteService(client).deleteAssetNote(newest);
 
     expect(afterCreate).toBe(before + 1);
@@ -459,6 +465,7 @@ describe(`${makeMockAssetContext.name} notes`, () => {
     });
 
     const [newest] = (await createAssetNoteService(client).listAssetNotes(firstAsset)).items;
+
     expect(newest).toEqual(
       expect.objectContaining({
         title: 'New finding',
@@ -470,6 +477,7 @@ describe(`${makeMockAssetContext.name} notes`, () => {
       ...firstAsset,
       externalId: 'FLOC-1002',
     });
+
     expect(otherNotes.map((note) => note.title)).toEqual(['Valve actuator replaced']);
   });
 
@@ -483,6 +491,7 @@ describe(`${makeMockAssetContext.name} notes`, () => {
     });
 
     const [edited] = (await createAssetNoteService(client).listAssetNotes(firstAsset)).items;
+
     expect(edited).toEqual({
       ...original,
       title: 'Edited title',
@@ -497,6 +506,7 @@ describe(`${makeMockAssetContext.name} notes`, () => {
     await createAssetNoteService(client).updateAssetNote(original, { title: 'Title', body: '' });
 
     const [edited] = (await createAssetNoteService(client).listAssetNotes(firstAsset)).items;
+
     expect(edited?.body).toBeNull();
   });
 
@@ -540,6 +550,7 @@ describe(`${makeMockAssetContext.name} notes`, () => {
     });
 
     const { items: notes } = await createAssetNoteService(second).listAssetNotes(firstAsset);
+
     expect(notes.map((note) => note.title)).not.toContain('Only here');
   });
 
@@ -622,6 +633,7 @@ describe(`${makeMockAssetContext.name} documents`, () => {
     const { items: documents } =
       await createAssetDocumentService(client).listAssetDocuments(firstAsset);
     const newest = documents.find((document) => document.name === NEW_DOCUMENT_NAME);
+
     expect(newest).toEqual(
       expect.objectContaining({
         mimeType: 'application/pdf',
@@ -646,6 +658,7 @@ describe(`${makeMockAssetContext.name} documents`, () => {
 
     const { items: remaining } =
       await createAssetDocumentService(client).listAssetDocuments(firstAsset);
+
     expect(remaining.map((document) => document.externalId)).not.toContain(first.externalId);
     expect(remaining).toHaveLength(2);
   });
@@ -828,6 +841,7 @@ describe(`${makeMockAssetContext.name} sorting and paging`, () => {
     );
 
     const ascendingIds = (ascending.items.notes ?? []).map((note) => note.externalId);
+
     expect(ascendingIds).toEqual([...ascendingIds].sort());
     expect((descending.items.notes ?? []).map((note) => note.externalId)).toEqual(
       [...ascendingIds].reverse(),
@@ -840,6 +854,7 @@ describe(`${makeMockAssetContext.name} sorting and paging`, () => {
     const equipment = await createAssetEquipmentService(client).listAssetEquipment(secondAsset);
 
     const names = equipment.items.map((item) => item.properties[0]?.value);
+
     expect(names).toHaveLength(2);
     expect(names).toEqual([...names].sort());
     expect(equipment.hasMore).toBe(false);
@@ -876,11 +891,14 @@ describe(`${makeMockAssetContext.name} sorting and paging`, () => {
 async function listEveryAsset(client: AssetContextType) {
   const assets: AssetListItem[] = [];
   let cursor: string | undefined;
+
   do {
     const page = await createAssetService(client).listAssets(cursor);
+
     assets.push(...page.items);
     cursor = page.nextCursor ?? undefined;
   } while (cursor);
+
   return assets;
 }
 

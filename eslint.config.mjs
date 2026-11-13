@@ -273,9 +273,8 @@ export default tseslint.config(
   },
   {
     // Statements are grouped by what they do, with one blank line between groups: declarations, then
-    // guards and loops, then the return. Tests follow Arrange / Act / Assert and are left out.
+    // guards and loops, then the return. Tests are included.
     files: ['src/**/*.{ts,tsx}'],
-    ignores: ['**/__tests__/**'],
     rules: {
       'padding-line-between-statements': [
         'error',

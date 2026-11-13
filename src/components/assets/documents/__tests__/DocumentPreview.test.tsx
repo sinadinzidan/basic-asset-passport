@@ -42,6 +42,7 @@ describe(DocumentPreview.name, () => {
         </NavigationProvider>
       </SdkWrapper>,
     );
+
     await screen.findByRole('button', { name: 'Zoom in' });
 
     return view;
@@ -49,6 +50,7 @@ describe(DocumentPreview.name, () => {
 
   function viewerProperties(): CogniteFileViewerProperties {
     const properties = viewer.mock.lastCall?.[0];
+
     if (!properties) throw new Error('The viewer was not rendered.');
 
     return properties;
@@ -93,6 +95,7 @@ describe(DocumentPreview.name, () => {
   it('zooms in and out in steps of 25%', async () => {
     // Arrange
     const user = userEvent.setup();
+
     await renderPreview();
 
     // Act
@@ -109,6 +112,7 @@ describe(DocumentPreview.name, () => {
 
   it('returns to 100% from the percentage button', async () => {
     const user = userEvent.setup();
+
     await renderPreview();
     await user.click(screen.getByRole('button', { name: 'Zoom in' }));
 
@@ -186,6 +190,7 @@ describe(DocumentPreview.name, () => {
   it('goes to the next and the previous page', async () => {
     // Arrange
     const user = userEvent.setup();
+
     await renderPreview();
     loadDocument(3);
 
@@ -202,6 +207,7 @@ describe(DocumentPreview.name, () => {
 
   it('cannot go past the last page', async () => {
     const user = userEvent.setup();
+
     await renderPreview();
     loadDocument(2);
 
@@ -266,6 +272,7 @@ describe(DocumentPreview.name, () => {
           </QueryWrapper>
         </SdkWrapper>,
       );
+
       await screen.findByRole('button', { name: 'Zoom in' });
 
       return view;
@@ -301,6 +308,7 @@ describe(DocumentPreview.name, () => {
 
     it('opens the asset in the app from that dialog', async () => {
       const user = userEvent.setup();
+
       await renderWithAssets();
       click({});
 
@@ -311,6 +319,7 @@ describe(DocumentPreview.name, () => {
 
     it('closes the popover and stays on the document', async () => {
       const user = userEvent.setup();
+
       await renderWithAssets();
       click({});
       await screen.findByRole('heading', { name: 'Feed Pump 9' });
@@ -323,6 +332,7 @@ describe(DocumentPreview.name, () => {
 
     it('closes the popover when the zoom changes, because the box moves', async () => {
       const user = userEvent.setup();
+
       await renderWithAssets();
       click({});
       await screen.findByRole('heading', { name: 'Feed Pump 9' });

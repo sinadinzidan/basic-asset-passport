@@ -12,6 +12,7 @@ describe(AgentStatus.name, () => {
   it('asks the panel to close', async () => {
     const onClose = vi.fn();
     const user = userEvent.setup();
+
     render(<AgentStatus onClose={onClose} />, {
       wrapper: makeAgentWrapper({ client: makeAgentContext() }),
     });
@@ -31,6 +32,7 @@ describe(AgentStatus.name, () => {
 
   it('shows a loading status while the assistant is looked up', () => {
     const client = makeAgentContext({ getAgent: () => new Promise(() => {}) });
+
     render(<AgentStatus onClose={vi.fn()} />, {
       wrapper: makeAgentWrapper({ client }),
     });
@@ -44,6 +46,7 @@ describe(AgentStatus.name, () => {
       .mockRejectedValueOnce(new Error('no access'))
       .mockResolvedValue(makeCdfAgent());
     const user = userEvent.setup();
+
     render(<AgentStatus onClose={vi.fn()} />, {
       wrapper: makeAgentWrapper({ client: makeAgentContext({ getAgent }) }),
     });
@@ -65,6 +68,7 @@ describe(AgentStatus.name, () => {
           ),
         ),
     });
+
     render(<AgentStatus onClose={vi.fn()} />, {
       wrapper: makeAgentWrapper({ client }),
     });
@@ -83,6 +87,7 @@ describe(AgentStatus.name, () => {
     const client = makeAgentContext({
       getAgent: () => Promise.resolve(null),
     });
+
     render(<AgentStatus onClose={vi.fn()} />, {
       wrapper: makeAgentWrapper({ client }),
     });

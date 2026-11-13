@@ -52,6 +52,7 @@ describe(useAgentComposerViewModel.name, () => {
 
   it('sends the draft, clears it and shows the reply', async () => {
     const { result } = renderViewModel();
+
     act(() => result.current.changeDraft('Why is pump 1 hot?'));
 
     act(() => result.current.submit());
@@ -65,6 +66,7 @@ describe(useAgentComposerViewModel.name, () => {
   it('asks a failed question again without writing it again', async () => {
     vi.mocked(chat).mockRejectedValueOnce(new Error('agent offline'));
     const { result } = renderViewModel();
+
     act(() => result.current.changeDraft('Why is pump 1 hot?'));
     act(() => result.current.submit());
     await waitFor(() => expect(result.current.errorMessage).toBe('agent offline'));
@@ -97,6 +99,7 @@ describe(useAgentComposerViewModel.name, () => {
 
   it('starts a new chat that empties the conversation', async () => {
     const { result } = renderViewModel();
+
     act(() => result.current.sendSample('Hi'));
     await waitFor(() => expect(result.current.messages).toHaveLength(2));
 
@@ -110,10 +113,12 @@ describe(useAgentComposerViewModel.name, () => {
     const engine: DictationEngine = {
       start: (given) => {
         callbacks = given;
+
         return { stop: () => given.onEnd() };
       },
     };
     const { result } = renderViewModel(engine);
+
     act(() => result.current.changeDraft('Pump 1'));
 
     act(() => result.current.toggleDictation());
@@ -128,10 +133,12 @@ describe(useAgentComposerViewModel.name, () => {
     const engine: DictationEngine = {
       start: (given) => {
         callbacks = given;
+
         return { stop: () => given.onEnd() };
       },
     };
     const { result } = renderViewModel(engine);
+
     act(() => result.current.toggleDictation());
 
     act(() => result.current.changeDraft('typed'));

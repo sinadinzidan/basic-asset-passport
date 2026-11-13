@@ -58,6 +58,7 @@ describe(GeneralDialog.name, () => {
   it('asks to close when the close button is pressed', async () => {
     const user = userEvent.setup();
     const onOpenChange = vi.fn();
+
     renderDialog(onOpenChange);
 
     await user.click(screen.getByRole('button', { name: 'Close' }));
@@ -89,6 +90,7 @@ describe(GeneralDialog.name, () => {
     );
 
     const body = screen.getByText('content').closest('[data-slot="dialog-body"]');
+
     expect(body).not.toHaveClass('border-b');
     expect(screen.getByRole('dialog').querySelector('[data-slot="dialog-footer"]')).toBeNull();
   });

@@ -29,6 +29,7 @@ describe(AssetEquipment.name, () => {
       listAssetEquipment: vi.fn(() => Promise.resolve(makeLimitedList(makeEquipment(2)))),
     };
     const QueryWrapper = makeQueryClientWrapper();
+
     wrapper = ({ children }) => (
       <UseAssetEquipmentContext.Provider value={{ createAssetEquipmentService: () => mockContext }}>
         <QueryWrapper>

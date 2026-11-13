@@ -38,6 +38,7 @@ describe(DocumentPreviewDialog.name, () => {
     const section = screen
       .getByText('Preview is not available here.')
       .closest('[data-slot="document-preview-unavailable"]');
+
     expect(section).toHaveClass('items-center', 'text-center', 'py-10');
     expect(section?.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
   });

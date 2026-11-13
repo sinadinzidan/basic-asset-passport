@@ -11,12 +11,14 @@ describe(AgentChatWelcome.name, () => {
 
     expect(screen.getByText(CHAT_EMPTY_MESSAGE)).toBeInTheDocument();
     const samples = screen.getByRole('list', { name: 'Sample questions' });
+
     expect(within(samples).getAllByRole('button')).toHaveLength(SAMPLE_QUESTIONS.length);
   });
 
   it('hands the sample question that is chosen to its caller', async () => {
     const onSelect = vi.fn();
     const [question] = SAMPLE_QUESTIONS;
+
     render(<AgentChatWelcome onSelect={onSelect} />);
 
     await userEvent.click(screen.getByRole('button', { name: question }));

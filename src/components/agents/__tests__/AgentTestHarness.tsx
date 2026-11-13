@@ -46,9 +46,11 @@ export function makeAgentWrapper({
   hostInitialState,
 }: HarnessOptions): ComponentType<{ children: ReactNode }> {
   const queryClient = makeTestQueryClient();
+
   if (loadedAgent !== null) {
     queryClient.setQueryData(getAgentQueryKey(client.project, loadedAgent.externalId), loadedAgent);
   }
+
   const QueryWrapper = makeQueryClientWrapper(queryClient);
   let idCount = 0;
   const chatStore = createAgentChatStore();

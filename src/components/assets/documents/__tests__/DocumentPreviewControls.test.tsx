@@ -20,6 +20,7 @@ describe(DocumentPreviewControls.name, () => {
   it('zooms in and out by one step and resets to the default', async () => {
     const onZoomChange = vi.fn();
     const zoom = PREVIEW_DEFAULT_ZOOM + PREVIEW_ZOOM_STEP;
+
     renderControls({ zoom, onZoomChange });
 
     await userEvent.click(screen.getByRole('button', { name: 'Zoom in' }));
@@ -35,6 +36,7 @@ describe(DocumentPreviewControls.name, () => {
 
   it('stops zooming at the limits', () => {
     const { rerender } = renderControls({ zoom: PREVIEW_MIN_ZOOM });
+
     expect(screen.getByRole('button', { name: 'Zoom out' })).toBeDisabled();
 
     rerender(
@@ -57,6 +59,7 @@ describe(DocumentPreviewControls.name, () => {
 
   it('moves one page back and forward', async () => {
     const onPageChange = vi.fn();
+
     renderControls({ page: 2, pageCount: 3, onPageChange });
 
     await userEvent.click(screen.getByRole('button', { name: 'Previous page' }));
@@ -68,6 +71,7 @@ describe(DocumentPreviewControls.name, () => {
 
   it('stops at the first and the last page', () => {
     const { rerender } = renderControls({ page: 1, pageCount: 2 });
+
     expect(screen.getByRole('button', { name: 'Previous page' })).toBeDisabled();
 
     rerender(

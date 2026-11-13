@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 async function loadIsMockMode(): Promise<boolean> {
   vi.resetModules();
   const { isMockMode } = await import('../env');
+
   return isMockMode;
 }
 

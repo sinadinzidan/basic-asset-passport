@@ -73,6 +73,7 @@ describe(createNavigationStore.name, () => {
     store.getState().actions.selectAsset(selectedAsset);
 
     const expected = { selectedAsset, activeAssetTab: AssetTab.PROPERTIES };
+
     expect(store.getState().navigationState).toEqual(expected);
     expect(onChange).toHaveBeenCalledWith(expected);
   });

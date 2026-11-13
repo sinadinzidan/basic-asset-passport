@@ -26,6 +26,7 @@ describe(AgentPanelHeader.name, () => {
   it('closes the assistant from its close button', async () => {
     const user = userEvent.setup();
     const onClose = vi.fn();
+
     render(<AgentPanelHeader onClose={onClose} />);
 
     await user.click(screen.getByRole('button', { name: 'Close assistant' }));

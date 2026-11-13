@@ -58,6 +58,7 @@ describe(createBrowserDictationEngine.name, () => {
     engine?.start(callbacks);
 
     const [recognition] = FakeRecognition.instances;
+
     expect(recognition?.continuous).toBe(true);
     expect(recognition?.interimResults).toBe(true);
     expect(recognition?.lang).toBe('nb-NO');
@@ -66,6 +67,7 @@ describe(createBrowserDictationEngine.name, () => {
 
   it('reports everything heard so far, final and not yet final', () => {
     const engine = createBrowserDictationEngine({ SpeechRecognition: FakeRecognition }, 'en-GB');
+
     engine?.start(callbacks);
 
     FakeRecognition.instances[0]?.hear([
@@ -87,6 +89,7 @@ describe(createBrowserDictationEngine.name, () => {
 
   it('tells when the recognition has ended', () => {
     const engine = createBrowserDictationEngine({ SpeechRecognition: FakeRecognition }, 'en-GB');
+
     engine?.start(callbacks);
 
     FakeRecognition.instances[0]?.onend?.();
@@ -96,6 +99,7 @@ describe(createBrowserDictationEngine.name, () => {
 
   it.each(['not-allowed', 'service-not-allowed'])('reports %s as a blocked microphone', (error) => {
     const engine = createBrowserDictationEngine({ SpeechRecognition: FakeRecognition }, 'en-GB');
+
     engine?.start(callbacks);
 
     FakeRecognition.instances[0]?.onerror?.({ error });
@@ -105,6 +109,7 @@ describe(createBrowserDictationEngine.name, () => {
 
   it('reports other errors as a failure but not silence or an abort', () => {
     const engine = createBrowserDictationEngine({ SpeechRecognition: FakeRecognition }, 'en-GB');
+
     engine?.start(callbacks);
     const recognition = FakeRecognition.instances[0];
 

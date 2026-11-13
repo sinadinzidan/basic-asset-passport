@@ -24,6 +24,7 @@ describe(useCopyToClipboard.name, () => {
       writeText,
       startTimeout: vi.fn((onDone) => {
         finishWait = onDone;
+
         return cancelWait;
       }),
     };
@@ -53,6 +54,7 @@ describe(useCopyToClipboard.name, () => {
 
   it('goes back to idle after a moment', async () => {
     const { result } = renderHook(() => useCopyToClipboard(), { wrapper });
+
     await act(async () => {
       await result.current.copy('text');
     });
@@ -75,6 +77,7 @@ describe(useCopyToClipboard.name, () => {
 
   it('restarts the wait when copied again', async () => {
     const { result } = renderHook(() => useCopyToClipboard(), { wrapper });
+
     await act(async () => {
       await result.current.copy('first');
     });
@@ -91,6 +94,7 @@ describe(useCopyToClipboard.name, () => {
     const { result, unmount } = renderHook(() => useCopyToClipboard(), {
       wrapper,
     });
+
     await act(async () => {
       await result.current.copy('text');
     });

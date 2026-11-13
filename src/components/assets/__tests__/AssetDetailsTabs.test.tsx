@@ -42,6 +42,7 @@ describe(AssetDetailsTabs.name, () => {
       ),
     };
     const QueryWrapper = makeQueryClientWrapper();
+
     wrapper = ({ children }) => (
       <NavigationStoreContext.Provider value={store}>
         <UseAssetEquipmentContext.Provider
@@ -132,6 +133,7 @@ describe(AssetDetailsTabs.name, () => {
 
     for (const name of ['Equipment', 'Timeseries', 'Notes', 'Documents']) {
       const tab = screen.getByRole('tab', { name });
+
       expect(tab).toHaveTextContent(new RegExp(`^${name}$`));
       expect(tab).not.toHaveAttribute('aria-disabled', 'true');
     }
@@ -149,9 +151,11 @@ describe(AssetDetailsTabs.name, () => {
 
     for (const name of ['Equipment', 'Timeseries', 'Documents']) {
       const tab = screen.getByRole('tab', { name });
+
       expect(tab).toHaveAttribute('aria-disabled', 'true');
       expect(tab).toHaveTextContent(new RegExp(`^${name}$`));
     }
+
     expect(screen.getByRole('tab', { name: /notes/i })).not.toHaveAttribute(
       'aria-disabled',
       'true',

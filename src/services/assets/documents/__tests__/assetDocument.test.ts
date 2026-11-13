@@ -120,6 +120,7 @@ describe('listAssetDocuments', () => {
       ),
       createdTime: 2000,
     };
+
     vi.spyOn(client.instances, 'query').mockResolvedValue(
       makeQueryResponse({ documents: [newer, older] }),
     );
@@ -167,6 +168,7 @@ describe('listAssetDocuments', () => {
       ),
       createdTime: 1000,
     };
+
     vi.spyOn(client.instances, 'query').mockResolvedValue(
       makeQueryResponse({ documents: [stale] }),
     );
@@ -319,6 +321,7 @@ describe('listAssetLinkedFiles', () => {
       ),
       createdTime: 2000,
     };
+
     vi.spyOn(client.instances, 'query').mockResolvedValue(
       makeQueryResponse({ files: [newer, older] }),
     );
@@ -384,6 +387,7 @@ describe('listAssetLinkedFiles', () => {
 
   it('reads the RMDM view by reference, without the Asset_Passport data model', async () => {
     const retrieve = vi.spyOn(client.dataModels, 'retrieve');
+
     vi.spyOn(client.instances, 'query').mockResolvedValue(makeQueryResponse({ files: [] }));
 
     await createAssetDocumentService(client).listAssetLinkedFiles(assetIdentifier);
@@ -482,6 +486,7 @@ describe('uploadAssetDocument', () => {
     // Arrange
     vi.spyOn(client.instances, 'upsert').mockResolvedValue({ items: [] });
     const remove = vi.spyOn(client.instances, 'delete').mockResolvedValue({});
+
     vi.mocked(files.uploadContent).mockRejectedValue(new Error('storage down'));
 
     // Act & Assert
@@ -541,6 +546,7 @@ describe('deleteAssetDocument', () => {
 
   it('propagates a failed delete', async () => {
     const client = makeOfflineSdkClient();
+
     vi.spyOn(client.instances, 'delete').mockRejectedValue(new Error('no access'));
 
     await expect(

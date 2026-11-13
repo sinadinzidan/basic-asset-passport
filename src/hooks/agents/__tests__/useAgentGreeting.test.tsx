@@ -21,6 +21,7 @@ describe(useAgentGreeting.name, () => {
     context = {
       startTimeout: vi.fn((onDone) => {
         finishWait = onDone;
+
         return cancelWait;
       }),
     };
@@ -55,6 +56,7 @@ describe(useAgentGreeting.name, () => {
 
   it('stops greeting by itself after a few seconds, and does not start again', () => {
     const { result } = renderHook(() => useAgentGreeting(), { wrapper });
+
     act(() => finishWait());
 
     act(() => finishWait());
@@ -65,6 +67,7 @@ describe(useAgentGreeting.name, () => {
 
   it('stops greeting when it is dismissed', () => {
     const { result } = renderHook(() => useAgentGreeting(), { wrapper });
+
     act(() => finishWait());
 
     act(() => result.current.dismissIntro());

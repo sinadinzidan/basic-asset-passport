@@ -25,6 +25,7 @@ describe(useAssetTimeseries.name, () => {
       ),
     };
     const QueryWrapper = makeQueryClientWrapper();
+
     wrapper = ({ children }) => (
       <UseAssetTimeseriesContext.Provider
         value={{ createAssetTimeseriesService: () => mockContext }}

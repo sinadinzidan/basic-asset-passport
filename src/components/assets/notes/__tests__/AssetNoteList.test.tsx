@@ -39,6 +39,7 @@ describe(AssetNoteList.name, () => {
       deleteAssetNote: vi.fn(() => Promise.resolve()),
     };
     const QueryWrapper = makeQueryClientWrapper();
+
     wrapper = ({ children }) => (
       <UseAssetNotesContext.Provider value={{ createAssetNoteService: () => mockContext }}>
         <UseUpdateAssetNoteContext.Provider value={{ createAssetNoteService: () => updateContext }}>
@@ -108,6 +109,7 @@ describe(AssetNoteList.name, () => {
   it('reads a longer list when more notes are asked for', async () => {
     // Arrange
     const user = userEvent.setup();
+
     vi.mocked(mockContext.listAssetNotes)
       .mockResolvedValueOnce(makeLimitedList([makeAssetNote()], true))
       .mockResolvedValueOnce(
@@ -132,6 +134,7 @@ describe(AssetNoteList.name, () => {
 
   it('shows a readable error and retries the load', async () => {
     const user = userEvent.setup();
+
     vi.mocked(mockContext.listAssetNotes).mockRejectedValueOnce(new Error('failed'));
 
     renderList();
@@ -150,6 +153,7 @@ describe(AssetNoteList.name, () => {
     async function openDeleteDialog(user: ReturnType<typeof userEvent.setup>) {
       renderList();
       await user.click(await screen.findByRole('button', { name: 'Delete Seal inspection' }));
+
       return screen.getByRole('dialog');
     }
 
@@ -189,6 +193,7 @@ describe(AssetNoteList.name, () => {
     it('keeps the dialog open and locked until the delete is over', async () => {
       const user = userEvent.setup();
       let finishDelete: () => void = () => {};
+
       vi.mocked(deleteContext.deleteAssetNote).mockReturnValue(
         new Promise<void>((resolve) => {
           finishDelete = resolve;
@@ -209,6 +214,7 @@ describe(AssetNoteList.name, () => {
 
     it('closes the dialog and shows the reason when the delete fails', async () => {
       const user = userEvent.setup();
+
       vi.mocked(deleteContext.deleteAssetNote).mockRejectedValue(new Error('Forbidden'));
       const dialog = await openDeleteDialog(user);
 
@@ -220,6 +226,7 @@ describe(AssetNoteList.name, () => {
 
     it('shows why a note could not be deleted and keeps it', async () => {
       const user = userEvent.setup();
+
       vi.mocked(deleteContext.deleteAssetNote).mockRejectedValue(new Error('Forbidden'));
       const dialog = await openDeleteDialog(user);
 
@@ -250,9 +257,11 @@ describe(AssetNoteList.name, () => {
 
     it('saves the changes and goes back to the note', async () => {
       const user = userEvent.setup();
+
       await openEditor(user);
 
       const title = screen.getByRole('textbox', { name: /Title/ });
+
       await user.clear(title);
       await user.type(title, 'Seal replaced');
       await user.click(screen.getByRole('button', { name: 'Save' }));
@@ -270,6 +279,7 @@ describe(AssetNoteList.name, () => {
     it('closes the form of each note when two are saved at once', async () => {
       const user = userEvent.setup();
       let finishFirstSave: () => void = () => {};
+
       vi.mocked(mockContext.listAssetNotes).mockResolvedValue(
         makeLimitedList([
           makeAssetNote(),
@@ -295,6 +305,7 @@ describe(AssetNoteList.name, () => {
 
     it('keeps a save that failed on show when another note is cancelled', async () => {
       const user = userEvent.setup();
+
       vi.mocked(mockContext.listAssetNotes).mockResolvedValue(
         makeLimitedList([
           makeAssetNote(),
@@ -314,6 +325,7 @@ describe(AssetNoteList.name, () => {
 
     it('leaves the note as it was when editing is cancelled', async () => {
       const user = userEvent.setup();
+
       await openEditor(user);
       await user.type(screen.getByRole('textbox', { name: /Title/ }), ' more');
 
@@ -325,6 +337,7 @@ describe(AssetNoteList.name, () => {
 
     it('cannot save a note without a title', async () => {
       const user = userEvent.setup();
+
       await openEditor(user);
 
       await user.clear(screen.getByRole('textbox', { name: /Title/ }));
@@ -334,6 +347,7 @@ describe(AssetNoteList.name, () => {
 
     it('shows why a note could not be saved and keeps what was typed', async () => {
       const user = userEvent.setup();
+
       vi.mocked(updateContext.updateAssetNote).mockRejectedValue(new Error('Forbidden'));
       await openEditor(user);
       await user.type(screen.getByRole('textbox', { name: /Title/ }), ' again');

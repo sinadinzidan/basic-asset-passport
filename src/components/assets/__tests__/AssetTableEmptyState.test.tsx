@@ -32,6 +32,7 @@ describe(AssetTableEmptyState.name, () => {
     );
 
     const cell = within(screen.getByRole('row')).getByRole('gridcell');
+
     expect(within(cell).getByText(ASSETS_NO_MATCH_TITLE)).toBeInTheDocument();
   });
 });

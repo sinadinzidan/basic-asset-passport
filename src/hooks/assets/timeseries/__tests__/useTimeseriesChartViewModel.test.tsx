@@ -78,8 +78,11 @@ describe(useTimeseriesChartViewModel.name, () => {
     act(() => result.current.openSeries('ts:PI.1', 'Pressure'));
 
     const stored = store.getState().navigationState.timeseriesChart;
+
     if (!stored) throw new Error('The chart setup should have been stored.');
+
     const opened = parseConfiguration(stored, createChartConfiguration([]));
+
     expect(opened.range).toBe(ChartRange.CUSTOM);
     expect(opened.window).toEqual({
       start: NOW_MINUTE_MS - CHART_OPEN_WINDOW_MS,
@@ -116,7 +119,9 @@ describe(useTimeseriesChartViewModel.name, () => {
     const { result } = renderViewModel();
 
     const configuration = result.current.configuration;
+
     if (!configuration) throw new Error('The chart should be open.');
+
     act(() => result.current.setConfiguration({ ...configuration, title: 'Renamed' }));
 
     expect(store.getState().navigationState.timeseriesChart).toEqual(
@@ -149,6 +154,7 @@ describe(useTimeseriesChartViewModel.name, () => {
   it('takes the time again when a chart is opened later', () => {
     const { result, rerender } = renderViewModel();
     const laterMs = NOW_MINUTE_MS + 2 * 60 * 60 * 1000;
+
     context.now = () => laterMs;
     rerender();
 
@@ -159,6 +165,7 @@ describe(useTimeseriesChartViewModel.name, () => {
 
   it('keeps the time still while the chart stays open', () => {
     const { result, rerender } = renderViewModel();
+
     act(() => result.current.openSeries('ts:PI.1', 'Pressure'));
     context.now = () => NOW_MS + 5 * 60 * 1000;
     rerender();

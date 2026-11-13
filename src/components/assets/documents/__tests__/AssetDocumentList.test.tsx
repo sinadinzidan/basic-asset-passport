@@ -35,6 +35,7 @@ describe(AssetDocumentList.name, () => {
 
   beforeEach(() => {
     const client = makeMockClient();
+
     listContext = {
       listAssetDocuments: vi.fn(() => Promise.resolve(makeLimitedList([makeAssetDocument()]))),
     };
@@ -45,6 +46,7 @@ describe(AssetDocumentList.name, () => {
       deleteAssetDocument: vi.fn(() => Promise.resolve()),
     };
     const QueryWrapper = makeQueryClientWrapper();
+
     wrapper = ({ children }) => (
       <UseAssetDocumentsContext.Provider value={{ createAssetDocumentService: () => listContext }}>
         <UseAssetLinkedFilesContext.Provider
@@ -100,6 +102,7 @@ describe(AssetDocumentList.name, () => {
 
   it('shows a readable error with a retry when loading fails', async () => {
     const user = userEvent.setup();
+
     vi.mocked(listContext.listAssetDocuments).mockRejectedValueOnce(new Error('no access'));
 
     renderList();
@@ -150,6 +153,7 @@ describe(AssetDocumentList.name, () => {
 
   it('offers more uploaded documents when the asset has more than were read', async () => {
     const user = userEvent.setup();
+
     vi.mocked(listContext.listAssetDocuments).mockResolvedValue(
       makeLimitedList([makeAssetDocument()], true),
     );
@@ -178,6 +182,7 @@ describe(AssetDocumentList.name, () => {
 
   it('offers more existing files when the asset has more than were read', async () => {
     const user = userEvent.setup();
+
     vi.mocked(linkedContext.listAssetLinkedFiles).mockResolvedValue(
       makeLimitedList(
         [
@@ -227,6 +232,7 @@ describe(AssetDocumentList.name, () => {
       const headings = screen
         .getAllByRole('heading', { level: 3 })
         .map((heading) => heading.textContent);
+
       expect(headings).toEqual(['Pump manual.pdf', 'P&ID.pdf']);
     });
 
@@ -267,6 +273,7 @@ describe(AssetDocumentList.name, () => {
 
     it('keep the uploaded documents visible when they cannot be loaded, with a retry', async () => {
       const user = userEvent.setup();
+
       vi.mocked(linkedContext.listAssetLinkedFiles)
         .mockRejectedValueOnce(new Error('no access'))
         .mockResolvedValue(makeLimitedList([existingFile()]));
@@ -294,6 +301,7 @@ describe(AssetDocumentList.name, () => {
   it('previews the document in a dialog when it is viewed', async () => {
     // Arrange
     const user = userEvent.setup();
+
     renderList();
 
     // Act
@@ -301,12 +309,14 @@ describe(AssetDocumentList.name, () => {
 
     // Assert
     const dialog = await screen.findByRole('dialog');
+
     expect(within(dialog).getByRole('heading', { name: 'Pump manual.pdf' })).toBeInTheDocument();
     expect(within(dialog).getByText('Previewing doc-1')).toBeInTheDocument();
   });
 
   it('closes the preview and keeps the document', async () => {
     const user = userEvent.setup();
+
     renderList();
 
     await user.click(await screen.findByRole('button', { name: 'View Pump manual.pdf' }));
@@ -323,6 +333,7 @@ describe(AssetDocumentList.name, () => {
   it('asks for confirmation before deleting and deletes only once confirmed', async () => {
     // Arrange
     const user = userEvent.setup();
+
     renderList();
 
     // Act
@@ -330,6 +341,7 @@ describe(AssetDocumentList.name, () => {
 
     // Assert
     const dialog = await screen.findByRole('dialog');
+
     expect(within(dialog).getByText('Delete document?')).toBeInTheDocument();
     expect(deleteContext.deleteAssetDocument).not.toHaveBeenCalled();
 
@@ -348,6 +360,7 @@ describe(AssetDocumentList.name, () => {
   it('keeps the dialog open and locked until the delete is over', async () => {
     const user = userEvent.setup();
     let finishDelete: () => void = () => {};
+
     vi.mocked(deleteContext.deleteAssetDocument).mockReturnValue(
       new Promise<void>((resolve) => {
         finishDelete = resolve;
@@ -357,6 +370,7 @@ describe(AssetDocumentList.name, () => {
 
     await user.click(await screen.findByRole('button', { name: 'Delete Pump manual.pdf' }));
     const dialog = await screen.findByRole('dialog');
+
     await user.click(within(dialog).getByRole('button', { name: 'Delete document' }));
 
     expect(screen.getByRole('dialog')).toBeVisible();
@@ -370,6 +384,7 @@ describe(AssetDocumentList.name, () => {
 
   it('keeps the document when the delete is cancelled', async () => {
     const user = userEvent.setup();
+
     renderList();
 
     await user.click(await screen.findByRole('button', { name: 'Delete Pump manual.pdf' }));
@@ -385,6 +400,7 @@ describe(AssetDocumentList.name, () => {
 
   it('explains why a document could not be deleted', async () => {
     const user = userEvent.setup();
+
     vi.mocked(deleteContext.deleteAssetDocument).mockRejectedValue(new Error('Forbidden'));
     renderList();
 

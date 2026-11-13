@@ -7,6 +7,7 @@ import { ShowMoreButton } from '../ShowMoreButton';
 describe(ShowMoreButton.name, () => {
   it('asks for more when it is pressed', async () => {
     const onShowMore = vi.fn();
+
     render(
       <ShowMoreButton label="Show more documents" isLoading={false} onShowMore={onShowMore} />,
     );

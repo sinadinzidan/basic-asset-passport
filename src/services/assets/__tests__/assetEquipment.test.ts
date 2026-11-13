@@ -35,6 +35,7 @@ describe('listAssetEquipment', () => {
     // Assert
     const reference = expect.objectContaining({ externalId: 'Equipment' });
     const request = query.mock.calls[0][0];
+
     expect(request.with.equipment).toMatchObject({
       nodes: {
         filter: {
@@ -97,6 +98,7 @@ describe('listAssetEquipment', () => {
     const equipment = Array.from({ length: ASSET_EQUIPMENT_QUERY_LIMIT + 1 }, (_item, index) =>
       makeNodeInstance(equipmentView, { space: 'instances', externalId: `P-${index}` }, {}),
     );
+
     vi.spyOn(client.instances, 'query').mockResolvedValue(makeQueryResponse({ equipment }));
 
     const list = await createAssetEquipmentService(client).listAssetEquipment(assetIdentifier);
@@ -111,6 +113,7 @@ describe('listAssetEquipment', () => {
       { space: 'instances', externalId: 'P-100' },
       { name: 'Pump', tags: ['A', 7, true, '', { id: 1 }] },
     );
+
     vi.spyOn(client.instances, 'query').mockResolvedValue(makeQueryResponse({ equipment: [node] }));
 
     const list = await createAssetEquipmentService(client).listAssetEquipment(assetIdentifier);

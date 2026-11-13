@@ -35,6 +35,7 @@ describe(TimeseriesDetails.name, () => {
   it('opens the series in the chart from its preview', async () => {
     const user = userEvent.setup();
     const onOpenChart = vi.fn();
+
     render(<TimeseriesDetails item={makeItem()} onOpenChart={onOpenChart} />);
 
     await user.click(screen.getByRole('button', { name: /^Pressure:.*Open chart$/ }));

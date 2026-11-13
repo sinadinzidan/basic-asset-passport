@@ -33,6 +33,7 @@ describe(useUpdateAssetNote.name, () => {
     };
     showSuccessToast = vi.fn();
     const QueryWrapper = makeQueryClientWrapper(queryClient);
+
     wrapper = ({ children }) => (
       <UseUpdateAssetNoteContext.Provider value={{ createAssetNoteService: () => mockContext }}>
         <QueryWrapper>

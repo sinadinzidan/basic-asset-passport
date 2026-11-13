@@ -18,6 +18,7 @@ describe(PageHeader.name, () => {
 
   it('shows the description only when given', () => {
     const { rerender } = render(<PageHeader title="Title" />);
+
     expect(screen.queryByText('About this page')).not.toBeInTheDocument();
 
     rerender(<PageHeader title="Title" description="About this page" />);
@@ -31,6 +32,7 @@ describe(PageHeader.name, () => {
     );
 
     const heading = screen.getByRole('heading', { name: 'Title' });
+
     expect(heading.previousElementSibling).toHaveTextContent('Back');
     expect(heading.nextElementSibling).toHaveTextContent('Badge');
   });
@@ -49,11 +51,13 @@ describe(PageHeader.name, () => {
 
   it('shows a kicker above the title only when given', () => {
     const { rerender } = render(<PageHeader title="Title" />);
+
     expect(screen.queryByText('Asset intelligence')).not.toBeInTheDocument();
 
     rerender(<PageHeader title="Title" kicker="Asset intelligence" />);
 
     const kicker = screen.getByText('Asset intelligence');
+
     expect(kicker).toBeInTheDocument();
     expect(
       kicker.compareDocumentPosition(screen.getByRole('heading', { name: 'Title' })) &

@@ -26,6 +26,7 @@ describe(useAssetTableViewModel.name, () => {
       searchAssets: vi.fn(() => Promise.resolve(makeAssetPage([makeAssetListItem()], null, true))),
     };
     const QueryWrapper = makeQueryClientWrapper();
+
     wrapper = ({ children }) => (
       <NavigationStoreContext.Provider value={store}>
         <UseAssetsContext.Provider value={{ createAssetService: () => assetService }}>
@@ -72,6 +73,7 @@ describe(useAssetTableViewModel.name, () => {
 
   it('goes to the next page with the cursor of the page on screen', async () => {
     const { result } = renderViewModel();
+
     await waitFor(() => expect(result.current.hasNextPage).toBe(true));
 
     act(() => result.current.goToNextPage());
@@ -90,6 +92,7 @@ describe(useAssetTableViewModel.name, () => {
 
   it('opens an asset by its identity only', async () => {
     const { result } = renderViewModel();
+
     await waitFor(() => expect(result.current.isPending).toBe(false));
 
     act(() => result.current.openAsset(makeAssetListItem({ space: 's', externalId: 'FLOC-7' })));
@@ -103,6 +106,7 @@ describe(useAssetTableViewModel.name, () => {
   it('reports a failed load with its error and reads again on retry', async () => {
     vi.mocked(assetService.listAssets).mockRejectedValueOnce(new Error('no access'));
     const { result } = renderViewModel();
+
     await waitFor(() => expect(result.current.isError).toBe(true));
     expect(result.current.error).toEqual(new Error('no access'));
 

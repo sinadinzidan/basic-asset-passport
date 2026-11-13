@@ -55,6 +55,7 @@ describe(useAssetTimeseriesViewModel.name, () => {
       ),
     };
     const QueryWrapper = makeQueryClientWrapper();
+
     wrapper = ({ children }) => (
       <UseAssetTimeseriesContext.Provider
         value={{ createAssetTimeseriesService: () => listContext }}
@@ -91,6 +92,7 @@ describe(useAssetTimeseriesViewModel.name, () => {
     let deliver: (
       trends: Awaited<ReturnType<TimeseriesContextType['getTrends']>>,
     ) => void = () => {};
+
     vi.mocked(datapoints.getTrends).mockReturnValue(
       new Promise((resolve) => {
         deliver = resolve;
@@ -163,6 +165,7 @@ describe(useAssetTimeseriesViewModel.name, () => {
 
   it('shows an unavailable preview for a series whose readings failed while the rest loaded', async () => {
     const flow = makeInstanceDetails({ space: 'ts', externalId: 'PI.3', properties: [] });
+
     vi.mocked(listContext.listAssetTimeseries).mockResolvedValue(makeLimitedList([pressure, flow]));
     vi.mocked(datapoints.getTrends).mockResolvedValue([
       { space: 'ts', externalId: 'PI.1', points: [], hasFailed: true },
@@ -185,6 +188,7 @@ describe(useAssetTimeseriesViewModel.name, () => {
     const { result, rerender } = renderHook(() => useAssetTimeseriesViewModel(), {
       wrapper,
     });
+
     await waitFor(() =>
       expect(result.current.items[0]?.preview.kind).toBe(TimeseriesPreviewKind.READY),
     );
@@ -221,6 +225,7 @@ describe(useAssetTimeseriesViewModel.name, () => {
       ({ limit }: { limit: number }) => useAssetTimeseriesViewModel(limit),
       { wrapper, initialProps: { limit: 1 } },
     );
+
     await waitFor(() => expect(result.current.items).toHaveLength(1));
 
     rerender({ limit: 2 });

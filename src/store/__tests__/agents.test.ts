@@ -59,6 +59,7 @@ describe(createAgentChatStore.name, () => {
 
   it('keeps the earlier cursor when the reply has none', () => {
     const store = askedStore();
+
     store.getState().receiveReply(agent.externalId, agentMessage, 'cursor-1');
     store.getState().addUserMessage(agent.externalId, userMessage);
 
@@ -73,6 +74,7 @@ describe(createAgentChatStore.name, () => {
     store.getState().failSend(agent.externalId, 'forbidden');
 
     const conversation = getConversation(store.getState(), agent.externalId);
+
     expect(conversation.isSending).toBe(false);
     expect(conversation.errorMessage).toBe('forbidden');
     expect(conversation.messages).toEqual([userMessage]);
@@ -80,6 +82,7 @@ describe(createAgentChatStore.name, () => {
 
   it('clears the error when the next question is sent', () => {
     const store = askedStore();
+
     store.getState().failSend(agent.externalId, 'forbidden');
 
     store.getState().addUserMessage(agent.externalId, userMessage);
@@ -89,11 +92,13 @@ describe(createAgentChatStore.name, () => {
 
   it('waits again with the same messages when the question is asked again', () => {
     const store = askedStore();
+
     store.getState().failSend(agent.externalId, 'forbidden');
 
     store.getState().retrySend(agent.externalId);
 
     const conversation = getConversation(store.getState(), agent.externalId);
+
     expect(conversation.isSending).toBe(true);
     expect(conversation.errorMessage).toBeNull();
     expect(conversation.messages).toEqual([userMessage]);
@@ -101,6 +106,7 @@ describe(createAgentChatStore.name, () => {
 
   it('starts a conversation over without touching the others', () => {
     const store = askedStore();
+
     store.getState().addUserMessage('other', userMessage);
 
     store.getState().resetConversation(agent.externalId);
@@ -118,6 +124,8 @@ describe(createAgentChatStore.name, () => {
 
 function askedStore() {
   const store = createAgentChatStore();
+
   store.getState().addUserMessage(agent.externalId, userMessage);
+
   return store;
 }

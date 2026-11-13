@@ -26,6 +26,7 @@ describe(useAssetLinkedFiles.name, () => {
       ),
     };
     const QueryWrapper = makeQueryClientWrapper();
+
     wrapper = ({ children }) => (
       <UseAssetLinkedFilesContext.Provider
         value={{ createAssetDocumentService: () => mockContext }}
@@ -50,6 +51,7 @@ describe(useAssetLinkedFiles.name, () => {
     const files = makeLimitedList([
       makeAssetDocument({ externalId: 'file-2', origin: DocumentOrigin.RMDM }),
     ]);
+
     vi.mocked(mockContext.listAssetLinkedFiles).mockResolvedValue(files);
 
     const { result } = renderHook(() => useAssetLinkedFiles(assetIdentifier), {

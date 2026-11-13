@@ -72,6 +72,7 @@ describe(useAgentHelperViewModel.name, () => {
 
   it('opens again at once when toggled while it is still closing', () => {
     const { result } = renderViewModel(JSON.stringify({ isAssistantOpen: true }));
+
     act(() => result.current.close());
 
     act(() => result.current.toggle());

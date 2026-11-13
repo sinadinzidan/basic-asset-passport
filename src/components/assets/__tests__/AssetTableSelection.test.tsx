@@ -71,6 +71,7 @@ describe('AssetTable rows', () => {
     queryClient = makeTestQueryClient();
     const QueryWrapper = makeQueryClientWrapper(queryClient);
     const countsContext = makeAssetsKPICountsContext();
+
     wrapper = ({ children }) => (
       <NavigationStoreContext.Provider value={store}>
         <UseAssetsContext.Provider value={{ createAssetService: () => mockContext }}>
@@ -112,6 +113,7 @@ describe('AssetTable rows', () => {
     const items = Array.from({ length: ASSET_SEARCH_LIMIT }, (_item, index) =>
       makeAssetListItem({ externalId: `FLOC-${index}` }),
     );
+
     vi.mocked(mockContext.searchAssets).mockResolvedValue(makeAssetPage(items));
 
     renderTable({ searchQuery: 'pump' });

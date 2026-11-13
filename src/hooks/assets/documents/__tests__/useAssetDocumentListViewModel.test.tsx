@@ -38,6 +38,7 @@ describe(useAssetDocumentListViewModel.name, () => {
     };
     const deps = documentService;
     const QueryWrapper = makeQueryClientWrapper();
+
     wrapper = ({ children }) => (
       <UseAssetDocumentsContext.Provider value={{ createAssetDocumentService: () => deps }}>
         <UseAssetLinkedFilesContext.Provider value={{ createAssetDocumentService: () => deps }}>
@@ -102,6 +103,7 @@ describe(useAssetDocumentListViewModel.name, () => {
     vi.mocked(documentService.listAssetDocuments).mockResolvedValue(makeLimitedList([]));
     vi.mocked(documentService.listAssetLinkedFiles).mockRejectedValueOnce(new Error('no access'));
     const { result } = renderViewModel();
+
     await waitFor(() => expect(result.current.hasExistingFilesError).toBe(true));
     expect(result.current.isEmpty).toBe(false);
     expect(result.current.existingFilesError).toEqual(new Error('no access'));
@@ -113,6 +115,7 @@ describe(useAssetDocumentListViewModel.name, () => {
 
   it('reads a longer list of each kind when more are asked for', async () => {
     const { result } = renderViewModel();
+
     await waitFor(() => expect(result.current.hasMoreDocuments).toBe(true));
 
     act(() => result.current.showMoreDocuments());
@@ -135,6 +138,7 @@ describe(useAssetDocumentListViewModel.name, () => {
   it('says which document is being deleted while the delete runs', async () => {
     vi.mocked(documentService.deleteAssetDocument).mockReturnValue(new Promise(() => {}));
     const { result } = renderViewModel();
+
     await waitFor(() => expect(result.current.documents).toHaveLength(1));
 
     act(() => void result.current.deleteDocument(uploaded));
@@ -146,6 +150,7 @@ describe(useAssetDocumentListViewModel.name, () => {
   it('keeps why a document could not be deleted, without throwing', async () => {
     vi.mocked(documentService.deleteAssetDocument).mockRejectedValue(new Error('No write access.'));
     const { result } = renderViewModel();
+
     await waitFor(() => expect(result.current.documents).toHaveLength(1));
 
     await act(() => result.current.deleteDocument(uploaded));
@@ -157,6 +162,7 @@ describe(useAssetDocumentListViewModel.name, () => {
     vi.mocked(documentService.listAssetDocuments).mockRejectedValueOnce(new Error('no access'));
     vi.mocked(documentService.listAssetLinkedFiles).mockReturnValue(new Promise(() => {}));
     const { result } = renderViewModel();
+
     await waitFor(() => expect(result.current.isError).toBe(true));
     expect(result.current.isPending).toBe(false);
     expect(result.current.error).toEqual(new Error('no access'));

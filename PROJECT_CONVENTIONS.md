@@ -178,7 +178,9 @@ function readRetryAfterMs(error: unknown): number {
 ESLint enforces this (`padding-line-between-statements` in
 `eslint.config.mjs`) and `eslint --fix` applies it. Do not add blank lines
 inside a group to pad a function out, and never leave two blank lines in a
-row. Test files are exempt: they follow Arrange / Act / Assert.
+row. Test files follow the same rule, on top of Arrange / Act / Assert; like
+components and hooks, they are not held to the several-lines rule, so a run
+of assertions stays together.
 
 ## React ordering, state, and effects
 

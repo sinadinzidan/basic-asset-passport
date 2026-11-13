@@ -39,6 +39,7 @@ describe(AssetDocumentUpload.name, () => {
       uploadAssetDocument: vi.fn(() => Promise.resolve()),
     };
     const QueryWrapper = makeQueryClientWrapper();
+
     wrapper = ({ children }) => (
       <UseUploadAssetDocumentsContext.Provider
         value={{
@@ -80,6 +81,7 @@ describe(AssetDocumentUpload.name, () => {
     // Arrange
     const user = userEvent.setup();
     const files = [makeFile('a.pdf'), makeFile('b.pdf')];
+
     renderUpload();
 
     // Act
@@ -97,6 +99,7 @@ describe(AssetDocumentUpload.name, () => {
 
   it('confirms a single upload', async () => {
     const user = userEvent.setup();
+
     renderUpload();
 
     await user.upload(screen.getByLabelText('Choose documents to upload'), makeFile('a.pdf'));
@@ -108,6 +111,7 @@ describe(AssetDocumentUpload.name, () => {
   it('shows which files failed and why, and still reports the others', async () => {
     // Arrange
     const user = userEvent.setup();
+
     vi.mocked(mockContext.uploadAssetDocument).mockImplementation((_files, _asset, file) =>
       file.name === REJECTED_FILE_NAME
         ? Promise.reject(new Error('Uploading the file failed (403).'))
@@ -131,6 +135,7 @@ describe(AssetDocumentUpload.name, () => {
     // Arrange
     const user = userEvent.setup();
     const rejectedFile = makeFile(REJECTED_FILE_NAME);
+
     vi.mocked(mockContext.uploadAssetDocument).mockImplementationOnce(() =>
       Promise.reject(new Error('Uploading the file failed (403).')),
     );
@@ -157,6 +162,7 @@ describe(AssetDocumentUpload.name, () => {
 
   it('disables the button while uploading', async () => {
     const user = userEvent.setup();
+
     vi.mocked(mockContext.uploadAssetDocument).mockReturnValue(new Promise(() => {}));
     renderUpload();
 

@@ -59,6 +59,7 @@ describe(AgentChat.name, () => {
 
   it('sends a sample question when it is chosen', async () => {
     const user = userEvent.setup();
+
     renderChat();
     const question = SAMPLE_QUESTIONS[0];
 
@@ -72,6 +73,7 @@ describe(AgentChat.name, () => {
 
   it('stops suggesting once the conversation has started', async () => {
     const user = userEvent.setup();
+
     renderChat();
 
     await user.click(screen.getByRole('button', { name: SAMPLE_QUESTIONS[1] }));
@@ -83,12 +85,14 @@ describe(AgentChat.name, () => {
 
   it('shows the question and the reply, and clears the box', async () => {
     const user = userEvent.setup();
+
     renderChat();
 
     await user.type(screen.getByRole('textbox', { name: 'Message' }), 'Why is pump 1 hot?');
     await user.click(screen.getByRole('button', { name: 'Send' }));
 
     const log = screen.getByRole('log');
+
     expect(within(log).getByText('Why is pump 1 hot?')).toBeVisible();
     expect(await within(log).findByText('The strainer is fouled.')).toBeVisible();
     expect(screen.getByRole('textbox', { name: 'Message' })).toHaveValue('');
@@ -96,6 +100,7 @@ describe(AgentChat.name, () => {
 
   it('sends with Enter but keeps a new line for Shift+Enter', async () => {
     const user = userEvent.setup();
+
     renderChat();
     const box = screen.getByRole('textbox', { name: 'Message' });
 
@@ -108,8 +113,10 @@ describe(AgentChat.name, () => {
 
   it('does not send on the Enter that confirms a composed character', async () => {
     const user = userEvent.setup();
+
     renderChat();
     const box = screen.getByRole('textbox', { name: 'Message' });
+
     await user.type(box, 'にほん');
 
     fireEvent.keyDown(box, { key: 'Enter', isComposing: true });
@@ -134,6 +141,7 @@ describe(AgentChat.name, () => {
   it('shows that the agent is thinking and blocks another question meanwhile', async () => {
     vi.mocked(chat).mockReturnValue(new Promise(() => {}));
     const user = userEvent.setup();
+
     renderChat();
 
     await user.type(screen.getByRole('textbox', { name: 'Message' }), 'Hi');
@@ -147,6 +155,7 @@ describe(AgentChat.name, () => {
   it('says why the agent could not answer', async () => {
     vi.mocked(chat).mockRejectedValue(new Error('forbidden'));
     const user = userEvent.setup();
+
     renderChat();
 
     await user.type(screen.getByRole('textbox', { name: 'Message' }), 'Hi');
@@ -161,6 +170,7 @@ describe(AgentChat.name, () => {
     // Arrange
     vi.mocked(chat).mockRejectedValueOnce(new Error('forbidden'));
     const user = userEvent.setup();
+
     renderChat();
     await user.type(screen.getByRole('textbox', { name: 'Message' }), 'Hi');
     await user.click(screen.getByRole('button', { name: 'Send' }));
@@ -177,8 +187,10 @@ describe(AgentChat.name, () => {
 
   it('starts a new chat', async () => {
     const user = userEvent.setup();
+
     renderChat();
     const newChat = screen.getByRole('button', { name: 'New chat' });
+
     expect(newChat).toBeDisabled();
     await user.type(screen.getByRole('textbox', { name: 'Message' }), 'Hi');
     await user.click(screen.getByRole('button', { name: 'Send' }));
@@ -194,6 +206,7 @@ describe(AgentChat.name, () => {
 
   it('closes the panel', async () => {
     const user = userEvent.setup();
+
     renderChat();
 
     await user.click(screen.getByRole('button', { name: 'Close assistant' }));
@@ -210,6 +223,7 @@ describe(AgentChat.name, () => {
 
     it('has a copy button on the agent reply but not on the question', async () => {
       const user = userEvent.setup();
+
       renderChat();
 
       await askAndWaitForReply(user);
@@ -220,6 +234,7 @@ describe(AgentChat.name, () => {
     it('copies the text of the reply and confirms it', async () => {
       const user = userEvent.setup();
       const copyText = vi.fn(() => Promise.resolve());
+
       renderChat(null, copyText);
       await askAndWaitForReply(user);
 
@@ -231,6 +246,7 @@ describe(AgentChat.name, () => {
 
     it('says when the reply could not be copied', async () => {
       const user = userEvent.setup();
+
       renderChat(null, () => Promise.reject(new Error('denied')));
       await askAndWaitForReply(user);
 
@@ -250,6 +266,7 @@ describe(AgentChat.name, () => {
       engine = {
         start: vi.fn((given) => {
           callbacks = given;
+
           return { stop: stopSession };
         }),
       };
@@ -263,19 +280,23 @@ describe(AgentChat.name, () => {
 
     it('shows a microphone while idle and a stop sign while listening', async () => {
       const user = userEvent.setup();
+
       renderChat(engine);
       const start = screen.getByRole('button', { name: 'Start dictation' });
+
       expect(start.querySelector('.tabler-icon-microphone')).not.toBeNull();
 
       await user.click(start);
 
       const stop = screen.getByRole('button', { name: 'Stop dictation' });
+
       expect(stop.querySelector('.tabler-icon-player-stop-filled')).not.toBeNull();
       expect(stop.querySelector('.tabler-icon-microphone')).toBeNull();
     });
 
     it('types what is said into the message box as it is heard', async () => {
       const user = userEvent.setup();
+
       renderChat(engine);
 
       await user.click(screen.getByRole('button', { name: 'Start dictation' }));
@@ -293,6 +314,7 @@ describe(AgentChat.name, () => {
 
     it('adds the spoken words after what was already typed', async () => {
       const user = userEvent.setup();
+
       renderChat(engine);
       await user.type(screen.getByRole('textbox', { name: 'Message' }), 'Check');
 
@@ -304,6 +326,7 @@ describe(AgentChat.name, () => {
 
     it('stops listening when the microphone button is pressed again', async () => {
       const user = userEvent.setup();
+
       renderChat(engine);
       await user.click(screen.getByRole('button', { name: 'Start dictation' }));
 
@@ -314,6 +337,7 @@ describe(AgentChat.name, () => {
 
     it('stops listening and sends the dictated question', async () => {
       const user = userEvent.setup();
+
       renderChat(engine);
       await user.click(screen.getByRole('button', { name: 'Start dictation' }));
       act(() => callbacks.onTranscript('which pumps leak'));
@@ -326,6 +350,7 @@ describe(AgentChat.name, () => {
 
     it('does not refill the message box with words recognised after sending', async () => {
       const user = userEvent.setup();
+
       renderChat(engine);
       await user.click(screen.getByRole('button', { name: 'Start dictation' }));
       act(() => callbacks.onTranscript('which pumps leak'));
@@ -338,6 +363,7 @@ describe(AgentChat.name, () => {
 
     it('stops dictating when the message is edited by hand, and keeps the edit', async () => {
       const user = userEvent.setup();
+
       renderChat(engine);
       await user.click(screen.getByRole('button', { name: 'Start dictation' }));
       act(() => callbacks.onTranscript('which pumps'));
@@ -351,6 +377,7 @@ describe(AgentChat.name, () => {
 
     it('explains when the microphone is blocked', async () => {
       const user = userEvent.setup();
+
       renderChat(engine);
       await user.click(screen.getByRole('button', { name: 'Start dictation' }));
 

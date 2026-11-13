@@ -50,6 +50,7 @@ describe(RetryAlert.name, () => {
 
   it('retries when the button is clicked', async () => {
     const onRetry = vi.fn();
+
     render(<RetryAlert title="T" description="D" isRetrying={false} onRetry={onRetry} />);
 
     await userEvent.click(screen.getByRole('button', { name: 'Retry' }));

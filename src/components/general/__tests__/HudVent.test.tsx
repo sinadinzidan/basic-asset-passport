@@ -8,6 +8,7 @@ describe(HudVent.name, () => {
     const { container } = render(<HudVent />);
 
     const vent = container.querySelector('.hud-vent');
+
     expect(vent).toHaveAttribute('aria-hidden', 'true');
     expect(vent?.children).toHaveLength(4);
   });

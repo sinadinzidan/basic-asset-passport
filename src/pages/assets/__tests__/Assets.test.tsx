@@ -43,6 +43,7 @@ describe(Assets.name, () => {
 
   beforeEach(() => {
     const client = makeMockClient();
+
     assetsContext = {
       listAssets: vi.fn(() => Promise.resolve(makeAssetPage())),
       searchAssets: vi.fn(() => Promise.resolve(makeAssetPage())),
@@ -50,12 +51,14 @@ describe(Assets.name, () => {
     const detailsContext: AssetDetailsService = {
       getAssetDetails: vi.fn(() => Promise.resolve(makeInstanceDetails())),
     };
+
     api = {
       syncInternalState: vi.fn<StateSyncApi['syncInternalState']>(() => Promise.resolve(true)),
     };
     const tabCountsContext = makeAssetDetailsTabCountsContext();
     const registerCountsContext = makeAssetsKPICountsContext();
     const QueryWrapper = makeQueryClientWrapper();
+
     wrapper = ({ children }) => (
       <DebounceContext.Provider value={immediateDebounce}>
         <UseAssetsContext.Provider value={{ createAssetService: () => assetsContext }}>
@@ -107,6 +110,7 @@ describe(Assets.name, () => {
 
   it('returns to the register from the breadcrumb and syncs the cleared selection', async () => {
     const initialState = JSON.stringify({ selectedAsset });
+
     render(<RegisterWithState api={api} initialState={initialState} />, {
       wrapper,
     });
@@ -161,6 +165,7 @@ describe(Assets.name, () => {
       selectedAsset,
       searchQuery: 'pump',
     });
+
     render(<RegisterWithState api={api} initialState={initialState} />, {
       wrapper,
     });
@@ -180,6 +185,7 @@ describe(Assets.name, () => {
     );
     render(<RegisterWithState api={api} />, { wrapper });
     const nextButton = await screen.findByRole('button', { name: 'Next page' });
+
     await waitFor(() => expect(nextButton).toBeEnabled());
 
     await userEvent.click(nextButton);
@@ -212,12 +218,14 @@ describe(Assets.name, () => {
     const initialState = JSON.stringify({
       registerCursors: ['cursor-2', 'cursor-3'],
     });
+
     render(<RegisterWithState api={api} initialState={initialState} />, {
       wrapper,
     });
     const previousButton = await screen.findByRole('button', {
       name: 'Previous page',
     });
+
     await waitFor(() => expect(previousButton).toBeEnabled());
 
     await userEvent.click(previousButton);
@@ -228,6 +236,7 @@ describe(Assets.name, () => {
 
   it('goes back to the first page when the search changes', async () => {
     const initialState = JSON.stringify({ registerCursors: ['cursor-2'] });
+
     render(<RegisterWithState api={api} initialState={initialState} />, {
       wrapper,
     });
@@ -251,6 +260,7 @@ describe(Assets.name, () => {
       cursor ? Promise.reject(new Error('stale cursor')) : Promise.resolve(makeAssetPage()),
     );
     const initialState = JSON.stringify({ registerCursors: ['stale-cursor'] });
+
     render(<RegisterWithState api={api} initialState={initialState} />, {
       wrapper,
     });
@@ -271,8 +281,10 @@ describe(Assets.name, () => {
       selectedAsset,
       activeAssetTab: AssetTab.DOCUMENTS,
     });
+
     function OpenOtherAssetButton() {
       const selectAsset = useNavigationState((store) => store.actions.selectAsset);
+
       return (
         <button
           onClick={() => selectAsset({ space: 'asset-instance-space', externalId: 'FLOC-200' })}

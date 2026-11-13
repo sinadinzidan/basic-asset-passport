@@ -36,6 +36,7 @@ describe(AssetTimeseries.name, () => {
 
   beforeEach(() => {
     const client = makeMockClient();
+
     mockContext = {
       listAssetTimeseries: vi.fn(() =>
         Promise.resolve(
@@ -72,6 +73,7 @@ describe(AssetTimeseries.name, () => {
       now: () => 10_000,
     };
     const QueryWrapper = makeQueryClientWrapper();
+
     wrapper = ({ children }) => (
       <NavigationStoreContext.Provider value={navigationStore}>
         <UseAssetTimeseriesContext.Provider
@@ -162,12 +164,14 @@ describe(AssetTimeseries.name, () => {
     renderList();
 
     const cards = await screen.findAllByRole('region');
+
     expect(cards).toHaveLength(2);
     expect(cards[0].parentElement).toHaveClass('md:grid-cols-2');
   });
 
   it('opens a series in the chart when its preview is clicked', async () => {
     const user = userEvent.setup();
+
     renderList();
 
     await user.click(
@@ -207,6 +211,7 @@ describe(AssetTimeseries.name, () => {
 
   it('offers more series when the asset has more than were read', async () => {
     const user = userEvent.setup();
+
     vi.mocked(mockContext.listAssetTimeseries).mockResolvedValue(
       makeLimitedList([makeInstanceDetails({ externalId: 'PI.A' })], true),
     );
@@ -239,6 +244,7 @@ describe(AssetTimeseries.name, () => {
 
   it('shows a readable error and retries the load', async () => {
     const user = userEvent.setup();
+
     vi.mocked(mockContext.listAssetTimeseries).mockRejectedValueOnce(new Error('no access'));
     renderList();
 

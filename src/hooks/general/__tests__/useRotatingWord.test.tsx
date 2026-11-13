@@ -22,6 +22,7 @@ describe(useRotatingWord.name, () => {
     context = {
       startTicker: vi.fn((onTick) => {
         tick = onTick;
+
         return stopTicker;
       }),
       pickStartIndex: vi.fn(() => 1),

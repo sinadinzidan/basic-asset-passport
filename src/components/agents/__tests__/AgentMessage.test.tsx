@@ -27,12 +27,14 @@ describe(AgentMessage.name, () => {
     renderMessage(reply);
 
     const button = screen.getByRole('button', { name: 'Copy response' });
+
     expect(button).toHaveClass('hud-button');
     expect(button).toHaveAttribute('data-size', 'icon-sm');
   });
 
   it('says what the button does in a tooltip when it is focused', async () => {
     const user = userEvent.setup();
+
     renderMessage(reply);
 
     await user.tab();
@@ -53,6 +55,7 @@ describe(AgentMessage.name, () => {
 
   it('says when the reply could not be copied', async () => {
     const user = userEvent.setup();
+
     renderMessage(
       reply,
       vi.fn(() => Promise.reject(new Error('blocked'))),

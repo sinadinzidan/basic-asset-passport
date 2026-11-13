@@ -41,6 +41,7 @@ describe(useLinkedAssetViewModel.name, () => {
       ),
     };
     const QueryWrapper = makeQueryClientWrapper();
+
     wrapper = ({ children }) => (
       <UseAssetDetailsContext.Provider value={{ createAssetDetailsService: () => detailsService }}>
         <QueryWrapper>
@@ -75,6 +76,7 @@ describe(useLinkedAssetViewModel.name, () => {
   it('reports a failed load with its error and reads again on retry', async () => {
     vi.mocked(detailsService.getAssetDetails).mockRejectedValueOnce(new Error('no access'));
     const { result } = renderHook(() => useLinkedAssetViewModel(linkedAsset), { wrapper });
+
     await waitFor(() => expect(result.current.isError).toBe(true));
     expect(result.current.error).toEqual(new Error('no access'));
 

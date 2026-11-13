@@ -61,6 +61,7 @@ describe('asset count service', () => {
         externalId: 'Note',
         version: 'v1',
       };
+
       expect(count).toBe(4);
       expect(query).not.toHaveBeenCalled();
       expect(aggregate).toHaveBeenCalledWith({
@@ -116,6 +117,7 @@ describe('asset count service', () => {
         externalId: 'Document',
         version: 'v1',
       };
+
       expect(count).toBe(2);
       expect(aggregate).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -146,6 +148,7 @@ describe('asset count service', () => {
         externalId: 'Equipment',
         version: 'v1',
       };
+
       expect(count).toBe(1500);
       expect(aggregate).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -176,6 +179,7 @@ describe('asset count service', () => {
         externalId: 'PI_Timeseries',
         version: 'v1',
       };
+
       expect(count).toBe(312);
       expect(aggregate).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -207,6 +211,7 @@ describe('asset count service', () => {
         externalId: 'Files',
         version: 'v1',
       };
+
       expect(count).toBe(9);
       expect(retrieve).not.toHaveBeenCalled();
       expect(aggregate).toHaveBeenCalledWith(

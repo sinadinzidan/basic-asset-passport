@@ -36,6 +36,7 @@ describe(toQueryState.name, () => {
     const { result } = renderHook(() => useNarrowQuery(read), {
       wrapper: makeQueryClientWrapper(),
     });
+
     await waitFor(() => expect(result.current.isError).toBe(true));
     expect(result.current.error).toEqual(new Error('no access'));
 
@@ -53,6 +54,7 @@ describe(toQueryState.name, () => {
       wrapper: makeQueryClientWrapper(),
       initialProps: { limit: 1 },
     });
+
     await waitFor(() => expect(result.current.data).toBe('first'));
     expect(result.current.isLoadingMore).toBe(false);
 
@@ -67,6 +69,7 @@ describe(toQueryState.name, () => {
     const { result } = renderHook(() => useNarrowQuery(() => Promise.resolve('answer')), {
       wrapper: makeQueryClientWrapper(),
     });
+
     await waitFor(() => expect(result.current.isPending).toBe(false));
 
     expect(Object.keys(result.current).sort()).toEqual([

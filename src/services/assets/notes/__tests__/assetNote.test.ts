@@ -96,6 +96,7 @@ describe('listAssetNotes', () => {
     stubModelViews(client, [noteView]);
     const older = makeNote('note-old', 1_000, { title: 'Old', author: 'Sam' });
     const newer = makeNote('note-new', 2_000, { title: 'New', body: 'Text' });
+
     vi.spyOn(client.instances, 'query').mockResolvedValue(
       makeQueryResponse({ notes: [newer, older] }),
     );
@@ -219,6 +220,7 @@ describe('createAssetNote', () => {
 
   it('saves the note without an author when the profile cannot be read', async () => {
     const upsert = vi.spyOn(client.instances, 'upsert').mockResolvedValue({ items: [] });
+
     vi.spyOn(client.profiles, 'me').mockRejectedValue(new Error('no profile'));
 
     await createAssetNoteService(client, { generateId }).createAssetNote(assetIdentifier, {
@@ -228,6 +230,7 @@ describe('createAssetNote', () => {
 
     expect(upsert).toHaveBeenCalledTimes(1);
     const serialized = JSON.stringify(upsert.mock.calls[0][0]);
+
     expect(serialized).not.toContain('"author"');
     expect(serialized).not.toContain('"authorId"');
   });
@@ -314,6 +317,7 @@ describe('updateAssetNote', () => {
     await createAssetNoteService(client).updateAssetNote(note, { title: 'Title', body: '  ' });
 
     const [request] = upsert.mock.calls[0];
+
     expect(request.items[0]).toMatchObject({
       sources: [{ properties: { title: 'Title', body: '' } }],
     });

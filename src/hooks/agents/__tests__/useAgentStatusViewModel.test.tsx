@@ -17,6 +17,7 @@ describe(useAgentStatusViewModel.name, () => {
     getAgent = vi.fn(() => Promise.resolve(makeCdfAgent()));
     const agentContext = makeAgentContext({ getAgent });
     const QueryWrapper = makeQueryClientWrapper();
+
     wrapper = ({ children }) => (
       <AgentContext.Provider value={agentContext}>
         <UseFocusedAgentContext.Provider
@@ -98,6 +99,7 @@ describe(useAgentStatusViewModel.name, () => {
       }),
       { wrapper },
     );
+
     await waitFor(() => expect(result.current.picker.isError).toBe(true));
 
     act(() => result.current.picker.retry());

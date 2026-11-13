@@ -42,6 +42,7 @@ describe(`${AssetDetailsTabs.name} timeseries`, () => {
       selectedAsset: { space: asset.space, externalId: asset.externalId },
     });
     const client = makeMockClient();
+
     listContext = {
       listAssetTimeseries: vi.fn(() =>
         Promise.resolve(
@@ -61,6 +62,7 @@ describe(`${AssetDetailsTabs.name} timeseries`, () => {
       ),
     };
     const QueryWrapper = makeQueryClientWrapper();
+
     wrapper = ({ children }) => (
       <NavigationStoreContext.Provider value={store}>
         <UseAssetTimeseriesContext.Provider
@@ -104,6 +106,7 @@ describe(`${AssetDetailsTabs.name} timeseries`, () => {
 
   it('switches to the timeseries tab when it is chosen', async () => {
     const user = userEvent.setup();
+
     render(<AssetDetailsTabs asset={asset} tabCounts={NO_TAB_COUNTS} />, { wrapper });
 
     await user.click(screen.getByRole('tab', { name: 'Timeseries' }));

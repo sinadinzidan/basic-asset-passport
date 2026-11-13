@@ -25,6 +25,7 @@ describe(useTimeseriesTrends.name, () => {
       ),
     };
     const QueryWrapper = makeQueryClientWrapper();
+
     wrapper = ({ children }) => (
       <TimeseriesContext.Provider value={client}>
         <UseTimeseriesTrendsContext.Provider value={{ now: () => NOW }}>

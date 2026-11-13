@@ -70,6 +70,7 @@ describe('listAssets', () => {
       { space: 'instances', externalId: 'FLOC-1' },
       { name: 'Cooling Water Pump', abcIndicatorName: 42 },
     );
+
     vi.spyOn(client.instances, 'query').mockResolvedValue(makeQueryResponse({ assets: [node] }));
 
     await expect(createAssetService(client).listAssets()).rejects.toThrow(/abcIndicatorName/);
@@ -88,6 +89,7 @@ describe('listAssets', () => {
         flocStatus: 'Operating',
       },
     );
+
     vi.spyOn(client.instances, 'query').mockResolvedValue(
       makeQueryResponse({ assets: [node] }, { assets: 'next' }),
     );
@@ -179,6 +181,7 @@ describe('searchAssets', () => {
         abcIndicatorName: 'B',
       },
     );
+
     vi.spyOn(client.instances, 'search').mockResolvedValue({ items: [node] });
 
     // Act
@@ -207,6 +210,7 @@ describe('searchAssets', () => {
     const nodes = Array.from({ length: ASSET_SEARCH_LIMIT + 1 }, (_item, index) =>
       makeNodeInstance(assetView, { space: 'instances', externalId: `FLOC-${index}` }, {}),
     );
+
     vi.spyOn(client.instances, 'search').mockResolvedValue({ items: nodes });
 
     const page = await createAssetService(client).searchAssets('pump');
@@ -220,6 +224,7 @@ describe('searchAssets', () => {
     const nodes = Array.from({ length: ASSET_SEARCH_LIMIT }, (_item, index) =>
       makeNodeInstance(assetView, { space: 'instances', externalId: `FLOC-${index}` }, {}),
     );
+
     vi.spyOn(client.instances, 'search').mockResolvedValue({ items: nodes });
 
     const page = await createAssetService(client).searchAssets('pump');

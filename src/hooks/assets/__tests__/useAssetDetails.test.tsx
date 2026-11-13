@@ -22,6 +22,7 @@ describe(useAssetDetails.name, () => {
       getAssetDetails: vi.fn(() => Promise.resolve(details)),
     };
     const QueryWrapper = makeQueryClientWrapper();
+
     wrapper = ({ children }) => (
       <UseAssetDetailsContext.Provider value={{ createAssetDetailsService: () => mockContext }}>
         <QueryWrapper>

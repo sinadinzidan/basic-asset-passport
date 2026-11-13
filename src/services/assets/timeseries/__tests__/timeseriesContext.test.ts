@@ -52,6 +52,7 @@ describe(createTimeseriesContext.name, () => {
     });
 
     const body = post.mock.calls[0]?.[1]?.data;
+
     expect(body).toMatchObject({
       start: 1784819773261,
       end: 1786397888357,
@@ -116,6 +117,7 @@ describe(createTimeseriesContext.name, () => {
       space: 'ts',
       externalId: `PI.${index}`,
     }));
+
     vi.spyOn(sdk, 'post')
       .mockRejectedValueOnce(new Error('bad request'))
       .mockResolvedValueOnce(
@@ -143,6 +145,7 @@ describe(createTimeseriesContext.name, () => {
       space: 'ts',
       externalId: `PI.${index}`,
     }));
+
     vi.spyOn(sdk, 'post')
       .mockRejectedValueOnce(new Error('bad request'))
       .mockResolvedValueOnce(response([]));

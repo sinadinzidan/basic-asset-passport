@@ -6,6 +6,7 @@ import { ErrorBoundary } from '../ErrorBoundary';
 
 function Exploding({ shouldThrow }: { shouldThrow: boolean }) {
   if (shouldThrow) throw new Error('render failed');
+
   return <p>Recovered content</p>;
 }
 
@@ -66,6 +67,7 @@ describe(ErrorBoundary.name, () => {
   it('renders the children again after Retry once the cause is gone', async () => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
     let shouldThrow = true;
+
     function Toggle() {
       return <Exploding shouldThrow={shouldThrow} />;
     }

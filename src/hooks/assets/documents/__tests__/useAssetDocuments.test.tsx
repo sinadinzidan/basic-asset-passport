@@ -26,6 +26,7 @@ describe(useAssetDocuments.name, () => {
       listAssetDocuments: vi.fn(() => Promise.resolve(makeLimitedList([makeAssetDocument()]))),
     };
     const QueryWrapper = makeQueryClientWrapper();
+
     wrapper = ({ children }) => (
       <UseAssetDocumentsContext.Provider value={{ createAssetDocumentService: () => mockContext }}>
         <QueryWrapper>
@@ -46,6 +47,7 @@ describe(useAssetDocuments.name, () => {
 
   it('loads the documents of the asset with the injected client', async () => {
     const documents = makeLimitedList([makeAssetDocument({ externalId: 'doc-2' })]);
+
     vi.mocked(mockContext.listAssetDocuments).mockResolvedValue(documents);
 
     const { result } = renderHook(() => useAssetDocuments(assetIdentifier), {
@@ -63,6 +65,7 @@ describe(useAssetDocuments.name, () => {
     // Arrange
     const firstPage = makeLimitedList([makeAssetDocument({ externalId: 'doc-1' })], true);
     const longer = deferred<LimitedList<AssetDocument>>();
+
     vi.mocked(mockContext.listAssetDocuments)
       .mockResolvedValueOnce(firstPage)
       .mockReturnValueOnce(longer.promise);
@@ -70,6 +73,7 @@ describe(useAssetDocuments.name, () => {
       ({ limit }) => useAssetDocuments(assetIdentifier, limit),
       { wrapper, initialProps: { limit: 1 } },
     );
+
     await waitFor(() => expect(result.current.data).toEqual(firstPage));
 
     // Act
@@ -86,6 +90,7 @@ describe(useAssetDocuments.name, () => {
   it('never shows the documents of another asset while its own load', async () => {
     // Arrange
     const otherAsset = { space: 'asset-space', externalId: 'FLOC-2' };
+
     vi.mocked(mockContext.listAssetDocuments)
       .mockResolvedValueOnce(makeLimitedList([makeAssetDocument()]))
       .mockReturnValueOnce(deferred<LimitedList<AssetDocument>>().promise);
@@ -93,6 +98,7 @@ describe(useAssetDocuments.name, () => {
       wrapper,
       initialProps: { asset: assetIdentifier },
     });
+
     await waitFor(() => expect(result.current.isPending).toBe(false));
 
     // Act

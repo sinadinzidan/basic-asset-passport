@@ -101,11 +101,13 @@ describe(AssetDocumentItem.name, () => {
 
   it('previews the document in a dialog titled with its name', async () => {
     const user = userEvent.setup();
+
     renderItem();
 
     await user.click(screen.getByRole('button', { name: 'View Pump manual.pdf' }));
 
     const dialog = await screen.findByRole('dialog', { name: 'Pump manual.pdf' });
+
     expect(within(dialog).getByText('Previewing doc-1')).toBeInTheDocument();
   });
 
@@ -118,9 +120,11 @@ describe(AssetDocumentItem.name, () => {
   it('asks before deleting, then hands the document to its list', async () => {
     const user = userEvent.setup();
     const document = makeAssetDocument();
+
     renderItem({ document });
     await user.click(screen.getByRole('button', { name: 'Delete Pump manual.pdf' }));
     const dialog = screen.getByRole('dialog', { name: 'Delete document?' });
+
     expect(dialog).toHaveTextContent(
       'Pump manual.pdf and its file will be deleted permanently. This cannot be undone.',
     );
@@ -134,6 +138,7 @@ describe(AssetDocumentItem.name, () => {
 
   it('keeps the document when the delete is cancelled', async () => {
     const user = userEvent.setup();
+
     renderItem();
     await user.click(screen.getByRole('button', { name: 'Delete Pump manual.pdf' }));
 

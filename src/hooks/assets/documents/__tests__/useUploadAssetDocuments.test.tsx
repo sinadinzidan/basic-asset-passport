@@ -41,6 +41,7 @@ describe(useUploadAssetDocuments.name, () => {
       uploadAssetDocument: vi.fn(() => Promise.resolve()),
     };
     const QueryWrapper = makeQueryClientWrapper(queryClient);
+
     wrapper = ({ children }) => (
       <UseUploadAssetDocumentsContext.Provider
         value={{
@@ -69,6 +70,7 @@ describe(useUploadAssetDocuments.name, () => {
 
     // Act
     let results: Awaited<ReturnType<typeof result.current.upload>> = [];
+
     await act(async () => {
       results = await result.current.upload([first, second]);
     });
@@ -101,6 +103,7 @@ describe(useUploadAssetDocuments.name, () => {
 
     // Act
     let results: Awaited<ReturnType<typeof result.current.upload>> = [];
+
     await act(async () => {
       results = await result.current.upload([makeFile(REJECTED_FILE_NAME), makeFile('good.pdf')]);
     });

@@ -36,10 +36,12 @@ describe(`${AssetDetailsTabs.name} documents`, () => {
       selectedAsset: { space: asset.space, externalId: asset.externalId },
     });
     const client = makeMockClient();
+
     listContext = {
       listAssetDocuments: vi.fn(() => Promise.resolve(makeLimitedList([makeAssetDocument()]))),
     };
     const QueryWrapper = makeQueryClientWrapper();
+
     wrapper = ({ children }) => (
       <NavigationStoreContext.Provider value={store}>
         <AssetContext.Provider value={client}>
@@ -78,6 +80,7 @@ describe(`${AssetDetailsTabs.name} documents`, () => {
 
   it('switches to the documents tab when it is chosen', async () => {
     const user = userEvent.setup();
+
     render(<AssetDetailsTabs asset={asset} tabCounts={NO_TAB_COUNTS} />, { wrapper });
 
     await user.click(screen.getByRole('tab', { name: 'Documents' }));

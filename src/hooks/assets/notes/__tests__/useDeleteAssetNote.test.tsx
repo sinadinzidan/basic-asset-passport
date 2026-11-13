@@ -32,6 +32,7 @@ describe(useDeleteAssetNote.name, () => {
     };
     showSuccessToast = vi.fn();
     const QueryWrapper = makeQueryClientWrapper(queryClient);
+
     wrapper = ({ children }) => (
       <UseDeleteAssetNoteContext.Provider value={{ createAssetNoteService: () => mockContext }}>
         <QueryWrapper>

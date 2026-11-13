@@ -20,6 +20,7 @@ describe(AssetNoteEditForm.name, () => {
   }: FormOptions = {}) {
     const onSave = vi.fn<(input: NewAssetNote) => void>();
     const onCancel = vi.fn();
+
     render(
       <AssetNoteEditForm
         note={note}
@@ -49,6 +50,7 @@ describe(AssetNoteEditForm.name, () => {
   it('saves what was typed', async () => {
     const user = userEvent.setup();
     const { onSave } = renderForm();
+
     await user.clear(screen.getByLabelText(/Title/));
     await user.type(screen.getByLabelText(/Title/), 'Bearing check');
     await user.clear(screen.getByLabelText('Note'));

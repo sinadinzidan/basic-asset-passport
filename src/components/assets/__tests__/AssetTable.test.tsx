@@ -42,6 +42,7 @@ describe(AssetTable.name, () => {
     countsContext = makeAssetsKPICountsContext();
     store = makeNavigationStore();
     const QueryWrapper = makeQueryClientWrapper();
+
     wrapper = ({ children }) => (
       <NavigationStoreContext.Provider value={store}>
         <DebounceContext.Provider value={immediateDebounce}>
@@ -64,6 +65,7 @@ describe(AssetTable.name, () => {
       makeAssetListItem({ externalId: 'A', flocStatus: 'Operating' }),
       makeAssetListItem({ externalId: 'B', flocStatus: 'IN SERVICE' }),
     ];
+
     vi.mocked(mockContext.listAssets).mockResolvedValue(makeAssetPage(items));
 
     renderTable();
@@ -71,6 +73,7 @@ describe(AssetTable.name, () => {
     const summary = await screen.findByRole('region', {
       name: 'Register summary',
     });
+
     expect(await findCardValue(summary, 'Assets', '4,210')).toBeInTheDocument();
     expect(await findCardValue(summary, 'Operating', '3,800')).toBeInTheDocument();
     expect(await findCardValue(summary, 'Equipment', '18,500')).toBeInTheDocument();
@@ -82,6 +85,7 @@ describe(AssetTable.name, () => {
     const summary = await screen.findByRole('region', {
       name: 'Register summary',
     });
+
     expect(await findCardValue(summary, 'Assets', '4,210')).toBeInTheDocument();
     expect(countsContext.countAllAssets).toHaveBeenCalledOnce();
   });
@@ -171,6 +175,7 @@ describe(AssetTable.name, () => {
     );
     renderTable();
     const nextButton = await screen.findByRole('button', { name: 'Next page' });
+
     await waitFor(() => expect(nextButton).toBeEnabled());
 
     await userEvent.click(nextButton);
@@ -184,6 +189,7 @@ describe(AssetTable.name, () => {
     const previousButton = await screen.findByRole('button', {
       name: 'Previous page',
     });
+
     await waitFor(() => expect(previousButton).toBeEnabled());
 
     await userEvent.click(previousButton);
@@ -237,6 +243,7 @@ describe(AssetTable.name, () => {
 
   it('searches for the text of the page instead of listing', async () => {
     const found = makeAssetPage([makeAssetListItem({ externalId: 'FOUND' })]);
+
     vi.mocked(mockContext.searchAssets).mockResolvedValue(found);
 
     renderTable({ searchQuery: 'pump' });
@@ -267,6 +274,7 @@ describe(AssetTable.name, () => {
     const items = Array.from({ length: ASSET_SEARCH_LIMIT }, (_item, index) =>
       makeAssetListItem({ externalId: `FLOC-${index}` }),
     );
+
     vi.mocked(mockContext.searchAssets).mockResolvedValue(makeAssetPage(items, null, true));
 
     renderTable({ searchQuery: 'pump' });

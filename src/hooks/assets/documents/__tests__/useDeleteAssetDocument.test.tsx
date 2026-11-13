@@ -28,6 +28,7 @@ describe(useDeleteAssetDocument.name, () => {
       deleteAssetDocument: vi.fn(() => Promise.resolve()),
     };
     const QueryWrapper = makeQueryClientWrapper(queryClient);
+
     wrapper = ({ children }) => (
       <UseDeleteAssetDocumentContext.Provider
         value={{ createAssetDocumentService: () => mockContext }}

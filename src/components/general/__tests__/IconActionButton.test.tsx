@@ -15,6 +15,7 @@ describe(IconActionButton.name, () => {
   it('runs the action when pressed', async () => {
     const user = userEvent.setup();
     const onClick = vi.fn();
+
     renderButton({ onClick });
 
     await user.click(screen.getByRole('button', { name: 'View manual' }));
@@ -25,9 +26,11 @@ describe(IconActionButton.name, () => {
   it('does not run the action while disabled', async () => {
     const user = userEvent.setup();
     const onClick = vi.fn();
+
     renderButton({ onClick, isDisabled: true });
 
     const button = screen.getByRole('button', { name: 'View manual' });
+
     await user.click(button);
 
     expect(button).toBeDisabled();
@@ -36,6 +39,7 @@ describe(IconActionButton.name, () => {
 
   it('shows the label as a tooltip when the button is focused', async () => {
     const user = userEvent.setup();
+
     renderButton();
 
     await user.tab();

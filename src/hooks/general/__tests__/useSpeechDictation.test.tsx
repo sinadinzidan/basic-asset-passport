@@ -22,6 +22,7 @@ describe(useSpeechDictation.name, () => {
     engine = {
       start: vi.fn((given: DictationCallbacks) => {
         callbacks = given;
+
         return session;
       }),
     };
@@ -65,6 +66,7 @@ describe(useSpeechDictation.name, () => {
 
   it('stops listening when toggled again', () => {
     const { result } = renderHook(() => useSpeechDictation(), { wrapper });
+
     act(() => result.current.toggle(vi.fn()));
 
     act(() => result.current.toggle(vi.fn()));
@@ -74,6 +76,7 @@ describe(useSpeechDictation.name, () => {
 
   it('stops listening when the recognition ends by itself', () => {
     const { result } = renderHook(() => useSpeechDictation(), { wrapper });
+
     act(() => result.current.toggle(vi.fn()));
 
     act(() => callbacks.onEnd());
@@ -83,9 +86,11 @@ describe(useSpeechDictation.name, () => {
 
   it('can start again after a session that ended while starting', () => {
     const { result } = renderHook(() => useSpeechDictation(), { wrapper });
+
     vi.mocked(engine?.start ?? vi.fn()).mockImplementationOnce((given) => {
       given.onError(DictationFailure.FAILED);
       given.onEnd();
+
       return session;
     });
 
@@ -99,6 +104,7 @@ describe(useSpeechDictation.name, () => {
 
   it('keeps the reason a session failed until the next one starts', () => {
     const { result } = renderHook(() => useSpeechDictation(), { wrapper });
+
     act(() => result.current.toggle(vi.fn()));
 
     act(() => callbacks.onError(DictationFailure.BLOCKED));
@@ -111,6 +117,7 @@ describe(useSpeechDictation.name, () => {
 
   it('cancels on demand, and is quiet when nothing is listening', () => {
     const { result } = renderHook(() => useSpeechDictation(), { wrapper });
+
     act(() => result.current.cancel());
     expect(session.stop).not.toHaveBeenCalled();
 
@@ -123,6 +130,7 @@ describe(useSpeechDictation.name, () => {
   it('drops what is recognised after it is cancelled', () => {
     const onTranscript = vi.fn();
     const { result } = renderHook(() => useSpeechDictation(), { wrapper });
+
     act(() => result.current.toggle(onTranscript));
 
     act(() => result.current.cancel());
@@ -134,6 +142,7 @@ describe(useSpeechDictation.name, () => {
   it('keeps what is recognised after it is toggled off', () => {
     const onTranscript = vi.fn();
     const { result } = renderHook(() => useSpeechDictation(), { wrapper });
+
     act(() => result.current.toggle(onTranscript));
 
     act(() => result.current.toggle(vi.fn()));
@@ -146,6 +155,7 @@ describe(useSpeechDictation.name, () => {
     const { result, unmount } = renderHook(() => useSpeechDictation(), {
       wrapper,
     });
+
     act(() => result.current.toggle(vi.fn()));
 
     unmount();

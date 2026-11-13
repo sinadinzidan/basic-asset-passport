@@ -32,6 +32,7 @@ describe(useAssetDocumentUploadViewModel.name, () => {
       ),
     };
     const QueryWrapper = makeQueryClientWrapper();
+
     wrapper = ({ children }) => (
       <UseUploadAssetDocumentsContext.Provider
         value={{
@@ -94,6 +95,7 @@ describe(useAssetDocumentUploadViewModel.name, () => {
 
   it('uploads only the failed files again on retry', async () => {
     const { result } = renderViewModel();
+
     act(() => result.current.upload([good, bad]));
     await waitFor(() => expect(result.current.failures).toHaveLength(1));
     vi.mocked(documentService.uploadAssetDocument).mockClear();

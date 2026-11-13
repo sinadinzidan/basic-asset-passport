@@ -17,6 +17,7 @@ describe(useFocusedAgent.name, () => {
   beforeEach(() => {
     getAgent = vi.fn(() => Promise.resolve(makeCdfAgent()));
     const agentContext = makeAgentContext({ getAgent });
+
     QueryWrapper = makeQueryClientWrapper();
     wrapper = ({ children }) => (
       <AgentContext.Provider value={agentContext}>

@@ -36,6 +36,7 @@ describe('getAssetDetails', () => {
 
     // Assert
     const request = query.mock.calls[0][0];
+
     expect(request.select).toEqual({
       asset: {
         sources: [
@@ -78,6 +79,7 @@ describe('getAssetDetails', () => {
       name: ' Cooling Water Pump ',
       plantName: '',
     });
+
     vi.spyOn(client.instances, 'query').mockResolvedValue(
       makeQueryResponse({ asset: [assetNode] }),
     );
@@ -105,6 +107,7 @@ describe('getAssetDetails', () => {
       nested: { label: 'Nested' },
       missing: { label: 'Missing' },
     });
+
     stubModelViews(client, [richView]);
     const node = makeNodeInstance(richView, assetIdentifier, {
       count: 12.5,
@@ -116,6 +119,7 @@ describe('getAssetDetails', () => {
       emptyObject: {},
       nested: [['a', 'b'], [], 'c'],
     });
+
     vi.spyOn(client.instances, 'query').mockResolvedValue(makeQueryResponse({ asset: [node] }));
 
     // Act
@@ -135,11 +139,13 @@ describe('getAssetDetails', () => {
       plantCode: {},
       blankLabel: { label: '   ' },
     });
+
     stubModelViews(client, [unnamedView]);
     const node = makeNodeInstance(unnamedView, assetIdentifier, {
       plantCode: 'G307',
       blankLabel: 'x',
     });
+
     vi.spyOn(client.instances, 'query').mockResolvedValue(makeQueryResponse({ asset: [node] }));
 
     const asset = await createAssetDetailsService(client).getAssetDetails(assetIdentifier);
@@ -182,6 +188,7 @@ describe('getAssetDetails', () => {
         },
       },
     };
+
     stubModelViews(client, [viewWithReverseRelation]);
     const query = vi
       .spyOn(client.instances, 'query')
@@ -194,6 +201,7 @@ describe('getAssetDetails', () => {
 
     // Assert
     const { select } = query.mock.calls[0][0];
+
     expect(select.asset.sources?.[0].properties).toEqual(['name', 'plantName']);
   });
 

@@ -17,6 +17,7 @@ describe(useAssetsKPICounts.name, () => {
   beforeEach(() => {
     context = makeAssetsKPICountsContext();
     const QueryWrapper = makeQueryClientWrapper();
+
     wrapper = ({ children }) => (
       <AssetContext.Provider value={client}>
         <UseAssetsKPICountsContext.Provider value={{ createAssetsKPICountService: () => context }}>
@@ -72,6 +73,7 @@ describe(useAssetsKPICounts.name, () => {
 
   it('reports why a count could not be read', async () => {
     const failure = new Error('forbidden');
+
     vi.mocked(context.countAllEquipment).mockRejectedValue(failure);
 
     const { result } = renderHook(() => useAssetsKPICounts(), { wrapper });
@@ -82,6 +84,7 @@ describe(useAssetsKPICounts.name, () => {
   it('reads only the failed counts again on retry', async () => {
     vi.mocked(context.countAllEquipment).mockRejectedValueOnce(new Error('forbidden'));
     const { result } = renderHook(() => useAssetsKPICounts(), { wrapper });
+
     await waitFor(() => expect(result.current.error).not.toBeNull());
 
     act(() => result.current.retry());
@@ -94,6 +97,7 @@ describe(useAssetsKPICounts.name, () => {
 
   it('does not ask again for counts it already holds', async () => {
     const { result, rerender } = renderHook(() => useAssetsKPICounts(), { wrapper });
+
     await waitFor(() => expect(result.current.assets.isLoading).toBe(false));
 
     rerender();

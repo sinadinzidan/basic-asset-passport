@@ -37,6 +37,7 @@ describe(MockAppContent.name, () => {
 
   it('keeps the assistant, whose panel says it is not available', async () => {
     const user = userEvent.setup();
+
     renderContent();
 
     await user.click(screen.getByRole('button', { name: ASSISTANT_LABEL }));

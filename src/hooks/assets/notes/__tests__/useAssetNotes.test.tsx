@@ -25,6 +25,7 @@ describe(useAssetNotes.name, () => {
       listAssetNotes: vi.fn(() => Promise.resolve(makeLimitedList([makeAssetNote()]))),
     };
     const QueryWrapper = makeQueryClientWrapper();
+
     wrapper = ({ children }) => (
       <UseAssetNotesContext.Provider value={{ createAssetNoteService: () => mockContext }}>
         <QueryWrapper>
@@ -45,6 +46,7 @@ describe(useAssetNotes.name, () => {
 
   it('loads the notes of the asset with the injected client', async () => {
     const notes = makeLimitedList([makeAssetNote({ externalId: 'note-2' })]);
+
     vi.mocked(mockContext.listAssetNotes).mockResolvedValue(notes);
 
     const { result } = renderHook(() => useAssetNotes(assetIdentifier), {
@@ -59,6 +61,7 @@ describe(useAssetNotes.name, () => {
     // Arrange
     const firstPage = makeLimitedList([makeAssetNote({ externalId: 'note-1' })], true);
     const longer = deferred<LimitedList<AssetNote>>();
+
     vi.mocked(mockContext.listAssetNotes)
       .mockResolvedValueOnce(firstPage)
       .mockReturnValueOnce(longer.promise);
@@ -66,6 +69,7 @@ describe(useAssetNotes.name, () => {
       wrapper,
       initialProps: { limit: 1 },
     });
+
     await waitFor(() => expect(result.current.data).toEqual(firstPage));
 
     // Act
@@ -82,6 +86,7 @@ describe(useAssetNotes.name, () => {
   it('never shows the notes of another asset while its own load', async () => {
     // Arrange
     const otherAsset = { space: 'asset-space', externalId: 'FLOC-2' };
+
     vi.mocked(mockContext.listAssetNotes)
       .mockResolvedValueOnce(makeLimitedList([makeAssetNote()]))
       .mockReturnValueOnce(deferred<LimitedList<AssetNote>>().promise);
@@ -89,6 +94,7 @@ describe(useAssetNotes.name, () => {
       wrapper,
       initialProps: { asset: assetIdentifier },
     });
+
     await waitFor(() => expect(result.current.isPending).toBe(false));
 
     // Act
@@ -115,6 +121,7 @@ describe(useAssetNotes.name, () => {
         useAssetNotes({ space: 'asset-space', externalId }),
       { wrapper, initialProps: { externalId: 'FLOC-1' } },
     );
+
     await waitFor(() => expect(result.current.isPending).toBe(false));
 
     rerender({ externalId: 'FLOC-2' });

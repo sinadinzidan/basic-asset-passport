@@ -21,6 +21,7 @@ describe(useNavigationState.name, () => {
     const { result } = renderHook(
       () => {
         renderCount += 1;
+
         return {
           isOpen: useNavigationState((store) => store.navigationState.isAssistantOpen === true),
           actions: useNavigationState((store) => store.actions),

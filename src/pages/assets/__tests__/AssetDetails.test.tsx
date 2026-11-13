@@ -64,6 +64,7 @@ describe(AssetDetails.name, () => {
       ),
     };
     const QueryWrapper = makeQueryClientWrapper();
+
     wrapper = ({ children }) => (
       <NavigationStoreContext.Provider value={store}>
         <UseAssetDetailsContext.Provider value={{ createAssetDetailsService: () => mockContext }}>
@@ -114,6 +115,7 @@ describe(AssetDetails.name, () => {
 
   it('shows a status other than Operating as neutral', async () => {
     const details = makeDetails();
+
     vi.mocked(mockContext.getAssetDetails).mockResolvedValue(
       makeInstanceDetails({
         properties: details.properties.map((property) =>
@@ -129,6 +131,7 @@ describe(AssetDetails.name, () => {
     const pill = await screen.findByText('IN SERVICE', {
       selector: '[data-slot="badge"]',
     });
+
     expect(pill).toHaveAttribute('data-tone', 'neutral');
   });
 

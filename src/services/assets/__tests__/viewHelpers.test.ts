@@ -40,6 +40,7 @@ describe(listAssetPassportViews.name, () => {
   it('skips views that are only references', async () => {
     const client = makeOfflineSdkClient();
     const view = makeViewDefinition('Asset');
+
     vi.spyOn(client.dataModels, 'retrieve').mockResolvedValue({
       items: [
         {
@@ -53,6 +54,7 @@ describe(listAssetPassportViews.name, () => {
 
   it('fails when the data model does not exist', async () => {
     const client = makeOfflineSdkClient();
+
     vi.spyOn(client.dataModels, 'retrieve').mockResolvedValue({ items: [] });
 
     await expect(listAssetPassportViews(client)).rejects.toThrow(
@@ -62,6 +64,7 @@ describe(listAssetPassportViews.name, () => {
 
   it('propagates a failed lookup', async () => {
     const client = makeOfflineSdkClient();
+
     vi.spyOn(client.dataModels, 'retrieve').mockRejectedValue(new Error('model unavailable'));
 
     await expect(listAssetPassportViews(client)).rejects.toThrow('model unavailable');
@@ -81,6 +84,7 @@ describe(listAssetPassportViews.name, () => {
     const firstClient = makeOfflineSdkClient();
     const secondClient = makeOfflineSdkClient();
     const noteView = makeViewDefinition('Note');
+
     stubModelViews(firstClient, [makeViewDefinition('Asset')]);
     stubModelViews(secondClient, [noteView]);
 
@@ -95,6 +99,7 @@ describe(listAssetPassportViews.name, () => {
     const retrieve = vi
       .spyOn(client.dataModels, 'retrieve')
       .mockRejectedValueOnce(new Error('model unavailable'));
+
     await expect(listAssetPassportViews(client)).rejects.toThrow('model unavailable');
     stubModelViews(client, views);
 
@@ -107,6 +112,7 @@ describe(findAssetPassportView.name, () => {
   it('finds a view of the data model by its external id', async () => {
     const client = makeOfflineSdkClient();
     const noteView = makeViewDefinition('Note');
+
     stubModelViews(client, [makeViewDefinition('Asset'), noteView]);
 
     await expect(findAssetPassportView(client, 'Note')).resolves.toEqual(noteView);
@@ -114,6 +120,7 @@ describe(findAssetPassportView.name, () => {
 
   it('fails when the data model has no such view', async () => {
     const client = makeOfflineSdkClient();
+
     stubModelViews(client, [makeViewDefinition('Asset')]);
 
     await expect(findAssetPassportView(client, 'Note')).rejects.toThrow(

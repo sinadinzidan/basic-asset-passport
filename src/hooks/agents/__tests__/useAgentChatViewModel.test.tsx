@@ -29,15 +29,18 @@ describe(useAgentChatViewModel.name, () => {
   beforeEach(() => {
     idCount = 0;
     const chatStore = createAgentChatStore();
+
     chat = vi.fn(() => Promise.resolve({ text: 'It is fouled.', cursor: 'c1' }));
     getAgent = vi.fn(() => Promise.resolve(makeCdfAgent()));
     const agentContext = makeAgentContext({ chat, getAgent });
+
     queryClient = makeTestQueryClient();
     queryClient.setQueryData(
       getAgentQueryKey(agentContext.project, makeCdfAgent().externalId),
       makeCdfAgent(),
     );
     const QueryWrapper = makeQueryClientWrapper(queryClient);
+
     context = {
       createMessageId: () => `message-${++idCount}`,
     };
@@ -139,6 +142,7 @@ describe(useAgentChatViewModel.name, () => {
     // Arrange
     vi.mocked(chat).mockRejectedValueOnce(new Error('forbidden'));
     const { result } = renderHook(() => useAgentChatViewModel(), { wrapper });
+
     await act(async () => {
       await result.current.send('Hi');
     });
@@ -163,6 +167,7 @@ describe(useAgentChatViewModel.name, () => {
 
   it('asks nothing again when no question failed', async () => {
     const { result } = renderHook(() => useAgentChatViewModel(), { wrapper });
+
     await act(async () => {
       await result.current.send('Hi');
     });
@@ -188,6 +193,7 @@ describe(useAgentChatViewModel.name, () => {
   it('ignores a second question while waiting for the reply', async () => {
     vi.mocked(chat).mockReturnValue(new Promise(() => {}));
     const { result } = renderHook(() => useAgentChatViewModel(), { wrapper });
+
     act(() => {
       void result.current.send('First');
     });
@@ -202,6 +208,7 @@ describe(useAgentChatViewModel.name, () => {
 
   it('starts a new chat', async () => {
     const { result } = renderHook(() => useAgentChatViewModel(), { wrapper });
+
     await act(async () => {
       await result.current.send('Hi');
     });

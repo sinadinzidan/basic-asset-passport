@@ -34,6 +34,7 @@ describe(AssetTopbar.name, () => {
     };
     const QueryWrapper = makeQueryClientWrapper();
     const themeModeContext = { themeModeStore: makeThemeModeStore() };
+
     wrapper = ({ children }) => (
       <NavigationStoreContext.Provider value={store}>
         <UseThemeModeViewModelContext.Provider value={themeModeContext}>
@@ -83,6 +84,7 @@ describe(AssetTopbar.name, () => {
 
     const breadcrumb = screen.getByRole('navigation', { name: 'Breadcrumb' });
     const items = within(breadcrumb).getAllByRole('listitem');
+
     expect(within(items[0]).getByRole('button', { name: 'Assets' })).toBeInTheDocument();
     expect(await within(breadcrumb).findByText('Cooling Water Pump')).toHaveAttribute(
       'aria-current',
@@ -92,6 +94,7 @@ describe(AssetTopbar.name, () => {
 
   it('goes back to the register from the first step of the breadcrumb', async () => {
     const user = userEvent.setup();
+
     renderWithSelectedAsset();
 
     await user.click(screen.getByRole('button', { name: 'Assets' }));

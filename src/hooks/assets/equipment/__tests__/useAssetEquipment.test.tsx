@@ -25,6 +25,7 @@ describe(useAssetEquipment.name, () => {
       ),
     };
     const QueryWrapper = makeQueryClientWrapper();
+
     wrapper = ({ children }) => (
       <UseAssetEquipmentContext.Provider value={{ createAssetEquipmentService: () => mockContext }}>
         <QueryWrapper>
@@ -70,6 +71,7 @@ describe(useAssetEquipment.name, () => {
       wrapper,
       initialProps: { identifier: assetIdentifier },
     });
+
     await waitFor(() => expect(result.current.isPending).toBe(false));
     vi.mocked(mockContext.listAssetEquipment).mockReturnValue(new Promise(() => undefined));
 

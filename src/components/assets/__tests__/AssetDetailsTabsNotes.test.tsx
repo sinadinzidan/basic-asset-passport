@@ -38,6 +38,7 @@ describe(`${AssetDetailsTabs.name} notes`, () => {
       selectedAsset: { space: asset.space, externalId: asset.externalId },
     });
     const client = makeMockClient();
+
     listContext = {
       listAssetNotes: vi.fn(() => Promise.resolve(makeLimitedList([makeAssetNote()]))),
     };
@@ -51,6 +52,7 @@ describe(`${AssetDetailsTabs.name} notes`, () => {
       deleteAssetNote: vi.fn(() => Promise.resolve()),
     };
     const QueryWrapper = makeQueryClientWrapper();
+
     wrapper = ({ children }) => (
       <NavigationStoreContext.Provider value={store}>
         <UseAssetNotesContext.Provider value={{ createAssetNoteService: () => listContext }}>
@@ -108,6 +110,7 @@ describe(`${AssetDetailsTabs.name} notes`, () => {
 
   it('switches to the notes tab when it is chosen', async () => {
     const user = userEvent.setup();
+
     render(<AssetDetailsTabs asset={asset} tabCounts={NO_TAB_COUNTS} />, { wrapper });
 
     await user.click(screen.getByRole('tab', { name: 'Notes' }));

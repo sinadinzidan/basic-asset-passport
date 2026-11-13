@@ -31,6 +31,7 @@ describe(useAssetNoteListViewModel.name, () => {
       deleteAssetNote: vi.fn(() => Promise.resolve()),
     };
     const QueryWrapper = makeQueryClientWrapper();
+
     wrapper = ({ children }) => (
       <UseAssetNotesContext.Provider value={{ createAssetNoteService: () => noteService }}>
         <UseDeleteAssetNoteContext.Provider value={{ createAssetNoteService: () => noteService }}>
@@ -68,6 +69,7 @@ describe(useAssetNoteListViewModel.name, () => {
 
   it('reads a longer list when more notes are asked for', async () => {
     const { result } = renderViewModel();
+
     await waitFor(() => expect(result.current.hasMore).toBe(true));
 
     act(() => result.current.showMore());
@@ -82,6 +84,7 @@ describe(useAssetNoteListViewModel.name, () => {
 
   it('deletes a note by its identity only', async () => {
     const { result } = renderViewModel();
+
     await waitFor(() => expect(result.current.notes).toHaveLength(1));
 
     await act(() => result.current.deleteNote(makeAssetNote()));
@@ -95,6 +98,7 @@ describe(useAssetNoteListViewModel.name, () => {
   it('says which note is being deleted while the delete runs', async () => {
     vi.mocked(noteService.deleteAssetNote).mockReturnValue(new Promise(() => {}));
     const { result } = renderViewModel();
+
     await waitFor(() => expect(result.current.notes).toHaveLength(1));
 
     act(() => void result.current.deleteNote(makeAssetNote()));
@@ -106,6 +110,7 @@ describe(useAssetNoteListViewModel.name, () => {
   it('keeps why a note could not be deleted, without throwing', async () => {
     vi.mocked(noteService.deleteAssetNote).mockRejectedValue(new Error('No write access.'));
     const { result } = renderViewModel();
+
     await waitFor(() => expect(result.current.notes).toHaveLength(1));
 
     await act(() => result.current.deleteNote(makeAssetNote()));
@@ -116,6 +121,7 @@ describe(useAssetNoteListViewModel.name, () => {
   it('reports a failed load with its error and reads again on retry', async () => {
     vi.mocked(noteService.listAssetNotes).mockRejectedValueOnce(new Error('no access'));
     const { result } = renderViewModel();
+
     await waitFor(() => expect(result.current.isError).toBe(true));
     expect(result.current.error).toEqual(new Error('no access'));
 

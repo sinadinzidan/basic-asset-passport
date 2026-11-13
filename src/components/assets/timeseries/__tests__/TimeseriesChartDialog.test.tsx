@@ -30,6 +30,7 @@ describe(TimeseriesChartDialog.name, () => {
       project: 'p',
       getTrends: vi.fn(() => Promise.resolve([])),
     };
+
     source = {
       adapter: createTimeseriesChartAdapter(client, [pressure], {
         sourceName: 'CDF time series',
@@ -59,11 +60,13 @@ describe(TimeseriesChartDialog.name, () => {
     renderDialog(createChartConfiguration(['ts:PI.1'], { title: 'Pressure' }));
 
     const dialog = screen.getByRole('dialog', { name: 'Pressure chart' });
+
     expect(dialog).toHaveAccessibleDescription('The timeseries of FLOC-1 in the chart workspace.');
   });
 
   it('closes from the chart', async () => {
     const user = userEvent.setup();
+
     renderDialog(createChartConfiguration(['ts:PI.1'], { title: 'Pressure' }));
 
     await user.click(screen.getByRole('button', { name: 'Close chart' }));
@@ -73,6 +76,7 @@ describe(TimeseriesChartDialog.name, () => {
 
   it('closes on Escape', async () => {
     const user = userEvent.setup();
+
     renderDialog(createChartConfiguration(['ts:PI.1'], { title: 'Pressure' }));
 
     await user.keyboard('{Escape}');

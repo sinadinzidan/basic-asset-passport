@@ -19,6 +19,7 @@ describe(AssetsKPIs.name, () => {
   beforeEach(() => {
     context = makeAssetsKPICountsContext();
     const QueryWrapper = makeQueryClientWrapper();
+
     wrapper = ({ children }) => (
       <AssetContext.Provider value={client}>
         <UseAssetsKPICountsContext.Provider value={{ createAssetsKPICountService: () => context }}>
@@ -32,6 +33,7 @@ describe(AssetsKPIs.name, () => {
     render(<AssetsKPIs />, { wrapper });
 
     const summary = screen.getByRole('region', { name: 'Register summary' });
+
     expect(within(summary).getAllByRole('group')).toHaveLength(3);
     expect(
       await within(within(summary).getByRole('group', { name: 'Assets' })).findByText('4,210'),
@@ -76,6 +78,7 @@ describe(AssetsKPIs.name, () => {
     render(<AssetsKPIs />, { wrapper });
 
     const alert = await screen.findByRole('alert');
+
     expect(within(alert).getByText('Some counts could not be loaded')).toBeInTheDocument();
     expect(within(alert).getByText('Reason: forbidden')).toBeInTheDocument();
   });

@@ -8,6 +8,7 @@ describe(AssetDetailsSkeleton.name, () => {
     render(<AssetDetailsSkeleton />);
 
     const status = screen.getByRole('status');
+
     expect(status).toHaveTextContent('Loading asset and equipment properties...');
     expect(status).toHaveAttribute('aria-busy', 'true');
   });

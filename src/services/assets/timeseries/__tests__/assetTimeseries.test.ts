@@ -44,6 +44,7 @@ describe('listAssetTimeseries', () => {
       externalId: 'PI_Timeseries',
       version: 'v1',
     };
+
     expect(query).toHaveBeenCalledWith({
       with: {
         timeseries: {
@@ -90,6 +91,7 @@ describe('listAssetTimeseries', () => {
       'v1',
       'sp-dm-idi-rmdm',
     );
+
     stubModelViews(client, [unnamedView]);
     const query = vi
       .spyOn(client.instances, 'query')

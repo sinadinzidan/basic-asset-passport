@@ -24,6 +24,7 @@ describe(useAssetNoteAddViewModel.name, () => {
   beforeEach(() => {
     noteService = { createAssetNote: vi.fn(() => Promise.resolve()) };
     const QueryWrapper = makeQueryClientWrapper();
+
     wrapper = ({ children }) => (
       <UseAddAssetNoteContext.Provider value={{ createAssetNoteService: () => noteService }}>
         <QueryWrapper>
@@ -82,6 +83,7 @@ describe(useAssetNoteAddViewModel.name, () => {
     vi.mocked(noteService.createAssetNote).mockRejectedValue(new Error('No write access.'));
     const onSaved = vi.fn();
     const { result } = renderViewModel();
+
     act(() => result.current.save(note, onSaved));
     await waitFor(() => expect(result.current.saveErrorMessage).toBe('No write access.'));
     expect(onSaved).not.toHaveBeenCalled();

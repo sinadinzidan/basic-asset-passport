@@ -33,6 +33,7 @@ describe(AssetNoteItem.name, () => {
     updateContext = { updateAssetNote: vi.fn(() => Promise.resolve()) };
     onDelete = vi.fn(() => Promise.resolve());
     const QueryWrapper = makeQueryClientWrapper();
+
     wrapper = ({ children }) => (
       <UseUpdateAssetNoteContext.Provider value={{ createAssetNoteService: () => updateContext }}>
         <QueryWrapper>
@@ -83,6 +84,7 @@ describe(AssetNoteItem.name, () => {
 
   it('turns into a form holding the note when it is edited', async () => {
     const user = userEvent.setup();
+
     renderItem();
 
     await user.click(screen.getByRole('button', { name: 'Edit Seal inspection' }));
@@ -93,6 +95,7 @@ describe(AssetNoteItem.name, () => {
 
   it('writes the edit to that note and goes back to showing it', async () => {
     const user = userEvent.setup();
+
     renderItem();
     await user.click(screen.getByRole('button', { name: 'Edit Seal inspection' }));
     await user.clear(screen.getByLabelText(/Title/));
@@ -112,6 +115,7 @@ describe(AssetNoteItem.name, () => {
   it('keeps the form with the reason when the edit cannot be saved', async () => {
     vi.mocked(updateContext.updateAssetNote).mockRejectedValue(new Error('No write access.'));
     const user = userEvent.setup();
+
     renderItem();
     await user.click(screen.getByRole('button', { name: 'Edit Seal inspection' }));
 
@@ -124,6 +128,7 @@ describe(AssetNoteItem.name, () => {
   it('drops a failed edit when it is cancelled', async () => {
     vi.mocked(updateContext.updateAssetNote).mockRejectedValue(new Error('No write access.'));
     const user = userEvent.setup();
+
     renderItem();
     await user.click(screen.getByRole('button', { name: 'Edit Seal inspection' }));
     await user.click(screen.getByRole('button', { name: 'Save' }));
@@ -138,9 +143,11 @@ describe(AssetNoteItem.name, () => {
   it('asks before deleting, then hands the note to its list', async () => {
     const user = userEvent.setup();
     const note = makeAssetNote();
+
     renderItem({ note });
     await user.click(screen.getByRole('button', { name: 'Delete Seal inspection' }));
     const dialog = screen.getByRole('dialog', { name: 'Delete note?' });
+
     expect(dialog).toHaveTextContent(
       'Seal inspection will be deleted permanently. This cannot be undone.',
     );
@@ -154,6 +161,7 @@ describe(AssetNoteItem.name, () => {
 
   it('keeps the note when the delete is cancelled', async () => {
     const user = userEvent.setup();
+
     renderItem();
     await user.click(screen.getByRole('button', { name: 'Delete Seal inspection' }));
 

@@ -15,7 +15,9 @@ function renderPagination(overrides: Partial<Parameters<typeof CursorPagination>
     onNextPage: vi.fn(),
     ...overrides,
   };
+
   render(<CursorPagination {...properties} />);
+
   return properties;
 }
 

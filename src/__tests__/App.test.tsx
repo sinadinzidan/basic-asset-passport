@@ -44,6 +44,7 @@ describe(App.name, () => {
     renderApp(deps);
 
     const header = await screen.findByRole('banner');
+
     expect(header).not.toHaveTextContent('Asset Passport');
     expect(screen.getByRole('img', { name: 'ADNOC Gas logo' })).toHaveAttribute(
       'src',
@@ -54,6 +55,7 @@ describe(App.name, () => {
 
   it('shows a loading status while connecting to the host', () => {
     const { deps } = makeDeps();
+
     vi.mocked(deps.connectToHostApp).mockReturnValue(new Promise(() => {}));
 
     renderApp(deps);
@@ -64,6 +66,7 @@ describe(App.name, () => {
   it('tells the user to refresh when the host connection fails', async () => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
     const { deps } = makeDeps();
+
     vi.mocked(deps.connectToHostApp).mockRejectedValue(new Error('no host'));
 
     renderApp(deps);
@@ -83,6 +86,7 @@ describe(App.name, () => {
     renderApp(deps);
 
     const header = await screen.findByRole('banner');
+
     expect(await within(header).findByText('Cooling Water Pump')).toBeInTheDocument();
     expect(
       within(header).queryByRole('button', {
@@ -241,6 +245,7 @@ function renderApp(deps: AppDeps) {
 
 function makeMockContexts(): MockContexts {
   const assetContext = makeMockAssetContext(0);
+
   return {
     assetContext,
     documentFileContext: makeMockDocumentFileContext(assetContext),
@@ -281,6 +286,7 @@ function makeDeps(initialState?: string) {
         { assets: 'next-page-cursor' },
       ),
     );
+
   vi.spyOn(client.instances, 'aggregate').mockResolvedValue({
     items: [{ instanceType: 'node', aggregates: [{ aggregate: 'count', value: 1 }] }],
   });

@@ -19,6 +19,7 @@ describe(AgentProvider.name, () => {
 
   function AgentProbe() {
     const agentContext = useAgentContext();
+
     seenContexts.push(agentContext);
 
     return <p>Agents of {agentContext.project}</p>;
@@ -43,6 +44,7 @@ describe(AgentProvider.name, () => {
     const post = vi
       .spyOn(client, 'post')
       .mockResolvedValue({ data: { items: [] }, status: 200, headers: {} });
+
     renderProvider();
     await screen.findByText('Agents of my-project');
 
@@ -58,6 +60,7 @@ describe(AgentProvider.name, () => {
 
   it('keeps handing out the same context while the client stays the same', async () => {
     const { rerender } = renderProvider();
+
     await screen.findByText('Agents of my-project');
 
     rerender(

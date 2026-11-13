@@ -16,6 +16,7 @@ describe(useAgent.name, () => {
     getAgent = vi.fn(() => Promise.resolve(makeCdfAgent()));
     const agentContext = makeAgentContext({ getAgent });
     const QueryWrapper = makeQueryClientWrapper();
+
     wrapper = ({ children }) => (
       <AgentContext.Provider value={agentContext}>
         <QueryWrapper>{children}</QueryWrapper>

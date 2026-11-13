@@ -31,6 +31,7 @@ describe(makeMockTimeseriesContext.name, () => {
     const [trend] = await client.getTrends([first], window);
 
     const timestamps = trend.points.map((point) => point.timestamp);
+
     expect(timestamps[0]).toBe(window.from);
     expect(timestamps[timestamps.length - 1]).toBe(window.to);
     expect(timestamps).toHaveLength(29);

@@ -16,6 +16,7 @@ describe(useSuccessToast.name, () => {
 
     // Act
     const { result } = renderHook(() => useSuccessToast(), { wrapper });
+
     result.current('Saved.');
 
     // Assert

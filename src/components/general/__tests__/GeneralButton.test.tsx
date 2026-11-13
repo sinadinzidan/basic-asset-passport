@@ -22,6 +22,7 @@ describe('GeneralButton', () => {
     render(<GeneralButton className="w-full">Save</GeneralButton>);
 
     const button = screen.getByRole('button', { name: 'Save' });
+
     expect(button).toHaveClass('hud-button');
     expect(button).toHaveClass('w-full');
   });
@@ -30,6 +31,7 @@ describe('GeneralButton', () => {
     render(<GeneralButton>Save</GeneralButton>);
 
     const button = screen.getByRole('button', { name: 'Save' });
+
     expect(button).toHaveAttribute('data-variant', 'default');
     expect(button).toHaveAttribute('data-size', 'default');
   });
@@ -42,12 +44,14 @@ describe('GeneralButton', () => {
     );
 
     const button = screen.getByRole('button', { name: 'Delete' });
+
     expect(button).toHaveAttribute('data-variant', 'destructive');
     expect(button).toHaveAttribute('data-size', 'icon-sm');
   });
 
   it('forwards its reference to the button element', () => {
     const reference = createRef<HTMLElement>();
+
     render(<GeneralButton ref={reference}>Save</GeneralButton>);
 
     expect(reference.current).toBe(screen.getByRole('button', { name: 'Save' }));
@@ -55,6 +59,7 @@ describe('GeneralButton', () => {
 
   it('calls onClick when pressed', async () => {
     const onClick = vi.fn();
+
     render(<GeneralButton onClick={onClick}>Save</GeneralButton>);
 
     await userEvent.click(screen.getByRole('button', { name: 'Save' }));
@@ -64,6 +69,7 @@ describe('GeneralButton', () => {
 
   it('does not call onClick when disabled', async () => {
     const onClick = vi.fn();
+
     render(
       <GeneralButton disabled onClick={onClick}>
         Save

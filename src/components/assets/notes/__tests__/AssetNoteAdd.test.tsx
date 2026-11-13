@@ -26,6 +26,7 @@ describe(AssetNoteAdd.name, () => {
       createAssetNote: vi.fn(() => Promise.resolve()),
     };
     const QueryWrapper = makeQueryClientWrapper();
+
     wrapper = ({ children }) => (
       <UseAddAssetNoteContext.Provider value={{ createAssetNoteService: () => mockContext }}>
         <QueryWrapper>
@@ -41,8 +42,10 @@ describe(AssetNoteAdd.name, () => {
 
   async function openDialog() {
     const user = userEvent.setup();
+
     render(<AssetNoteAdd />, { wrapper });
     await user.click(screen.getByRole('button', { name: 'Add note' }));
+
     return user;
   }
 
@@ -65,6 +68,7 @@ describe(AssetNoteAdd.name, () => {
     const user = await openDialog();
 
     const save = await screen.findByRole('button', { name: 'Save note' });
+
     expect(save).toBeDisabled();
 
     await user.type(screen.getByLabelText('Title'), 'Inspection');
@@ -88,6 +92,7 @@ describe(AssetNoteAdd.name, () => {
 
   it('starts empty the next time the dialog opens', async () => {
     const user = await openDialog();
+
     await user.type(await screen.findByLabelText('Title'), 'Inspection');
     await user.click(screen.getByRole('button', { name: 'Save note' }));
     await vi.waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
@@ -121,6 +126,7 @@ describe(AssetNoteAdd.name, () => {
 
   it('drops what was typed when the dialog is cancelled', async () => {
     const user = await openDialog();
+
     await user.type(await screen.findByLabelText('Title'), 'Inspection');
 
     await user.click(screen.getByRole('button', { name: 'Cancel' }));

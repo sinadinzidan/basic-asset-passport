@@ -67,6 +67,7 @@ describe(NavigationProvider.name, () => {
 
   it('logs a failed sync without losing the navigation', async () => {
     const error = new Error('sync failed');
+
     vi.mocked(api.syncInternalState).mockRejectedValue(error);
     renderProvider(api);
 
@@ -79,6 +80,7 @@ describe(NavigationProvider.name, () => {
   it('logs a failed sync to the console by default', async () => {
     const error = new Error('sync failed');
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+
     vi.mocked(api.syncInternalState).mockRejectedValue(error);
     render(
       <NavigationProvider api={api}>

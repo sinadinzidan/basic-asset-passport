@@ -59,6 +59,7 @@ describe(limitCdfCalls.name, () => {
       .mockResolvedValue({ userIdentifier: 'u', lastUpdatedTime: 0 });
 
     const profile = limitCdfCalls(client, runner).profiles.me();
+
     await new Promise((resolve) => setTimeout(resolve, 0));
     expect(me).not.toHaveBeenCalled();
 

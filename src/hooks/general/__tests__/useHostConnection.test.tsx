@@ -20,6 +20,7 @@ describe(useHostConnection.name, () => {
     const { result } = renderHook(() => useHostConnection(() => Promise.resolve(connection)));
 
     let connected: HostConnection | undefined;
+
     await act(async () => {
       connected = await result.current.getHostConnection();
     });
@@ -56,5 +57,6 @@ describe(useHostConnection.name, () => {
 
 function makeConnection(initialState?: string): HostConnection {
   const api = { syncInternalState: vi.fn() } as Partial<HostAppAPI> as HostAppAPI;
+
   return initialState === undefined ? { api } : { api, initialState };
 }

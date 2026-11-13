@@ -77,6 +77,7 @@ describe(createThemeModeStore.name, () => {
   it('tells its subscribers when the mode changes', () => {
     const { store } = setup();
     const onChange = vi.fn();
+
     store.subscribe(onChange);
 
     store.setThemeMode(ThemeMode.LIGHT);
@@ -87,6 +88,7 @@ describe(createThemeModeStore.name, () => {
   it('does not tell its subscribers when the mode is set to what it already is', () => {
     const { store } = setup();
     const onChange = vi.fn();
+
     store.subscribe(onChange);
 
     store.setThemeMode(ThemeMode.DARK);
