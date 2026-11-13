@@ -31,12 +31,14 @@ class CdfTimeseriesContext implements TimeseriesContextType {
     options: TimeseriesTrendOptions = {},
   ): Promise<TimeseriesTrend[]> => {
     const chunks: TimeseriesIdentifier[][] = [];
+
     for (let start = 0; start < identifiers.length; start += TREND_REQUEST_CHUNK_SIZE) {
       chunks.push(identifiers.slice(start, start + TREND_REQUEST_CHUNK_SIZE));
     }
 
     if (options.isStrict) {
       const trends = await Promise.all(chunks.map((chunk) => this.requestChunk(chunk, window)));
+
       return trends.flat();
     }
 
@@ -85,15 +87,18 @@ function toFailedTrend({ space, externalId }: TimeseriesIdentifier): TimeseriesT
 
 function readTrends(data: unknown): TimeseriesTrend[] {
   const response = DatapointsResponseSchema.safeParse(data);
+
   if (!response.success) return [];
 
   return response.data.items.flatMap((item): TimeseriesTrend[] => {
     const parsed = DatapointsItemSchema.safeParse(item);
+
     if (!parsed.success) return [];
 
     const points = parsed.data.datapoints
       .flatMap((datapoint): TimeseriesPoint[] => {
         const reading = AverageDatapointSchema.safeParse(datapoint);
+
         return reading.success
           ? [{ timestamp: reading.data.timestamp, value: reading.data.average }]
           : [];

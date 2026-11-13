@@ -33,6 +33,7 @@ export function DocumentPreview({ document }: DocumentPreviewProps) {
 
   function handleAnnotationClick(annotation: DocumentAnnotation, anchor: Element): void {
     if (annotation.resourceType !== ASSET_RESOURCE_TYPE || !annotation.linkedResource) return;
+
     setLinkedTarget({ asset: annotation.linkedResource, anchor });
   }
 

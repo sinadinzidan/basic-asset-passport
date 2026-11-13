@@ -271,6 +271,40 @@ export default tseslint.config(
       'unicorn/prevent-abbreviations': 'off',
     },
   },
+  {
+    // Statements are grouped by what they do, with one blank line between groups: declarations, then
+    // guards and loops, then the return. Tests follow Arrange / Act / Assert and are left out.
+    files: ['src/**/*.{ts,tsx}'],
+    ignores: ['**/__tests__/**'],
+    rules: {
+      'padding-line-between-statements': [
+        'error',
+        { blankLine: 'always', prev: '*', next: 'return' },
+        { blankLine: 'always', prev: ['const', 'let'], next: '*' },
+        { blankLine: 'any', prev: ['const', 'let'], next: ['const', 'let'] },
+        { blankLine: 'always', prev: '*', next: ['if', 'for', 'while', 'try', 'switch'] },
+        { blankLine: 'always', prev: ['if', 'for', 'while', 'try', 'switch'], next: '*' },
+      ],
+    },
+  },
+  {
+    // Outside components and hooks (services, helpers, stores, schemas) a statement that spans several
+    // lines is a group of its own. In a component or hook, several multi-line hook calls are one group.
+    files: ['src/**/*.ts'],
+    ignores: ['**/__tests__/**', 'src/hooks/**'],
+    rules: {
+      'padding-line-between-statements': [
+        'error',
+        { blankLine: 'always', prev: '*', next: 'return' },
+        { blankLine: 'always', prev: ['const', 'let'], next: '*' },
+        { blankLine: 'any', prev: ['const', 'let'], next: ['const', 'let'] },
+        { blankLine: 'always', prev: '*', next: ['if', 'for', 'while', 'try', 'switch'] },
+        { blankLine: 'always', prev: ['if', 'for', 'while', 'try', 'switch'], next: '*' },
+        { blankLine: 'always', prev: ['multiline-expression', 'multiline-const'], next: '*' },
+        { blankLine: 'always', prev: '*', next: ['multiline-expression', 'multiline-const'] },
+      ],
+    },
+  },
   // Must be last: turns off rules that conflict with Prettier.
   prettier,
 );

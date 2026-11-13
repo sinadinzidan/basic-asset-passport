@@ -27,6 +27,7 @@ export function isNonNumericTimeseries(timeseries: AssetInstanceDetails): boolea
 export function getTimeseriesUnit(timeseries: AssetInstanceDetails): string | null {
   for (const identifier of TIMESERIES_UNIT_PROPERTIES) {
     const unit = getPropertyValue(timeseries, identifier);
+
     if (unit) return unit;
   }
 
@@ -38,6 +39,7 @@ export function getTimeseriesDisplayProperties(
 ): AssetPropertyDisplay[] {
   const shown = TIMESERIES_DISPLAY_PROPERTIES.flatMap((identifier) => {
     const property = timeseries.properties.find((candidate) => candidate.identifier === identifier);
+
     return property ? [property] : [];
   });
 

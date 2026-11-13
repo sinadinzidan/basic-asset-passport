@@ -72,6 +72,7 @@ export function getTimeseriesThresholds(timeseries: AssetInstanceDetails): Chart
     const text = getPropertyValue(timeseries, identifier);
 
     const value = text === undefined || text.trim() === '' ? Number.NaN : Number(text);
+
     if (!Number.isFinite(value)) return [];
 
     return [

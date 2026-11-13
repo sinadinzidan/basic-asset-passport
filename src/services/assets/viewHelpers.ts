@@ -16,6 +16,7 @@ export function listAssetPassportViews(client: AssetContextType): Promise<ViewDe
   }
 
   const views = retrieveAssetPassportViews(client);
+
   viewsByClient.set(client, views);
   views.catch(() => viewsByClient.delete(client));
 
@@ -33,6 +34,7 @@ async function retrieveAssetPassportViews(client: AssetContextType): Promise<Vie
     ],
     { inlineViews: true },
   );
+
   const [model] = items;
 
   if (!model) {

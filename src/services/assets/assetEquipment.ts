@@ -27,6 +27,7 @@ class CdfAssetEquipmentService implements AssetEquipmentService {
     const equipmentView = await findAssetPassportView(this.client, MODEL.views.equipment);
     const viewReference = toViewReference(equipmentView);
     const mappedProperties = getMappedProperties(equipmentView);
+
     const response = await this.client.instances.query({
       with: {
         equipment: {

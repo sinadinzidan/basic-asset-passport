@@ -54,6 +54,7 @@ export function useUploadAssetDocuments(assetIdentifier: AssetIdentifier) {
         files.map(async (file): Promise<DocumentUploadResult> => {
           try {
             await documentService.uploadAssetDocument(fileClient, assetIdentifier, file);
+
             return { fileName: file.name, errorMessage: null };
           } catch (error) {
             return {
@@ -65,6 +66,7 @@ export function useUploadAssetDocuments(assetIdentifier: AssetIdentifier) {
       ),
     onSuccess: (results) => {
       const uploadedCount = results.filter((result) => result.errorMessage === null).length;
+
       if (uploadedCount > 0) {
         showSuccessToast(formatDocumentsUploadedMessage(uploadedCount));
       }

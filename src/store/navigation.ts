@@ -19,6 +19,7 @@ export function createNavigationStore({
         ...get().navigationState,
         ...patch,
       };
+
       const navigationState: NavigationState = {
         ...rest,
         ...(searchQuery ? { searchQuery } : {}),
@@ -36,6 +37,7 @@ export function createNavigationStore({
       actions: {
         changeSearchQuery: (searchQuery) => {
           if (searchQuery === (get().navigationState.searchQuery ?? '')) return;
+
           update({ searchQuery, registerCursors: undefined });
         },
         goToNextRegisterPage: (nextCursor) =>
@@ -57,6 +59,7 @@ export function createNavigationStore({
           update({ timeseriesChart: timeseriesChart ?? undefined }),
         changeAssistantOpen: (isOpen) => {
           if (isOpen === Boolean(get().navigationState.isAssistantOpen)) return;
+
           update({ isAssistantOpen: isOpen });
         },
       },

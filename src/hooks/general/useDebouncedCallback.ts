@@ -25,6 +25,7 @@ export function useDebouncedCallback<CallbackArguments extends unknown[]>(
 
   const cancel = useCallback((): void => {
     if (timerReference.current === undefined) return;
+
     clearTimer(timerReference.current);
     timerReference.current = undefined;
   }, [clearTimer]);

@@ -102,9 +102,12 @@ function answerCount(request: AggregationRequest, stored: StoredInstances): Aggr
 
 function answerCountsByStatus(): AggregationResponse {
   const countsByStatus = new Map<string, number>();
+
   for (const asset of MOCK_ASSETS) {
     const status = readMockAssetStatus(asset);
+
     if (status === undefined) continue;
+
     countsByStatus.set(status, (countsByStatus.get(status) ?? 0) + 1);
   }
 
@@ -121,9 +124,11 @@ function readMockAssetStatus(asset: NodeInstance): string | undefined {
   for (const viewProperties of Object.values(asset.properties ?? {})) {
     for (const properties of Object.values(viewProperties)) {
       const status = properties[MODEL.properties.asset.status];
+
       if (typeof status === 'string') return status;
     }
   }
+
   return undefined;
 }
 
@@ -154,6 +159,7 @@ function findNodesCounted(
       return MOCK_ASSETS;
     case MODEL.views.equipment: {
       const { externalId } = readRequestedAssetReference(filtered);
+
       return externalId === undefined
         ? [...MOCK_EQUIPMENT_BY_ASSET_ID.values()].flat()
         : findEquipmentOfAsset(externalId);
@@ -167,11 +173,15 @@ function answerQuery(request: QueryRequest, stored: StoredInstances): QueryRespo
   if ('assets' in request.with) {
     return answerPage(request, 'assets', MOCK_ASSETS);
   }
+
   if ('asset' in request.with) return answerAssetDetails(request);
+
   if ('equipment' in request.with) return answerEquipment(request);
+
   if ('notes' in request.with) {
     return answerAssetInstances(request, 'notes', stored.notes);
   }
+
   if ('documents' in request.with) {
     return answerAssetInstances(request, 'documents', stored.documents);
   }
@@ -179,6 +189,7 @@ function answerQuery(request: QueryRequest, stored: StoredInstances): QueryRespo
   if ('timeseries' in request.with) {
     return answerNodesListingAsset(request, 'timeseries', MOCK_TIMESERIES);
   }
+
   if ('files' in request.with) {
     return answerNodesListingAsset(request, 'files', MOCK_FILES);
   }
@@ -224,6 +235,7 @@ function readRequestedAssetsContains(expression: unknown): {
 } {
   const filter =
     isRecord(expression) && isRecord(expression.nodes) ? expression.nodes.filter : undefined;
+
   const value = findContainsAnyValue(filter);
 
   return {
@@ -238,14 +250,18 @@ function findContainsAnyValue(filter: unknown): UnknownRecord | undefined {
   if (Array.isArray(filter.and)) {
     for (const part of filter.and) {
       const found = findContainsAnyValue(part);
+
       if (found !== undefined) return found;
     }
+
     return undefined;
   }
 
   const containsAny = filter.containsAny;
+
   if (isRecord(containsAny) && Array.isArray(containsAny.values)) {
     const [value]: unknown[] = containsAny.values;
+
     return isRecord(value) ? value : undefined;
   }
 
@@ -290,6 +306,7 @@ function readSortRules(expression: unknown): SortRule[] {
 
   return expression.sort.flatMap((rule: unknown) => {
     if (!isRecord(rule) || !Array.isArray(rule.property)) return [];
+
     const isDescending = rule.direction === DESCENDING_SORT_DIRECTION;
 
     return [
@@ -313,19 +330,25 @@ function sortNodes(nodes: readonly NodeInstance[], sortRules: SortRule[]): reado
         readSortValue(second, rule.property),
         rule,
       );
+
       if (order !== 0) return order;
     }
+
     return 0;
   });
 }
 
 function readSortValue(node: NodeInstance, property: unknown[]): unknown {
   const [scope, group, name] = property;
+
   if (scope === INSTANCE_TYPE_NODE) {
     if (group === NODE_EXTERNAL_ID_PROPERTY) return node.externalId;
+
     if (group === NODE_CREATED_TIME_PROPERTY) return node.createdTime;
+
     return group === NODE_SPACE_PROPERTY ? node.space : undefined;
   }
+
   if (typeof scope !== 'string' || typeof group !== 'string' || typeof name !== 'string') {
     return undefined;
   }
@@ -336,8 +359,10 @@ function readSortValue(node: NodeInstance, property: unknown[]): unknown {
 function compareSortValues(first: unknown, second: unknown, rule: SortRule): number {
   const isFirstEmpty = first === undefined || first === null;
   const isSecondEmpty = second === undefined || second === null;
+
   if (isFirstEmpty || isSecondEmpty) {
     if (isFirstEmpty && isSecondEmpty) return 0;
+
     return isFirstEmpty === rule.isNullsFirst ? -1 : 1;
   }
 
@@ -351,6 +376,7 @@ function compareSortValues(first: unknown, second: unknown, rule: SortRule): num
 
 function compareText(first: string, second: string): number {
   if (first === second) return 0;
+
   return first < second ? -1 : 1;
 }
 
@@ -376,15 +402,20 @@ function storeInstances(
           ]
         : [],
     );
+
     const isDocument = sources.some(({ isDocumentView }) => isDocumentView);
     const target = isDocument ? stored.documents : stored.notes;
+
     const existingIndex = target.findIndex(
       (node) => node.space === item.space && node.externalId === item.externalId,
     );
+
     const existing = target[existingIndex];
+
     const properties: NodeInstance['properties'] = {
       ...existing?.properties,
     };
+
     for (const { space, group, values } of sources) {
       properties[space] = {
         ...properties[space],
@@ -405,6 +436,7 @@ function storeInstances(
         properties,
       });
     }
+
     items.push({
       instanceType: 'node',
       space: item.space,
@@ -428,6 +460,7 @@ function removeInstances(
       const index = list.findIndex(
         (node) => node.space === space && node.externalId === externalId,
       );
+
       if (index >= 0) list.splice(index, 1);
     }
   }
@@ -517,6 +550,7 @@ function answerAssetSearch(
 
 function answerAssetDetails(request: QueryRequest): QueryResponse {
   const requested = readRequestedIdentifier(request.with.asset);
+
   const asset = MOCK_ASSETS.find(
     (node) => node.externalId === requested.externalId && node.space === requested.space,
   );
@@ -547,11 +581,14 @@ function selectProperties(
   resultSetName: string,
 ): NodeOrEdge {
   const selectedNames = readSelectedPropertyNames(request, resultSetName);
+
   if (selectedNames === undefined || !node.properties) return node;
 
   const properties: Record<string, Record<string, Record<string, RawPropertyValueV3>>> = {};
+
   for (const [space, groups] of Object.entries(node.properties)) {
     properties[space] = {};
+
     for (const [group, values] of Object.entries(groups)) {
       properties[space][group] = Object.fromEntries(
         Object.entries(values).filter(([name]) => selectedNames.includes(name)),
@@ -567,9 +604,11 @@ function readSelectedPropertyNames(
   resultSetName: string,
 ): string[] | undefined {
   const select: unknown = request.select?.[resultSetName];
+
   if (!isRecord(select) || !Array.isArray(select.sources)) return undefined;
 
   const [source] = select.sources;
+
   if (!isRecord(source) || !Array.isArray(source.properties)) return undefined;
 
   return source.properties.filter((name: unknown): name is string => typeof name === 'string');
@@ -600,6 +639,7 @@ function readRequestedAssetReference(expression: unknown): {
 } {
   const filter =
     isRecord(expression) && isRecord(expression.nodes) ? expression.nodes.filter : undefined;
+
   const value = findAssetRelationValue(filter);
 
   return {
@@ -614,12 +654,15 @@ function findAssetRelationValue(filter: unknown): UnknownRecord | undefined {
   if (Array.isArray(filter.and)) {
     for (const part of filter.and) {
       const found = findAssetRelationValue(part);
+
       if (found !== undefined) return found;
     }
+
     return undefined;
   }
 
   const equals = filter.equals;
+
   if (
     isRecord(equals) &&
     Array.isArray(equals.property) &&
@@ -638,12 +681,15 @@ function findEqualsValue(filter: unknown, name: string): string | undefined {
   if (Array.isArray(filter.and)) {
     for (const part of filter.and) {
       const found = findEqualsValue(part, name);
+
       if (found !== undefined) return found;
     }
+
     return undefined;
   }
 
   const equals = filter.equals;
+
   if (
     isRecord(equals) &&
     Array.isArray(equals.property) &&
@@ -658,6 +704,7 @@ function findEqualsValue(filter: unknown, name: string): string | undefined {
 
 function parseCursor(cursor: string | undefined): number {
   const offset = Number(cursor);
+
   return Number.isInteger(offset) && offset > 0 ? offset : 0;
 }
 

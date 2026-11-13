@@ -49,6 +49,7 @@ export function TimeseriesPreview({ preview, unit }: TimeseriesPreviewProps) {
 
   const drawing = buildSparkline(preview.points, CHART_SIZE);
   const summary = summarizeTrend(preview.points);
+
   if (drawing === null || summary === null) return null;
 
   const suffix = unit ? ` ${unit}` : '';

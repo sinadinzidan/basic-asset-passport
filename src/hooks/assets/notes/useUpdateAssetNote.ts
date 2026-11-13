@@ -38,6 +38,7 @@ export function useUpdateAssetNote(assetIdentifier: AssetIdentifier) {
       noteService.updateAssetNote(note, input),
     onSuccess: () => {
       showSuccessToast(NOTE_UPDATED_MESSAGE);
+
       return queryClient.invalidateQueries({
         queryKey: getAssetNotesQueryKey(client.project, assetIdentifier),
       });

@@ -32,6 +32,7 @@ class CdfAssetService implements AssetService {
   listAssets = async (cursor?: string): Promise<AssetPage> => {
     const assetView = await findAssetPassportView(this.client, MODEL.views.asset);
     const viewReference = toViewReference(assetView);
+
     const response = await this.client.instances.query({
       ...(cursor ? { cursors: { assets: cursor } } : {}),
       with: {
@@ -58,6 +59,7 @@ class CdfAssetService implements AssetService {
 
   searchAssets = async (searchText: string): Promise<AssetPage> => {
     const assetView = await findAssetPassportView(this.client, MODEL.views.asset);
+
     const response = await this.client.instances.search({
       view: toViewReference(assetView),
       query: searchText,

@@ -49,9 +49,11 @@ export function createAssetsKPICountService(client: AssetContextType): AssetsKPI
 function sumOperatingGroups(response: AggregationResponse): number {
   return response.items.reduce((total, item) => {
     const status = item.group?.[MODEL.properties.asset.status];
+
     if (typeof status !== 'string' || !isOperatingStatus(status)) {
       return total;
     }
+
     return total + readCount({ items: [item] });
   }, 0);
 }

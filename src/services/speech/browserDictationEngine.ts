@@ -38,6 +38,7 @@ class BrowserDictationEngine implements DictationEngine {
 
   start = (callbacks: DictationCallbacks): DictationSession => {
     const recognition = new this.Recognition();
+
     recognition.continuous = true;
     recognition.interimResults = true;
     recognition.lang = this.language;
@@ -45,10 +46,13 @@ class BrowserDictationEngine implements DictationEngine {
     recognition.onresult = (event) => {
       callbacks.onTranscript(joinTranscript(event));
     };
+
     recognition.onerror = (event) => {
       const failure = toFailure(event.error);
+
       if (failure !== null) callbacks.onError(failure);
     };
+
     recognition.onend = () => callbacks.onEnd();
 
     try {
@@ -85,14 +89,18 @@ function isRecognitionConstructor(value: unknown): value is RecognitionConstruct
 
 function joinTranscript(event: RecognitionEvent): string {
   let transcript = '';
+
   for (let index = 0; index < event.results.length; index += 1) {
     transcript += event.results[index]?.[0]?.transcript ?? '';
   }
+
   return transcript;
 }
 
 function toFailure(error: string): DictationFailure | null {
   if (BLOCKED_ERRORS.has(error)) return DictationFailure.BLOCKED;
+
   if (QUIET_ERRORS.has(error)) return null;
+
   return DictationFailure.FAILED;
 }

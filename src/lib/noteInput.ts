@@ -8,6 +8,7 @@ export function isNewAssetNoteValid(input: NewAssetNote): boolean {
 
 export function normalizeNewAssetNote(input: NewAssetNote): NewAssetNote {
   const parsed = NewAssetNoteSchema.safeParse(input);
+
   if (!parsed.success) throw new Error(NOTE_INVALID_MESSAGE);
 
   return parsed.data;

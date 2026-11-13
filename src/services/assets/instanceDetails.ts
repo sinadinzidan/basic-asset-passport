@@ -11,7 +11,9 @@ type MappedProperty = { identifier: string; label: string };
 export function getMappedProperties(view: ViewDefinition): MappedProperty[] {
   return Object.entries(view.properties).flatMap(([identifier, property]) => {
     if (!('containerPropertyIdentifier' in property)) return [];
+
     if (INTERNAL_DETAIL_PROPERTY_IDENTIFIERS.has(identifier)) return [];
+
     if (property.type.type === DIRECT_PROPERTY_TYPE || property.type.type === JSON_PROPERTY_TYPE) {
       return [];
     }
@@ -32,6 +34,7 @@ export function toInstanceDetails(
     externalId: node.externalId,
     properties: mappedProperties.flatMap(({ identifier, label }) => {
       const value = formatPropertyValue(viewProperties?.[identifier]);
+
       return value === undefined ? [] : [{ identifier, label, value }];
     }),
   };
@@ -39,22 +42,28 @@ export function toInstanceDetails(
 
 function formatPropertyValue(value: unknown): string | undefined {
   if (typeof value === 'string') return value.trim() || undefined;
+
   if (typeof value === 'number') {
     return Number.isFinite(value) ? String(value) : undefined;
   }
+
   if (typeof value === 'boolean') return String(value);
+
   if (Array.isArray(value)) {
     return (
       value
         .flatMap((item: unknown) => {
           const formatted = formatPropertyValue(item);
+
           return formatted === undefined ? [] : [formatted];
         })
         .join(', ') || undefined
     );
   }
+
   if (typeof value === 'object' && value !== null) {
     return Object.keys(value).length > 0 ? JSON.stringify(value) : undefined;
   }
+
   return undefined;
 }

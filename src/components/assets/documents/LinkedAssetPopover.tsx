@@ -61,6 +61,7 @@ function OpenLinkedAssetPopover({ target, onClose, onOpenAsset }: OpenLinkedAsse
       eventDetails.reason === OUTSIDE_PRESS_REASON &&
       eventDetails.event.target instanceof Node &&
       anchor.contains(eventDetails.event.target);
+
     if (!isPressOnBox) onClose();
   }
   function handleOpenAsset(): void {

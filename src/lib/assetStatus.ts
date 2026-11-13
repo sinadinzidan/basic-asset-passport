@@ -9,6 +9,8 @@ export function isOperatingStatus(status: string | null): boolean {
 
 export function getStatusTone(status: string | null): StatusTone {
   if (isOperatingStatus(status)) return StatusTone.ACTIVE;
+
   if (status && MAINTENANCE_STATUS_PATTERN.test(status)) return StatusTone.WARNING;
+
   return StatusTone.NEUTRAL;
 }

@@ -16,6 +16,7 @@ class CdfAssetDetailsService implements AssetDetailsService {
     const assetView = await findAssetPassportView(this.client, MODEL.views.asset);
     const assetViewReference = toViewReference(assetView);
     const assetProperties = getMappedProperties(assetView);
+
     const response = await this.client.instances.query({
       with: {
         asset: {

@@ -60,14 +60,17 @@ export function createAgentContext(sdk: AgentSdkClient): AgentContextType {
 
 function parseReply(data: unknown): AgentReply {
   const reply = AgentReplyResponseSchema.safeParse(data);
+
   if (!reply.success) {
     throw new Error(UNEXPECTED_REPLY_MESSAGE);
   }
 
   const agentMessages = reply.data.response.messages.flatMap((message) => {
     const parsed = AgentMessageSchema.safeParse(message);
+
     return parsed.success && parsed.data.role !== USER_MESSAGE_ROLE ? [parsed.data] : [];
   });
+
   const text = agentMessages
     .map((message) => nonBlankText(message.content?.text))
     .filter((part): part is string => part !== null)
@@ -82,6 +85,7 @@ function parseReply(data: unknown): AgentReply {
   }
 
   const { cursor } = reply.data.response;
+
   return {
     text,
     cursor: typeof cursor === 'string' && cursor !== '' ? cursor : null,
@@ -90,12 +94,14 @@ function parseReply(data: unknown): AgentReply {
 
 function parseFoundAgent(data: unknown): CdfAgent | null {
   const response = AgentListResponseSchema.safeParse(data);
+
   if (!response.success) {
     throw new Error(UNEXPECTED_AGENT_MESSAGE);
   }
 
   for (const item of response.data.items) {
     const agent = AgentSchema.safeParse(item);
+
     if (agent.success) {
       const { externalId, name, description } = agent.data;
 
@@ -106,6 +112,7 @@ function parseFoundAgent(data: unknown): CdfAgent | null {
       };
     }
   }
+
   return null;
 }
 
@@ -113,5 +120,6 @@ function nonBlankText(value: unknown): string | null {
   if (typeof value !== 'string') return null;
 
   const text = value.trim();
+
   return text === '' ? null : text;
 }

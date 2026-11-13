@@ -28,6 +28,7 @@ export function useCopyToClipboard(): CopyToClipboard {
   const copy = useCallback(
     async (text: string): Promise<void> => {
       let result: CopyStatus = CopyStatus.COPIED;
+
       try {
         await writeText(text);
       } catch {

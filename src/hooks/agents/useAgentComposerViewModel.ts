@@ -16,6 +16,7 @@ export function useAgentComposerViewModel() {
 
   function submit(): void {
     if (!canSend) return;
+
     dictation.cancel();
     setDraft('');
     void send(draft);
@@ -28,6 +29,7 @@ export function useAgentComposerViewModel() {
 
   function toggleDictation(): void {
     const typedBefore = draft;
+
     dictation.toggle((spoken) => setDraft(appendSpokenText(typedBefore, spoken)));
   }
 

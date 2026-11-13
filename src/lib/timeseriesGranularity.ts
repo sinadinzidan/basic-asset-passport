@@ -10,6 +10,7 @@ const UNIT_MS: Record<string, number> = {
 
 export function granularityToMs(granularity: string): number | null {
   const match = /^(\d+)([smhd])$/.exec(granularity);
+
   if (!match) return null;
 
   const [, count, unit] = match;
@@ -24,6 +25,7 @@ export function chooseChartGranularity(rangeMs: number): string {
 
   for (const step of CHART_GRANULARITY_STEPS) {
     const stepMs = granularityToMs(step);
+
     if (stepMs !== null && rangeMs / stepMs <= CHART_MAX_POINTS) return step;
   }
 

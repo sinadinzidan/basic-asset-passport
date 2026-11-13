@@ -22,6 +22,7 @@ export async function countNodes(
 
 export function readCount(response: AggregationResponse): number {
   const [result] = response.items;
+
   const countValue = result?.aggregates.find(
     (aggregate) => aggregate.aggregate === COUNT_AGGREGATE,
   );

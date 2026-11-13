@@ -32,6 +32,7 @@ export function useDeleteAssetNote(assetIdentifier: AssetIdentifier) {
     mutationFn: (note: NoteIdentifier) => noteService.deleteAssetNote(note),
     onSuccess: () => {
       showSuccessToast(NOTE_DELETED_MESSAGE);
+
       return queryClient.invalidateQueries({
         queryKey: getAssetNotesQueryKey(client.project, assetIdentifier),
       });

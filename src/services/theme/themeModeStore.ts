@@ -55,6 +55,7 @@ function applyThemeMode(rootElement: Element, themeMode: ThemeMode): void {
 function readSavedThemeMode(getStorage: () => ThemeModeStorage): ThemeMode | null {
   try {
     const savedValue = getStorage().getItem(THEME_MODE_STORAGE_KEY);
+
     return isThemeMode(savedValue) ? savedValue : null;
   } catch {
     return null;
@@ -64,6 +65,7 @@ function readSavedThemeMode(getStorage: () => ThemeModeStorage): ThemeMode | nul
 function saveThemeMode(getStorage: () => ThemeModeStorage, themeMode: ThemeMode): boolean {
   try {
     getStorage().setItem(THEME_MODE_STORAGE_KEY, themeMode);
+
     return true;
   } catch {
     return false;

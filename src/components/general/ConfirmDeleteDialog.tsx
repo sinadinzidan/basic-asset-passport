@@ -24,6 +24,7 @@ export function ConfirmDeleteDialog({
 
   async function runDelete(): Promise<void> {
     setIsDeleteRunning(true);
+
     try {
       await onConfirm();
     } finally {

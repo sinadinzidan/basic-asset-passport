@@ -44,6 +44,7 @@ export function AgentHelper() {
 
   useEffect(() => {
     if (isOpen === wasOpenReference.current) return;
+
     wasOpenReference.current = isOpen;
     (isOpen ? panelReference : triggerReference).current?.focus();
   }, [isOpen]);

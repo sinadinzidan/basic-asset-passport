@@ -25,9 +25,11 @@ export function useAgentGreeting(): AgentGreeting {
     if (introPhase === IntroPhase.WAITING) {
       return startTimer(() => setIntroPhase(IntroPhase.SHOWN), GREETING_INTRO_DELAY_MS);
     }
+
     if (introPhase === IntroPhase.SHOWN) {
       return startTimer(() => setIntroPhase(IntroPhase.DONE), GREETING_INTRO_DURATION_MS);
     }
+
     return undefined;
   }, [introPhase, startTimer]);
 

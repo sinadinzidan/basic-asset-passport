@@ -25,7 +25,9 @@ class CdfDocumentFileContext implements DocumentFileContextType {
     const response = await this.sdk.post(`/api/v1/projects/${this.sdk.project}/files/uploadlink`, {
       data: { items: [{ instanceId: toInstanceId(document) }] },
     });
+
     const parsed = UploadLinkResponseSchema.safeParse(response.data);
+
     if (!parsed.success) {
       throw new Error(UPLOAD_LINK_MISSING_MESSAGE);
     }

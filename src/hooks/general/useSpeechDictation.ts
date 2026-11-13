@@ -45,8 +45,10 @@ export function useSpeechDictation(): SpeechDictation {
   const toggle = useCallback(
     (onTranscript: (spoken: string) => void) => {
       if (engine === null) return;
+
       if (sessionReference.current !== null) {
         sessionReference.current.stop();
+
         return;
       }
 
@@ -64,6 +66,7 @@ export function useSpeechDictation(): SpeechDictation {
           setIsListening(false);
         },
       });
+
       sessionReference.current = hasEnded ? null : session;
     },
     [engine],

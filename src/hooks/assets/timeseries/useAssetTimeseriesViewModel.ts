@@ -75,13 +75,17 @@ function getPreview(
   trends: Pick<ReturnType<typeof useTimeseriesTrends>, 'data' | 'isError' | 'isPending'>,
 ): TimeseriesPreview {
   if (isNonNumericTimeseries(timeseries)) return { kind: TimeseriesPreviewKind.NON_NUMERIC };
+
   if (trends.isError) return { kind: TimeseriesPreviewKind.UNAVAILABLE };
+
   if (trends.isPending) return { kind: TimeseriesPreviewKind.LOADING };
 
   const trend = trends.data?.get(getTimeseriesKey(timeseries));
+
   if (trend?.hasFailed) return { kind: TimeseriesPreviewKind.UNAVAILABLE };
 
   const points = trend?.points ?? [];
+
   return points.length > 0
     ? { kind: TimeseriesPreviewKind.READY, points }
     : { kind: TimeseriesPreviewKind.EMPTY };

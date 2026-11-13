@@ -19,6 +19,7 @@ const SHAPES: Record<string, SeriesShape> = {
   'PI.G307.TT-102': { base: 68, swing: 6, drift: 5, periodDays: 3.4 },
   'PI.G412.VT-201': { base: 3.1, swing: 1.1, drift: -0.6, periodDays: 1.6 },
 };
+
 const FALLBACK_SHAPE: SeriesShape = { base: 50, swing: 5, drift: 0, periodDays: 2.5 };
 
 export function makeMockTimeseriesContext(

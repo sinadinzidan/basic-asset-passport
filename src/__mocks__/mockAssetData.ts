@@ -8,6 +8,7 @@ import { makeNodeInstance, makeViewDefinition } from './cdf';
 
 export const MOCK_VIEW_VERSION = 'v1';
 const MOCK_RMDM_VIEW_SPACE = 'sp-dm-idi-rmdm';
+
 export const MOCK_ASSET_INSTANCE_SPACE = 'mock-asset-instances';
 const MOCK_EQUIPMENT_INSTANCE_SPACE = 'mock-equipment-instances';
 
@@ -134,6 +135,7 @@ const PLANTS = [
   { name: 'South Plant', id: 'G412' },
   { name: 'East Plant', id: 'G518' },
 ];
+
 const ASSET_TYPES = [
   'Cooling Water Pump',
   'Gas Compressor',
@@ -141,6 +143,7 @@ const ASSET_TYPES = [
   'Separator Vessel',
   'Flare Knock-out Drum',
 ];
+
 const STATUSES = ['Operating', 'Operating', 'Under maintenance', 'Decommissioned'];
 const CRITICALITIES = ['A - High criticality', 'B - Medium criticality', 'C - Low criticality'];
 const MANUFACTURERS = ['Northwind Industrial', 'Contoso Rotating', 'Fabrikam Process'];

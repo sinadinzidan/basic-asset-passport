@@ -32,6 +32,7 @@ export function useAddAssetNote(assetIdentifier: AssetIdentifier) {
     mutationFn: (note: NewAssetNote) => noteService.createAssetNote(assetIdentifier, note),
     onSuccess: () => {
       showSuccessToast(NOTE_ADDED_MESSAGE);
+
       return queryClient.invalidateQueries({
         queryKey: getAssetNotesQueryKey(client.project, assetIdentifier),
       });

@@ -14,9 +14,11 @@ export function getDocumentRefetchInterval(
   const processing = (documents ?? []).filter(
     (document) => document.uploadStatus === DocumentUploadStatus.PROCESSING,
   );
+
   if (processing.length === 0) return false;
 
   const newestCreatedTime = Math.max(...processing.map((document) => document.createdTime));
+
   const waitedSteps = Math.floor(
     Math.max(0, currentTimeMs - newestCreatedTime) / DOCUMENT_PENDING_POLL_STEP_MS,
   );

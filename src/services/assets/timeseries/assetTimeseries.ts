@@ -26,6 +26,7 @@ class CdfAssetTimeseriesService implements AssetTimeseriesService {
     const timeseriesView = await findAssetPassportView(this.client, MODEL.views.timeseries);
     const viewReference = toViewReference(timeseriesView);
     const mappedProperties = getMappedProperties(timeseriesView);
+
     const response = await this.client.instances.query({
       with: {
         timeseries: {

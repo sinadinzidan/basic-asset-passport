@@ -18,6 +18,7 @@ export function AssetSearchField({ value, onChange }: AssetSearchFieldProps) {
 
   if (value !== followedValue) {
     setFollowedValue(value);
+
     if (value !== draft.trim()) setDraft(value);
   }
 
@@ -28,6 +29,7 @@ export function AssetSearchField({ value, onChange }: AssetSearchFieldProps) {
 
   function handleKeyDown(event: KeyboardEvent<HTMLInputElement>): void {
     if (event.key !== ENTER_KEY) return;
+
     apply.cancel();
     onChange(draft.trim());
   }

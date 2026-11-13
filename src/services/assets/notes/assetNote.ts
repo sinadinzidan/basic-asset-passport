@@ -49,6 +49,7 @@ class CdfAssetNoteService implements AssetNoteService {
   ): Promise<LimitedList<AssetNote>> => {
     const noteView = await findAssetPassportView(this.client, MODEL.views.note);
     const viewReference = toViewReference(noteView);
+
     const response = await this.client.instances.query({
       with: {
         notes: {

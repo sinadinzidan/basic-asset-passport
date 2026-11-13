@@ -50,6 +50,7 @@ export function useAgentChatViewModel(): AgentChatViewModel {
           text: question,
           cursor: conversation.cursor,
         });
+
         receiveReply(
           agentExternalId,
           { id: createMessageId(), role: ChatMessageRole.AGENT, text: reply.text },
@@ -68,6 +69,7 @@ export function useAgentChatViewModel(): AgentChatViewModel {
   const send = useCallback(
     async (text: string): Promise<void> => {
       const question = text.trim();
+
       if (agent === null || question === '' || conversation.isSending) return;
 
       addUserMessage(agent.externalId, {
@@ -82,7 +84,9 @@ export function useAgentChatViewModel(): AgentChatViewModel {
 
   const retry = useCallback(async (): Promise<void> => {
     const unanswered = conversation.messages[conversation.messages.length - 1];
+
     if (agent === null || conversation.errorMessage === null || conversation.isSending) return;
+
     if (unanswered?.role !== ChatMessageRole.USER) return;
 
     retrySend(agent.externalId);
@@ -91,6 +95,7 @@ export function useAgentChatViewModel(): AgentChatViewModel {
 
   const startNewChat = useCallback(() => {
     if (agent === null) return;
+
     resetConversation(agent.externalId);
   }, [agent, resetConversation]);
 

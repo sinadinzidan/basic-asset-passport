@@ -55,6 +55,7 @@ export function useTimeseriesChartViewModel(series: readonly AssetInstanceDetail
 
   function openSeries(seriesId: string, title: string): void {
     const endMs = currentMinuteMs(now);
+
     setNowMs(endMs);
     changeTimeseriesChart(
       serialiseConfiguration(

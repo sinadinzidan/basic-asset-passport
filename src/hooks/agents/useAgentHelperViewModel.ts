@@ -31,8 +31,10 @@ export function useAgentHelperViewModel() {
   function toggle(): void {
     if (isOpen) {
       close();
+
       return;
     }
+
     stopGreeting();
     setIsClosing(false);
     changeAssistantOpen(true);
@@ -46,6 +48,7 @@ export function useAgentHelperViewModel() {
   }
   function changeGreetingOpen(isGreetingOpen: boolean): void {
     setIsPointedAt(isGreetingOpen);
+
     if (!isGreetingOpen) dismissIntro();
   }
 

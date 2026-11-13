@@ -3,6 +3,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 const defaultDeps = {
   startTicker: (onTick: () => void, intervalMs: number): (() => void) => {
     const id = setInterval(onTick, intervalMs);
+
     return () => clearInterval(id);
   },
   pickStartIndex: (count: number): number => Math.floor(Math.random() * count),

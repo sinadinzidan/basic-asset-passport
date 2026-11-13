@@ -52,6 +52,7 @@ export function AgentChat({ onClose }: AgentChatProps) {
   }
   function handleKeyDown(event: KeyboardEvent<HTMLTextAreaElement>): void {
     if (event.key !== ENTER_KEY || event.shiftKey || event.nativeEvent.isComposing) return;
+
     event.preventDefault();
     submit();
   }

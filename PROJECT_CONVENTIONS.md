@@ -147,6 +147,39 @@ const QUERY_STALE_TIME_MS = 300_000;
 - Use discriminated unions when they accurately express distinct states.
   Avoid duplicated derived information and unnecessarily complex types.
 
+## Statement grouping in every file
+
+The grouping rule is not only for components. In every source file (services,
+helpers in `src/lib/`, stores, schemas, providers, hooks and components alike)
+statements that do one thing sit together, and **one blank line** separates one
+group from the next:
+
+- declarations (`const`, `let`), then a blank line before the first statement
+  that acts on them;
+- a guard, loop or `try` (`if`, `for`, `while`, `try`, `switch`) has a blank
+  line before and after it;
+- the final `return` has a blank line before it, unless it is the only
+  statement in the block;
+- outside components and hooks, a statement that spans several lines is a
+  group of its own, with a blank line before and after.
+
+```ts
+function readRetryAfterMs(error: unknown): number {
+  const headers = RetryAfterErrorSchema.safeParse(error);
+
+  if (!headers.success) return 0;
+
+  const seconds = Number(headers.data.headers[RETRY_AFTER_HEADER]);
+
+  return Number.isFinite(seconds) && seconds > 0 ? seconds * MS_PER_SECOND : 0;
+}
+```
+
+ESLint enforces this (`padding-line-between-statements` in
+`eslint.config.mjs`) and `eslint --fix` applies it. Do not add blank lines
+inside a group to pad a function out, and never leave two blank lines in a
+row. Test files are exempt: they follow Arrange / Act / Assert.
+
 ## React ordering, state, and effects
 
 Write every component and hook body in this order, with **one blank line

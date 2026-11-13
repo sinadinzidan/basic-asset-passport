@@ -45,6 +45,7 @@ class CdfTimeseriesChartAdapter implements ChartDataAdapter {
     { sourceName, isSimulated }: TimeseriesChartAdapterOptions,
   ) {
     this.chartable = getChartableTimeseries(series);
+
     this.definitions = this.chartable.map((timeseries): TimeSeriesDefinition => ({
       id: getTimeseriesKey(timeseries),
       name: getTimeseriesName(timeseries),
@@ -55,12 +56,14 @@ class CdfTimeseriesChartAdapter implements ChartDataAdapter {
       sourceName,
       isSimulated,
     }));
+
     this.identifierById = new Map(
       this.chartable.map((timeseries) => [
         getTimeseriesKey(timeseries),
         { space: timeseries.space, externalId: timeseries.externalId },
       ]),
     );
+
     this.definitionById = new Map(
       this.definitions.map((definition) => [definition.id, definition]),
     );
@@ -68,6 +71,7 @@ class CdfTimeseriesChartAdapter implements ChartDataAdapter {
 
   searchSeries: ChartDataAdapter['searchSeries'] = (query, { limit }) => {
     const needle = query.trim().toLowerCase();
+
     const matches = this.definitions.filter(
       (definition) =>
         needle.length === 0 ||
@@ -88,8 +92,10 @@ class CdfTimeseriesChartAdapter implements ChartDataAdapter {
   ): Promise<TimeSeriesData[]> => {
     const identifiers = seriesIds.flatMap((seriesId) => {
       const identifier = this.identifierById.get(seriesId);
+
       return identifier ? [identifier] : [];
     });
+
     if (identifiers.length === 0) return [];
 
     const trends = await this.client.getTrends(

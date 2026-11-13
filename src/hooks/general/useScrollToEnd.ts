@@ -5,6 +5,7 @@ export function useScrollToEnd<T extends HTMLElement>(itemCount: number, isBusy:
 
   useEffect(() => {
     const element = reference.current;
+
     if (element !== null) element.scrollTop = element.scrollHeight;
   }, [itemCount, isBusy]);
 

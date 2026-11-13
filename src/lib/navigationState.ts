@@ -11,6 +11,7 @@ export function parseNavigationState(initialState: string | undefined): Navigati
   if (!initialState) return DEFAULT_NAVIGATION_STATE;
 
   const parsed = NavigationStateSchema.safeParse(readJson(initialState));
+
   if (!parsed.success) return DEFAULT_NAVIGATION_STATE;
 
   const { selectedAsset, activeAssetTab, searchQuery, registerCursors, timeseriesChart } =

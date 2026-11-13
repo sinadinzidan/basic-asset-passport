@@ -120,9 +120,11 @@ class CdfAssetDocumentService implements AssetDocumentService {
     file: File,
   ): Promise<void> => {
     const problem = getDocumentFileProblem(file);
+
     if (problem) throw new Error(problem);
 
     const documentView = await findAssetPassportView(this.client, MODEL.views.document);
+
     const document: DocumentIdentifier = {
       space: MODEL.instanceSpace,
       externalId: `${DOCUMENT_EXTERNAL_ID_PREFIX}${this.deps.generateId()}`,
@@ -156,6 +158,7 @@ class CdfAssetDocumentService implements AssetDocumentService {
 
     try {
       const uploadUrl = await files.requestUploadUrl(document);
+
       await files.uploadContent(uploadUrl, file);
     } catch (error) {
       await this.deleteAssetDocument(document).catch(() => undefined);
@@ -188,6 +191,7 @@ async function listDocumentNodes(
   currentTime: number,
 ): Promise<LimitedList<AssetDocument>> {
   const viewReference = toViewReference(view);
+
   const response = await client.instances.query({
     with: {
       [resultSetName]: {

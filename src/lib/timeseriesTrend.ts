@@ -24,6 +24,7 @@ type SparklineSize = { width: number; height: number; padding: number };
 
 export function summarizeTrend(points: TimeseriesPoint[]): TrendSummary | null {
   const last = points[points.length - 1];
+
   if (last === undefined) return null;
 
   const values = points.map((point) => point.value);
@@ -43,6 +44,7 @@ export function buildSparkline(
 ): SparklineGeometry | null {
   const first = points[0];
   const last = points[points.length - 1];
+
   if (first === undefined || last === undefined) return null;
 
   const innerWidth = width - padding * PADDING_SIDES;
@@ -59,6 +61,7 @@ export function buildSparkline(
         : points.length > 1
           ? index / (points.length - 1)
           : MIDDLE_SHARE;
+
     const level = range > 0 ? (point.value - minimum) / range : MIDDLE_SHARE;
 
     return {
@@ -66,13 +69,16 @@ export function buildSparkline(
       y: round(padding + (1 - level) * innerHeight),
     };
   });
+
   const [start] = coordinates;
   const end = coordinates[coordinates.length - 1];
+
   if (start === undefined || end === undefined) return null;
 
   const linePath = coordinates
     .map(({ x, y }, index) => `${index === 0 ? 'M' : 'L'}${x} ${y}`)
     .join(' ');
+
   const floor = round(height - padding);
 
   return {

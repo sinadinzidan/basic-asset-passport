@@ -5,6 +5,7 @@ import type { ThemeModeStorage, ThemeModeStore } from '../types/theme';
 
 export function makeThemeModeStorage(savedValue?: string): ThemeModeStorage {
   const values = new Map<string, string>();
+
   if (savedValue !== undefined) values.set(THEME_MODE_STORAGE_KEY, savedValue);
 
   return {

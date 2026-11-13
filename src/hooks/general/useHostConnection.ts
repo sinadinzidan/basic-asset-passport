@@ -10,6 +10,7 @@ export function useHostConnection(connectToHost: ConnectToHost) {
     if (connectionReference.current === null) {
       connectionReference.current = connectToHost().then((connection) => {
         setHostState({ api: connection.api, initialState: connection.initialState });
+
         return connection;
       });
     }

@@ -5,6 +5,7 @@ import { TestPropertyType } from '../enums/testPropertyType';
 import type { NodeInstance } from '../services/assets/viewHelpers';
 
 const TEST_VIEW_VERSION = 'test-version';
+
 export const TEST_VIEW_SPACE = 'test-view-space';
 
 const API_TYPE_BY_TEST_PROPERTY_TYPE = {

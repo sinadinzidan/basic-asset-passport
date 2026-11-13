@@ -26,6 +26,7 @@ export function AssetNoteAdd() {
 
   function handleOpenChange(isNextOpen: boolean): void {
     setIsOpen(isNextOpen);
+
     if (isNextOpen) return;
 
     setTitle('');

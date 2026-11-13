@@ -18,6 +18,7 @@ export class QueuedTaskRunner {
       return await task();
     } finally {
       const startNext = this.waiting.shift();
+
       if (startNext) {
         startNext();
       } else {

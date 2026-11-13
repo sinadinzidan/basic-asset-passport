@@ -30,6 +30,7 @@ export function AssetNoteEditForm({
 
   function handleSubmit(event: FormEvent<HTMLFormElement>): void {
     event.preventDefault();
+
     if (canSave) onSave({ title, body });
   }
 
