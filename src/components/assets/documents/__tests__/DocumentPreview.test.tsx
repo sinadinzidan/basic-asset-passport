@@ -233,7 +233,7 @@ describe(DocumentPreview.name, () => {
       anchor.remove();
     });
 
-    const linkedAsset = { space: 'asset-space', externalId: 'FLOC-9' };
+    const annotatedAsset = { space: 'asset-space', externalId: 'FLOC-9' };
     let anchor: HTMLElement;
 
     beforeEach(() => {
@@ -246,7 +246,7 @@ describe(DocumentPreview.name, () => {
         getAssetDetails: vi.fn(() =>
           Promise.resolve(
             makeInstanceDetails({
-              ...linkedAsset,
+              ...annotatedAsset,
               properties: [{ identifier: 'name', label: 'Name', value: 'Feed Pump 9' }],
             }),
           ),
@@ -290,7 +290,7 @@ describe(DocumentPreview.name, () => {
             page: 1,
             resourceType: 'asset',
             annotationType: 'diagrams.AssetLink',
-            linkedResource: linkedAsset,
+            linkedResource: annotatedAsset,
             ...annotation,
           },
           anchor,

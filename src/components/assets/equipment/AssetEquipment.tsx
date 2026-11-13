@@ -12,7 +12,8 @@ import { formatEquipmentTruncatedMessage } from '../../../lib/assetMessage';
 import { getErrorReason } from '../../../lib/errorReason';
 import { getInstanceKey } from '../../../lib/instanceKey';
 import { AppAlert, EmptyStateMessage, LoadingNotice, RetryAlert } from '../../general';
-import { EquipmentDetails } from '../EquipmentDetails';
+
+import { EquipmentDetails } from './EquipmentDetails';
 
 export function AssetEquipment() {
   const { equipment, hasMore, error, isError, isFetching, isPending, retry } =

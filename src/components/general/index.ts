@@ -2,7 +2,6 @@ export { AppAlert } from './AppAlert';
 export { AppLogo } from './AppLogo';
 export { AppTopbar } from './AppTopbar';
 export { ConfirmDeleteDialog } from './ConfirmDeleteDialog';
-export { CriticalityPill } from './CriticalityPill';
 export { CursorPagination } from './CursorPagination';
 export { EmptyStateMessage } from './EmptyStateMessage';
 export { ErrorBoundary } from './ErrorBoundary';

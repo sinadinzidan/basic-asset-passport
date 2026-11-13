@@ -10,7 +10,7 @@ import { AssetClientContext } from '../../../useAssetClient';
 import { UseAssetDetailsContext } from '../../../useAssetDetails';
 import { useAnnotatedAssetViewModel } from '../useAnnotatedAssetViewModel';
 
-const linkedAsset = { space: 'asset-space', externalId: 'FLOC-9' };
+const annotatedAsset = { space: 'asset-space', externalId: 'FLOC-9' };
 const FUNCTIONAL_LOCATION = {
   identifier: 'externalId',
   label: 'Functional location',
@@ -27,7 +27,7 @@ describe(useAnnotatedAssetViewModel.name, () => {
       getAssetDetails: vi.fn(() =>
         Promise.resolve(
           makeInstanceDetails({
-            ...linkedAsset,
+            ...annotatedAsset,
             properties: [
               { identifier: 'name', label: 'Name', value: 'Feed Pump 9' },
               { identifier: 'flocStatus', label: 'Status', value: 'Operating' },
@@ -52,7 +52,7 @@ describe(useAnnotatedAssetViewModel.name, () => {
   });
 
   it('is pending, knowing only the functional location, until the asset arrives', async () => {
-    const { result } = renderHook(() => useAnnotatedAssetViewModel(linkedAsset), { wrapper });
+    const { result } = renderHook(() => useAnnotatedAssetViewModel(annotatedAsset), { wrapper });
 
     expect(result.current.isPending).toBe(true);
     expect(result.current.title).toBe('FLOC-9');
@@ -61,7 +61,7 @@ describe(useAnnotatedAssetViewModel.name, () => {
   });
 
   it('gives the name, status and criticality, and the plant and description after the location', async () => {
-    const { result } = renderHook(() => useAnnotatedAssetViewModel(linkedAsset), { wrapper });
+    const { result } = renderHook(() => useAnnotatedAssetViewModel(annotatedAsset), { wrapper });
 
     await waitFor(() => expect(result.current.title).toBe('Feed Pump 9'));
     expect(result.current.status).toBe('Operating');
@@ -75,7 +75,7 @@ describe(useAnnotatedAssetViewModel.name, () => {
 
   it('reports a failed load with its error and reads again on retry', async () => {
     vi.mocked(detailsService.getAssetDetails).mockRejectedValueOnce(new Error('no access'));
-    const { result } = renderHook(() => useAnnotatedAssetViewModel(linkedAsset), { wrapper });
+    const { result } = renderHook(() => useAnnotatedAssetViewModel(annotatedAsset), { wrapper });
 
     await waitFor(() => expect(result.current.isError).toBe(true));
     expect(result.current.error).toEqual(new Error('no access'));

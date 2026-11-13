@@ -1,9 +1,9 @@
 import { IconTool } from '@tabler/icons-react';
 
-import { MODEL } from '../../config/model';
-import { getPropertyValue } from '../../lib/assetProperties';
-import type { AssetInstanceDetails } from '../../types/asset';
-import { PropertyGrid } from '../general';
+import { MODEL } from '../../../config/model';
+import { getPropertyValue } from '../../../lib/assetProperties';
+import type { AssetInstanceDetails } from '../../../types/asset';
+import { PropertyGrid } from '../../general';
 
 type EquipmentDetailsProps = {
   equipment: AssetInstanceDetails;

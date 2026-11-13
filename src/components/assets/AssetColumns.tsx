@@ -8,7 +8,9 @@ import {
 } from '../../constants/labels';
 import { getStatusTone } from '../../lib/assetStatus';
 import type { AssetListItem } from '../../types/asset';
-import { CriticalityPill, StatusPill } from '../general';
+import { StatusPill } from '../general';
+
+import { CriticalityPill } from './CriticalityPill';
 
 export const ASSET_COLUMNS: ColumnDef<AssetListItem>[] = [
   {

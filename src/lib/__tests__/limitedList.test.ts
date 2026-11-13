@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { MAX_QUERY_LIMIT } from '../../constants/queries';
+import { MAX_QUERY_LIMIT } from '../../constants/query';
 import { getRequestLimit, toLimitedList } from '../limitedList';
 
 describe(getRequestLimit.name, () => {

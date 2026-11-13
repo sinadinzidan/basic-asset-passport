@@ -9,13 +9,13 @@ import { makeQueryClientWrapper } from '../../../../__mocks__/QueryClientWrapper
 import { AssetClientContext } from '../../../../hooks/assets/useAssetClient';
 import { UseAssetDetailsContext } from '../../../../hooks/assets/useAssetDetails';
 import type { AssetDetailsService } from '../../../../services/assets/assetDetails';
-import { LinkedAssetPopover } from '../LinkedAssetPopover';
+import { AnnotatedAssetPopover } from '../AnnotatedAssetPopover';
 
 const assetContext = makeMockClient();
 
-const linkedAsset = { space: 'asset-space', externalId: 'FLOC-9' };
+const annotatedAsset = { space: 'asset-space', externalId: 'FLOC-9' };
 
-describe(LinkedAssetPopover.name, () => {
+describe(AnnotatedAssetPopover.name, () => {
   let context: AssetDetailsService;
   let wrapper: ComponentType<{ children: ReactNode }>;
   let anchor: HTMLElement;
@@ -27,7 +27,7 @@ describe(LinkedAssetPopover.name, () => {
       getAssetDetails: vi.fn(() =>
         Promise.resolve(
           makeInstanceDetails({
-            ...linkedAsset,
+            ...annotatedAsset,
             properties: [
               { identifier: 'name', label: 'Name', value: 'Feed Pump 9' },
               { identifier: 'description', label: 'Description', value: 'Feeds the boiler' },
@@ -58,15 +58,17 @@ describe(LinkedAssetPopover.name, () => {
     anchor.remove();
   });
 
-  function renderPopover(overrides: Partial<React.ComponentProps<typeof LinkedAssetPopover>> = {}) {
+  function renderPopover(
+    overrides: Partial<React.ComponentProps<typeof AnnotatedAssetPopover>> = {},
+  ) {
     const properties = {
-      target: { asset: linkedAsset, anchor },
+      target: { asset: annotatedAsset, anchor },
       onClose: vi.fn(),
       onOpenAsset: vi.fn(),
       ...overrides,
     };
 
-    render(<LinkedAssetPopover {...properties} />, { wrapper });
+    render(<AnnotatedAssetPopover {...properties} />, { wrapper });
 
     return properties;
   }
@@ -87,7 +89,7 @@ describe(LinkedAssetPopover.name, () => {
     expect(screen.getByText('Feeds the boiler')).toBeInTheDocument();
     expect(screen.getByText('South Plant')).toBeInTheDocument();
     expect(screen.getByText('FLOC-9')).toBeInTheDocument();
-    expect(context.getAssetDetails).toHaveBeenCalledWith(linkedAsset);
+    expect(context.getAssetDetails).toHaveBeenCalledWith(annotatedAsset);
   });
 
   it('says it is loading while the asset is read', () => {
@@ -116,7 +118,7 @@ describe(LinkedAssetPopover.name, () => {
 
     await user.click(await screen.findByRole('button', { name: 'Open asset' }));
 
-    expect(onOpenAsset).toHaveBeenCalledExactlyOnceWith(linkedAsset);
+    expect(onOpenAsset).toHaveBeenCalledExactlyOnceWith(annotatedAsset);
   });
 
   it('closes from its close button without opening the asset', async () => {

@@ -41,11 +41,11 @@ export const DOCUMENT_DELETE_ERROR_TITLE = 'The document could not be deleted';
 export const DOCUMENT_UPLOAD_ERROR_TITLE = 'Some documents could not be uploaded';
 export const DOCUMENT_UPLOAD_RETRY_LABEL = 'Try again';
 export const DOCUMENT_UPLOAD_FAILED_MESSAGE = 'Upload failed.';
-export const LINKED_ASSET_LOADING_MESSAGE = 'Loading asset...';
-export const LINKED_ASSET_ERROR_TITLE = 'Asset could not be loaded';
-export const LINKED_ASSET_ERROR_DESCRIPTION =
+export const ANNOTATED_ASSET_LOADING_MESSAGE = 'Loading asset...';
+export const ANNOTATED_ASSET_ERROR_TITLE = 'Asset could not be loaded';
+export const ANNOTATED_ASSET_ERROR_DESCRIPTION =
   'Check that the linked item is an asset in the register and that you can read it, then try again.';
-export const LINKED_ASSET_PENDING_TITLE = 'Linked asset';
+export const ANNOTATED_ASSET_PENDING_TITLE = 'Linked asset';
 export const DOCUMENT_UPLOAD_HINT = `Choose one or more files, up to ${DOCUMENT_MAX_FILE_SIZE_LABEL} each.`;
 export const DOCUMENT_EMPTY_FILE_MESSAGE = 'The file is empty.';
 export const DOCUMENT_TOO_LARGE_MESSAGE = `The file is larger than ${DOCUMENT_MAX_FILE_SIZE_LABEL}.`;

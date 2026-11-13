@@ -7,49 +7,51 @@ import {
 } from '@cognite/aura/components/popover';
 
 import {
-  LINKED_ASSET_ERROR_DESCRIPTION,
-  LINKED_ASSET_ERROR_TITLE,
-  LINKED_ASSET_LOADING_MESSAGE,
-  LINKED_ASSET_PENDING_TITLE,
+  ANNOTATED_ASSET_ERROR_DESCRIPTION,
+  ANNOTATED_ASSET_ERROR_TITLE,
+  ANNOTATED_ASSET_LOADING_MESSAGE,
+  ANNOTATED_ASSET_PENDING_TITLE,
 } from '../../../constants/documents';
 import { LoadingNoticeVariant } from '../../../enums/loadingNoticeVariant';
 import { useAnnotatedAssetViewModel } from '../../../hooks/assets/documents/view-models/useAnnotatedAssetViewModel';
 import { getStatusTone } from '../../../lib/assetStatus';
 import { getErrorReason } from '../../../lib/errorReason';
 import type { AssetIdentifier } from '../../../types/asset';
-import {
-  CriticalityPill,
-  GeneralButton,
-  LoadingNotice,
-  PropertyGrid,
-  RetryAlert,
-  StatusPill,
-} from '../../general';
+import { GeneralButton, LoadingNotice, PropertyGrid, RetryAlert, StatusPill } from '../../general';
+import { CriticalityPill } from '../CriticalityPill';
 
-export type LinkedAssetTarget = {
+export type AnnotatedAssetTarget = {
   asset: AssetIdentifier;
   anchor: Element;
 };
 
-type LinkedAssetPopoverProps = {
-  target: LinkedAssetTarget | null;
+type AnnotatedAssetPopoverProps = {
+  target: AnnotatedAssetTarget | null;
   onClose: () => void;
   onOpenAsset: (asset: AssetIdentifier) => void;
 };
 
-export function LinkedAssetPopover({ target, onClose, onOpenAsset }: LinkedAssetPopoverProps) {
+export function AnnotatedAssetPopover({
+  target,
+  onClose,
+  onOpenAsset,
+}: AnnotatedAssetPopoverProps) {
   if (target === null) return null;
 
-  return <OpenLinkedAssetPopover target={target} onClose={onClose} onOpenAsset={onOpenAsset} />;
+  return <OpenAnnotatedAssetPopover target={target} onClose={onClose} onOpenAsset={onOpenAsset} />;
 }
 
 const OUTSIDE_PRESS_REASON = 'outside-press';
 
-type OpenLinkedAssetPopoverProps = Omit<LinkedAssetPopoverProps, 'target'> & {
-  target: LinkedAssetTarget;
+type OpenAnnotatedAssetPopoverProps = Omit<AnnotatedAssetPopoverProps, 'target'> & {
+  target: AnnotatedAssetTarget;
 };
 
-function OpenLinkedAssetPopover({ target, onClose, onOpenAsset }: OpenLinkedAssetPopoverProps) {
+function OpenAnnotatedAssetPopover({
+  target,
+  onClose,
+  onOpenAsset,
+}: OpenAnnotatedAssetPopoverProps) {
   const { asset, anchor } = target;
   const { title, status, criticality, details, error, isError, isFetching, isPending, retry } =
     useAnnotatedAssetViewModel(asset);
@@ -77,19 +79,19 @@ function OpenLinkedAssetPopover({ target, onClose, onOpenAsset }: OpenLinkedAsse
       >
         <PopoverHeaderContent>
           <PopoverTitle className="min-w-0 whitespace-normal break-words font-display tracking-wide">
-            {isPending || isError ? LINKED_ASSET_PENDING_TITLE : title}
+            {isPending || isError ? ANNOTATED_ASSET_PENDING_TITLE : title}
           </PopoverTitle>
           <PopoverClose className="hud-button" />
         </PopoverHeaderContent>
         {isPending ? (
           <LoadingNotice
-            message={LINKED_ASSET_LOADING_MESSAGE}
+            message={ANNOTATED_ASSET_LOADING_MESSAGE}
             variant={LoadingNoticeVariant.CARD}
           />
         ) : isError ? (
           <RetryAlert
-            title={LINKED_ASSET_ERROR_TITLE}
-            description={LINKED_ASSET_ERROR_DESCRIPTION}
+            title={ANNOTATED_ASSET_ERROR_TITLE}
+            description={ANNOTATED_ASSET_ERROR_DESCRIPTION}
             reason={getErrorReason(error)}
             isRetrying={isFetching}
             onRetry={retry}

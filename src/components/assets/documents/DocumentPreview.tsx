@@ -11,9 +11,9 @@ import {
 import type { DocumentPreviewProps } from '../../../hooks/assets/documents/useDocumentPreviewRenderer';
 import { useNavigationState } from '../../../hooks/general/useNavigationState';
 
+import { AnnotatedAssetPopover, type AnnotatedAssetTarget } from './AnnotatedAssetPopover';
 import { DocumentPreviewControls } from './DocumentPreviewControls';
 import { DocumentViewerContext } from './documentViewerContext';
-import { LinkedAssetPopover, type LinkedAssetTarget } from './LinkedAssetPopover';
 
 const FIRST_PAGE = 1;
 
@@ -25,7 +25,7 @@ export function DocumentPreview({ document }: DocumentPreviewProps) {
   const [page, setPage] = useState(FIRST_PAGE);
   const [pageCount, setPageCount] = useState(0);
   const [zoom, setZoom] = useState(PREVIEW_DEFAULT_ZOOM);
-  const [linkedTarget, setLinkedTarget] = useState<LinkedAssetTarget | null>(null);
+  const [linkedTarget, setLinkedTarget] = useState<AnnotatedAssetTarget | null>(null);
 
   function handleDocumentLoad({ numPages }: { numPages: number }): void {
     setPageCount(numPages);
@@ -37,7 +37,7 @@ export function DocumentPreview({ document }: DocumentPreviewProps) {
     setLinkedTarget({ asset: annotation.linkedResource, anchor });
   }
 
-  function handleLinkedAssetClose(): void {
+  function handleAnnotatedAssetClose(): void {
     setLinkedTarget(null);
   }
 
@@ -79,9 +79,9 @@ export function DocumentPreview({ document }: DocumentPreviewProps) {
         onPageChange={changePage}
         onZoomChange={changeZoom}
       />
-      <LinkedAssetPopover
+      <AnnotatedAssetPopover
         target={linkedTarget}
-        onClose={handleLinkedAssetClose}
+        onClose={handleAnnotatedAssetClose}
         onOpenAsset={openAsset}
       />
     </div>

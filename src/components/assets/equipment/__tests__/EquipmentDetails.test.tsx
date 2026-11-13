@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
-import { makeInstanceDetails } from '../../../__mocks__/assets';
+import { makeInstanceDetails } from '../../../../__mocks__/assets';
 import { EquipmentDetails } from '../EquipmentDetails';
 
 describe(EquipmentDetails.name, () => {

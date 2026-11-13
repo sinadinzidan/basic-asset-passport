@@ -1,4 +1,4 @@
-import { MAX_QUERY_LIMIT } from '../constants/queries';
+import { MAX_QUERY_LIMIT } from '../constants/query';
 import type { LimitedList } from '../types/list';
 
 export function getRequestLimit(limit: number): number {

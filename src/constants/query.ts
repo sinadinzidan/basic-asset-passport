@@ -18,3 +18,4 @@ export const RETRYABLE_HTTP_STATUSES: readonly number[] = [
 export const QUERY_RETRY_BACKOFF_FACTOR = 2;
 export const CDF_MAX_CONCURRENT_REQUESTS = 15;
 export const RETRY_AFTER_HEADER = 'retry-after';
+export const MAX_QUERY_LIMIT = 10_000;
