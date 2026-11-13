@@ -2,33 +2,33 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import type { ComponentType, ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { makeAssetSummaryContext } from '../../../__mocks__/assetSummary';
 import { makeMockClient } from '../../../__mocks__/cogniteClient';
 import { makeQueryClientWrapper } from '../../../__mocks__/QueryClientWrapper';
-import { makeRegisterSummaryContext } from '../../../__mocks__/registerSummary';
-import type { RegisterSummaryService } from '../../../services/assets/registerSummary';
+import type { AssetSummaryService } from '../../../services/assets/assetSummary';
 import { AssetClientContext } from '../useAssetClient';
-import { UseRegisterSummaryContext, useRegisterSummary } from '../useRegisterSummary';
+import { UseAssetSummaryContext, useAssetSummary } from '../useAssetSummary';
 
-describe(useRegisterSummary.name, () => {
+describe(useAssetSummary.name, () => {
   const client = makeMockClient();
-  let context: RegisterSummaryService;
+  let context: AssetSummaryService;
   let wrapper: ComponentType<{ children: ReactNode }>;
 
   beforeEach(() => {
-    context = makeRegisterSummaryContext();
+    context = makeAssetSummaryContext();
     const QueryWrapper = makeQueryClientWrapper();
 
     wrapper = ({ children }) => (
       <AssetClientContext.Provider value={client}>
-        <UseRegisterSummaryContext.Provider value={{ createRegisterSummaryService: () => context }}>
+        <UseAssetSummaryContext.Provider value={{ createAssetSummaryService: () => context }}>
           <QueryWrapper>{children}</QueryWrapper>
-        </UseRegisterSummaryContext.Provider>
+        </UseAssetSummaryContext.Provider>
       </AssetClientContext.Provider>
     );
   });
 
   it('is loading, with no counts, until the counts arrive', () => {
-    const { result } = renderHook(() => useRegisterSummary(), { wrapper });
+    const { result } = renderHook(() => useAssetSummary(), { wrapper });
 
     expect(result.current).toMatchObject({
       assets: { count: null, isLoading: true },
@@ -39,7 +39,7 @@ describe(useRegisterSummary.name, () => {
   });
 
   it('reports the whole number the server counted for each card', async () => {
-    const { result } = renderHook(() => useRegisterSummary(), { wrapper });
+    const { result } = renderHook(() => useAssetSummary(), { wrapper });
 
     await waitFor(() => expect(result.current.equipment.isLoading).toBe(false));
 
@@ -52,7 +52,7 @@ describe(useRegisterSummary.name, () => {
   });
 
   it('asks for all three at once, without waiting for one another', () => {
-    renderHook(() => useRegisterSummary(), { wrapper });
+    renderHook(() => useAssetSummary(), { wrapper });
 
     return waitFor(() => {
       expect(context.countAllAssets).toHaveBeenCalledOnce();
@@ -64,7 +64,7 @@ describe(useRegisterSummary.name, () => {
   it('leaves a count that could not be read without a figure while the others still show', async () => {
     vi.mocked(context.countAllEquipment).mockRejectedValue(new Error('forbidden'));
 
-    const { result } = renderHook(() => useRegisterSummary(), { wrapper });
+    const { result } = renderHook(() => useAssetSummary(), { wrapper });
 
     await waitFor(() => expect(result.current.equipment.isLoading).toBe(false));
     expect(result.current.equipment).toEqual({ count: null, isLoading: false });
@@ -76,14 +76,14 @@ describe(useRegisterSummary.name, () => {
 
     vi.mocked(context.countAllEquipment).mockRejectedValue(failure);
 
-    const { result } = renderHook(() => useRegisterSummary(), { wrapper });
+    const { result } = renderHook(() => useAssetSummary(), { wrapper });
 
     await waitFor(() => expect(result.current.error).toBe(failure));
   });
 
   it('reads only the failed counts again on retry', async () => {
     vi.mocked(context.countAllEquipment).mockRejectedValueOnce(new Error('forbidden'));
-    const { result } = renderHook(() => useRegisterSummary(), { wrapper });
+    const { result } = renderHook(() => useAssetSummary(), { wrapper });
 
     await waitFor(() => expect(result.current.error).not.toBeNull());
 
@@ -96,7 +96,7 @@ describe(useRegisterSummary.name, () => {
   });
 
   it('does not ask again for counts it already holds', async () => {
-    const { result, rerender } = renderHook(() => useRegisterSummary(), { wrapper });
+    const { result, rerender } = renderHook(() => useAssetSummary(), { wrapper });
 
     await waitFor(() => expect(result.current.assets.isLoading).toBe(false));
 

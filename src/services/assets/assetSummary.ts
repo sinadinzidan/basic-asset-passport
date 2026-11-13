@@ -10,13 +10,13 @@ import { findAssetPassportView, toViewReference } from './viewHelpers';
 
 const MAX_STATUS_GROUPS = 1000;
 
-export interface RegisterSummaryService {
+export interface AssetSummaryService {
   countAllAssets(): Promise<number>;
   countOperatingAssets(): Promise<number>;
   countAllEquipment(): Promise<number>;
 }
 
-class CdfRegisterSummaryService implements RegisterSummaryService {
+class CdfAssetSummaryService implements AssetSummaryService {
   constructor(private readonly client: AssetContextType) {}
 
   countAllAssets = async (): Promise<number> => {
@@ -42,8 +42,8 @@ class CdfRegisterSummaryService implements RegisterSummaryService {
   };
 }
 
-export function createRegisterSummaryService(client: AssetContextType): RegisterSummaryService {
-  return new CdfRegisterSummaryService(client);
+export function createAssetSummaryService(client: AssetContextType): AssetSummaryService {
+  return new CdfAssetSummaryService(client);
 }
 
 function sumOperatingGroups(response: AggregationResponse): number {

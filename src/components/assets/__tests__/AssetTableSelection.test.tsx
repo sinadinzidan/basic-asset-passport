@@ -8,14 +8,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { StoreApi } from 'zustand';
 
 import { makeAssetListItem, makeAssetPage } from '../../../__mocks__/assets';
+import { makeAssetSummaryContext } from '../../../__mocks__/assetSummary';
 import { makeMockClient } from '../../../__mocks__/cogniteClient';
 import { makeNavigationStore } from '../../../__mocks__/navigation';
 import { makeQueryClientWrapper, makeTestQueryClient } from '../../../__mocks__/QueryClientWrapper';
-import { makeRegisterSummaryContext } from '../../../__mocks__/registerSummary';
 import { ASSET_SEARCH_LIMIT } from '../../../constants/assets';
 import { AssetClientContext } from '../../../hooks/assets/useAssetClient';
 import { UseAssetsContext } from '../../../hooks/assets/useAssets';
-import { UseRegisterSummaryContext } from '../../../hooks/assets/useRegisterSummary';
+import { UseAssetSummaryContext } from '../../../hooks/assets/useAssetSummary';
 import { NavigationStoreContext } from '../../../hooks/general/useNavigationState';
 import type { AssetService } from '../../../services/assets/asset';
 import type { AssetListItem } from '../../../types/asset';
@@ -70,20 +70,20 @@ describe('AssetTable rows', () => {
     store = makeNavigationStore();
     queryClient = makeTestQueryClient();
     const QueryWrapper = makeQueryClientWrapper(queryClient);
-    const countsContext = makeRegisterSummaryContext();
+    const countsContext = makeAssetSummaryContext();
 
     wrapper = ({ children }) => (
       <NavigationStoreContext.Provider value={store}>
         <UseAssetsContext.Provider value={{ createAssetService: () => mockContext }}>
-          <UseRegisterSummaryContext.Provider
-            value={{ createRegisterSummaryService: () => countsContext }}
+          <UseAssetSummaryContext.Provider
+            value={{ createAssetSummaryService: () => countsContext }}
           >
             <QueryWrapper>
               <AssetClientContext.Provider value={assetContext}>
                 {children}
               </AssetClientContext.Provider>
             </QueryWrapper>
-          </UseRegisterSummaryContext.Provider>
+          </UseAssetSummaryContext.Provider>
         </UseAssetsContext.Provider>
       </NavigationStoreContext.Provider>
     );

@@ -5,11 +5,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { makeAssetDetailsTabCountsContext } from '../../../__mocks__/assetDetailsTabCounts';
 import { makeAssetListItem, makeAssetPage, makeInstanceDetails } from '../../../__mocks__/assets';
+import { makeAssetSummaryContext } from '../../../__mocks__/assetSummary';
 import { makeMockClient } from '../../../__mocks__/cogniteClient';
 import { makeAssetDocument } from '../../../__mocks__/documents';
 import { makeLimitedList } from '../../../__mocks__/lists';
 import { makeQueryClientWrapper } from '../../../__mocks__/QueryClientWrapper';
-import { makeRegisterSummaryContext } from '../../../__mocks__/registerSummary';
 import { AssetTab } from '../../../enums/assetTab';
 import { UseAssetDocumentsContext } from '../../../hooks/assets/documents/useAssetDocuments';
 import { DocumentFileClientContext } from '../../../hooks/assets/documents/useDocumentFileClient';
@@ -18,7 +18,7 @@ import { AssetClientContext } from '../../../hooks/assets/useAssetClient';
 import { UseAssetDetailsContext } from '../../../hooks/assets/useAssetDetails';
 import { UseAssetDetailsTabCountsContext } from '../../../hooks/assets/useAssetDetailsTabCounts';
 import { UseAssetsContext } from '../../../hooks/assets/useAssets';
-import { UseRegisterSummaryContext } from '../../../hooks/assets/useRegisterSummary';
+import { UseAssetSummaryContext } from '../../../hooks/assets/useAssetSummary';
 import { DebounceContext, type DebounceDeps } from '../../../hooks/general/useDebouncedCallback';
 import { useNavigationState } from '../../../hooks/general/useNavigationState';
 import { NavigationProvider } from '../../../providers/general/NavigationProvider';
@@ -56,7 +56,7 @@ describe(Assets.name, () => {
       syncInternalState: vi.fn<StateSyncApi['syncInternalState']>(() => Promise.resolve(true)),
     };
     const tabCountsContext = makeAssetDetailsTabCountsContext();
-    const registerCountsContext = makeRegisterSummaryContext();
+    const assetSummaryContext = makeAssetSummaryContext();
     const QueryWrapper = makeQueryClientWrapper();
 
     wrapper = ({ children }) => (
@@ -68,15 +68,15 @@ describe(Assets.name, () => {
             <UseAssetDetailsTabCountsContext.Provider
               value={{ createAssetDetailsTabCountService: () => tabCountsContext }}
             >
-              <UseRegisterSummaryContext.Provider
-                value={{ createRegisterSummaryService: () => registerCountsContext }}
+              <UseAssetSummaryContext.Provider
+                value={{ createAssetSummaryService: () => assetSummaryContext }}
               >
                 <QueryWrapper>
                   <AssetClientContext.Provider value={client}>
                     {children}
                   </AssetClientContext.Provider>
                 </QueryWrapper>
-              </UseRegisterSummaryContext.Provider>
+              </UseAssetSummaryContext.Provider>
             </UseAssetDetailsTabCountsContext.Provider>
           </UseAssetDetailsContext.Provider>
         </UseAssetsContext.Provider>
@@ -84,8 +84,8 @@ describe(Assets.name, () => {
     );
   });
 
-  it('shows the asset register when no asset is selected', async () => {
-    render(<RegisterWithState api={api} />, { wrapper });
+  it('shows the asset table when no asset is selected', async () => {
+    render(<AssetsWithState api={api} />, { wrapper });
 
     expect(await screen.findByRole('heading', { name: 'Asset register' })).toBeInTheDocument();
     expect(screen.queryByLabelText('Breadcrumb')).not.toBeInTheDocument();
@@ -97,7 +97,7 @@ describe(Assets.name, () => {
       activeAssetTab: AssetTab.PROPERTIES,
     });
 
-    render(<RegisterWithState api={api} initialState={initialState} />, {
+    render(<AssetsWithState api={api} initialState={initialState} />, {
       wrapper,
     });
 
@@ -110,10 +110,10 @@ describe(Assets.name, () => {
     expect(screen.getByLabelText('Breadcrumb')).toBeInTheDocument();
   });
 
-  it('returns to the register from the breadcrumb and syncs the cleared selection', async () => {
+  it('returns to the asset table from the breadcrumb and syncs the cleared selection', async () => {
     const initialState = JSON.stringify({ selectedAsset });
 
-    render(<RegisterWithState api={api} initialState={initialState} />, {
+    render(<AssetsWithState api={api} initialState={initialState} />, {
       wrapper,
     });
     await screen.findByRole('heading', {
@@ -135,7 +135,7 @@ describe(Assets.name, () => {
   });
 
   it('syncs a typed search to the host and searches for it', async () => {
-    render(<RegisterWithState api={api} />, { wrapper });
+    render(<AssetsWithState api={api} />, { wrapper });
 
     await userEvent.type(await screen.findByRole('searchbox', { name: 'Search assets' }), 'pump');
 
@@ -154,7 +154,7 @@ describe(Assets.name, () => {
   it('restores the search from the shared link', async () => {
     const initialState = JSON.stringify({ searchQuery: 'pump' });
 
-    render(<RegisterWithState api={api} initialState={initialState} />, {
+    render(<AssetsWithState api={api} initialState={initialState} />, {
       wrapper,
     });
 
@@ -168,7 +168,7 @@ describe(Assets.name, () => {
       searchQuery: 'pump',
     });
 
-    render(<RegisterWithState api={api} initialState={initialState} />, {
+    render(<AssetsWithState api={api} initialState={initialState} />, {
       wrapper,
     });
     await screen.findByRole('heading', {
@@ -185,7 +185,7 @@ describe(Assets.name, () => {
     vi.mocked(assetsContext.listAssets).mockResolvedValue(
       makeAssetPage([makeAssetListItem()], 'cursor-2'),
     );
-    render(<RegisterWithState api={api} />, { wrapper });
+    render(<AssetsWithState api={api} />, { wrapper });
     const nextButton = await screen.findByRole('button', { name: 'Next page' });
 
     await waitFor(() => expect(nextButton).toBeEnabled());
@@ -198,17 +198,17 @@ describe(Assets.name, () => {
       JSON.stringify({
         selectedAsset: null,
         activeAssetTab: AssetTab.PROPERTIES,
-        registerCursors: ['cursor-2'],
+        assetTableCursors: ['cursor-2'],
       }),
     );
   });
 
-  it('restores the page of the register from the shared link', async () => {
+  it('restores the page of the asset table from the shared link', async () => {
     const initialState = JSON.stringify({
-      registerCursors: ['cursor-2', 'cursor-3'],
+      assetTableCursors: ['cursor-2', 'cursor-3'],
     });
 
-    render(<RegisterWithState api={api} initialState={initialState} />, {
+    render(<AssetsWithState api={api} initialState={initialState} />, {
       wrapper,
     });
 
@@ -218,10 +218,10 @@ describe(Assets.name, () => {
 
   it('goes back one page from a restored page', async () => {
     const initialState = JSON.stringify({
-      registerCursors: ['cursor-2', 'cursor-3'],
+      assetTableCursors: ['cursor-2', 'cursor-3'],
     });
 
-    render(<RegisterWithState api={api} initialState={initialState} />, {
+    render(<AssetsWithState api={api} initialState={initialState} />, {
       wrapper,
     });
     const previousButton = await screen.findByRole('button', {
@@ -237,9 +237,9 @@ describe(Assets.name, () => {
   });
 
   it('goes back to the first page when the search changes', async () => {
-    const initialState = JSON.stringify({ registerCursors: ['cursor-2'] });
+    const initialState = JSON.stringify({ assetTableCursors: ['cursor-2'] });
 
-    render(<RegisterWithState api={api} initialState={initialState} />, {
+    render(<AssetsWithState api={api} initialState={initialState} />, {
       wrapper,
     });
     expect(await screen.findByText('Page 2')).toBeInTheDocument();
@@ -261,9 +261,9 @@ describe(Assets.name, () => {
     vi.mocked(assetsContext.listAssets).mockImplementation((cursor) =>
       cursor ? Promise.reject(new Error('stale cursor')) : Promise.resolve(makeAssetPage()),
     );
-    const initialState = JSON.stringify({ registerCursors: ['stale-cursor'] });
+    const initialState = JSON.stringify({ assetTableCursors: ['stale-cursor'] });
 
-    render(<RegisterWithState api={api} initialState={initialState} />, {
+    render(<AssetsWithState api={api} initialState={initialState} />, {
       wrapper,
     });
 
@@ -272,7 +272,7 @@ describe(Assets.name, () => {
     expect(await screen.findByText('Page 1')).toBeInTheDocument();
   });
 
-  it('lets a document preview open another asset in the register', async () => {
+  it('lets a document preview open another asset in the asset table', async () => {
     // Arrange
     const user = userEvent.setup();
     const client = makeMockClient();
@@ -304,7 +304,7 @@ describe(Assets.name, () => {
             value={{ now: () => Date.now(), createAssetDocumentService: () => documentsContext }}
           >
             <DocumentPreviewRendererContext.Provider value={() => <OpenOtherAssetButton />}>
-              <RegisterWithState api={api} initialState={initialState} />
+              <AssetsWithState api={api} initialState={initialState} />
             </DocumentPreviewRendererContext.Provider>
           </UseAssetDocumentsContext.Provider>
         </DocumentFileClientContext.Provider>
@@ -329,7 +329,7 @@ describe(Assets.name, () => {
   });
 });
 
-function RegisterWithState({
+function AssetsWithState({
   api,
   initialState,
 }: {

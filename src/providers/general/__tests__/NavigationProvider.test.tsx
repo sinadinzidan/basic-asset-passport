@@ -41,7 +41,7 @@ describe(NavigationProvider.name, () => {
     expect(api.syncInternalState).not.toHaveBeenCalled();
   });
 
-  it('falls back to the register when the host state is unreadable', () => {
+  it('falls back to the asset table when the host state is unreadable', () => {
     renderProvider(api, 'not json');
 
     expect(screen.getByText('Searching for nothing')).toBeVisible();

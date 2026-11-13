@@ -6,12 +6,12 @@ const NO_ASSETS: AssetListItem[] = [];
 
 export function useAssetTableViewModel() {
   const searchQuery = useNavigationState((store) => store.navigationState.searchQuery ?? '');
-  const registerCursors = useNavigationState((store) => store.navigationState.registerCursors);
+  const assetTableCursors = useNavigationState((store) => store.navigationState.assetTableCursors);
   const {
     changeSearchQuery,
-    goToNextRegisterPage,
-    goToPreviousRegisterPage,
-    goToFirstRegisterPage,
+    goToNextAssetTablePage,
+    goToPreviousAssetTablePage,
+    goToFirstAssetTablePage,
     selectAsset,
   } = useNavigationState((store) => store.actions);
   const {
@@ -21,14 +21,14 @@ export function useAssetTableViewModel() {
     isFetching,
     isPending,
     retry,
-  } = useAssets(registerCursors?.[registerCursors.length - 1], searchQuery);
+  } = useAssets(assetTableCursors?.[assetTableCursors.length - 1], searchQuery);
 
-  const pageCursors = registerCursors ?? [];
+  const pageCursors = assetTableCursors ?? [];
   const isSearching = searchQuery !== '';
   const nextCursor = assetPage?.nextCursor ?? null;
 
   function goToNextPage(): void {
-    if (nextCursor) goToNextRegisterPage(nextCursor);
+    if (nextCursor) goToNextAssetTablePage(nextCursor);
   }
 
   function openAsset({ space, externalId }: AssetIdentifier): void {
@@ -50,8 +50,8 @@ export function useAssetTableViewModel() {
     retry,
     changeSearchQuery,
     goToNextPage,
-    goToPreviousPage: goToPreviousRegisterPage,
-    goToFirstPage: goToFirstRegisterPage,
+    goToPreviousPage: goToPreviousAssetTablePage,
+    goToFirstPage: goToFirstAssetTablePage,
     openAsset,
   };
 }

@@ -86,14 +86,14 @@ describe(AssetDetails.name, () => {
     );
   });
 
-  function renderRegister() {
+  function renderAssets() {
     return render(<AssetDetails />, { wrapper });
   }
 
   it('shows only a loading status while details load', () => {
     vi.mocked(mockContext.getAssetDetails).mockReturnValue(new Promise(() => {}));
 
-    renderRegister();
+    renderAssets();
 
     expect(screen.getByRole('status')).toHaveTextContent(
       'Loading asset and equipment properties...',
@@ -101,7 +101,7 @@ describe(AssetDetails.name, () => {
   });
 
   it('shows the asset name, status and criticality', async () => {
-    renderRegister();
+    renderAssets();
 
     expect(
       await screen.findByRole('heading', {
@@ -128,7 +128,7 @@ describe(AssetDetails.name, () => {
       }),
     );
 
-    renderRegister();
+    renderAssets();
 
     const pill = await screen.findByText('IN SERVICE', {
       selector: '[data-slot="badge"]',
@@ -142,14 +142,14 @@ describe(AssetDetails.name, () => {
       makeInstanceDetails({ externalId: 'FLOC-100', properties: [] }),
     );
 
-    renderRegister();
+    renderAssets();
 
     expect(await screen.findByRole('heading', { level: 1, name: 'FLOC-100' })).toBeInTheDocument();
     expect(screen.queryByText(/Criticality/)).not.toBeInTheDocument();
   });
 
   it('has no back button: the breadcrumb in the header is the way back', async () => {
-    renderRegister();
+    renderAssets();
     await screen.findByRole('heading', { level: 1 });
 
     expect(screen.queryByRole('button', { name: 'Back to assets' })).not.toBeInTheDocument();
@@ -158,7 +158,7 @@ describe(AssetDetails.name, () => {
   it('starts counting the tabs while the asset is still loading', () => {
     vi.mocked(mockContext.getAssetDetails).mockReturnValue(new Promise(() => {}));
 
-    renderRegister();
+    renderAssets();
 
     for (const count of [
       tabCountsContext.countAssetEquipment,
@@ -172,7 +172,7 @@ describe(AssetDetails.name, () => {
   });
 
   it('shows the count of each tab once it is counted', async () => {
-    renderRegister();
+    renderAssets();
 
     expect(await screen.findByRole('tab', { name: /equipment/i })).toBeInTheDocument();
     expect(await screen.findByRole('tab', { name: /timeseries/i })).toHaveTextContent(
@@ -184,7 +184,7 @@ describe(AssetDetails.name, () => {
   });
 
   it('opens the selected tab', async () => {
-    renderRegister();
+    renderAssets();
 
     await userEvent.click(await screen.findByRole('tab', { name: /equipment/i }));
 
@@ -195,7 +195,7 @@ describe(AssetDetails.name, () => {
   it('shows the reason the details cannot be loaded', async () => {
     vi.mocked(mockContext.getAssetDetails).mockRejectedValue(new Error('No access to the view.'));
 
-    renderRegister();
+    renderAssets();
 
     expect(await screen.findByText('Reason: No access to the view.')).toBeInTheDocument();
   });
@@ -203,7 +203,7 @@ describe(AssetDetails.name, () => {
   it('offers a retry when the details cannot be loaded', async () => {
     vi.mocked(mockContext.getAssetDetails).mockRejectedValueOnce(new Error('failed'));
 
-    renderRegister();
+    renderAssets();
 
     expect(await screen.findByText('Asset details could not be loaded')).toBeInTheDocument();
 

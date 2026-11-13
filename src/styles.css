@@ -636,7 +636,7 @@
 /* ---------- Data table ---------- */
 
 /*
- * The asset register's grid (Aura DataGrid) draws each row's bottom line with a default border colour that is nearly
+ * The asset table's grid (Aura DataGrid) draws each row's bottom line with a default border colour that is nearly
  * the panel colour here, so the rows ran together. They take the line colour of the other tables, and the header row
  * the stronger one, which also marks where the rows start.
  */

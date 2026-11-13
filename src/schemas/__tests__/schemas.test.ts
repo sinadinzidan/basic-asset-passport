@@ -219,7 +219,7 @@ describe('NavigationStateSchema', () => {
       selectedAsset: { space: 's', externalId: 'x' },
       activeAssetTab: AssetTab.NOTES,
       searchQuery: 'pump',
-      registerCursors: ['c2'],
+      assetTableCursors: ['c2'],
       timeseriesChart: { sig: 'ts:PI.1' },
       isAssistantOpen: true,
     };
@@ -233,7 +233,7 @@ describe('NavigationStateSchema', () => {
         selectedAsset: 'x',
         activeAssetTab: 'NOPE',
         searchQuery: 7,
-        registerCursors: ['c2', ''],
+        assetTableCursors: ['c2', ''],
         timeseriesChart: {},
         isAssistantOpen: 'yes',
       }),
@@ -241,7 +241,7 @@ describe('NavigationStateSchema', () => {
       selectedAsset: null,
       activeAssetTab: AssetTab.PROPERTIES,
       searchQuery: '',
-      registerCursors: [],
+      assetTableCursors: [],
     });
   });
 

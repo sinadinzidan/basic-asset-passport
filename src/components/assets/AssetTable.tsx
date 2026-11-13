@@ -3,7 +3,7 @@ import type { Row } from '@tanstack/react-table';
 
 import {
   ASSET_QUERY_LIMIT,
-  ASSET_REGISTER_DESCRIPTION,
+  ASSET_TABLE_DESCRIPTION,
   ASSET_SEARCH_TRUNCATED_MESSAGE,
   ASSETS_ERROR_DESCRIPTION,
   ASSETS_ERROR_TITLE,
@@ -26,8 +26,8 @@ import {
 import { ASSET_COLUMNS } from './AssetColumns';
 import { ASSET_GRID_CLASS_NAME } from './assetGridClassName';
 import { AssetSearchField } from './AssetSearchField';
+import { AssetSummary } from './AssetSummary';
 import { AssetTableEmptyState } from './AssetTableEmptyState';
-import { RegisterSummary } from './RegisterSummary';
 
 export function AssetTable() {
   const {
@@ -59,10 +59,10 @@ export function AssetTable() {
       <PageHeader
         kicker="Asset intelligence"
         title="Asset register"
-        description={ASSET_REGISTER_DESCRIPTION}
+        description={ASSET_TABLE_DESCRIPTION}
       />
 
-      <RegisterSummary />
+      <AssetSummary />
 
       <HudPanel shape={HudShape.SCREEN} bodyClassName="hud-flush">
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-default px-5 py-4">

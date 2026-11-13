@@ -14,7 +14,7 @@ export function parseNavigationState(initialState: string | undefined): Navigati
 
   if (!parsed.success) return DEFAULT_NAVIGATION_STATE;
 
-  const { selectedAsset, activeAssetTab, searchQuery, registerCursors, timeseriesChart } =
+  const { selectedAsset, activeAssetTab, searchQuery, assetTableCursors, timeseriesChart } =
     parsed.data;
 
   return {
@@ -22,7 +22,7 @@ export function parseNavigationState(initialState: string | undefined): Navigati
     activeAssetTab,
     ...(searchQuery ? { searchQuery } : {}),
     ...(selectedAsset && timeseriesChart ? { timeseriesChart } : {}),
-    ...(!searchQuery && registerCursors.length > 0 ? { registerCursors } : {}),
+    ...(!searchQuery && assetTableCursors.length > 0 ? { assetTableCursors } : {}),
     ...(parsed.data.isAssistantOpen ? { isAssistantOpen: true } : {}),
   };
 }

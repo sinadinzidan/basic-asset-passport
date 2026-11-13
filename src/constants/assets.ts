@@ -14,7 +14,7 @@ export const SUMMARY_EQUIPMENT_LABEL = 'Equipment';
 export const SUMMARY_COUNTS_ERROR_TITLE = 'Some counts could not be loaded';
 export const SUMMARY_COUNTS_ERROR_DESCRIPTION =
   'Check access to the Asset and Equipment views, then try again.';
-export const ASSET_REGISTER_DESCRIPTION =
+export const ASSET_TABLE_DESCRIPTION =
   'Browse functional locations and open an asset to review its properties and linked equipment.';
 export const ASSETS_ERROR_TITLE = 'Assets could not be loaded';
 export const ASSETS_ERROR_DESCRIPTION = 'Check access to the Asset view, then try again.';

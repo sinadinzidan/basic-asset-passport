@@ -63,7 +63,7 @@ describe(useAssetTableViewModel.name, () => {
   });
 
   it('reads the page of the last cursor and counts the pages before it', async () => {
-    const { result } = renderViewModel({ registerCursors: ['cursor-2', 'cursor-3'] });
+    const { result } = renderViewModel({ assetTableCursors: ['cursor-2', 'cursor-3'] });
 
     await waitFor(() => expect(result.current.isPending).toBe(false));
     expect(assetService.listAssets).toHaveBeenCalledWith('cursor-3');
@@ -78,7 +78,7 @@ describe(useAssetTableViewModel.name, () => {
 
     act(() => result.current.goToNextPage());
 
-    expect(store.getState().navigationState.registerCursors).toEqual(['cursor-2']);
+    expect(store.getState().navigationState.assetTableCursors).toEqual(['cursor-2']);
   });
 
   it('searches instead of listing and says when the matches are cut short', async () => {

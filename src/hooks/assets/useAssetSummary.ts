@@ -3,17 +3,17 @@ import { createContext, useContext } from 'react';
 
 import { COUNT_QUERY_KEY_PART, COUNT_QUERY_STALE_TIME_MS } from '../../constants/assets';
 import { toCountState } from '../../lib/countBadge';
-import { createRegisterSummaryService } from '../../services/assets/registerSummary';
+import { createAssetSummaryService } from '../../services/assets/assetSummary';
 import type { CountState } from '../../types/countState';
 
 import { useAssetClient } from './useAssetClient';
 
-const defaultDeps = { createRegisterSummaryService };
+const defaultDeps = { createAssetSummaryService };
 
-export type UseRegisterSummaryContextType = typeof defaultDeps;
-export const UseRegisterSummaryContext = createContext<UseRegisterSummaryContextType>(defaultDeps);
+export type UseAssetSummaryContextType = typeof defaultDeps;
+export const UseAssetSummaryContext = createContext<UseAssetSummaryContextType>(defaultDeps);
 
-type RegisterSummaryCounts = {
+type AssetSummaryCounts = {
   assets: CountState;
   operating: CountState;
   equipment: CountState;
@@ -22,23 +22,23 @@ type RegisterSummaryCounts = {
   retry: () => void;
 };
 
-export function useRegisterSummary(): RegisterSummaryCounts {
-  const { createRegisterSummaryService } = useContext(UseRegisterSummaryContext);
+export function useAssetSummary(): AssetSummaryCounts {
+  const { createAssetSummaryService } = useContext(UseAssetSummaryContext);
   const client = useAssetClient();
-  const countService = createRegisterSummaryService(client);
+  const countService = createAssetSummaryService(client);
 
   const assets = useQuery({
-    queryKey: getRegisterSummaryQueryKey(client.project, 'assets'),
+    queryKey: getAssetSummaryQueryKey(client.project, 'assets'),
     queryFn: () => countService.countAllAssets(),
     staleTime: COUNT_QUERY_STALE_TIME_MS,
   });
   const operating = useQuery({
-    queryKey: getRegisterSummaryQueryKey(client.project, 'operating'),
+    queryKey: getAssetSummaryQueryKey(client.project, 'operating'),
     queryFn: () => countService.countOperatingAssets(),
     staleTime: COUNT_QUERY_STALE_TIME_MS,
   });
   const equipment = useQuery({
-    queryKey: getRegisterSummaryQueryKey(client.project, 'equipment'),
+    queryKey: getAssetSummaryQueryKey(client.project, 'equipment'),
     queryFn: () => countService.countAllEquipment(),
     staleTime: COUNT_QUERY_STALE_TIME_MS,
   });
@@ -59,6 +59,6 @@ export function useRegisterSummary(): RegisterSummaryCounts {
   };
 }
 
-function getRegisterSummaryQueryKey(project: string, card: string) {
-  return ['asset-register', project, COUNT_QUERY_KEY_PART, card] as const;
+function getAssetSummaryQueryKey(project: string, card: string) {
+  return ['asset-summary', project, COUNT_QUERY_KEY_PART, card] as const;
 }

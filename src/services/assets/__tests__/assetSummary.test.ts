@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { makeViewDefinition } from '../../../__mocks__/cdf';
 import { makeOfflineSdkClient, stubModelViews } from '../../../__mocks__/cogniteClient';
 import { TestPropertyType } from '../../../enums/testPropertyType';
-import { createRegisterSummaryService } from '../registerSummary';
+import { createAssetSummaryService } from '../assetSummary';
 
 const assetView = makeViewDefinition('Asset', { flocStatus: {} }, 'v1', 'sp-model');
 const equipmentView = makeViewDefinition(
@@ -21,7 +21,7 @@ const equipmentReference = {
   version: 'v1',
 };
 
-describe('asset register count service', () => {
+describe('asset summary count service', () => {
   let client: CogniteClient;
 
   beforeEach(() => {
@@ -38,7 +38,7 @@ describe('asset register count service', () => {
       const query = vi.spyOn(client.instances, 'query');
 
       // Act
-      const count = await createRegisterSummaryService(client).countAllAssets();
+      const count = await createAssetSummaryService(client).countAllAssets();
 
       // Assert
       expect(count).toBe(4210);
@@ -53,13 +53,13 @@ describe('asset register count service', () => {
     it('counts none when the answer holds no count', async () => {
       vi.spyOn(client.instances, 'aggregate').mockResolvedValue({ items: [] });
 
-      await expect(createRegisterSummaryService(client).countAllAssets()).resolves.toBe(0);
+      await expect(createAssetSummaryService(client).countAllAssets()).resolves.toBe(0);
     });
 
     it('fails when the Asset view does not exist', async () => {
       stubModelViews(client, []);
 
-      await expect(createRegisterSummaryService(client).countAllAssets()).rejects.toThrow(
+      await expect(createAssetSummaryService(client).countAllAssets()).rejects.toThrow(
         'The Asset view was not found in the Asset_Passport data model.',
       );
     });
@@ -67,9 +67,7 @@ describe('asset register count service', () => {
     it('passes on a failure of the aggregate request', async () => {
       vi.spyOn(client.instances, 'aggregate').mockRejectedValue(new Error('forbidden'));
 
-      await expect(createRegisterSummaryService(client).countAllAssets()).rejects.toThrow(
-        'forbidden',
-      );
+      await expect(createAssetSummaryService(client).countAllAssets()).rejects.toThrow('forbidden');
     });
   });
 
@@ -81,7 +79,7 @@ describe('asset register count service', () => {
         .mockResolvedValue(makeGroupedResponse({ Operating: 3 }));
 
       // Act
-      await createRegisterSummaryService(client).countOperatingAssets();
+      await createAssetSummaryService(client).countOperatingAssets();
 
       // Assert
       expect(aggregate).toHaveBeenCalledWith({
@@ -103,7 +101,7 @@ describe('asset register count service', () => {
         }),
       );
 
-      await expect(createRegisterSummaryService(client).countOperatingAssets()).resolves.toBe(42);
+      await expect(createAssetSummaryService(client).countOperatingAssets()).resolves.toBe(42);
     });
 
     it('counts none when no status is Operating', async () => {
@@ -111,13 +109,13 @@ describe('asset register count service', () => {
         makeGroupedResponse({ Decommissioned: 5 }),
       );
 
-      await expect(createRegisterSummaryService(client).countOperatingAssets()).resolves.toBe(0);
+      await expect(createAssetSummaryService(client).countOperatingAssets()).resolves.toBe(0);
     });
 
     it('counts none when the answer holds no group', async () => {
       vi.spyOn(client.instances, 'aggregate').mockResolvedValue({ items: [] });
 
-      await expect(createRegisterSummaryService(client).countOperatingAssets()).resolves.toBe(0);
+      await expect(createAssetSummaryService(client).countOperatingAssets()).resolves.toBe(0);
     });
 
     it('leaves out a group without a status, which is not Operating', async () => {
@@ -128,7 +126,7 @@ describe('asset register count service', () => {
         ],
       });
 
-      await expect(createRegisterSummaryService(client).countOperatingAssets()).resolves.toBe(1);
+      await expect(createAssetSummaryService(client).countOperatingAssets()).resolves.toBe(1);
     });
   });
 
@@ -138,7 +136,7 @@ describe('asset register count service', () => {
         .spyOn(client.instances, 'aggregate')
         .mockResolvedValue(makeCountResponse(18500));
 
-      const count = await createRegisterSummaryService(client).countAllEquipment();
+      const count = await createAssetSummaryService(client).countAllEquipment();
 
       expect(count).toBe(18500);
       expect(aggregate).toHaveBeenCalledWith({
@@ -151,7 +149,7 @@ describe('asset register count service', () => {
     it('fails when the Equipment view does not exist', async () => {
       stubModelViews(client, [assetView]);
 
-      await expect(createRegisterSummaryService(client).countAllEquipment()).rejects.toThrow(
+      await expect(createAssetSummaryService(client).countAllEquipment()).rejects.toThrow(
         'The Equipment view was not found in the Asset_Passport data model.',
       );
     });

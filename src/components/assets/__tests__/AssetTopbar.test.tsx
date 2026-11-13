@@ -81,7 +81,7 @@ describe(AssetTopbar.name, () => {
     expect(screen.queryByLabelText('Breadcrumb')).not.toBeInTheDocument();
   });
 
-  it('shows the way to the open asset: the register as a link, then the asset as the current page', async () => {
+  it('shows the way to the open asset: the asset table as a link, then the asset as the current page', async () => {
     renderWithSelectedAsset();
 
     const breadcrumb = screen.getByRole('navigation', { name: 'Breadcrumb' });
@@ -94,7 +94,7 @@ describe(AssetTopbar.name, () => {
     );
   });
 
-  it('goes back to the register from the first step of the breadcrumb', async () => {
+  it('goes back to the asset table from the first step of the breadcrumb', async () => {
     const user = userEvent.setup();
 
     renderWithSelectedAsset();

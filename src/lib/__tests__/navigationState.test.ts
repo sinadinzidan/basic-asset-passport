@@ -38,12 +38,12 @@ describe(parseNavigationState.name, () => {
     );
   });
 
-  it('restores the page of the register as its trail of cursors', () => {
+  it('restores the page of the asset table as its trail of cursors', () => {
     const initialState = JSON.stringify({
-      registerCursors: ['cursor-2', 'cursor-3'],
+      assetTableCursors: ['cursor-2', 'cursor-3'],
     });
 
-    expect(parseNavigationState(initialState).registerCursors).toEqual(['cursor-2', 'cursor-3']);
+    expect(parseNavigationState(initialState).assetTableCursors).toEqual(['cursor-2', 'cursor-3']);
   });
 
   it.each([
@@ -51,19 +51,19 @@ describe(parseNavigationState.name, () => {
     ['empty', []],
     ['holding a non-text cursor', ['cursor-2', 3]],
     ['holding an empty cursor', ['cursor-2', '']],
-  ])('drops a cursor trail that is %s', (_description, registerCursors) => {
-    const initialState = JSON.stringify({ registerCursors });
+  ])('drops a cursor trail that is %s', (_description, assetTableCursors) => {
+    const initialState = JSON.stringify({ assetTableCursors });
 
-    expect(parseNavigationState(initialState)).not.toHaveProperty('registerCursors');
+    expect(parseNavigationState(initialState)).not.toHaveProperty('assetTableCursors');
   });
 
   it('drops the cursor trail of a search, which has no pages', () => {
     const initialState = JSON.stringify({
       searchQuery: 'pump',
-      registerCursors: ['cursor-2'],
+      assetTableCursors: ['cursor-2'],
     });
 
-    expect(parseNavigationState(initialState)).not.toHaveProperty('registerCursors');
+    expect(parseNavigationState(initialState)).not.toHaveProperty('assetTableCursors');
   });
 
   it('falls back to the properties tab for an unknown tab', () => {

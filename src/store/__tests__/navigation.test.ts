@@ -6,7 +6,7 @@ import type { NavigationState } from '../../types/navigation';
 import { createNavigationStore } from '../navigation';
 
 const selectedAsset = { space: 'asset-space', externalId: 'asset-1' };
-const REGISTER: NavigationState = {
+const FIRST_PAGE_STATE: NavigationState = {
   selectedAsset: null,
   activeAssetTab: AssetTab.PROPERTIES,
 };
@@ -25,10 +25,10 @@ describe(createNavigationStore.name, () => {
     });
   }
 
-  it('starts on the first page of the register when nothing is restored', () => {
+  it('starts on the first page of the asset table when nothing is restored', () => {
     const store = createNavigationStore();
 
-    expect(store.getState().navigationState).toEqual(REGISTER);
+    expect(store.getState().navigationState).toEqual(FIRST_PAGE_STATE);
   });
 
   it('starts from the state it is given, and does not report it as a change', () => {
@@ -127,7 +127,7 @@ describe(createNavigationStore.name, () => {
     store.getState().actions.changeSearchQuery('pump');
 
     expect(store.getState().navigationState.searchQuery).toBe('pump');
-    expect(onChange).toHaveBeenCalledWith({ ...REGISTER, searchQuery: 'pump' });
+    expect(onChange).toHaveBeenCalledWith({ ...FIRST_PAGE_STATE, searchQuery: 'pump' });
   });
 
   it('leaves a cleared search out of the state', () => {
@@ -155,60 +155,60 @@ describe(createNavigationStore.name, () => {
     expect(store.getState().navigationState.searchQuery).toBe('pump');
   });
 
-  it('goes to the next page of the register and reports its cursor', () => {
+  it('goes to the next page of the asset table and reports its cursor', () => {
     const store = makeStore();
 
-    store.getState().actions.goToNextRegisterPage('cursor-2');
-    store.getState().actions.goToNextRegisterPage('cursor-3');
+    store.getState().actions.goToNextAssetTablePage('cursor-2');
+    store.getState().actions.goToNextAssetTablePage('cursor-3');
 
-    expect(store.getState().navigationState.registerCursors).toEqual(['cursor-2', 'cursor-3']);
+    expect(store.getState().navigationState.assetTableCursors).toEqual(['cursor-2', 'cursor-3']);
     expect(onChange).toHaveBeenLastCalledWith({
-      ...REGISTER,
-      registerCursors: ['cursor-2', 'cursor-3'],
+      ...FIRST_PAGE_STATE,
+      assetTableCursors: ['cursor-2', 'cursor-3'],
     });
   });
 
-  it('goes back one page of the register', () => {
-    const store = makeStore({ registerCursors: ['cursor-2', 'cursor-3'] });
+  it('goes back one page of the asset table', () => {
+    const store = makeStore({ assetTableCursors: ['cursor-2', 'cursor-3'] });
 
-    store.getState().actions.goToPreviousRegisterPage();
+    store.getState().actions.goToPreviousAssetTablePage();
 
-    expect(store.getState().navigationState.registerCursors).toEqual(['cursor-2']);
+    expect(store.getState().navigationState.assetTableCursors).toEqual(['cursor-2']);
   });
 
   it('leaves the cursors out of the state on the first page', () => {
-    const store = makeStore({ registerCursors: ['cursor-2'] });
+    const store = makeStore({ assetTableCursors: ['cursor-2'] });
 
-    store.getState().actions.goToPreviousRegisterPage();
+    store.getState().actions.goToPreviousAssetTablePage();
 
-    expect(store.getState().navigationState).not.toHaveProperty('registerCursors');
-    expect(onChange).toHaveBeenLastCalledWith(REGISTER);
+    expect(store.getState().navigationState).not.toHaveProperty('assetTableCursors');
+    expect(onChange).toHaveBeenLastCalledWith(FIRST_PAGE_STATE);
   });
 
-  it('returns to the first page of the register', () => {
-    const store = makeStore({ registerCursors: ['cursor-2', 'cursor-3'] });
+  it('returns to the first page of the asset table', () => {
+    const store = makeStore({ assetTableCursors: ['cursor-2', 'cursor-3'] });
 
-    store.getState().actions.goToFirstRegisterPage();
+    store.getState().actions.goToFirstAssetTablePage();
 
-    expect(store.getState().navigationState).not.toHaveProperty('registerCursors');
+    expect(store.getState().navigationState).not.toHaveProperty('assetTableCursors');
   });
 
   it('returns to the first page when the search changes', () => {
-    const store = makeStore({ registerCursors: ['cursor-2'] });
+    const store = makeStore({ assetTableCursors: ['cursor-2'] });
 
     store.getState().actions.changeSearchQuery('pump');
 
-    expect(store.getState().navigationState).not.toHaveProperty('registerCursors');
+    expect(store.getState().navigationState).not.toHaveProperty('assetTableCursors');
     expect(store.getState().navigationState.searchQuery).toBe('pump');
   });
 
-  it('keeps the page of the register when an asset is opened and closed', () => {
-    const store = makeStore({ registerCursors: ['cursor-2'] });
+  it('keeps the page of the asset table when an asset is opened and closed', () => {
+    const store = makeStore({ assetTableCursors: ['cursor-2'] });
 
     store.getState().actions.selectAsset(selectedAsset);
     store.getState().actions.clearSelectedAsset();
 
-    expect(store.getState().navigationState.registerCursors).toEqual(['cursor-2']);
+    expect(store.getState().navigationState.assetTableCursors).toEqual(['cursor-2']);
   });
 
   it('clears the selection and reports it', () => {
@@ -217,7 +217,7 @@ describe(createNavigationStore.name, () => {
     store.getState().actions.clearSelectedAsset();
 
     expect(store.getState().navigationState.selectedAsset).toBeNull();
-    expect(onChange).toHaveBeenCalledWith(REGISTER);
+    expect(onChange).toHaveBeenCalledWith(FIRST_PAGE_STATE);
   });
 
   it('opens the assistant panel and reports it', () => {
@@ -226,7 +226,7 @@ describe(createNavigationStore.name, () => {
     store.getState().actions.changeAssistantOpen(true);
 
     expect(store.getState().navigationState.isAssistantOpen).toBe(true);
-    expect(onChange).toHaveBeenCalledWith({ ...REGISTER, isAssistantOpen: true });
+    expect(onChange).toHaveBeenCalledWith({ ...FIRST_PAGE_STATE, isAssistantOpen: true });
   });
 
   it('leaves the open flag out of the state once the panel closes', () => {
@@ -235,7 +235,7 @@ describe(createNavigationStore.name, () => {
     store.getState().actions.changeAssistantOpen(false);
 
     expect(store.getState().navigationState).not.toHaveProperty('isAssistantOpen');
-    expect(onChange).toHaveBeenCalledWith(REGISTER);
+    expect(onChange).toHaveBeenCalledWith(FIRST_PAGE_STATE);
   });
 
   it('does not report a panel that is already as asked', () => {

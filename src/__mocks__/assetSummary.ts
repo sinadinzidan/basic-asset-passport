@@ -1,6 +1,6 @@
-import type { RegisterSummaryService } from '../services/assets/registerSummary';
+import type { AssetSummaryService } from '../services/assets/assetSummary';
 
-export function makeRegisterSummaryContext(): RegisterSummaryService {
+export function makeAssetSummaryContext(): AssetSummaryService {
   return {
     countAllAssets: vi.fn(() => Promise.resolve(4210)),
     countOperatingAssets: vi.fn(() => Promise.resolve(3800)),

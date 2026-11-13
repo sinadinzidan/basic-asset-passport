@@ -15,7 +15,7 @@ export function createNavigationStore({
 }: NavigationStoreOptions = {}): StoreApi<NavigationStore> {
   return createStore<NavigationStore>()((set, get) => {
     function update(patch: Partial<NavigationState>): void {
-      const { timeseriesChart, searchQuery, registerCursors, isAssistantOpen, ...rest } = {
+      const { timeseriesChart, searchQuery, assetTableCursors, isAssistantOpen, ...rest } = {
         ...get().navigationState,
         ...patch,
       };
@@ -24,7 +24,7 @@ export function createNavigationStore({
         ...rest,
         ...(searchQuery ? { searchQuery } : {}),
         ...(timeseriesChart ? { timeseriesChart } : {}),
-        ...(registerCursors && registerCursors.length > 0 ? { registerCursors } : {}),
+        ...(assetTableCursors && assetTableCursors.length > 0 ? { assetTableCursors } : {}),
         ...(isAssistantOpen ? { isAssistantOpen } : {}),
       };
 
@@ -38,15 +38,17 @@ export function createNavigationStore({
         changeSearchQuery: (searchQuery) => {
           if (searchQuery === (get().navigationState.searchQuery ?? '')) return;
 
-          update({ searchQuery, registerCursors: undefined });
+          update({ searchQuery, assetTableCursors: undefined });
         },
-        goToNextRegisterPage: (nextCursor) =>
+        goToNextAssetTablePage: (nextCursor) =>
           update({
-            registerCursors: [...(get().navigationState.registerCursors ?? []), nextCursor],
+            assetTableCursors: [...(get().navigationState.assetTableCursors ?? []), nextCursor],
           }),
-        goToPreviousRegisterPage: () =>
-          update({ registerCursors: (get().navigationState.registerCursors ?? []).slice(0, -1) }),
-        goToFirstRegisterPage: () => update({ registerCursors: undefined }),
+        goToPreviousAssetTablePage: () =>
+          update({
+            assetTableCursors: (get().navigationState.assetTableCursors ?? []).slice(0, -1),
+          }),
+        goToFirstAssetTablePage: () => update({ assetTableCursors: undefined }),
         selectAsset: (assetIdentifier) =>
           update({
             selectedAsset: assetIdentifier,

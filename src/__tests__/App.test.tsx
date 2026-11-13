@@ -38,7 +38,7 @@ describe(App.name, () => {
     document.documentElement.classList.remove('dark');
   });
 
-  it('renders the app header above the asset register', async () => {
+  it('renders the app header above the asset table', async () => {
     const { deps } = makeDeps();
 
     renderApp(deps);

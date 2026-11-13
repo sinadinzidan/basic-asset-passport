@@ -26,7 +26,7 @@ describe(MockAppContent.name, () => {
     expect(screen.getByText(/showing dummy data/i)).toBeInTheDocument();
   });
 
-  it('shows the asset register from the dummy data, with its counts', async () => {
+  it('shows the asset table from the dummy data, with its counts', async () => {
     renderContent();
 
     expect(await screen.findByRole('heading', { name: 'Asset register' })).toBeInTheDocument();

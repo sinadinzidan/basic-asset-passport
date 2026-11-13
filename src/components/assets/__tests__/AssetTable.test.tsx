@@ -6,18 +6,18 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { StoreApi } from 'zustand';
 
 import { makeAssetListItem, makeAssetPage } from '../../../__mocks__/assets';
+import { makeAssetSummaryContext } from '../../../__mocks__/assetSummary';
 import { makeMockClient } from '../../../__mocks__/cogniteClient';
 import { makeNavigationStore } from '../../../__mocks__/navigation';
 import { makeQueryClientWrapper } from '../../../__mocks__/QueryClientWrapper';
-import { makeRegisterSummaryContext } from '../../../__mocks__/registerSummary';
 import { ASSET_SEARCH_LIMIT } from '../../../constants/assets';
 import { AssetClientContext } from '../../../hooks/assets/useAssetClient';
 import { UseAssetsContext } from '../../../hooks/assets/useAssets';
-import { UseRegisterSummaryContext } from '../../../hooks/assets/useRegisterSummary';
+import { UseAssetSummaryContext } from '../../../hooks/assets/useAssetSummary';
 import { DebounceContext, type DebounceDeps } from '../../../hooks/general/useDebouncedCallback';
 import { NavigationStoreContext } from '../../../hooks/general/useNavigationState';
 import type { AssetService } from '../../../services/assets/asset';
-import type { RegisterSummaryService } from '../../../services/assets/registerSummary';
+import type { AssetSummaryService } from '../../../services/assets/assetSummary';
 import type { NavigationState, NavigationStore } from '../../../types/navigation';
 import { AssetTable } from '../AssetTable';
 
@@ -30,7 +30,7 @@ const immediateDebounce: DebounceDeps = {
 describe(AssetTable.name, () => {
   const client = makeMockClient();
   let mockContext: AssetService;
-  let countsContext: RegisterSummaryService;
+  let countsContext: AssetSummaryService;
   let wrapper: ComponentType<{ children: ReactNode }>;
   let store: StoreApi<NavigationStore>;
 
@@ -39,7 +39,7 @@ describe(AssetTable.name, () => {
       listAssets: vi.fn(() => Promise.resolve(makeAssetPage())),
       searchAssets: vi.fn(() => Promise.resolve(makeAssetPage())),
     };
-    countsContext = makeRegisterSummaryContext();
+    countsContext = makeAssetSummaryContext();
     store = makeNavigationStore();
     const QueryWrapper = makeQueryClientWrapper();
 
@@ -47,20 +47,20 @@ describe(AssetTable.name, () => {
       <NavigationStoreContext.Provider value={store}>
         <DebounceContext.Provider value={immediateDebounce}>
           <UseAssetsContext.Provider value={{ createAssetService: () => mockContext }}>
-            <UseRegisterSummaryContext.Provider
-              value={{ createRegisterSummaryService: () => countsContext }}
+            <UseAssetSummaryContext.Provider
+              value={{ createAssetSummaryService: () => countsContext }}
             >
               <QueryWrapper>
                 <AssetClientContext.Provider value={client}>{children}</AssetClientContext.Provider>
               </QueryWrapper>
-            </UseRegisterSummaryContext.Provider>
+            </UseAssetSummaryContext.Provider>
           </UseAssetsContext.Provider>
         </DebounceContext.Provider>
       </NavigationStoreContext.Provider>
     );
   });
 
-  it('shows the counts of the whole register, not of the page', async () => {
+  it('shows the counts of the whole asset table, not of the page', async () => {
     const items = [
       makeAssetListItem({ externalId: 'A', flocStatus: 'Operating' }),
       makeAssetListItem({ externalId: 'B', flocStatus: 'IN SERVICE' }),
@@ -79,7 +79,7 @@ describe(AssetTable.name, () => {
     expect(await findCardValue(summary, 'Equipment', '18,500')).toBeInTheDocument();
   });
 
-  it('keeps the counts of the register while the search narrows the table', async () => {
+  it('keeps the counts of the asset table while the search narrows the table', async () => {
     renderTable({ searchQuery: 'pump' });
 
     const summary = await screen.findByRole('region', {
@@ -143,7 +143,7 @@ describe(AssetTable.name, () => {
       new CogniteError('Invalid cursor', 400, 'request-1'),
     );
 
-    renderTable({ registerCursors: ['stale-cursor'] });
+    renderTable({ assetTableCursors: ['stale-cursor'] });
 
     expect(await screen.findByText('Reason: Invalid cursor (HTTP 400)')).toBeInTheDocument();
     expect(
@@ -152,7 +152,7 @@ describe(AssetTable.name, () => {
   });
 
   it('reads the page of the last cursor and shows its number', async () => {
-    renderTable({ registerCursors: ['cursor-2', 'cursor-3'] });
+    renderTable({ assetTableCursors: ['cursor-2', 'cursor-3'] });
 
     expect(await screen.findByText('Page 3')).toBeInTheDocument();
     expect(mockContext.listAssets).toHaveBeenLastCalledWith('cursor-3');
@@ -180,12 +180,12 @@ describe(AssetTable.name, () => {
 
     await userEvent.click(nextButton);
 
-    expect(store.getState().navigationState.registerCursors).toEqual(['cursor-2']);
+    expect(store.getState().navigationState.assetTableCursors).toEqual(['cursor-2']);
     expect(await screen.findByText('Page 2')).toBeInTheDocument();
   });
 
   it('goes back a page when Previous is chosen', async () => {
-    renderTable({ registerCursors: ['cursor-2', 'cursor-3'] });
+    renderTable({ assetTableCursors: ['cursor-2', 'cursor-3'] });
     const previousButton = await screen.findByRole('button', {
       name: 'Previous page',
     });
@@ -194,17 +194,17 @@ describe(AssetTable.name, () => {
 
     await userEvent.click(previousButton);
 
-    expect(store.getState().navigationState.registerCursors).toEqual(['cursor-2']);
+    expect(store.getState().navigationState.assetTableCursors).toEqual(['cursor-2']);
     expect(await screen.findByText('Page 2')).toBeInTheDocument();
   });
 
   it('offers the first page when a later page cannot be loaded', async () => {
     vi.mocked(mockContext.listAssets).mockRejectedValue(new Error('failed'));
-    renderTable({ registerCursors: ['stale-cursor'] });
+    renderTable({ assetTableCursors: ['stale-cursor'] });
 
     await userEvent.click(await screen.findByRole('button', { name: 'Go to first page' }));
 
-    expect(store.getState().navigationState.registerCursors).toBeUndefined();
+    expect(store.getState().navigationState.assetTableCursors).toBeUndefined();
   });
 
   it('does not offer the first page when the first page cannot be loaded', async () => {
@@ -290,13 +290,13 @@ describe(AssetTable.name, () => {
     vi.mocked(mockContext.listAssets).mockResolvedValue(
       makeAssetPage([makeAssetListItem()], 'cursor-2'),
     );
-    renderTable({ registerCursors: ['cursor-2'] });
+    renderTable({ assetTableCursors: ['cursor-2'] });
     expect(await screen.findByText('Page 2')).toBeInTheDocument();
 
     await userEvent.type(screen.getByRole('searchbox'), '{Enter}');
 
     expect(screen.getByText('Page 2')).toBeInTheDocument();
-    expect(store.getState().navigationState.registerCursors).toEqual(['cursor-2']);
+    expect(store.getState().navigationState.assetTableCursors).toEqual(['cursor-2']);
   });
 
   function renderTable(navigationState: Partial<NavigationState> = {}) {

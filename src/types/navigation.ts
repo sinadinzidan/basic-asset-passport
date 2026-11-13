@@ -7,15 +7,15 @@ export type NavigationState = {
   activeAssetTab: AssetTab;
   searchQuery?: string;
   timeseriesChart?: TimeseriesChartOptions;
-  registerCursors?: string[];
+  assetTableCursors?: string[];
   isAssistantOpen?: boolean;
 };
 
 type NavigationActions = {
   changeSearchQuery: (searchQuery: string) => void;
-  goToNextRegisterPage: (nextCursor: string) => void;
-  goToPreviousRegisterPage: () => void;
-  goToFirstRegisterPage: () => void;
+  goToNextAssetTablePage: (nextCursor: string) => void;
+  goToPreviousAssetTablePage: () => void;
+  goToFirstAssetTablePage: () => void;
   selectAsset: (assetIdentifier: AssetIdentifier) => void;
   clearSelectedAsset: () => void;
   changeAssetTab: (activeAssetTab: AssetTab) => void;

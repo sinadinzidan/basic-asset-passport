@@ -8,14 +8,14 @@ import {
   SUMMARY_OPERATING_LABEL,
 } from '../../constants/assets';
 import { PENDING_COUNT_LABEL } from '../../constants/labels';
-import { useRegisterSummary } from '../../hooks/assets/useRegisterSummary';
+import { useAssetSummary } from '../../hooks/assets/useAssetSummary';
 import { formatCount } from '../../lib/countBadge';
 import { getErrorReason } from '../../lib/errorReason';
 import type { CountState } from '../../types/countState';
 import { RetryAlert, StatTile } from '../general';
 
-export function RegisterSummary() {
-  const { assets, operating, equipment, error, isRetrying, retry } = useRegisterSummary();
+export function AssetSummary() {
+  const { assets, operating, equipment, error, isRetrying, retry } = useAssetSummary();
 
   return (
     <section aria-label="Register summary" className="grid gap-4">
