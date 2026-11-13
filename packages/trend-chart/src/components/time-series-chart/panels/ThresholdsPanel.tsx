@@ -10,7 +10,6 @@ import type {
 import { SwitchField } from '../../general/forms/SwitchField';
 import { StateMessage } from '../../general/StateMessage';
 
-import { PanelSection } from './PanelSection';
 import { SeriesLabel } from './SeriesLabel';
 import { ThresholdAddForm } from './ThresholdAddForm';
 import { ThresholdRow } from './ThresholdRow';
@@ -52,11 +51,6 @@ export function ThresholdsPanel({
       ),
     [series, range],
   );
-  const limitedSeries = series.filter((entry) => entry.thresholds.length > 0);
-  const unlimitedNames = series
-    .filter((entry) => entry.thresholds.length === 0)
-    .map((entry) => entry.definition.name);
-
   return (
     <>
       <SwitchField
@@ -68,23 +62,19 @@ export function ThresholdsPanel({
         <StateMessage
           size={StateSize.INLINE}
           title="No series selected"
-          description="Add a series to see its thresholds."
-        />
-      ) : limitedSeries.length === 0 ? (
-        <StateMessage
-          size={StateSize.INLINE}
-          title="No thresholds to show"
-          description="None of these series comes with an alert or danger limit. Add one below."
+          description="Add a series to see and set its thresholds."
         />
       ) : (
-        <div className="flex flex-col gap-3">
-          <ul
-            aria-label="Thresholds by series"
-            className="-mt-1 flex flex-col divide-y divide-border border-t border-border"
-          >
-            {limitedSeries.map((entry) => (
-              <li key={entry.configuration.seriesId} className="flex flex-col gap-3 py-3">
-                <SeriesLabel series={entry} />
+        <ul
+          aria-label="Thresholds by series"
+          className="-mt-1 flex flex-col divide-y divide-border border-t border-border"
+        >
+          {series.map((entry) => (
+            <li key={entry.configuration.seriesId} className="flex flex-col gap-3 py-3">
+              <SeriesLabel series={entry} />
+              {entry.thresholds.length === 0 ? (
+                <p className="text-xs text-muted-foreground">No thresholds for this series yet.</p>
+              ) : (
                 <ul
                   aria-label={`Thresholds of ${entry.definition.name}`}
                   className="flex flex-col divide-y divide-border/70"
@@ -103,24 +93,12 @@ export function ThresholdsPanel({
                     />
                   ))}
                 </ul>
-              </li>
-            ))}
-          </ul>
-          {unlimitedNames.length > 0 ? (
-            <p className="text-xs text-muted-foreground">
-              No thresholds for {unlimitedNames.join(', ')}
-            </p>
-          ) : null}
-        </div>
+              )}
+              <ThresholdAddForm series={entry} onAdd={onThresholdAdd} />
+            </li>
+          ))}
+        </ul>
       )}
-      {series.length > 0 ? (
-        <PanelSection
-          title="Add a threshold"
-          description="Your own limit for a series, saved with this chart."
-        >
-          <ThresholdAddForm series={series} onAdd={onThresholdAdd} />
-        </PanelSection>
-      ) : null}
     </>
   );
 }

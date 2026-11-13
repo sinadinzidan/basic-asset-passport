@@ -40,12 +40,12 @@ describe(ThresholdsPanel.name, () => {
     expect(screen.getByText('No series selected')).toBeInTheDocument();
   });
 
-  it('says so when no series comes with a limit', () => {
+  it('says so under a series that has no thresholds, and still offers to add one', () => {
     renderPanel({ series: [createSeriesView({ points: READINGS })] });
 
-    expect(screen.getByText('No thresholds to show')).toBeInTheDocument();
+    expect(screen.getByText('No thresholds for this series yet.')).toBeInTheDocument();
     expect(
-      screen.getByText('None of these series comes with an alert or danger limit. Add one below.'),
+      screen.getByRole('button', { name: 'Add a threshold to Discharge pressure' }),
     ).toBeInTheDocument();
   });
 
@@ -72,14 +72,17 @@ describe(ThresholdsPanel.name, () => {
     expect(screen.getByText('1 reading beyond')).toBeInTheDocument();
   });
 
-  it('names the series that have no thresholds below those that do', () => {
+  it('lists every series, with or without thresholds, each with its own add button', () => {
     const flow = createSeriesView({ definition: createDefinition({ id: 's2', name: 'Flow' }) });
     const level = createSeriesView({ definition: createDefinition({ id: 's3', name: 'Level' }) });
 
     renderPanel({ series: [limitedSeries(), flow, level] });
 
-    expect(screen.getByText('No thresholds for Flow, Level')).toBeInTheDocument();
+    const bySeries = screen.getByRole('list', { name: 'Thresholds by series' });
+
+    expect(within(bySeries).getAllByText('No thresholds for this series yet.')).toHaveLength(2);
     expect(screen.queryByRole('list', { name: 'Thresholds of Flow' })).not.toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: /^Add a threshold to / })).toHaveLength(3);
   });
 
   it('says where a limit comes from only when a series mixes sources', () => {
@@ -178,16 +181,33 @@ function limitedSeries() {
 }
 
 describe('adding a threshold in the panel', () => {
-  it('offers no form while no series is on the chart', () => {
+  async function openForm(seriesName = 'Discharge pressure') {
+    await userEvent.click(screen.getByRole('button', { name: `Add a threshold to ${seriesName}` }));
+
+    return screen.getByRole('form', { name: `Add a threshold to ${seriesName}` });
+  }
+
+  it('offers nothing to add while no series is on the chart', () => {
     renderPanel({ series: [] });
 
-    expect(screen.queryByRole('form', { name: 'Add a threshold' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^Add a threshold to / })).not.toBeInTheDocument();
   });
 
-  it('adds an alert on the high side by default, in the unit the series is shown in', async () => {
-    const onThresholdAdd = vi.fn(() => undefined);
-    renderPanel({ onThresholdAdd });
+  it('keeps the fields closed until the add button of a series is pressed', async () => {
+    renderPanel();
 
+    expect(screen.queryByLabelText('Value')).not.toBeInTheDocument();
+
+    await openForm();
+
+    expect(screen.getByLabelText('Value')).toBeInTheDocument();
+  });
+
+  it('adds an alert on the high side by default, in the unit the series is shown in, then closes', async () => {
+    const onThresholdAdd = vi.fn(() => undefined);
+
+    renderPanel({ onThresholdAdd });
+    await openForm();
     await userEvent.type(screen.getByLabelText('Value'), '9.5');
     await userEvent.click(screen.getByRole('button', { name: 'Add threshold' }));
 
@@ -198,13 +218,29 @@ describe('adding a threshold in the panel', () => {
       value: 9.5,
       unit: 'bar',
     });
-    expect(screen.getByLabelText('Value')).toHaveValue('');
+    expect(screen.queryByLabelText('Value')).not.toBeInTheDocument();
+  });
+
+  it('adds to the series whose button was pressed', async () => {
+    const onThresholdAdd = vi.fn(() => undefined);
+    const flow = createSeriesView({
+      definition: createDefinition({ id: 's2', name: 'Flow', unit: 'm3/h' }),
+    });
+
+    renderPanel({ series: [limitedSeries(), flow], onThresholdAdd });
+    await openForm('Flow');
+    await userEvent.type(screen.getByLabelText('Value'), '40{Enter}');
+
+    expect(onThresholdAdd).toHaveBeenCalledWith(
+      expect.objectContaining({ seriesId: 's2', value: 40, unit: 'm3/h' }),
+    );
   });
 
   it('adds with the Enter key', async () => {
     const onThresholdAdd = vi.fn(() => undefined);
-    renderPanel({ onThresholdAdd });
 
+    renderPanel({ onThresholdAdd });
+    await openForm();
     await userEvent.type(screen.getByLabelText('Value'), '4{Enter}');
 
     expect(onThresholdAdd).toHaveBeenCalledTimes(1);
@@ -212,8 +248,9 @@ describe('adding a threshold in the panel', () => {
 
   it('asks for a value and adds nothing when the field is empty', async () => {
     const onThresholdAdd = vi.fn(() => undefined);
-    renderPanel({ onThresholdAdd });
 
+    renderPanel({ onThresholdAdd });
+    await openForm();
     await userEvent.click(screen.getByRole('button', { name: 'Add threshold' }));
 
     expect(screen.getByText('Enter a value for the threshold.')).toBeInTheDocument();
@@ -222,8 +259,9 @@ describe('adding a threshold in the panel', () => {
 
   it('refuses a value that is not a number', async () => {
     const onThresholdAdd = vi.fn(() => undefined);
-    renderPanel({ onThresholdAdd });
 
+    renderPanel({ onThresholdAdd });
+    await openForm();
     await userEvent.type(screen.getByLabelText('Value'), 'high');
     await userEvent.click(screen.getByRole('button', { name: 'Add threshold' }));
 
@@ -233,7 +271,7 @@ describe('adding a threshold in the panel', () => {
 
   it('says why the chart refused the threshold and keeps what was typed', async () => {
     renderPanel({ onThresholdAdd: () => 'This threshold is already on the chart.' });
-
+    await openForm();
     await userEvent.type(screen.getByLabelText('Value'), '8');
     await userEvent.click(screen.getByRole('button', { name: 'Add threshold' }));
 
@@ -241,18 +279,17 @@ describe('adding a threshold in the panel', () => {
     expect(screen.getByLabelText('Value')).toHaveValue('8');
   });
 
-  it('asks which series only when there is more than one', () => {
-    const { unmount } = renderPanel();
-    expect(screen.queryByText('Series')).not.toBeInTheDocument();
-    unmount();
+  it('closes without adding when cancelled, and forgets what was typed', async () => {
+    const onThresholdAdd = vi.fn(() => undefined);
 
-    renderPanel({
-      series: [
-        limitedSeries(),
-        createSeriesView({ definition: createDefinition({ id: 's2', name: 'Flow' }) }),
-      ],
-    });
-    expect(screen.getByText('Series')).toBeInTheDocument();
+    renderPanel({ onThresholdAdd });
+    await openForm();
+    await userEvent.type(screen.getByLabelText('Value'), '8');
+    await userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    await openForm();
+
+    expect(onThresholdAdd).not.toHaveBeenCalled();
+    expect(screen.getByLabelText('Value')).toHaveValue('');
   });
 });
 
