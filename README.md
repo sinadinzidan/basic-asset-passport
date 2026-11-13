@@ -70,7 +70,7 @@ Tests use mocked CDF responses and never call live services. They sit in
 ## Structure
 
 - `src/pages/assets/`: the register and the asset details pages.
-- `src/components/assets/`: table, columns, tabs, topbar and logo.
+- `src/components/assets/`: table, columns, tabs and the open asset's breadcrumb.
 - `src/components/general/`: shared pieces such as `ErrorBoundary`, `RetryAlert`,
   `StatusPill`, `CriticalityPill`, `HudPanel` and `NeonStage`.
 - `src/hooks/`: query hooks with dependencies injected through React context.

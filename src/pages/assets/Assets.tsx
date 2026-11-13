@@ -1,4 +1,5 @@
-import { AssetTable, AssetTopbar } from '../../components/assets';
+import { AssetTable, SelectedAssetBreadcrumb } from '../../components/assets';
+import { AppTopbar } from '../../components/general';
 import { useNavigationState } from '../../hooks/general/useNavigationState';
 
 import { AssetDetails } from './AssetDetails';
@@ -8,7 +9,7 @@ export function Assets() {
 
   return (
     <>
-      <AssetTopbar />
+      <AppTopbar breadcrumb={selectedAsset ? <SelectedAssetBreadcrumb /> : null} />
       {selectedAsset ? <AssetDetails /> : <AssetTable />}
     </>
   );
