@@ -20,7 +20,7 @@ export const SORT_BY_EXTERNAL_ID: PropertySortV3 = {
 };
 
 export const SORT_BY_NEWEST: PropertySortV3 = {
-  property: [INSTANCE_TYPE_NODE, NODE_CREATED_TIME_PROPERTY],
+  property: [NODE_CREATED_TIME_PROPERTY],
   direction: DESCENDING_SORT_DIRECTION,
   nullsFirst: false,
 };

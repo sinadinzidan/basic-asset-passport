@@ -48,9 +48,9 @@ describe(sortByName.name, () => {
 });
 
 describe('SORT_BY_NEWEST', () => {
-  it('sorts nodes by when they were created, the newest first', () => {
+  it('sorts by when the instance was created, the newest first, in the one-part form CDF accepts', () => {
     expect(SORT_BY_NEWEST).toEqual({
-      property: ['node', 'createdTime'],
+      property: ['createdTime'],
       direction: 'descending',
       nullsFirst: false,
     });

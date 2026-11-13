@@ -338,15 +338,24 @@ function sortNodes(nodes: readonly NodeInstance[], sortRules: SortRule[]): reado
   });
 }
 
+const INVALID_SORT_PROPERTY_MESSAGE =
+  'Invalid sort property. Created time sorts as [createdTime]; a node sorts by [node, externalId] or [node, space].';
+
 function readSortValue(node: NodeInstance, property: unknown[]): unknown {
   const [scope, group, name] = property;
+
+  if (property.length === 1) {
+    if (scope !== NODE_CREATED_TIME_PROPERTY) throw new Error(INVALID_SORT_PROPERTY_MESSAGE);
+
+    return node.createdTime;
+  }
 
   if (scope === INSTANCE_TYPE_NODE) {
     if (group === NODE_EXTERNAL_ID_PROPERTY) return node.externalId;
 
-    if (group === NODE_CREATED_TIME_PROPERTY) return node.createdTime;
+    if (group === NODE_SPACE_PROPERTY) return node.space;
 
-    return group === NODE_SPACE_PROPERTY ? node.space : undefined;
+    throw new Error(INVALID_SORT_PROPERTY_MESSAGE);
   }
 
   if (typeof scope !== 'string' || typeof group !== 'string' || typeof name !== 'string') {

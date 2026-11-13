@@ -824,6 +824,35 @@ describe(`${makeMockAssetContext.name} sorting and paging`, () => {
     expect(page.nextCursor).toEqual({});
   });
 
+  it('sorts by created time in the one-part form, the newest first', async () => {
+    const client = makeMockAssetContext(0);
+
+    const newestFirst = await client.instances.query(
+      makeNotesRequest(firstAsset, {
+        limit: 1000,
+        sort: [{ property: ['createdTime'], direction: 'descending' }],
+      }),
+    );
+
+    const times = (newestFirst.items.notes ?? []).map((note) => note.createdTime);
+
+    expect(times.length).toBeGreaterThan(1);
+    expect(times).toEqual([...times].sort((first, second) => second - first));
+  });
+
+  it('rejects created time written as a node property, as CDF does', async () => {
+    const client = makeMockAssetContext(0);
+
+    await expect(
+      client.instances.query(
+        makeNotesRequest(firstAsset, {
+          limit: 1000,
+          sort: [{ property: ['node', 'createdTime'], direction: 'descending' }],
+        }),
+      ),
+    ).rejects.toThrow(/Invalid sort property/);
+  });
+
   it('sorts a result set by a node property in the direction asked for', async () => {
     const client = makeMockAssetContext(0);
 
