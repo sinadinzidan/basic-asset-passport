@@ -9,9 +9,9 @@ import { makeNavigationStore } from '../../../../__mocks__/navigation';
 import { makeAssetNote } from '../../../../__mocks__/notes';
 import { makeQueryClientWrapper } from '../../../../__mocks__/QueryClientWrapper';
 import { NOTE_QUERY_LIMIT } from '../../../../constants/notes';
+import { UseAssetNoteItemViewModelContext } from '../../../../hooks/assets/notes/useAssetNoteItemViewModel';
 import { UseAssetNotesContext } from '../../../../hooks/assets/notes/useAssetNotes';
 import { UseDeleteAssetNoteContext } from '../../../../hooks/assets/notes/useDeleteAssetNote';
-import { UseUpdateAssetNoteContext } from '../../../../hooks/assets/notes/useUpdateAssetNote';
 import { AssetContext } from '../../../../hooks/assets/useAssetContext';
 import { NavigationStoreContext } from '../../../../hooks/general/useNavigationState';
 import type { AssetNoteService } from '../../../../services/assets/notes/assetNote';
@@ -42,7 +42,9 @@ describe(AssetNoteList.name, () => {
 
     wrapper = ({ children }) => (
       <UseAssetNotesContext.Provider value={{ createAssetNoteService: () => mockContext }}>
-        <UseUpdateAssetNoteContext.Provider value={{ createAssetNoteService: () => updateContext }}>
+        <UseAssetNoteItemViewModelContext.Provider
+          value={{ createAssetNoteService: () => updateContext }}
+        >
           <UseDeleteAssetNoteContext.Provider
             value={{ createAssetNoteService: () => deleteContext }}
           >
@@ -54,7 +56,7 @@ describe(AssetNoteList.name, () => {
               </AssetContext.Provider>
             </QueryWrapper>
           </UseDeleteAssetNoteContext.Provider>
-        </UseUpdateAssetNoteContext.Provider>
+        </UseAssetNoteItemViewModelContext.Provider>
       </UseAssetNotesContext.Provider>
     );
   });

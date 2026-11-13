@@ -1,20 +1,54 @@
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { createContext, useContext } from 'react';
+
+import { NOTE_UPDATED_MESSAGE } from '../../../constants/notes';
+import {
+  createAssetNoteService,
+  type AssetNoteService,
+} from '../../../services/assets/notes/assetNote';
+import type { AssetContextType } from '../../../types/assetContext';
 import type { NewAssetNote, NoteIdentifier } from '../../../types/note';
+import { useSuccessToast } from '../../general/useSuccessToast';
+import { useAssetContext } from '../useAssetContext';
 import { useSelectedAsset } from '../useSelectedAsset';
 
-import { useUpdateAssetNote } from './useUpdateAssetNote';
+import { getAssetNotesQueryKey } from './useAssetNotes';
+
+const defaultDeps: {
+  createAssetNoteService: (client: AssetContextType) => Pick<AssetNoteService, 'updateAssetNote'>;
+} = { createAssetNoteService };
+
+export type UseAssetNoteItemViewModelContextType = typeof defaultDeps;
+export const UseAssetNoteItemViewModelContext =
+  createContext<UseAssetNoteItemViewModelContextType>(defaultDeps);
 
 export function useAssetNoteItemViewModel({ space, externalId }: NoteIdentifier) {
+  const { createAssetNoteService } = useContext(UseAssetNoteItemViewModelContext);
   const assetIdentifier = useSelectedAsset();
-  const { updateNote, isUpdating, error, discardError } = useUpdateAssetNote(assetIdentifier);
+  const client = useAssetContext();
+  const queryClient = useQueryClient();
+  const showSuccessToast = useSuccessToast();
+  const noteService = createAssetNoteService(client);
+
+  const mutation = useMutation({
+    mutationFn: (input: NewAssetNote) => noteService.updateAssetNote({ space, externalId }, input),
+    onSuccess: () => {
+      showSuccessToast(NOTE_UPDATED_MESSAGE);
+
+      return queryClient.invalidateQueries({
+        queryKey: getAssetNotesQueryKey(client.project, assetIdentifier),
+      });
+    },
+  });
 
   function save(input: NewAssetNote, onSaved: () => void): void {
-    void updateNote({ note: { space, externalId }, input }).then(onSaved, () => undefined);
+    void mutation.mutateAsync(input).then(onSaved, () => undefined);
   }
 
   return {
-    isSaving: isUpdating,
-    saveErrorMessage: error?.message ?? null,
+    isSaving: mutation.isPending,
+    saveErrorMessage: mutation.error?.message ?? null,
     save,
-    discardSaveError: discardError,
+    discardSaveError: mutation.reset,
   };
 }

@@ -7,7 +7,7 @@ import { makeMockClient } from '../../../../__mocks__/cogniteClient';
 import { makeNavigationStore } from '../../../../__mocks__/navigation';
 import { makeAssetNote } from '../../../../__mocks__/notes';
 import { makeQueryClientWrapper } from '../../../../__mocks__/QueryClientWrapper';
-import { UseUpdateAssetNoteContext } from '../../../../hooks/assets/notes/useUpdateAssetNote';
+import { UseAssetNoteItemViewModelContext } from '../../../../hooks/assets/notes/useAssetNoteItemViewModel';
 import { AssetContext } from '../../../../hooks/assets/useAssetContext';
 import { NavigationStoreContext } from '../../../../hooks/general/useNavigationState';
 import type { AssetNoteService } from '../../../../services/assets/notes/assetNote';
@@ -35,7 +35,9 @@ describe(AssetNoteItem.name, () => {
     const QueryWrapper = makeQueryClientWrapper();
 
     wrapper = ({ children }) => (
-      <UseUpdateAssetNoteContext.Provider value={{ createAssetNoteService: () => updateContext }}>
+      <UseAssetNoteItemViewModelContext.Provider
+        value={{ createAssetNoteService: () => updateContext }}
+      >
         <QueryWrapper>
           <AssetContext.Provider value={client}>
             <NavigationStoreContext.Provider value={navigationStore}>
@@ -43,7 +45,7 @@ describe(AssetNoteItem.name, () => {
             </NavigationStoreContext.Provider>
           </AssetContext.Provider>
         </QueryWrapper>
-      </UseUpdateAssetNoteContext.Provider>
+      </UseAssetNoteItemViewModelContext.Provider>
     );
   });
 
