@@ -2,7 +2,6 @@ import type { ComponentType, ReactNode } from 'react';
 
 import { makeCdfAgent } from '../../../__mocks__/agents';
 import { makeQueryClientWrapper, makeTestQueryClient } from '../../../__mocks__/QueryClientWrapper';
-import { getAgentQueryKey } from '../../../hooks/agents/useAgent';
 import { AgentChatStoreContext } from '../../../hooks/agents/useAgentChatState';
 import { UseAgentChatViewModelContext } from '../../../hooks/agents/useAgentChatViewModel';
 import { AgentContext } from '../../../hooks/agents/useAgentContext';
@@ -10,7 +9,7 @@ import {
   UseAgentGreetingContext,
   type UseAgentGreetingContextType,
 } from '../../../hooks/agents/useAgentGreeting';
-import { UseFocusedAgentContext } from '../../../hooks/agents/useFocusedAgent';
+import { getAgentQueryKey , UseFocusedAgentContext } from '../../../hooks/agents/useFocusedAgent';
 import { UseCopyToClipboardContext } from '../../../hooks/general/useCopyToClipboard';
 import { UseSpeechDictationContext } from '../../../hooks/general/useSpeechDictation';
 import { NavigationProvider } from '../../../providers/general/NavigationProvider';

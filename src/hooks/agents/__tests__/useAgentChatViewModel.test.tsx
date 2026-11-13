@@ -8,7 +8,6 @@ import { makeQueryClientWrapper, makeTestQueryClient } from '../../../__mocks__/
 import { ChatMessageRole } from '../../../enums/chatMessageRole';
 import { createAgentChatStore } from '../../../store/agents';
 import type { AgentContextType } from '../../../types/agent';
-import { getAgentQueryKey } from '../useAgent';
 import { AgentChatStoreContext } from '../useAgentChatState';
 import {
   UseAgentChatViewModelContext,
@@ -16,7 +15,7 @@ import {
   useAgentChatViewModel,
 } from '../useAgentChatViewModel';
 import { AgentContext } from '../useAgentContext';
-import { UseFocusedAgentContext } from '../useFocusedAgent';
+import { getAgentQueryKey , UseFocusedAgentContext } from '../useFocusedAgent';
 
 describe(useAgentChatViewModel.name, () => {
   let chat: AgentContextType['chat'];

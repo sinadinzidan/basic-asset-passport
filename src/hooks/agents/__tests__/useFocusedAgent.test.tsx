@@ -66,4 +66,29 @@ describe(useFocusedAgent.name, () => {
     await waitFor(() => expect(result.current.follower.data).toEqual(makeCdfAgent()));
     expect(getAgent).toHaveBeenCalledTimes(1);
   });
+
+  it('is loading until the agent arrives', async () => {
+    const { result } = renderHook(() => useFocusedAgent(true), { wrapper });
+
+    expect(result.current.isPending).toBe(true);
+    await waitFor(() => expect(result.current.isPending).toBe(false));
+  });
+
+  it('returns null when the project has no such agent', async () => {
+    vi.mocked(getAgent).mockResolvedValue(null);
+
+    const { result } = renderHook(() => useFocusedAgent(true), { wrapper });
+
+    await waitFor(() => expect(result.current.isPending).toBe(false));
+    expect(result.current.data).toBeNull();
+  });
+
+  it('reports a failure to look the agent up', async () => {
+    vi.mocked(getAgent).mockRejectedValue(new Error('no access'));
+
+    const { result } = renderHook(() => useFocusedAgent(true), { wrapper });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(result.current.error?.message).toBe('no access');
+  });
 });
