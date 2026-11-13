@@ -3,14 +3,18 @@ import type { ComponentType, ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { makeMockClient } from '../../../../__mocks__/cogniteClient';
+import { makeNavigationStore } from '../../../../__mocks__/navigation';
 import { makeAssetNote } from '../../../../__mocks__/notes';
 import { makeQueryClientWrapper } from '../../../../__mocks__/QueryClientWrapper';
+import { NavigationStoreContext } from '../../../../hooks/general/useNavigationState';
 import type { AssetNoteService } from '../../../../services/assets/notes/assetNote';
 import { AssetContext } from '../../useAssetContext';
 import { useAssetNoteItemViewModel } from '../useAssetNoteItemViewModel';
 import { UseUpdateAssetNoteContext } from '../useUpdateAssetNote';
 
 const assetIdentifier = { space: 'asset-space', externalId: 'FLOC-1' };
+
+const navigationStore = makeNavigationStore({ selectedAsset: assetIdentifier });
 const edit = { title: 'Bearing check', body: 'Runs warm.' };
 
 describe(useAssetNoteItemViewModel.name, () => {
@@ -24,14 +28,18 @@ describe(useAssetNoteItemViewModel.name, () => {
     wrapper = ({ children }) => (
       <UseUpdateAssetNoteContext.Provider value={{ createAssetNoteService: () => noteService }}>
         <QueryWrapper>
-          <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
+          <AssetContext.Provider value={client}>
+            <NavigationStoreContext.Provider value={navigationStore}>
+              {children}
+            </NavigationStoreContext.Provider>
+          </AssetContext.Provider>
         </QueryWrapper>
       </UseUpdateAssetNoteContext.Provider>
     );
   });
 
   function renderViewModel() {
-    return renderHook(() => useAssetNoteItemViewModel(assetIdentifier, makeAssetNote()), {
+    return renderHook(() => useAssetNoteItemViewModel(makeAssetNote()), {
       wrapper,
     });
   }

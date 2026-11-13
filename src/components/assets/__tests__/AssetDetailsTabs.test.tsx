@@ -31,7 +31,9 @@ describe(AssetDetailsTabs.name, () => {
   let store: StoreApi<NavigationStore>;
 
   beforeEach(() => {
-    store = makeNavigationStore();
+    store = makeNavigationStore({
+      selectedAsset: { space: asset.space, externalId: asset.externalId },
+    });
     equipmentContext = {
       listAssetEquipment: vi.fn(() =>
         Promise.resolve(
@@ -202,7 +204,10 @@ describe(AssetDetailsTabs.name, () => {
   };
 
   function renderTabs(activeAssetTab: AssetTab, options: TabsOptions = {}) {
-    store = makeNavigationStore({ activeAssetTab });
+    store = makeNavigationStore({
+      selectedAsset: { space: asset.space, externalId: asset.externalId },
+      activeAssetTab,
+    });
 
     return render(
       <AssetDetailsTabs

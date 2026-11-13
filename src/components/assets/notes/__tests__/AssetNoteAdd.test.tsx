@@ -4,13 +4,17 @@ import type { ComponentType, ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { makeMockClient } from '../../../../__mocks__/cogniteClient';
+import { makeNavigationStore } from '../../../../__mocks__/navigation';
 import { makeQueryClientWrapper } from '../../../../__mocks__/QueryClientWrapper';
 import { UseAddAssetNoteContext } from '../../../../hooks/assets/notes/useAddAssetNote';
 import { AssetContext } from '../../../../hooks/assets/useAssetContext';
+import { NavigationStoreContext } from '../../../../hooks/general/useNavigationState';
 import type { AssetNoteService } from '../../../../services/assets/notes/assetNote';
 import { AssetNoteAdd } from '../AssetNoteAdd';
 
 const assetIdentifier = { space: 'asset-space', externalId: 'FLOC-1' };
+
+const navigationStore = makeNavigationStore({ selectedAsset: assetIdentifier });
 const client = makeMockClient();
 
 describe(AssetNoteAdd.name, () => {
@@ -25,7 +29,11 @@ describe(AssetNoteAdd.name, () => {
     wrapper = ({ children }) => (
       <UseAddAssetNoteContext.Provider value={{ createAssetNoteService: () => mockContext }}>
         <QueryWrapper>
-          <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
+          <AssetContext.Provider value={client}>
+            <NavigationStoreContext.Provider value={navigationStore}>
+              {children}
+            </NavigationStoreContext.Provider>
+          </AssetContext.Provider>
         </QueryWrapper>
       </UseAddAssetNoteContext.Provider>
     );
@@ -33,13 +41,13 @@ describe(AssetNoteAdd.name, () => {
 
   async function openDialog() {
     const user = userEvent.setup();
-    render(<AssetNoteAdd assetIdentifier={assetIdentifier} />, { wrapper });
+    render(<AssetNoteAdd />, { wrapper });
     await user.click(screen.getByRole('button', { name: 'Add note' }));
     return user;
   }
 
   it('shows only the add button until it is clicked', () => {
-    render(<AssetNoteAdd assetIdentifier={assetIdentifier} />, { wrapper });
+    render(<AssetNoteAdd />, { wrapper });
 
     expect(screen.getByRole('button', { name: 'Add note' })).toBeInTheDocument();
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();

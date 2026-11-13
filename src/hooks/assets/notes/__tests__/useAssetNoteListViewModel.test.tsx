@@ -4,9 +4,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { makeMockClient } from '../../../../__mocks__/cogniteClient';
 import { makeLimitedList } from '../../../../__mocks__/lists';
+import { makeNavigationStore } from '../../../../__mocks__/navigation';
 import { makeAssetNote } from '../../../../__mocks__/notes';
 import { makeQueryClientWrapper } from '../../../../__mocks__/QueryClientWrapper';
 import { NOTE_QUERY_LIMIT } from '../../../../constants/notes';
+import { NavigationStoreContext } from '../../../../hooks/general/useNavigationState';
 import type { AssetNoteService } from '../../../../services/assets/notes/assetNote';
 import { AssetContext } from '../../useAssetContext';
 import { useAssetNoteListViewModel } from '../useAssetNoteListViewModel';
@@ -14,6 +16,8 @@ import { UseAssetNotesContext } from '../useAssetNotes';
 import { UseDeleteAssetNoteContext } from '../useDeleteAssetNote';
 
 const assetIdentifier = { space: 'asset-space', externalId: 'FLOC-1' };
+
+const navigationStore = makeNavigationStore({ selectedAsset: assetIdentifier });
 
 describe(useAssetNoteListViewModel.name, () => {
   const client = makeMockClient();
@@ -31,7 +35,11 @@ describe(useAssetNoteListViewModel.name, () => {
       <UseAssetNotesContext.Provider value={{ createAssetNoteService: () => noteService }}>
         <UseDeleteAssetNoteContext.Provider value={{ createAssetNoteService: () => noteService }}>
           <QueryWrapper>
-            <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
+            <AssetContext.Provider value={client}>
+              <NavigationStoreContext.Provider value={navigationStore}>
+                {children}
+              </NavigationStoreContext.Provider>
+            </AssetContext.Provider>
           </QueryWrapper>
         </UseDeleteAssetNoteContext.Provider>
       </UseAssetNotesContext.Provider>
@@ -39,7 +47,7 @@ describe(useAssetNoteListViewModel.name, () => {
   });
 
   function renderViewModel() {
-    return renderHook(() => useAssetNoteListViewModel(assetIdentifier), { wrapper });
+    return renderHook(() => useAssetNoteListViewModel(), { wrapper });
   }
 
   it('is pending with no notes until the list arrives', async () => {

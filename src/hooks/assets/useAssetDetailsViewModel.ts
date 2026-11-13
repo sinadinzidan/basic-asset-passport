@@ -1,11 +1,12 @@
 import { MODEL } from '../../config/model';
 import { getPropertyValue } from '../../lib/assetProperties';
-import type { AssetIdentifier } from '../../types/asset';
 
 import { useAssetDetails } from './useAssetDetails';
 import { useAssetDetailsTabCounts } from './useAssetDetailsTabCounts';
+import { useSelectedAsset } from './useSelectedAsset';
 
-export function useAssetDetailsViewModel(assetIdentifier: AssetIdentifier) {
+export function useAssetDetailsViewModel() {
+  const assetIdentifier = useSelectedAsset();
   const {
     data: asset,
     error,

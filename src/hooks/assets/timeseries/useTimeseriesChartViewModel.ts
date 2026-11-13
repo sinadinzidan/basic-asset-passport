@@ -15,8 +15,9 @@ import {
   CHART_SOURCE_NAME,
 } from '../../../constants/timeseries';
 import { createTimeseriesChartAdapter } from '../../../services/assets/timeseries/timeseriesChartAdapter';
-import type { AssetIdentifier, AssetInstanceDetails } from '../../../types/asset';
+import type { AssetInstanceDetails } from '../../../types/asset';
 import { useNavigationState } from '../../general/useNavigationState';
+import { useSelectedAsset } from '../useSelectedAsset';
 
 import { useTimeseriesContext } from './useTimeseriesContext';
 
@@ -26,10 +27,8 @@ export type UseTimeseriesChartViewModelContextType = typeof defaultDeps;
 export const UseTimeseriesChartViewModelContext =
   createContext<UseTimeseriesChartViewModelContextType>(defaultDeps);
 
-export function useTimeseriesChartViewModel(
-  assetIdentifier: AssetIdentifier,
-  series: readonly AssetInstanceDetails[],
-) {
+export function useTimeseriesChartViewModel(series: readonly AssetInstanceDetails[]) {
+  const assetIdentifier = useSelectedAsset();
   const { now } = useContext(UseTimeseriesChartViewModelContext);
   const options = useNavigationState((store) => store.navigationState.timeseriesChart ?? null);
   const changeTimeseriesChart = useNavigationState((store) => store.actions.changeTimeseriesChart);
@@ -81,6 +80,7 @@ export function useTimeseriesChartViewModel(
     source,
     configuration,
     nowMs,
+    exportName: assetIdentifier.externalId,
     openSeries,
     close,
     setConfiguration,

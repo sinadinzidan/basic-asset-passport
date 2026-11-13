@@ -1,10 +1,12 @@
-import type { AssetIdentifier, AssetInstanceDetails } from '../../../types/asset';
+import type { AssetInstanceDetails } from '../../../types/asset';
+import { useSelectedAsset } from '../useSelectedAsset';
 
 import { useAssetEquipment } from './useAssetEquipment';
 
 const NO_EQUIPMENT: AssetInstanceDetails[] = [];
 
-export function useAssetEquipmentViewModel(assetIdentifier: AssetIdentifier) {
+export function useAssetEquipmentViewModel() {
+  const assetIdentifier = useSelectedAsset();
   const { data, error, isError, isFetching, isPending, retry } = useAssetEquipment(assetIdentifier);
 
   return {

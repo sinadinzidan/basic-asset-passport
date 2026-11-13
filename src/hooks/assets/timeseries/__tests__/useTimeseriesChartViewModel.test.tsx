@@ -35,7 +35,9 @@ describe(useTimeseriesChartViewModel.name, () => {
   let wrapper: ComponentType<{ children: ReactNode }>;
 
   beforeEach(() => {
-    store = createNavigationStore();
+    store = createNavigationStore({
+      initialState: { ...DEFAULT_NAVIGATION_STATE, selectedAsset: assetIdentifier },
+    });
     client = { project: 'p', getTrends: vi.fn(() => Promise.resolve([])) };
     context = {
       now: () => NOW_MS,
@@ -50,7 +52,7 @@ describe(useTimeseriesChartViewModel.name, () => {
   });
 
   function renderViewModel() {
-    return renderHook(() => useTimeseriesChartViewModel(assetIdentifier, [pressure]), { wrapper });
+    return renderHook(() => useTimeseriesChartViewModel([pressure]), { wrapper });
   }
 
   it('is closed with no configuration while there is no chart setup', () => {
@@ -87,7 +89,11 @@ describe(useTimeseriesChartViewModel.name, () => {
 
   it('reads the open chart back from its stored setup', () => {
     store = createNavigationStore({
-      initialState: { ...DEFAULT_NAVIGATION_STATE, timeseriesChart: OPEN_CHART },
+      initialState: {
+        ...DEFAULT_NAVIGATION_STATE,
+        selectedAsset: assetIdentifier,
+        timeseriesChart: OPEN_CHART,
+      },
     });
 
     const { result } = renderViewModel();
@@ -101,7 +107,11 @@ describe(useTimeseriesChartViewModel.name, () => {
 
   it('stores a changed configuration', () => {
     store = createNavigationStore({
-      initialState: { ...DEFAULT_NAVIGATION_STATE, timeseriesChart: OPEN_CHART },
+      initialState: {
+        ...DEFAULT_NAVIGATION_STATE,
+        selectedAsset: assetIdentifier,
+        timeseriesChart: OPEN_CHART,
+      },
     });
     const { result } = renderViewModel();
 
@@ -116,7 +126,11 @@ describe(useTimeseriesChartViewModel.name, () => {
 
   it('closes the chart', () => {
     store = createNavigationStore({
-      initialState: { ...DEFAULT_NAVIGATION_STATE, timeseriesChart: OPEN_CHART },
+      initialState: {
+        ...DEFAULT_NAVIGATION_STATE,
+        selectedAsset: assetIdentifier,
+        timeseriesChart: OPEN_CHART,
+      },
     });
     const { result } = renderViewModel();
 

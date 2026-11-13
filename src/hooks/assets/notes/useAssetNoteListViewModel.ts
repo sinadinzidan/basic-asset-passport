@@ -1,15 +1,16 @@
 import { NOTE_QUERY_LIMIT } from '../../../constants/notes';
 import { isSameInstance } from '../../../lib/instanceKey';
-import type { AssetIdentifier } from '../../../types/asset';
 import type { AssetNote } from '../../../types/note';
 import { useListLimit } from '../../general/useListLimit';
+import { useSelectedAsset } from '../useSelectedAsset';
 
 import { useAssetNotes } from './useAssetNotes';
 import { useDeleteAssetNote } from './useDeleteAssetNote';
 
 const NO_NOTES: AssetNote[] = [];
 
-export function useAssetNoteListViewModel(assetIdentifier: AssetIdentifier) {
+export function useAssetNoteListViewModel() {
+  const assetIdentifier = useSelectedAsset();
   const { limit, showMore } = useListLimit(NOTE_QUERY_LIMIT);
   const { data, error, isError, isFetching, isPending, isLoadingMore, retry } = useAssetNotes(
     assetIdentifier,

@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { makeMockClient } from '../../../../__mocks__/cogniteClient';
 import { makeLimitedList } from '../../../../__mocks__/lists';
+import { makeNavigationStore } from '../../../../__mocks__/navigation';
 import { makeAssetNote } from '../../../../__mocks__/notes';
 import { makeQueryClientWrapper } from '../../../../__mocks__/QueryClientWrapper';
 import { UseAddAssetNoteContext } from '../../../../hooks/assets/notes/useAddAssetNote';
@@ -11,8 +12,13 @@ import { UseAssetNotesContext } from '../../../../hooks/assets/notes/useAssetNot
 import { UseDeleteAssetNoteContext } from '../../../../hooks/assets/notes/useDeleteAssetNote';
 import { UseUpdateAssetNoteContext } from '../../../../hooks/assets/notes/useUpdateAssetNote';
 import { AssetContext } from '../../../../hooks/assets/useAssetContext';
+import { NavigationStoreContext } from '../../../../hooks/general/useNavigationState';
 import type { AssetNoteService } from '../../../../services/assets/notes/assetNote';
 import { AssetNotes } from '../AssetNotes';
+
+const navigationStore = makeNavigationStore({
+  selectedAsset: { space: 'asset-space', externalId: 'FLOC-1' },
+});
 
 describe(AssetNotes.name, () => {
   let wrapper: ComponentType<{ children: ReactNode }>;
@@ -42,7 +48,11 @@ describe(AssetNotes.name, () => {
               value={{ createAssetNoteService: () => deleteContext }}
             >
               <QueryWrapper>
-                <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
+                <AssetContext.Provider value={client}>
+                  <NavigationStoreContext.Provider value={navigationStore}>
+                    {children}
+                  </NavigationStoreContext.Provider>
+                </AssetContext.Provider>
               </QueryWrapper>
             </UseDeleteAssetNoteContext.Provider>
           </UseUpdateAssetNoteContext.Provider>
@@ -52,7 +62,7 @@ describe(AssetNotes.name, () => {
   });
 
   it('shows the add button above the notes of the asset', async () => {
-    render(<AssetNotes assetIdentifier={{ space: 'asset-space', externalId: 'FLOC-1' }} />, {
+    render(<AssetNotes />, {
       wrapper,
     });
 

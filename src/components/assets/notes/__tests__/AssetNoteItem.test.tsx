@@ -4,15 +4,19 @@ import type { ComponentType, ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { makeMockClient } from '../../../../__mocks__/cogniteClient';
+import { makeNavigationStore } from '../../../../__mocks__/navigation';
 import { makeAssetNote } from '../../../../__mocks__/notes';
 import { makeQueryClientWrapper } from '../../../../__mocks__/QueryClientWrapper';
 import { UseUpdateAssetNoteContext } from '../../../../hooks/assets/notes/useUpdateAssetNote';
 import { AssetContext } from '../../../../hooks/assets/useAssetContext';
+import { NavigationStoreContext } from '../../../../hooks/general/useNavigationState';
 import type { AssetNoteService } from '../../../../services/assets/notes/assetNote';
 import type { AssetNote } from '../../../../types/note';
 import { AssetNoteItem } from '../AssetNoteItem';
 
 const assetIdentifier = { space: 'asset-space', externalId: 'FLOC-1' };
+
+const navigationStore = makeNavigationStore({ selectedAsset: assetIdentifier });
 
 type ItemOptions = {
   note?: AssetNote;
@@ -32,22 +36,20 @@ describe(AssetNoteItem.name, () => {
     wrapper = ({ children }) => (
       <UseUpdateAssetNoteContext.Provider value={{ createAssetNoteService: () => updateContext }}>
         <QueryWrapper>
-          <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
+          <AssetContext.Provider value={client}>
+            <NavigationStoreContext.Provider value={navigationStore}>
+              {children}
+            </NavigationStoreContext.Provider>
+          </AssetContext.Provider>
         </QueryWrapper>
       </UseUpdateAssetNoteContext.Provider>
     );
   });
 
   function renderItem({ note = makeAssetNote(), isDeleting = false }: ItemOptions = {}) {
-    return render(
-      <AssetNoteItem
-        assetIdentifier={assetIdentifier}
-        note={note}
-        isDeleting={isDeleting}
-        onDelete={onDelete}
-      />,
-      { wrapper },
-    );
+    return render(<AssetNoteItem note={note} isDeleting={isDeleting} onDelete={onDelete} />, {
+      wrapper,
+    });
   }
 
   it('shows the title, text, author and date of the note', () => {

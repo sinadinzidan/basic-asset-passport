@@ -211,6 +211,10 @@ export function AssetList({ page, search }: AssetListProps) {
   provider and a test supplies its own store with the state it needs. Read it
   through a `use<Name>State(selector)` hook that picks only the slice it needs,
   and keep a selector from returning a new object or array on each call.
+- A value that is already in a store is read from the store where it is used,
+  not handed down as a prop. The open asset is the example: a ViewModel calls
+  `useSelectedAsset()` instead of taking an `assetIdentifier` argument, and the
+  components under the asset page take no asset prop.
 - Add `useMemo` and `useCallback` only when required, for example for a
   dependency of an effect or a prop of a memoized child. Otherwise write a plain
   function or value.

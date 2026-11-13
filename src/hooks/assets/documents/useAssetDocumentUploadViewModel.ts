@@ -1,8 +1,9 @@
-import type { AssetIdentifier } from '../../../types/asset';
+import { useSelectedAsset } from '../useSelectedAsset';
 
 import { useUploadAssetDocuments } from './useUploadAssetDocuments';
 
-export function useAssetDocumentUploadViewModel(assetIdentifier: AssetIdentifier) {
+export function useAssetDocumentUploadViewModel() {
+  const assetIdentifier = useSelectedAsset();
   const uploads = useUploadAssetDocuments(assetIdentifier);
 
   const failures = uploads.results.filter((result) => result.errorMessage);

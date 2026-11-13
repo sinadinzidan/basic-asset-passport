@@ -34,7 +34,9 @@ describe(`${AssetDetailsTabs.name} notes`, () => {
   let store: StoreApi<NavigationStore>;
 
   beforeEach(() => {
-    store = makeNavigationStore();
+    store = makeNavigationStore({
+      selectedAsset: { space: asset.space, externalId: asset.externalId },
+    });
     const client = makeMockClient();
     listContext = {
       listAssetNotes: vi.fn(() => Promise.resolve(makeLimitedList([makeAssetNote()]))),
@@ -71,7 +73,10 @@ describe(`${AssetDetailsTabs.name} notes`, () => {
   });
 
   it('keeps the notes tab open to read while its notes are still being counted', async () => {
-    store = makeNavigationStore({ activeAssetTab: AssetTab.NOTES });
+    store = makeNavigationStore({
+      selectedAsset: { space: asset.space, externalId: asset.externalId },
+      activeAssetTab: AssetTab.NOTES,
+    });
     render(
       <AssetDetailsTabs
         asset={asset}
@@ -88,7 +93,10 @@ describe(`${AssetDetailsTabs.name} notes`, () => {
   });
 
   it('lists the notes of the open asset on the notes tab', async () => {
-    store = makeNavigationStore({ activeAssetTab: AssetTab.NOTES });
+    store = makeNavigationStore({
+      selectedAsset: { space: asset.space, externalId: asset.externalId },
+      activeAssetTab: AssetTab.NOTES,
+    });
     render(<AssetDetailsTabs asset={asset} tabCounts={NO_TAB_COUNTS} />, { wrapper });
 
     expect(await screen.findByText('Seal inspection')).toBeInTheDocument();

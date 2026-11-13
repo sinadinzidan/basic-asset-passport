@@ -12,7 +12,6 @@ import { LoadingNoticeVariant } from '../../../enums/loadingNoticeVariant';
 import { useAssetNoteListViewModel } from '../../../hooks/assets/notes/useAssetNoteListViewModel';
 import { getErrorReason } from '../../../lib/errorReason';
 import { getInstanceKey } from '../../../lib/instanceKey';
-import type { AssetIdentifier } from '../../../types/asset';
 import {
   AppAlert,
   EmptyStateMessage,
@@ -23,11 +22,7 @@ import {
 
 import { AssetNoteItem } from './AssetNoteItem';
 
-type AssetNoteListProps = {
-  assetIdentifier: AssetIdentifier;
-};
-
-export function AssetNoteList({ assetIdentifier }: AssetNoteListProps) {
+export function AssetNoteList() {
   const {
     notes,
     hasMore,
@@ -41,7 +36,7 @@ export function AssetNoteList({ assetIdentifier }: AssetNoteListProps) {
     showMore,
     deleteNote,
     isDeleting,
-  } = useAssetNoteListViewModel(assetIdentifier);
+  } = useAssetNoteListViewModel();
 
   if (isPending) {
     return (
@@ -79,7 +74,6 @@ export function AssetNoteList({ assetIdentifier }: AssetNoteListProps) {
       {notes.map((note) => (
         <AssetNoteItem
           key={getInstanceKey(note)}
-          assetIdentifier={assetIdentifier}
           note={note}
           isDeleting={isDeleting(note)}
           onDelete={deleteNote}

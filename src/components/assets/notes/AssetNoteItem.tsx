@@ -9,24 +9,19 @@ import {
 import { IconActionVariant } from '../../../enums/iconActionVariant';
 import { useAssetNoteItemViewModel } from '../../../hooks/assets/notes/useAssetNoteItemViewModel';
 import { formatNoteDate } from '../../../lib/formatNoteDate';
-import type { AssetIdentifier } from '../../../types/asset';
 import type { AssetNote, NewAssetNote } from '../../../types/note';
 import { ConfirmDeleteDialog, IconActionButton } from '../../general';
 
 import { AssetNoteEditForm } from './AssetNoteEditForm';
 
 type AssetNoteItemProps = {
-  assetIdentifier: AssetIdentifier;
   note: AssetNote;
   isDeleting: boolean;
   onDelete: (note: AssetNote) => Promise<void>;
 };
 
-export function AssetNoteItem({ assetIdentifier, note, isDeleting, onDelete }: AssetNoteItemProps) {
-  const { isSaving, saveErrorMessage, save, discardSaveError } = useAssetNoteItemViewModel(
-    assetIdentifier,
-    note,
-  );
+export function AssetNoteItem({ note, isDeleting, onDelete }: AssetNoteItemProps) {
+  const { isSaving, saveErrorMessage, save, discardSaveError } = useAssetNoteItemViewModel(note);
 
   const [isEditing, setIsEditing] = useState(false);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);

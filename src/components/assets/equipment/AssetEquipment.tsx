@@ -11,17 +11,12 @@ import { useAssetEquipmentViewModel } from '../../../hooks/assets/equipment/useA
 import { formatEquipmentTruncatedMessage } from '../../../lib/assetMessage';
 import { getErrorReason } from '../../../lib/errorReason';
 import { getInstanceKey } from '../../../lib/instanceKey';
-import type { AssetIdentifier } from '../../../types/asset';
 import { AppAlert, EmptyStateMessage, LoadingNotice, RetryAlert } from '../../general';
 import { EquipmentDetails } from '../EquipmentDetails';
 
-type AssetEquipmentProps = {
-  assetIdentifier: AssetIdentifier;
-};
-
-export function AssetEquipment({ assetIdentifier }: AssetEquipmentProps) {
+export function AssetEquipment() {
   const { equipment, hasMore, error, isError, isFetching, isPending, retry } =
-    useAssetEquipmentViewModel(assetIdentifier);
+    useAssetEquipmentViewModel();
 
   if (isPending) {
     return (

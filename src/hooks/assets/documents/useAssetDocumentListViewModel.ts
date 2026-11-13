@@ -1,8 +1,8 @@
 import { DOCUMENT_QUERY_LIMIT } from '../../../constants/documents';
 import { isSameInstance } from '../../../lib/instanceKey';
-import type { AssetIdentifier } from '../../../types/asset';
 import type { AssetDocument } from '../../../types/document';
 import { useListLimit } from '../../general/useListLimit';
+import { useSelectedAsset } from '../useSelectedAsset';
 
 import { useAssetDocuments } from './useAssetDocuments';
 import { useAssetLinkedFiles } from './useAssetLinkedFiles';
@@ -11,7 +11,8 @@ import { useUploadingDocumentNames } from './useUploadingDocumentNames';
 
 const NO_DOCUMENTS: AssetDocument[] = [];
 
-export function useAssetDocumentListViewModel(assetIdentifier: AssetIdentifier) {
+export function useAssetDocumentListViewModel() {
+  const assetIdentifier = useSelectedAsset();
   const documentLimit = useListLimit(DOCUMENT_QUERY_LIMIT);
   const linkedFileLimit = useListLimit(DOCUMENT_QUERY_LIMIT);
   const documents = useAssetDocuments(assetIdentifier, documentLimit.limit);

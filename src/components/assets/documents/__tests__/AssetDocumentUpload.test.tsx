@@ -4,6 +4,7 @@ import type { ComponentType, ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 
 import { makeMockClient } from '../../../../__mocks__/cogniteClient';
+import { makeNavigationStore } from '../../../../__mocks__/navigation';
 import { makeQueryClientWrapper } from '../../../../__mocks__/QueryClientWrapper';
 import { DocumentFileContext } from '../../../../hooks/assets/documents/useDocumentFileContext';
 import {
@@ -11,6 +12,7 @@ import {
   type UseUploadAssetDocumentsContextType,
 } from '../../../../hooks/assets/documents/useUploadAssetDocuments';
 import { AssetContext } from '../../../../hooks/assets/useAssetContext';
+import { NavigationStoreContext } from '../../../../hooks/general/useNavigationState';
 import type { ShowSuccessToast } from '../../../../hooks/general/useSuccessToast';
 import type { AssetDocumentService } from '../../../../services/assets/documents/assetDocument';
 import { AssetDocumentUpload } from '../AssetDocumentUpload';
@@ -21,6 +23,8 @@ const documentFileContext = { requestUploadUrl: vi.fn(), uploadContent: vi.fn() 
 const REJECTED_FILE_NAME = 'bad.pdf';
 
 const assetIdentifier = { space: 'asset-space', externalId: 'FLOC-1' };
+
+const navigationStore = makeNavigationStore({ selectedAsset: assetIdentifier });
 
 describe(AssetDocumentUpload.name, () => {
   let mockContext: Pick<UseUploadAssetDocumentsContextType, 'useSuccessToast'> &
@@ -45,7 +49,9 @@ describe(AssetDocumentUpload.name, () => {
         <QueryWrapper>
           <AssetContext.Provider value={assetContext}>
             <DocumentFileContext.Provider value={documentFileContext}>
-              {children}
+              <NavigationStoreContext.Provider value={navigationStore}>
+                {children}
+              </NavigationStoreContext.Provider>
             </DocumentFileContext.Provider>
           </AssetContext.Provider>
         </QueryWrapper>
@@ -54,7 +60,7 @@ describe(AssetDocumentUpload.name, () => {
   });
 
   function renderUpload() {
-    return render(<AssetDocumentUpload assetIdentifier={assetIdentifier} />, {
+    return render(<AssetDocumentUpload />, {
       wrapper,
     });
   }

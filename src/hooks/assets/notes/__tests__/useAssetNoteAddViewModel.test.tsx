@@ -3,13 +3,17 @@ import type { ComponentType, ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { makeMockClient } from '../../../../__mocks__/cogniteClient';
+import { makeNavigationStore } from '../../../../__mocks__/navigation';
 import { makeQueryClientWrapper } from '../../../../__mocks__/QueryClientWrapper';
+import { NavigationStoreContext } from '../../../../hooks/general/useNavigationState';
 import type { AssetNoteService } from '../../../../services/assets/notes/assetNote';
 import { AssetContext } from '../../useAssetContext';
 import { UseAddAssetNoteContext } from '../useAddAssetNote';
 import { useAssetNoteAddViewModel } from '../useAssetNoteAddViewModel';
 
 const assetIdentifier = { space: 'asset-space', externalId: 'FLOC-1' };
+
+const navigationStore = makeNavigationStore({ selectedAsset: assetIdentifier });
 const note = { title: 'Inspection', body: 'All good' };
 
 describe(useAssetNoteAddViewModel.name, () => {
@@ -23,14 +27,18 @@ describe(useAssetNoteAddViewModel.name, () => {
     wrapper = ({ children }) => (
       <UseAddAssetNoteContext.Provider value={{ createAssetNoteService: () => noteService }}>
         <QueryWrapper>
-          <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
+          <AssetContext.Provider value={client}>
+            <NavigationStoreContext.Provider value={navigationStore}>
+              {children}
+            </NavigationStoreContext.Provider>
+          </AssetContext.Provider>
         </QueryWrapper>
       </UseAddAssetNoteContext.Provider>
     );
   });
 
   function renderViewModel() {
-    return renderHook(() => useAssetNoteAddViewModel(assetIdentifier), { wrapper });
+    return renderHook(() => useAssetNoteAddViewModel(), { wrapper });
   }
 
   it('can save a note with a title, and not one without', () => {

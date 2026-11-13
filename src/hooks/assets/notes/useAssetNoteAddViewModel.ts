@@ -1,10 +1,11 @@
 import { isNewAssetNoteValid } from '../../../lib/noteInput';
-import type { AssetIdentifier } from '../../../types/asset';
 import type { NewAssetNote } from '../../../types/note';
+import { useSelectedAsset } from '../useSelectedAsset';
 
 import { useAddAssetNote } from './useAddAssetNote';
 
-export function useAssetNoteAddViewModel(assetIdentifier: AssetIdentifier) {
+export function useAssetNoteAddViewModel() {
+  const assetIdentifier = useSelectedAsset();
   const { addNote, isAdding, error, discardError } = useAddAssetNote(assetIdentifier);
 
   function canSave(note: NewAssetNote): boolean {

@@ -38,7 +38,9 @@ describe(`${AssetDetailsTabs.name} timeseries`, () => {
   let store: StoreApi<NavigationStore>;
 
   beforeEach(() => {
-    store = makeNavigationStore();
+    store = makeNavigationStore({
+      selectedAsset: { space: asset.space, externalId: asset.externalId },
+    });
     const client = makeMockClient();
     listContext = {
       listAssetTimeseries: vi.fn(() =>
@@ -87,7 +89,10 @@ describe(`${AssetDetailsTabs.name} timeseries`, () => {
   });
 
   it('lists the timeseries of the open asset on the timeseries tab', async () => {
-    store = makeNavigationStore({ activeAssetTab: AssetTab.TIMESERIES });
+    store = makeNavigationStore({
+      selectedAsset: { space: asset.space, externalId: asset.externalId },
+      activeAssetTab: AssetTab.TIMESERIES,
+    });
     render(<AssetDetailsTabs asset={asset} tabCounts={NO_TAB_COUNTS} />, { wrapper });
 
     expect(await screen.findByRole('heading', { name: 'Discharge pressure' })).toBeInTheDocument();

@@ -1,12 +1,10 @@
-import type { AssetIdentifier } from '../../../types/asset';
 import type { NewAssetNote, NoteIdentifier } from '../../../types/note';
+import { useSelectedAsset } from '../useSelectedAsset';
 
 import { useUpdateAssetNote } from './useUpdateAssetNote';
 
-export function useAssetNoteItemViewModel(
-  assetIdentifier: AssetIdentifier,
-  { space, externalId }: NoteIdentifier,
-) {
+export function useAssetNoteItemViewModel({ space, externalId }: NoteIdentifier) {
+  const assetIdentifier = useSelectedAsset();
   const { updateNote, isUpdating, error, discardError } = useUpdateAssetNote(assetIdentifier);
 
   function save(input: NewAssetNote, onSaved: () => void): void {

@@ -5,7 +5,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { makeAssetDetailsTabCountsContext } from '../../../__mocks__/assetDetailsTabCounts';
 import { makeInstanceDetails } from '../../../__mocks__/assets';
 import { makeMockClient } from '../../../__mocks__/cogniteClient';
+import { makeNavigationStore } from '../../../__mocks__/navigation';
 import { makeQueryClientWrapper } from '../../../__mocks__/QueryClientWrapper';
+import { NavigationStoreContext } from '../../../hooks/general/useNavigationState';
 import type { AssetDetailsService } from '../../../services/assets/assetDetails';
 import { AssetContext } from '../useAssetContext';
 import { UseAssetDetailsContext } from '../useAssetDetails';
@@ -13,6 +15,8 @@ import { UseAssetDetailsTabCountsContext } from '../useAssetDetailsTabCounts';
 import { useAssetDetailsViewModel } from '../useAssetDetailsViewModel';
 
 const assetIdentifier = { space: 'asset-instance-space', externalId: 'FLOC-100' };
+
+const navigationStore = makeNavigationStore({ selectedAsset: assetIdentifier });
 
 describe(useAssetDetailsViewModel.name, () => {
   const client = makeMockClient();
@@ -41,7 +45,11 @@ describe(useAssetDetailsViewModel.name, () => {
           value={{ createAssetDetailsTabCountService: () => countService }}
         >
           <QueryWrapper>
-            <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
+            <AssetContext.Provider value={client}>
+              <NavigationStoreContext.Provider value={navigationStore}>
+                {children}
+              </NavigationStoreContext.Provider>
+            </AssetContext.Provider>
           </QueryWrapper>
         </UseAssetDetailsTabCountsContext.Provider>
       </UseAssetDetailsContext.Provider>
@@ -49,7 +57,7 @@ describe(useAssetDetailsViewModel.name, () => {
   });
 
   it('is pending, titled with the external ID, until the asset arrives', async () => {
-    const { result } = renderHook(() => useAssetDetailsViewModel(assetIdentifier), { wrapper });
+    const { result } = renderHook(() => useAssetDetailsViewModel(), { wrapper });
 
     expect(result.current.isPending).toBe(true);
     expect(result.current.title).toBe('FLOC-100');
@@ -57,7 +65,7 @@ describe(useAssetDetailsViewModel.name, () => {
   });
 
   it('gives the asset with its name, status and criticality', async () => {
-    const { result } = renderHook(() => useAssetDetailsViewModel(assetIdentifier), { wrapper });
+    const { result } = renderHook(() => useAssetDetailsViewModel(), { wrapper });
 
     await waitFor(() => expect(result.current.title).toBe('Cooling Water Pump'));
     expect(result.current.status).toBe('Operating');
@@ -70,7 +78,7 @@ describe(useAssetDetailsViewModel.name, () => {
       makeInstanceDetails({ properties: [] }),
     );
 
-    const { result } = renderHook(() => useAssetDetailsViewModel(assetIdentifier), { wrapper });
+    const { result } = renderHook(() => useAssetDetailsViewModel(), { wrapper });
 
     await waitFor(() => expect(result.current.isPending).toBe(false));
     expect(result.current.title).toBe('FLOC-100');
@@ -79,7 +87,7 @@ describe(useAssetDetailsViewModel.name, () => {
   });
 
   it('counts the tabs of the asset', async () => {
-    const { result } = renderHook(() => useAssetDetailsViewModel(assetIdentifier), { wrapper });
+    const { result } = renderHook(() => useAssetDetailsViewModel(), { wrapper });
 
     await waitFor(() => expect(result.current.tabCounts.notes.count).toBe(2));
     expect(result.current.tabCounts.equipment.count).toBe(1);
@@ -87,7 +95,7 @@ describe(useAssetDetailsViewModel.name, () => {
 
   it('reports a failed load with its error and reads again on retry', async () => {
     vi.mocked(detailsService.getAssetDetails).mockRejectedValueOnce(new Error('no access'));
-    const { result } = renderHook(() => useAssetDetailsViewModel(assetIdentifier), { wrapper });
+    const { result } = renderHook(() => useAssetDetailsViewModel(), { wrapper });
     await waitFor(() => expect(result.current.isError).toBe(true));
     expect(result.current.error).toEqual(new Error('no access'));
 

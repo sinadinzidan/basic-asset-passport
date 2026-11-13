@@ -6,6 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { makeMockClient } from '../../../../__mocks__/cogniteClient';
 import { makeAssetDocument } from '../../../../__mocks__/documents';
 import { makeLimitedList } from '../../../../__mocks__/lists';
+import { makeNavigationStore } from '../../../../__mocks__/navigation';
 import { makeQueryClientWrapper } from '../../../../__mocks__/QueryClientWrapper';
 import { DOCUMENT_QUERY_LIMIT } from '../../../../constants/documents';
 import { DocumentOrigin } from '../../../../enums/documentOrigin';
@@ -18,10 +19,13 @@ import {
   type RenderDocumentPreview,
 } from '../../../../hooks/assets/documents/useDocumentPreview';
 import { AssetContext } from '../../../../hooks/assets/useAssetContext';
+import { NavigationStoreContext } from '../../../../hooks/general/useNavigationState';
 import type { AssetDocumentService } from '../../../../services/assets/documents/assetDocument';
 import { AssetDocumentList } from '../AssetDocumentList';
 
 const assetIdentifier = { space: 'asset-space', externalId: 'FLOC-1' };
+
+const navigationStore = makeNavigationStore({ selectedAsset: assetIdentifier });
 
 describe(AssetDocumentList.name, () => {
   let listContext: Pick<AssetDocumentService, 'listAssetDocuments'>;
@@ -51,7 +55,11 @@ describe(AssetDocumentList.name, () => {
               value={{ createAssetDocumentService: () => deleteContext }}
             >
               <QueryWrapper>
-                <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
+                <AssetContext.Provider value={client}>
+                  <NavigationStoreContext.Provider value={navigationStore}>
+                    {children}
+                  </NavigationStoreContext.Provider>
+                </AssetContext.Provider>
               </QueryWrapper>
             </UseDeleteAssetDocumentContext.Provider>
           </DocumentPreviewContext.Provider>
@@ -61,7 +69,7 @@ describe(AssetDocumentList.name, () => {
   });
 
   function renderList() {
-    return render(<AssetDocumentList assetIdentifier={assetIdentifier} />, {
+    return render(<AssetDocumentList />, {
       wrapper,
     });
   }

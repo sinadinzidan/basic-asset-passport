@@ -6,15 +6,19 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { makeInstanceDetails } from '../../../../__mocks__/assets';
 import { makeMockClient } from '../../../../__mocks__/cogniteClient';
 import { makeLimitedList } from '../../../../__mocks__/lists';
+import { makeNavigationStore } from '../../../../__mocks__/navigation';
 import { makeQueryClientWrapper } from '../../../../__mocks__/QueryClientWrapper';
 import { UseAssetEquipmentContext } from '../../../../hooks/assets/equipment/useAssetEquipment';
 import { AssetContext } from '../../../../hooks/assets/useAssetContext';
+import { NavigationStoreContext } from '../../../../hooks/general/useNavigationState';
 import type { AssetEquipmentService } from '../../../../services/assets/assetEquipment';
 import { AssetEquipment } from '../AssetEquipment';
 
 const assetContext = makeMockClient();
 
 const assetIdentifier = { space: 'asset-space', externalId: 'FLOC-1' };
+
+const navigationStore = makeNavigationStore({ selectedAsset: assetIdentifier });
 
 describe(AssetEquipment.name, () => {
   let mockContext: AssetEquipmentService;
@@ -28,7 +32,11 @@ describe(AssetEquipment.name, () => {
     wrapper = ({ children }) => (
       <UseAssetEquipmentContext.Provider value={{ createAssetEquipmentService: () => mockContext }}>
         <QueryWrapper>
-          <AssetContext.Provider value={assetContext}>{children}</AssetContext.Provider>
+          <AssetContext.Provider value={assetContext}>
+            <NavigationStoreContext.Provider value={navigationStore}>
+              {children}
+            </NavigationStoreContext.Provider>
+          </AssetContext.Provider>
         </QueryWrapper>
       </UseAssetEquipmentContext.Provider>
     );
@@ -100,7 +108,7 @@ describe(AssetEquipment.name, () => {
   });
 
   function renderEquipment() {
-    return render(<AssetEquipment assetIdentifier={assetIdentifier} />, {
+    return render(<AssetEquipment />, {
       wrapper,
     });
   }

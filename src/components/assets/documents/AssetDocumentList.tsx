@@ -15,7 +15,6 @@ import { LoadingNoticeVariant } from '../../../enums/loadingNoticeVariant';
 import { useAssetDocumentListViewModel } from '../../../hooks/assets/documents/useAssetDocumentListViewModel';
 import { getErrorReason } from '../../../lib/errorReason';
 import { getInstanceKey } from '../../../lib/instanceKey';
-import type { AssetIdentifier } from '../../../types/asset';
 import {
   AppAlert,
   EmptyStateMessage,
@@ -27,11 +26,7 @@ import {
 import { AssetDocumentItem } from './AssetDocumentItem';
 import { AssetDocumentUploadingItem } from './AssetDocumentUploadingItem';
 
-type AssetDocumentListProps = {
-  assetIdentifier: AssetIdentifier;
-};
-
-export function AssetDocumentList({ assetIdentifier }: AssetDocumentListProps) {
+export function AssetDocumentList() {
   const {
     uploadingNames,
     documents,
@@ -55,7 +50,7 @@ export function AssetDocumentList({ assetIdentifier }: AssetDocumentListProps) {
     showMoreExistingFiles,
     deleteDocument,
     isDeleting,
-  } = useAssetDocumentListViewModel(assetIdentifier);
+  } = useAssetDocumentListViewModel();
 
   if (isPending) {
     return (

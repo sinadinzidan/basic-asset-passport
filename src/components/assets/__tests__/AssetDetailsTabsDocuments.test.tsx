@@ -32,7 +32,9 @@ describe(`${AssetDetailsTabs.name} documents`, () => {
   let store: StoreApi<NavigationStore>;
 
   beforeEach(() => {
-    store = makeNavigationStore();
+    store = makeNavigationStore({
+      selectedAsset: { space: asset.space, externalId: asset.externalId },
+    });
     const client = makeMockClient();
     listContext = {
       listAssetDocuments: vi.fn(() => Promise.resolve(makeLimitedList([makeAssetDocument()]))),
@@ -61,7 +63,10 @@ describe(`${AssetDetailsTabs.name} documents`, () => {
   });
 
   it('lists the documents of the open asset on the documents tab', async () => {
-    store = makeNavigationStore({ activeAssetTab: AssetTab.DOCUMENTS });
+    store = makeNavigationStore({
+      selectedAsset: { space: asset.space, externalId: asset.externalId },
+      activeAssetTab: AssetTab.DOCUMENTS,
+    });
     render(<AssetDetailsTabs asset={asset} tabCounts={NO_TAB_COUNTS} />, { wrapper });
 
     expect(await screen.findByText('Pump manual.pdf')).toBeInTheDocument();

@@ -65,7 +65,9 @@ describe(AssetTimeseries.name, () => {
         ),
       ),
     };
-    navigationStore = createNavigationStore();
+    navigationStore = createNavigationStore({
+      initialState: { ...DEFAULT_NAVIGATION_STATE, selectedAsset: assetIdentifier },
+    });
     chartContext = {
       now: () => 10_000,
     };
@@ -94,7 +96,7 @@ describe(AssetTimeseries.name, () => {
   });
 
   function renderList() {
-    return render(<AssetTimeseries assetIdentifier={assetIdentifier} />, {
+    return render(<AssetTimeseries />, {
       wrapper,
     });
   }
@@ -186,6 +188,7 @@ describe(AssetTimeseries.name, () => {
     navigationStore = createNavigationStore({
       initialState: {
         ...DEFAULT_NAVIGATION_STATE,
+        selectedAsset: assetIdentifier,
         timeseriesChart: { sig: 'asset-instance-space:PI.PT-101' },
       },
     });

@@ -8,20 +8,15 @@ import {
 } from '../../../constants/notes';
 import { AppAlertVariant } from '../../../enums/appAlertVariant';
 import { useAssetNoteAddViewModel } from '../../../hooks/assets/notes/useAssetNoteAddViewModel';
-import type { AssetIdentifier } from '../../../types/asset';
 import { AppAlert, GeneralButton, GeneralDialog } from '../../general';
 
 import { AssetNoteFields } from './AssetNoteFields';
 
 const ADD_NOTE_FORM_ID = 'add-note-form';
 
-type AssetNoteAddProps = {
-  assetIdentifier: AssetIdentifier;
-};
-
-export function AssetNoteAdd({ assetIdentifier }: AssetNoteAddProps) {
+export function AssetNoteAdd() {
   const { isSaving, saveErrorMessage, canSave, save, discardSaveError } =
-    useAssetNoteAddViewModel(assetIdentifier);
+    useAssetNoteAddViewModel();
 
   const [isOpen, setIsOpen] = useState(false);
   const [title, setTitle] = useState('');

@@ -9,7 +9,7 @@ export function Assets() {
   return (
     <>
       <AssetTopbar />
-      {selectedAsset ? <AssetDetails assetIdentifier={selectedAsset} /> : <AssetTable />}
+      {selectedAsset ? <AssetDetails /> : <AssetTable />}
     </>
   );
 }

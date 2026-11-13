@@ -5,8 +5,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { makeInstanceDetails } from '../../../../__mocks__/assets';
 import { makeMockClient } from '../../../../__mocks__/cogniteClient';
 import { makeLimitedList } from '../../../../__mocks__/lists';
+import { makeNavigationStore } from '../../../../__mocks__/navigation';
 import { makeQueryClientWrapper } from '../../../../__mocks__/QueryClientWrapper';
 import { TimeseriesPreviewKind } from '../../../../enums/timeseriesPreviewKind';
+import { NavigationStoreContext } from '../../../../hooks/general/useNavigationState';
 import { getTimeseriesKey } from '../../../../lib/timeseriesProperties';
 import type { AssetTimeseriesService } from '../../../../services/assets/timeseries/assetTimeseries';
 import type { TimeseriesContextType } from '../../../../types/timeseries';
@@ -19,6 +21,8 @@ import { UseTimeseriesTrendsContext } from '../useTimeseriesTrends';
 const assetContext = makeMockClient();
 
 const assetIdentifier = { space: 'asset-space', externalId: 'FLOC-1' };
+
+const navigationStore = makeNavigationStore({ selectedAsset: assetIdentifier });
 const pressure = makeInstanceDetails({
   space: 'ts',
   externalId: 'PI.1',
@@ -62,7 +66,11 @@ describe(useAssetTimeseriesViewModel.name, () => {
         >
           <QueryWrapper>
             <TimeseriesContext.Provider value={datapoints}>
-              <AssetContext.Provider value={assetContext}>{children}</AssetContext.Provider>
+              <AssetContext.Provider value={assetContext}>
+                <NavigationStoreContext.Provider value={navigationStore}>
+                  {children}
+                </NavigationStoreContext.Provider>
+              </AssetContext.Provider>
             </TimeseriesContext.Provider>
           </QueryWrapper>
         </UseTimeseriesTrendsContext.Provider>
@@ -71,7 +79,7 @@ describe(useAssetTimeseriesViewModel.name, () => {
   });
 
   it('is pending until the series arrive', async () => {
-    const { result } = renderHook(() => useAssetTimeseriesViewModel(assetIdentifier), {
+    const { result } = renderHook(() => useAssetTimeseriesViewModel(), {
       wrapper,
     });
 
@@ -88,7 +96,7 @@ describe(useAssetTimeseriesViewModel.name, () => {
         deliver = resolve;
       }),
     );
-    const { result } = renderHook(() => useAssetTimeseriesViewModel(assetIdentifier), {
+    const { result } = renderHook(() => useAssetTimeseriesViewModel(), {
       wrapper,
     });
 
@@ -106,7 +114,7 @@ describe(useAssetTimeseriesViewModel.name, () => {
   });
 
   it('reads only the numeric series', async () => {
-    const { result } = renderHook(() => useAssetTimeseriesViewModel(assetIdentifier), {
+    const { result } = renderHook(() => useAssetTimeseriesViewModel(), {
       wrapper,
     });
 
@@ -121,7 +129,7 @@ describe(useAssetTimeseriesViewModel.name, () => {
   });
 
   it('takes the unit from the series properties', async () => {
-    const { result } = renderHook(() => useAssetTimeseriesViewModel(assetIdentifier), {
+    const { result } = renderHook(() => useAssetTimeseriesViewModel(), {
       wrapper,
     });
 
@@ -132,7 +140,7 @@ describe(useAssetTimeseriesViewModel.name, () => {
   it('shows an empty preview for a series without readings', async () => {
     vi.mocked(datapoints.getTrends).mockResolvedValue([]);
 
-    const { result } = renderHook(() => useAssetTimeseriesViewModel(assetIdentifier), {
+    const { result } = renderHook(() => useAssetTimeseriesViewModel(), {
       wrapper,
     });
 
@@ -144,7 +152,7 @@ describe(useAssetTimeseriesViewModel.name, () => {
   it('shows an unavailable preview when the readings cannot be read', async () => {
     vi.mocked(datapoints.getTrends).mockRejectedValue(new Error('no access'));
 
-    const { result } = renderHook(() => useAssetTimeseriesViewModel(assetIdentifier), {
+    const { result } = renderHook(() => useAssetTimeseriesViewModel(), {
       wrapper,
     });
 
@@ -161,7 +169,7 @@ describe(useAssetTimeseriesViewModel.name, () => {
       { space: 'ts', externalId: 'PI.3', points: POINTS },
     ]);
 
-    const { result } = renderHook(() => useAssetTimeseriesViewModel(assetIdentifier), {
+    const { result } = renderHook(() => useAssetTimeseriesViewModel(), {
       wrapper,
     });
 
@@ -174,7 +182,7 @@ describe(useAssetTimeseriesViewModel.name, () => {
   });
 
   it('hands out the same series and items while nothing changed', async () => {
-    const { result, rerender } = renderHook(() => useAssetTimeseriesViewModel(assetIdentifier), {
+    const { result, rerender } = renderHook(() => useAssetTimeseriesViewModel(), {
       wrapper,
     });
     await waitFor(() =>
@@ -192,14 +200,14 @@ describe(useAssetTimeseriesViewModel.name, () => {
   it('says that the asset has more series than were read', async () => {
     vi.mocked(listContext.listAssetTimeseries).mockResolvedValue(makeLimitedList([pressure], true));
 
-    const { result } = renderHook(() => useAssetTimeseriesViewModel(assetIdentifier), { wrapper });
+    const { result } = renderHook(() => useAssetTimeseriesViewModel(), { wrapper });
 
     await waitFor(() => expect(result.current.hasMore).toBe(true));
     expect(result.current.isLoadingMore).toBe(false);
   });
 
   it('says that every series is read when the list ends', async () => {
-    const { result } = renderHook(() => useAssetTimeseriesViewModel(assetIdentifier), { wrapper });
+    const { result } = renderHook(() => useAssetTimeseriesViewModel(), { wrapper });
 
     await waitFor(() => expect(result.current.items).toHaveLength(2));
     expect(result.current.hasMore).toBe(false);
@@ -210,7 +218,7 @@ describe(useAssetTimeseriesViewModel.name, () => {
       .mockResolvedValueOnce(makeLimitedList([pressure], true))
       .mockReturnValueOnce(new Promise(() => {}));
     const { result, rerender } = renderHook(
-      ({ limit }: { limit: number }) => useAssetTimeseriesViewModel(assetIdentifier, limit),
+      ({ limit }: { limit: number }) => useAssetTimeseriesViewModel(limit),
       { wrapper, initialProps: { limit: 1 } },
     );
     await waitFor(() => expect(result.current.items).toHaveLength(1));
@@ -225,7 +233,7 @@ describe(useAssetTimeseriesViewModel.name, () => {
   it('reports a failed list load', async () => {
     vi.mocked(listContext.listAssetTimeseries).mockRejectedValue(new Error('no'));
 
-    const { result } = renderHook(() => useAssetTimeseriesViewModel(assetIdentifier), {
+    const { result } = renderHook(() => useAssetTimeseriesViewModel(), {
       wrapper,
     });
 

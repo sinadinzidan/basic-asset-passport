@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { makeMockClient } from '../../../../__mocks__/cogniteClient';
 import { makeLimitedList } from '../../../../__mocks__/lists';
+import { makeNavigationStore } from '../../../../__mocks__/navigation';
 import { makeAssetNote } from '../../../../__mocks__/notes';
 import { makeQueryClientWrapper } from '../../../../__mocks__/QueryClientWrapper';
 import { NOTE_QUERY_LIMIT } from '../../../../constants/notes';
@@ -12,10 +13,13 @@ import { UseAssetNotesContext } from '../../../../hooks/assets/notes/useAssetNot
 import { UseDeleteAssetNoteContext } from '../../../../hooks/assets/notes/useDeleteAssetNote';
 import { UseUpdateAssetNoteContext } from '../../../../hooks/assets/notes/useUpdateAssetNote';
 import { AssetContext } from '../../../../hooks/assets/useAssetContext';
+import { NavigationStoreContext } from '../../../../hooks/general/useNavigationState';
 import type { AssetNoteService } from '../../../../services/assets/notes/assetNote';
 import { AssetNoteList } from '../AssetNoteList';
 
 const assetIdentifier = { space: 'asset-space', externalId: 'FLOC-1' };
+
+const navigationStore = makeNavigationStore({ selectedAsset: assetIdentifier });
 
 describe(AssetNoteList.name, () => {
   const client = makeMockClient();
@@ -42,7 +46,11 @@ describe(AssetNoteList.name, () => {
             value={{ createAssetNoteService: () => deleteContext }}
           >
             <QueryWrapper>
-              <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
+              <AssetContext.Provider value={client}>
+                <NavigationStoreContext.Provider value={navigationStore}>
+                  {children}
+                </NavigationStoreContext.Provider>
+              </AssetContext.Provider>
             </QueryWrapper>
           </UseDeleteAssetNoteContext.Provider>
         </UseUpdateAssetNoteContext.Provider>
@@ -51,7 +59,7 @@ describe(AssetNoteList.name, () => {
   });
 
   function renderList() {
-    return render(<AssetNoteList assetIdentifier={assetIdentifier} />, {
+    return render(<AssetNoteList />, {
       wrapper,
     });
   }

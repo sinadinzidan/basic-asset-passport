@@ -1,17 +1,11 @@
-import type { AssetIdentifier } from '../../../types/asset';
-
 import { AssetNoteAdd } from './AssetNoteAdd';
 import { AssetNoteList } from './AssetNoteList';
 
-type AssetNotesProps = {
-  assetIdentifier: AssetIdentifier;
-};
-
-export function AssetNotes({ assetIdentifier }: AssetNotesProps) {
+export function AssetNotes() {
   return (
     <div className="flex flex-col gap-5">
-      <AssetNoteAdd assetIdentifier={assetIdentifier} />
-      <AssetNoteList assetIdentifier={assetIdentifier} />
+      <AssetNoteAdd />
+      <AssetNoteList />
     </div>
   );
 }

@@ -5,9 +5,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { makeMockClient } from '../../../../__mocks__/cogniteClient';
 import { makeAssetDocument } from '../../../../__mocks__/documents';
 import { makeLimitedList } from '../../../../__mocks__/lists';
+import { makeNavigationStore } from '../../../../__mocks__/navigation';
 import { makeQueryClientWrapper } from '../../../../__mocks__/QueryClientWrapper';
 import { DOCUMENT_QUERY_LIMIT } from '../../../../constants/documents';
 import { DocumentOrigin } from '../../../../enums/documentOrigin';
+import { NavigationStoreContext } from '../../../../hooks/general/useNavigationState';
 import type { AssetDocumentService } from '../../../../services/assets/documents/assetDocument';
 import { AssetContext } from '../../useAssetContext';
 import { useAssetDocumentListViewModel } from '../useAssetDocumentListViewModel';
@@ -16,6 +18,8 @@ import { UseAssetLinkedFilesContext } from '../useAssetLinkedFiles';
 import { UseDeleteAssetDocumentContext } from '../useDeleteAssetDocument';
 
 const assetIdentifier = { space: 'asset-space', externalId: 'FLOC-1' };
+
+const navigationStore = makeNavigationStore({ selectedAsset: assetIdentifier });
 const uploaded = makeAssetDocument();
 const existing = makeAssetDocument({ externalId: 'file-1', origin: DocumentOrigin.RMDM });
 
@@ -41,7 +45,11 @@ describe(useAssetDocumentListViewModel.name, () => {
             value={{ createAssetDocumentService: () => deps }}
           >
             <QueryWrapper>
-              <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
+              <AssetContext.Provider value={client}>
+                <NavigationStoreContext.Provider value={navigationStore}>
+                  {children}
+                </NavigationStoreContext.Provider>
+              </AssetContext.Provider>
             </QueryWrapper>
           </UseDeleteAssetDocumentContext.Provider>
         </UseAssetLinkedFilesContext.Provider>
@@ -50,7 +58,7 @@ describe(useAssetDocumentListViewModel.name, () => {
   });
 
   function renderViewModel() {
-    return renderHook(() => useAssetDocumentListViewModel(assetIdentifier), { wrapper });
+    return renderHook(() => useAssetDocumentListViewModel(), { wrapper });
   }
 
   it('is pending with nothing to show until the documents arrive', async () => {

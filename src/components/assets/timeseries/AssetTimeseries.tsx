@@ -15,7 +15,7 @@ import { useTimeseriesChartViewModel } from '../../../hooks/assets/timeseries/us
 import { useListLimit } from '../../../hooks/general/useListLimit';
 import { getErrorReason } from '../../../lib/errorReason';
 import { getTimeseriesKey, getTimeseriesName } from '../../../lib/timeseriesProperties';
-import type { AssetIdentifier, AssetInstanceDetails } from '../../../types/asset';
+import type { AssetInstanceDetails } from '../../../types/asset';
 import { EmptyStateMessage, LoadingNotice, RetryAlert, ShowMoreButton } from '../../general';
 
 import { TimeseriesDetails } from './TimeseriesDetails';
@@ -26,11 +26,7 @@ const TimeseriesChartDialog = lazy(() =>
   })),
 );
 
-type AssetTimeseriesProps = {
-  assetIdentifier: AssetIdentifier;
-};
-
-export function AssetTimeseries({ assetIdentifier }: AssetTimeseriesProps) {
+export function AssetTimeseries() {
   const { limit, showMore } = useListLimit(TIMESERIES_QUERY_LIMIT);
   const {
     items,
@@ -42,8 +38,8 @@ export function AssetTimeseries({ assetIdentifier }: AssetTimeseriesProps) {
     isLoadingMore,
     isPending,
     retry,
-  } = useAssetTimeseriesViewModel(assetIdentifier, limit);
-  const chart = useTimeseriesChartViewModel(assetIdentifier, timeseries);
+  } = useAssetTimeseriesViewModel(limit);
+  const chart = useTimeseriesChartViewModel(timeseries);
 
   function handleOpenChart(opened: AssetInstanceDetails): void {
     chart.openSeries(getTimeseriesKey(opened), getTimeseriesName(opened));
@@ -106,7 +102,7 @@ export function AssetTimeseries({ assetIdentifier }: AssetTimeseriesProps) {
             source={chart.source}
             configuration={chart.configuration}
             nowMs={chart.nowMs}
-            exportName={assetIdentifier.externalId}
+            exportName={chart.exportName}
             onConfigurationChange={chart.setConfiguration}
             onClose={chart.close}
           />

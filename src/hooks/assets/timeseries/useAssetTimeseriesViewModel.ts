@@ -6,8 +6,9 @@ import {
   getTimeseriesUnit,
   isNonNumericTimeseries,
 } from '../../../lib/timeseriesProperties';
-import type { AssetIdentifier, AssetInstanceDetails } from '../../../types/asset';
+import type { AssetInstanceDetails } from '../../../types/asset';
 import type { TimeseriesPreview } from '../../../types/timeseries';
+import { useSelectedAsset } from '../useSelectedAsset';
 
 import { useAssetTimeseries } from './useAssetTimeseries';
 import { useTimeseriesTrends } from './useTimeseriesTrends';
@@ -26,7 +27,8 @@ export type AssetTimeseriesItem = {
   preview: TimeseriesPreview;
 };
 
-export function useAssetTimeseriesViewModel(assetIdentifier: AssetIdentifier, limit?: number) {
+export function useAssetTimeseriesViewModel(limit?: number) {
+  const assetIdentifier = useSelectedAsset();
   const { useAssetTimeseries: useSeries, useTimeseriesTrends: useTrends } = useContext(
     UseAssetTimeseriesViewModelContext,
   );

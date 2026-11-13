@@ -5,7 +5,7 @@ import { HudShape } from '../../enums/hudShape';
 import type { AssetDetailsTabCounts } from '../../hooks/assets/useAssetDetailsTabCounts';
 import { useNavigationState } from '../../hooks/general/useNavigationState';
 import { formatTabCountBadge } from '../../lib/countBadge';
-import type { AssetIdentifier, AssetInstanceDetails } from '../../types/asset';
+import type { AssetInstanceDetails } from '../../types/asset';
 import type { CountState } from '../../types/countState';
 import { HudPanel } from '../general';
 
@@ -23,11 +23,6 @@ type AssetDetailsTabsProps = {
 export function AssetDetailsTabs({ asset, tabCounts }: AssetDetailsTabsProps) {
   const activeTab = useNavigationState((store) => store.navigationState.activeAssetTab);
   const changeAssetTab = useNavigationState((store) => store.actions.changeAssetTab);
-
-  const assetIdentifier: AssetIdentifier = {
-    space: asset.space,
-    externalId: asset.externalId,
-  };
 
   function isTabWaitingForCount(tab: AssetTab, count: CountState): boolean {
     return count.isLoading && tab !== activeTab;
@@ -84,16 +79,16 @@ export function AssetDetailsTabs({ asset, tabCounts }: AssetDetailsTabsProps) {
           </div>
         </TabsPanel>
         <TabsPanel value={AssetTab.EQUIPMENTS} className="p-4">
-          <AssetEquipment assetIdentifier={assetIdentifier} />
+          <AssetEquipment />
         </TabsPanel>
         <TabsPanel value={AssetTab.TIMESERIES} className="p-4">
-          <AssetTimeseries assetIdentifier={assetIdentifier} />
+          <AssetTimeseries />
         </TabsPanel>
         <TabsPanel value={AssetTab.NOTES} className="p-4">
-          <AssetNotes assetIdentifier={assetIdentifier} />
+          <AssetNotes />
         </TabsPanel>
         <TabsPanel value={AssetTab.DOCUMENTS} className="p-4">
-          <AssetDocuments assetIdentifier={assetIdentifier} />
+          <AssetDocuments />
         </TabsPanel>
       </Tabs>
     </HudPanel>

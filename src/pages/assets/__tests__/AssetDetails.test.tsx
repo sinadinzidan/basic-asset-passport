@@ -55,7 +55,7 @@ describe(AssetDetails.name, () => {
       getAssetDetails: vi.fn(() => Promise.resolve(makeDetails())),
     };
     tabCountsContext = makeAssetDetailsTabCountsContext();
-    store = makeNavigationStore();
+    store = makeNavigationStore({ selectedAsset: assetIdentifier });
     const equipmentContext = {
       listAssetEquipment: vi.fn(() =>
         Promise.resolve(
@@ -84,7 +84,7 @@ describe(AssetDetails.name, () => {
   });
 
   function renderRegister() {
-    return render(<AssetDetails assetIdentifier={assetIdentifier} />, { wrapper });
+    return render(<AssetDetails />, { wrapper });
   }
 
   it('shows only a loading status while details load', () => {

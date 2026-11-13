@@ -10,13 +10,8 @@ import { ASSET_DETAILS_ERROR_DESCRIPTION, ASSET_DETAILS_ERROR_TITLE } from '../.
 import { useAssetDetailsViewModel } from '../../hooks/assets/useAssetDetailsViewModel';
 import { getStatusTone } from '../../lib/assetStatus';
 import { getErrorReason } from '../../lib/errorReason';
-import type { AssetIdentifier } from '../../types/asset';
 
-type AssetDetailsProps = {
-  assetIdentifier: AssetIdentifier;
-};
-
-export function AssetDetails({ assetIdentifier }: AssetDetailsProps) {
+export function AssetDetails() {
   const {
     asset,
     title,
@@ -28,7 +23,7 @@ export function AssetDetails({ assetIdentifier }: AssetDetailsProps) {
     isFetching,
     isPending,
     retry,
-  } = useAssetDetailsViewModel(assetIdentifier);
+  } = useAssetDetailsViewModel();
 
   if (isPending) {
     return (

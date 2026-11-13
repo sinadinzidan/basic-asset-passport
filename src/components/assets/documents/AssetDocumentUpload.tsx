@@ -8,16 +8,10 @@ import {
 } from '../../../constants/documents';
 import { AppAlertVariant } from '../../../enums/appAlertVariant';
 import { useAssetDocumentUploadViewModel } from '../../../hooks/assets/documents/useAssetDocumentUploadViewModel';
-import type { AssetIdentifier } from '../../../types/asset';
 import { AppAlert, GeneralButton } from '../../general';
 
-type AssetDocumentUploadProps = {
-  assetIdentifier: AssetIdentifier;
-};
-
-export function AssetDocumentUpload({ assetIdentifier }: AssetDocumentUploadProps) {
-  const { isUploading, failures, upload, retryFailed } =
-    useAssetDocumentUploadViewModel(assetIdentifier);
+export function AssetDocumentUpload() {
+  const { isUploading, failures, upload, retryFailed } = useAssetDocumentUploadViewModel();
 
   const fileInputReference = useRef<HTMLInputElement>(null);
 
