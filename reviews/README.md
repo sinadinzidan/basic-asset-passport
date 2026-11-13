@@ -11,4 +11,4 @@ changed visually since (rounds 5 and 4 were the first reviews on the current tem
 Code review rounds 11 to 13 score the current app (notes, documents, timeseries, the assistant) against the
 certification checks pulled on the day. Round 11 found two blocking items; round 12 re-checks after the fixes and
 reports none; round 13 closes the round-12 findings and leaves one should-fix (the Aura theme, kept on purpose) and
-one nice-to-fix (majors held back by Aura). Round 13 is the latest code review. The design review has not been re-run since round 7.
+one nice-to-fix (majors held back by Aura). Round 13 is the latest code review. Design review round 8 scores the current app (average 4.4); its walkthrough was done in mock mode, not on real CDF data.
