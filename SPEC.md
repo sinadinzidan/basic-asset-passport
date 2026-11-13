@@ -161,6 +161,8 @@ the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines
   keeps what was typed, and never shows the note in the list. Cancelling or
   closing the dialog drops what was typed. While the note is saving, both
   dialog buttons are disabled.
+- A toast confirms each change to a note, as it does for an upload: "Note added.", "Note updated." or
+  "Note deleted.". A change that fails shows its error and no toast.
 - A note is a node of the `Note` view (`sp-asset-passport`, `v1`) written to
   the instance space `sp-asset-passport-data` with a generated external ID
   (`note-<uuid>`). Its `asset` property is a direct relation to the asset

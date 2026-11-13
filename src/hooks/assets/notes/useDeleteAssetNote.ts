@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createContext, useContext } from 'react';
 
+import { NOTE_DELETED_MESSAGE } from '../../../constants/notes';
 import {
   createAssetNoteService,
   type AssetNoteService,
@@ -8,6 +9,7 @@ import {
 import type { AssetIdentifier } from '../../../types/asset';
 import type { AssetContextType } from '../../../types/assetContext';
 import type { NoteIdentifier } from '../../../types/note';
+import { useSuccessToast } from '../../general/useSuccessToast';
 import { useAssetContext } from '../useAssetContext';
 
 import { getAssetNotesQueryKey } from './useAssetNotes';
@@ -23,14 +25,17 @@ export function useDeleteAssetNote(assetIdentifier: AssetIdentifier) {
   const { createAssetNoteService } = useContext(UseDeleteAssetNoteContext);
   const client = useAssetContext();
   const queryClient = useQueryClient();
+  const showSuccessToast = useSuccessToast();
   const noteService = createAssetNoteService(client);
 
   const mutation = useMutation({
     mutationFn: (note: NoteIdentifier) => noteService.deleteAssetNote(note),
-    onSuccess: () =>
-      queryClient.invalidateQueries({
+    onSuccess: () => {
+      showSuccessToast(NOTE_DELETED_MESSAGE);
+      return queryClient.invalidateQueries({
         queryKey: getAssetNotesQueryKey(client.project, assetIdentifier),
-      }),
+      });
+    },
   });
 
   return {

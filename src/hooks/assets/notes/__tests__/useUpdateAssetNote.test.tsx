@@ -8,7 +8,9 @@ import {
   makeQueryClientWrapper,
   makeTestQueryClient,
 } from '../../../../__mocks__/QueryClientWrapper';
+import { NOTE_UPDATED_MESSAGE } from '../../../../constants/notes';
 import type { AssetNoteService } from '../../../../services/assets/notes/assetNote';
+import { SuccessToastContext, type ShowSuccessToast } from '../../../general/useSuccessToast';
 import { AssetContext } from '../../useAssetContext';
 import { getAssetNotesQueryKey } from '../useAssetNotes';
 import { useUpdateAssetNote, UseUpdateAssetNoteContext } from '../useUpdateAssetNote';
@@ -21,6 +23,7 @@ describe(useUpdateAssetNote.name, () => {
   const client = makeMockClient();
   let queryClient: QueryClient;
   let mockContext: Pick<AssetNoteService, 'updateAssetNote'>;
+  let showSuccessToast: ShowSuccessToast;
   let wrapper: ComponentType<{ children: ReactNode }>;
 
   beforeEach(() => {
@@ -28,11 +31,14 @@ describe(useUpdateAssetNote.name, () => {
     mockContext = {
       updateAssetNote: vi.fn(() => Promise.resolve()),
     };
+    showSuccessToast = vi.fn();
     const QueryWrapper = makeQueryClientWrapper(queryClient);
     wrapper = ({ children }) => (
       <UseUpdateAssetNoteContext.Provider value={{ createAssetNoteService: () => mockContext }}>
         <QueryWrapper>
-          <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
+          <SuccessToastContext.Provider value={showSuccessToast}>
+            <AssetContext.Provider value={client}>{children}</AssetContext.Provider>
+          </SuccessToastContext.Provider>
         </QueryWrapper>
       </UseUpdateAssetNoteContext.Provider>
     );
@@ -78,5 +84,26 @@ describe(useUpdateAssetNote.name, () => {
 
     await waitFor(() => expect(result.current.error).not.toBeNull());
     expect(invalidate).not.toHaveBeenCalled();
+  });
+
+  it('confirms that the note was updated', async () => {
+    const { result } = renderHook(() => useUpdateAssetNote(assetIdentifier), { wrapper });
+
+    await act(async () => {
+      await result.current.updateNote({ note, input });
+    });
+
+    expect(showSuccessToast).toHaveBeenCalledWith(NOTE_UPDATED_MESSAGE);
+  });
+
+  it('confirms nothing when the update fails', async () => {
+    vi.mocked(mockContext.updateAssetNote).mockRejectedValue(new Error('Forbidden'));
+    const { result } = renderHook(() => useUpdateAssetNote(assetIdentifier), { wrapper });
+
+    await act(async () => {
+      await result.current.updateNote({ note, input }).catch(() => undefined);
+    });
+
+    expect(showSuccessToast).not.toHaveBeenCalled();
   });
 });

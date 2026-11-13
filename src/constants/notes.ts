@@ -21,3 +21,6 @@ export const NOTE_ADD_DIALOG_TITLE = 'Add note';
 export const NOTE_DELETE_DIALOG_TITLE = 'Delete note?';
 export const NOTE_DELETE_WARNING = 'will be deleted permanently. This cannot be undone.';
 export const NOTE_INVALID_MESSAGE = `A note needs a title of up to ${NOTE_TITLE_MAX_LENGTH} characters and a text of up to ${NOTE_BODY_MAX_LENGTH}.`;
+export const NOTE_ADDED_MESSAGE = 'Note added.';
+export const NOTE_UPDATED_MESSAGE = 'Note updated.';
+export const NOTE_DELETED_MESSAGE = 'Note deleted.';
