@@ -45,7 +45,7 @@ describe(ThresholdsPanel.name, () => {
 
     expect(screen.getByText('No thresholds to show')).toBeInTheDocument();
     expect(
-      screen.getByText('None of these series comes with an alert or danger limit.'),
+      screen.getByText('None of these series comes with an alert or danger limit. Add one below.'),
     ).toBeInTheDocument();
   });
 
@@ -98,7 +98,7 @@ describe(ThresholdsPanel.name, () => {
     renderPanel({ series: [mixed] });
 
     expect(screen.getByText('2 readings beyond · From the data source')).toBeInTheDocument();
-    expect(screen.getByText('No readings beyond · Configured')).toBeInTheDocument();
+    expect(screen.getByText('No readings beyond · Added on this chart')).toBeInTheDocument();
   });
 });
 
@@ -177,6 +177,107 @@ function limitedSeries() {
   });
 }
 
+describe('adding a threshold in the panel', () => {
+  it('offers no form while no series is on the chart', () => {
+    renderPanel({ series: [] });
+
+    expect(screen.queryByRole('form', { name: 'Add a threshold' })).not.toBeInTheDocument();
+  });
+
+  it('adds an alert on the high side by default, in the unit the series is shown in', async () => {
+    const onThresholdAdd = vi.fn(() => undefined);
+    renderPanel({ onThresholdAdd });
+
+    await userEvent.type(screen.getByLabelText('Value'), '9.5');
+    await userEvent.click(screen.getByRole('button', { name: 'Add threshold' }));
+
+    expect(onThresholdAdd).toHaveBeenCalledWith({
+      seriesId: 's1',
+      level: ThresholdLevel.ALERT,
+      side: ThresholdSide.UPPER,
+      value: 9.5,
+      unit: 'bar',
+    });
+    expect(screen.getByLabelText('Value')).toHaveValue('');
+  });
+
+  it('adds with the Enter key', async () => {
+    const onThresholdAdd = vi.fn(() => undefined);
+    renderPanel({ onThresholdAdd });
+
+    await userEvent.type(screen.getByLabelText('Value'), '4{Enter}');
+
+    expect(onThresholdAdd).toHaveBeenCalledTimes(1);
+  });
+
+  it('asks for a value and adds nothing when the field is empty', async () => {
+    const onThresholdAdd = vi.fn(() => undefined);
+    renderPanel({ onThresholdAdd });
+
+    await userEvent.click(screen.getByRole('button', { name: 'Add threshold' }));
+
+    expect(screen.getByText('Enter a value for the threshold.')).toBeInTheDocument();
+    expect(onThresholdAdd).not.toHaveBeenCalled();
+  });
+
+  it('refuses a value that is not a number', async () => {
+    const onThresholdAdd = vi.fn(() => undefined);
+    renderPanel({ onThresholdAdd });
+
+    await userEvent.type(screen.getByLabelText('Value'), 'high');
+    await userEvent.click(screen.getByRole('button', { name: 'Add threshold' }));
+
+    expect(screen.getByText('The value must be a number.')).toBeInTheDocument();
+    expect(onThresholdAdd).not.toHaveBeenCalled();
+  });
+
+  it('says why the chart refused the threshold and keeps what was typed', async () => {
+    renderPanel({ onThresholdAdd: () => 'This threshold is already on the chart.' });
+
+    await userEvent.type(screen.getByLabelText('Value'), '8');
+    await userEvent.click(screen.getByRole('button', { name: 'Add threshold' }));
+
+    expect(screen.getByText('This threshold is already on the chart.')).toBeInTheDocument();
+    expect(screen.getByLabelText('Value')).toHaveValue('8');
+  });
+
+  it('asks which series only when there is more than one', () => {
+    const { unmount } = renderPanel();
+    expect(screen.queryByText('Series')).not.toBeInTheDocument();
+    unmount();
+
+    renderPanel({
+      series: [
+        limitedSeries(),
+        createSeriesView({ definition: createDefinition({ id: 's2', name: 'Flow' }) }),
+      ],
+    });
+    expect(screen.getByText('Series')).toBeInTheDocument();
+  });
+});
+
+describe('removing a threshold in the panel', () => {
+  it('offers to remove only a threshold the user added', async () => {
+    const onThresholdRemove = vi.fn();
+    const added = createThreshold({
+      id: 'configured:s1:ALERT:UPPER:9',
+      value: 9,
+      source: ThresholdSource.CONFIGURED,
+    });
+    renderPanel({
+      series: [createSeriesView({ points: READINGS, thresholds: [createThreshold(), added] })],
+      onThresholdRemove,
+    });
+
+    const removeButtons = screen.getAllByRole('button', { name: /^Remove the/ });
+    expect(removeButtons).toHaveLength(1);
+
+    await userEvent.click(removeButtons[0]);
+
+    expect(onThresholdRemove).toHaveBeenCalledWith('configured:s1:ALERT:UPPER:9');
+  });
+});
+
 function renderPanel(overrides: Partial<Parameters<typeof ThresholdsPanel>[0]> = {}) {
   return render(
     <ThresholdsPanel
@@ -184,6 +285,8 @@ function renderPanel(overrides: Partial<Parameters<typeof ThresholdsPanel>[0]> =
       shouldShowThresholds
       onShowThresholdsChange={vi.fn()}
       range={TEN_MINUTES}
+      onThresholdAdd={vi.fn()}
+      onThresholdRemove={vi.fn()}
       {...overrides}
     />,
   );

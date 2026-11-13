@@ -10,6 +10,7 @@ import {
   ReadingKind,
   SeriesDataStatus,
   ThresholdLevel,
+  ThresholdSide,
   ThresholdSource,
 } from '../enums/timeSeriesChart';
 
@@ -23,6 +24,7 @@ import {
 const STALE_AFTER_MINUTES = 30;
 
 export const CHART_MAX_SERIES = CHART_MAX_SIGNALS;
+export const CHART_MAX_CONFIGURED_THRESHOLDS = 12;
 export const CHART_TITLE_MAX_LENGTH = 80;
 export const CHART_DEFAULT_TITLE = 'Untitled chart';
 export const CHART_DEFAULT_RANGE_PRESET = ChartRange.ONE_WEEK;
@@ -120,7 +122,12 @@ export const THRESHOLD_LEVEL_LABELS: Record<ThresholdLevel, string> = {
 
 export const THRESHOLD_SOURCE_LABELS: Record<ThresholdSource, string> = {
   [ThresholdSource.DATA_SOURCE]: 'From the data source',
-  [ThresholdSource.CONFIGURED]: 'Configured',
+  [ThresholdSource.CONFIGURED]: 'Added on this chart',
+};
+
+export const THRESHOLD_SIDE_LABELS: Record<ThresholdSide, string> = {
+  [ThresholdSide.UPPER]: 'High limit',
+  [ThresholdSide.LOWER]: 'Low limit',
 };
 
 export const DATA_QUALITY_ISSUE_LABELS: Record<DataQualityIssue, string> = {

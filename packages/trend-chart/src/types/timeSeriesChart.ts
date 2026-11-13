@@ -93,6 +93,15 @@ export interface ChartThreshold {
   isReference?: boolean;
 }
 
+/** A threshold the user added on the chart. It is kept with the chart's setup, in the unit it was entered in. */
+export interface ConfiguredThreshold {
+  seriesId: string;
+  level: ThresholdLevel;
+  side: ThresholdSide;
+  value: number;
+  unit: string;
+}
+
 export interface ChartConfiguration {
   title: string;
   range: ChartRange;
@@ -100,6 +109,7 @@ export interface ChartConfiguration {
   mode: ChartMode;
   series: SeriesConfiguration[];
   axes: AxisSetting[];
+  thresholds: ConfiguredThreshold[];
   shouldShowGridlines: boolean;
   shouldShowMinMax: boolean;
   isMarkerMode: boolean;

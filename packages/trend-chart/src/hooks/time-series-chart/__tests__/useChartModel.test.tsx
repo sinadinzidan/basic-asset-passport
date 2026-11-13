@@ -11,6 +11,9 @@ import {
   ChartOverlay,
   ChartPanel,
   SeriesDataStatus,
+  ThresholdLevel,
+  ThresholdSide,
+  ThresholdSource,
 } from '../../../enums/timeSeriesChart';
 import {
   createChartConfiguration,
@@ -253,6 +256,61 @@ describe(useChartModel.name, () => {
 
     expect(result.current.views[0]?.thresholds[0]).toMatchObject({
       value: expect.closeTo(700, 6),
+      unit: 'kPa',
+    });
+  });
+
+  it('lists a threshold the user added after those of the data source, marked as configured', async () => {
+    const fromSource = createThreshold({ seriesId: 's1', value: 7 });
+    const configuration = {
+      ...hourChart(),
+      thresholds: [
+        {
+          seriesId: 's1',
+          level: ThresholdLevel.DANGER,
+          side: ThresholdSide.UPPER,
+          value: 9,
+          unit: 'bar',
+        },
+      ],
+    };
+    const { result } = renderModel(sourceAdapter({ getThresholds: async () => [fromSource] }), {
+      configuration,
+    });
+
+    await waitFor(() => expect(result.current.views[0]?.thresholds).toHaveLength(2));
+
+    expect(result.current.views[0]?.thresholds[1]).toMatchObject({
+      seriesId: 's1',
+      level: ThresholdLevel.DANGER,
+      value: 9,
+      unit: 'bar',
+      source: ThresholdSource.CONFIGURED,
+    });
+  });
+
+  it('converts an added threshold from the unit it was entered in to the display unit', async () => {
+    const withUnit = setDisplayUnit(hourChart(), 's1', 'bar', 'kPa').configuration;
+    const configuration = {
+      ...withUnit,
+      thresholds: [
+        {
+          seriesId: 's1',
+          level: ThresholdLevel.ALERT,
+          side: ThresholdSide.UPPER,
+          value: 2,
+          unit: 'bar',
+        },
+      ],
+    };
+    const { result } = renderModel(sourceAdapter({ getThresholds: async () => [] }), {
+      configuration,
+    });
+
+    await waitFor(() => expect(result.current.views[0]?.thresholds).toHaveLength(1));
+
+    expect(result.current.views[0]?.thresholds[0]).toMatchObject({
+      value: expect.closeTo(200, 6),
       unit: 'kPa',
     });
   });

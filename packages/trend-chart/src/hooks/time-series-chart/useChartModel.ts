@@ -7,6 +7,7 @@ import { CHART_ALL_HISTORY_DAYS } from '../../constants/monitoring';
 import { CHART_MAX_SOURCE_POINTS } from '../../constants/timeSeriesChart';
 import { ChartOverlay, ChartPanel, SeriesDataStatus } from '../../enums/timeSeriesChart';
 import { resolveChartWindow } from '../../lib/monitoring/chartModel';
+import { toChartThreshold } from '../../lib/time-series-chart/configuredThresholds';
 import { profileSeries } from '../../lib/time-series-chart/dataQuality';
 import {
   buildMonitoringSnapshots,
@@ -148,6 +149,7 @@ export function useChartModel({
 
   // The page parses its state afresh on every change, so a toggle hands down new but equal series; only a real change rebuilds the views.
   const configuredSeries = useStableValue(configuration.series);
+  const configuredThresholds = useStableValue(configuration.thresholds);
   const seriesIds = useMemo(
     () => configuredSeries.map((entry) => entry.seriesId),
     [configuredSeries],
@@ -263,11 +265,17 @@ export function useChartModel({
         const unit = entry.displayUnit ?? ownUnit ?? '';
         const points = convertPoints(merged, ownUnit, entry.displayUnit ?? ownUnit);
         const hasError = Boolean(readingState?.error) || Boolean(definitionState?.error);
-        const thresholds = convertThresholds(
+        const sourceThresholds = convertThresholds(
           (thresholdQuery.data ?? []).filter((threshold) => threshold.seriesId === entry.seriesId),
           ownUnit,
           entry.displayUnit ?? ownUnit,
         );
+        const addedThresholds = configuredThresholds
+          .filter((threshold) => threshold.seriesId === entry.seriesId)
+          .flatMap((threshold) =>
+            convertThresholds([toChartThreshold(threshold)], threshold.unit, unit),
+          );
+        const thresholds = [...sourceThresholds, ...addedThresholds];
         return {
           definition,
           configuration: entry,
@@ -291,6 +299,7 @@ export function useChartModel({
       readingStates,
       loadedPoints,
       thresholdQuery.data,
+      configuredThresholds,
       liveAppended,
       nowMs,
       latestLiveAt,

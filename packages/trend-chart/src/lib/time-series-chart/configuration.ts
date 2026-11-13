@@ -5,16 +5,25 @@ import {
   CHART_DEFAULT_RANGE_PRESET,
   CHART_DEFAULT_TITLE,
   CHART_LINE_WIDTHS,
+  CHART_MAX_CONFIGURED_THRESHOLDS,
   CHART_MAX_SERIES,
   CHART_TITLE_MAX_LENGTH,
   CHART_LINE_WIDTH_THIN,
 } from '../../constants/timeSeriesChart';
 import { ChartMode, ChartRange } from '../../enums/monitoring';
-import { AxisScaleMode, ChartOverlay, ChartPanel, LineStyle } from '../../enums/timeSeriesChart';
+import {
+  AxisScaleMode,
+  ChartOverlay,
+  ChartPanel,
+  LineStyle,
+  ThresholdLevel,
+  ThresholdSide,
+} from '../../enums/timeSeriesChart';
 import type {
   AxisSetting,
   ChartConfiguration,
   ChartTimeRange,
+  ConfiguredThreshold,
   SeriesConfiguration,
   SeriesStyle,
 } from '../../types/timeSeriesChart';
@@ -35,6 +44,16 @@ const LINE_STYLE_CODES: Record<LineStyle, string> = {
   [LineStyle.SOLID]: 'S',
   [LineStyle.DASHED]: 'D',
   [LineStyle.DOTTED]: 'T',
+};
+
+const THRESHOLD_LEVEL_CODES: Record<ThresholdLevel, string> = {
+  [ThresholdLevel.ALERT]: 'A',
+  [ThresholdLevel.DANGER]: 'D',
+};
+
+const THRESHOLD_SIDE_CODES: Record<ThresholdSide, string> = {
+  [ThresholdSide.UPPER]: 'U',
+  [ThresholdSide.LOWER]: 'L',
 };
 
 export interface ConfigurationResult {
@@ -65,6 +84,7 @@ export function createChartConfiguration(
       .slice(0, CHART_MAX_SERIES)
       .map((seriesId, index) => ({ seriesId, isVisible: true, style: defaultSeriesStyle(index) })),
     axes: [],
+    thresholds: [],
     shouldShowGridlines: true,
     shouldShowMinMax: false,
     isMarkerMode: false,
@@ -97,6 +117,7 @@ export function removeSeries(
   return {
     ...configuration,
     series: configuration.series.filter((entry) => entry.seriesId !== seriesId),
+    thresholds: configuration.thresholds.filter((entry) => entry.seriesId !== seriesId),
   };
 }
 
@@ -280,6 +301,16 @@ export function serialiseConfiguration(configuration: ChartConfiguration): Recor
     .filter((axis) => axis.mode === AxisScaleMode.MANUAL)
     .map((axis) => [axis.seriesId, axis.min ?? '', axis.max ?? ''].join(FIELD_SEPARATOR));
   if (axes.length > 0) options.ax = axes.join(PAIR_SEPARATOR);
+  const thresholds = configuration.thresholds.map((threshold) =>
+    [
+      threshold.seriesId,
+      THRESHOLD_LEVEL_CODES[threshold.level],
+      THRESHOLD_SIDE_CODES[threshold.side],
+      threshold.value,
+      encodeURIComponent(threshold.unit),
+    ].join(FIELD_SEPARATOR),
+  );
+  if (thresholds.length > 0) options.th = thresholds.join(PAIR_SEPARATOR);
   if (!configuration.shouldShowGridlines) options.grid = OPTION_OFF;
   if (configuration.shouldShowMinMax) options.mm = OPTION_ON;
   if (configuration.isMarkerMode) options.mk = OPTION_ON;
@@ -287,6 +318,31 @@ export function serialiseConfiguration(configuration: ChartConfiguration): Recor
   if (configuration.isLive) options.live = OPTION_ON;
   if (configuration.panel) options.pn = configuration.panel;
   return options;
+}
+
+/** One added threshold from its place in the link, or nothing when it is malformed or its series is not on the chart. */
+function thresholdOf(entry: string, seriesIds: readonly string[]): ConfiguredThreshold[] {
+  const [seriesId, levelCode, sideCode, valueText, unitText = ''] = entry.split(FIELD_SEPARATOR);
+  const level = Object.values(ThresholdLevel).find(
+    (candidate) => THRESHOLD_LEVEL_CODES[candidate] === levelCode,
+  );
+  const side = Object.values(ThresholdSide).find(
+    (candidate) => THRESHOLD_SIDE_CODES[candidate] === sideCode,
+  );
+  const value = numberOf(valueText);
+
+  if (!seriesId || !seriesIds.includes(seriesId) || !level || !side || value === undefined)
+    return [];
+
+  return [{ seriesId, level, side, value, unit: decodeUnit(unitText) }];
+}
+
+function decodeUnit(text: string): string {
+  try {
+    return decodeURIComponent(text);
+  } catch {
+    return '';
+  }
 }
 
 export function parseConfiguration(
@@ -327,6 +383,10 @@ export function parseConfiguration(
       };
       return setting.min === undefined && setting.max === undefined ? [] : [setting];
     });
+  const thresholds = (options.th ?? '')
+    .split(PAIR_SEPARATOR)
+    .flatMap((entry) => thresholdOf(entry, ids))
+    .slice(0, CHART_MAX_CONFIGURED_THRESHOLDS);
   const overlays =
     options.ov !== undefined
       ? listOf(options.ov).filter((candidate): candidate is ChartOverlay =>
@@ -347,6 +407,7 @@ export function parseConfiguration(
       displayUnit: displayUnits.get(seriesId),
     })),
     axes,
+    thresholds,
     shouldShowGridlines: options.grid !== OPTION_OFF,
     shouldShowMinMax: options.mm === OPTION_ON,
     isMarkerMode: options.mk === OPTION_ON,

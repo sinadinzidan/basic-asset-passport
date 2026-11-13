@@ -6,7 +6,14 @@ import {
   CHART_TITLE_MAX_LENGTH,
 } from '../../../constants/timeSeriesChart';
 import { ChartMode, ChartRange } from '../../../enums/monitoring';
-import { AxisScaleMode, ChartOverlay, ChartPanel, LineStyle } from '../../../enums/timeSeriesChart';
+import {
+  AxisScaleMode,
+  ChartOverlay,
+  ChartPanel,
+  LineStyle,
+  ThresholdLevel,
+  ThresholdSide,
+} from '../../../enums/timeSeriesChart';
 import type { ChartConfiguration } from '../../../types/timeSeriesChart';
 import {
   addSeries,
@@ -67,6 +74,7 @@ describe(createChartConfiguration.name, () => {
       mode: ChartMode.OVERLAID,
       series: [],
       axes: [],
+      thresholds: [],
       shouldShowGridlines: true,
       shouldShowMinMax: false,
       isMarkerMode: false,
@@ -381,6 +389,63 @@ describe(setWindow.name, () => {
 
     expect(configuration.range).toBe(ChartRange.ONE_HOUR);
     expect(configuration.window).toBeUndefined();
+  });
+});
+
+describe('thresholds the user added', () => {
+  const added = {
+    seriesId: 'a',
+    level: ThresholdLevel.ALERT,
+    side: ThresholdSide.UPPER,
+    value: 8.5,
+    unit: 'bar',
+  };
+
+  it('writes each one as its series, level, side, value and unit', () => {
+    const options = serialiseConfiguration(
+      createChartConfiguration(['a'], { thresholds: [added] }),
+    );
+
+    expect(options.th).toBe('a|A|U|8.5|bar');
+  });
+
+  it('writes nothing for a chart without any', () => {
+    expect(serialiseConfiguration(createChartConfiguration(['a'])).th).toBeUndefined();
+  });
+
+  it('restores them from the link', () => {
+    const restored = parseConfiguration(
+      { sig: 'a', th: 'a|A|U|8.5|bar;a|D|L|-1|m%C2%B3%2Fh' },
+      createChartConfiguration([]),
+    );
+
+    expect(restored.thresholds).toEqual([
+      added,
+      {
+        seriesId: 'a',
+        level: ThresholdLevel.DANGER,
+        side: ThresholdSide.LOWER,
+        value: -1,
+        unit: 'm³/h',
+      },
+    ]);
+  });
+
+  it('drops one that is malformed or belongs to a series that is not on the chart', () => {
+    const restored = parseConfiguration(
+      { sig: 'a', th: 'b|A|U|8|bar;a|X|U|8|bar;a|A|Q|8|bar;a|A|U|high|bar;;a|A|U|3|%E0%A4%A' },
+      createChartConfiguration([]),
+    );
+
+    expect(restored.thresholds).toEqual([{ ...added, value: 3, unit: '' }]);
+  });
+
+  it('go with their series when it is taken off the chart', () => {
+    const before = createChartConfiguration(['a', 'b'], {
+      thresholds: [added, { ...added, seriesId: 'b' }],
+    });
+
+    expect(removeSeries(before, 'a').thresholds).toEqual([{ ...added, seriesId: 'b' }]);
   });
 });
 
@@ -711,6 +776,15 @@ function fullConfiguration(): ChartConfiguration {
       },
     ],
     axes: [{ seriesId: 'a', mode: AxisScaleMode.MANUAL, min: 0, max: 10 }],
+    thresholds: [
+      {
+        seriesId: 'a',
+        level: ThresholdLevel.DANGER,
+        side: ThresholdSide.LOWER,
+        value: -2.5,
+        unit: 'm³/h',
+      },
+    ],
     shouldShowGridlines: false,
     shouldShowMinMax: true,
     isMarkerMode: true,

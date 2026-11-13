@@ -130,7 +130,12 @@ the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines
   model has no alerts, connected files or events, so the chart shows none. A series whose readings cannot be
   loaded shows the error with a Retry in the series table, and the other series stay; a failed read is never shown
   as a series without data. Live mode is off.
-- The open chart is host-synced: its setup (series, window, title, layers, styles) is stored with the page state,
+- The chart's Thresholds panel lists each series' limits from CDF and lets the user add their own: a level (Alert
+  or Danger), a side (High limit or Low limit) and a value in the unit the series is shown in. An added threshold is
+  drawn and counted like the others, can be removed from its row (limits from CDF cannot), and follows the series
+  when its display unit changes. The same threshold cannot be added twice; a chart takes up to 12; an empty or
+  non-numeric value is refused with a message. Removing a series removes its added thresholds.
+- The open chart is host-synced: its setup (series, window, title, layers, styles, added thresholds) is stored with the page state,
   so a reload or shared link reopens the same chart. It is dropped when the asset or the tab changes or the chart
   is closed. In mock mode the readings are generated and the chart marks the source as simulated.
 - Loading shows "Loading timeseries..." in a plain card; a failed load shows "Timeseries could not be loaded"

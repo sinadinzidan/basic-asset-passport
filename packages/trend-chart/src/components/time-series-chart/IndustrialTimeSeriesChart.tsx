@@ -41,6 +41,10 @@ import {
   toggleOverlay,
   togglePanel,
 } from '../../lib/time-series-chart/configuration';
+import {
+  addConfiguredThreshold,
+  removeConfiguredThreshold,
+} from '../../lib/time-series-chart/configuredThresholds';
 import { profileSeries } from '../../lib/time-series-chart/dataQuality';
 import type {
   ChartAlert,
@@ -291,6 +295,16 @@ export function IndustrialTimeSeriesChart({
               update(toggleOverlay(configuration, ChartOverlay.THRESHOLDS))
             }
             range={chartWindow}
+            onThresholdAdd={(threshold) => {
+              const result = addConfiguredThreshold(configuration, threshold);
+
+              if (!result.error) update(result.configuration);
+
+              return result.error;
+            }}
+            onThresholdRemove={(thresholdId) =>
+              update(removeConfiguredThreshold(configuration, thresholdId))
+            }
           />
         );
       case ChartPanel.DATA_PROFILING:
