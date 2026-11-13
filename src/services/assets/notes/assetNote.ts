@@ -9,7 +9,7 @@ import type { AssetContextType } from '../../../types/assetContext';
 import type { LimitedList } from '../../../types/list';
 import type { AssetNote, NewAssetNote, NoteIdentifier } from '../../../types/note';
 import { matchAssetRelation } from '../assetFilter';
-import { SORT_BY_EXTERNAL_ID, SORT_BY_NEWEST } from '../querySort';
+import { sortByNewest } from '../querySort';
 import {
   findAssetPassportView,
   getNodeViewProperties,
@@ -19,15 +19,19 @@ import {
   type ViewIdentity,
 } from '../viewHelpers';
 
-type CreateNoteDeps = { generateId: () => string };
+type CreateNoteDeps = { generateId: () => string; now: () => number };
 type NodeProperties = Record<string, string | AssetIdentifier>;
 
-const defaultDeps: CreateNoteDeps = { generateId: () => crypto.randomUUID() };
+const defaultDeps: CreateNoteDeps = {
+  generateId: () => crypto.randomUUID(),
+  now: () => Date.now(),
+};
 
 const NOTE_PROPERTIES = [
   MODEL.properties.note.title,
   MODEL.properties.note.body,
   MODEL.properties.note.author,
+  MODEL.properties.note.createdAt,
 ];
 
 export interface AssetNoteService {
@@ -58,7 +62,7 @@ class CdfAssetNoteService implements AssetNoteService {
               and: [{ hasData: [viewReference] }, matchAssetRelation(noteView, assetIdentifier)],
             },
           },
-          sort: [SORT_BY_NEWEST, SORT_BY_EXTERNAL_ID],
+          sort: sortByNewest(noteView, MODEL.properties.note.createdAt),
           limit: getRequestLimit(limit),
         },
       },
@@ -95,6 +99,7 @@ class CdfAssetNoteService implements AssetNoteService {
       {
         ...note,
         ...(author ?? {}),
+        [MODEL.properties.note.createdAt]: new Date(this.deps.now()).toISOString(),
         [MODEL.properties.assetRelation]: {
           space: assetIdentifier.space,
           externalId: assetIdentifier.externalId,
@@ -125,7 +130,7 @@ export function createAssetNoteService(
 }
 
 function toAssetNote(node: NodeInstance, view: ViewIdentity): AssetNote {
-  const { title, body, author } = NotePropertiesSchema.parse(
+  const { title, body, author, createdAt } = NotePropertiesSchema.parse(
     getNodeViewProperties(node, view) ?? {},
   );
 
@@ -135,8 +140,14 @@ function toAssetNote(node: NodeInstance, view: ViewIdentity): AssetNote {
     title: title ?? node.externalId,
     body,
     author,
-    createdTime: node.createdTime,
+    createdTime: readTimeMs(createdAt) ?? node.createdTime,
   };
+}
+
+function readTimeMs(timestamp: string | null): number | null {
+  const timeMs = timestamp === null ? Number.NaN : Date.parse(timestamp);
+
+  return Number.isNaN(timeMs) ? null : timeMs;
 }
 
 async function upsertNote(

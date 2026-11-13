@@ -11,6 +11,7 @@ export const NotePropertiesSchema = z.object({
   [PROPERTIES.title]: OptionalTextSchema,
   [PROPERTIES.body]: OptionalTextSchema,
   [PROPERTIES.author]: OptionalTextSchema,
+  [PROPERTIES.createdAt]: OptionalTextSchema,
 });
 
 export const NewAssetNoteSchema = z.object({

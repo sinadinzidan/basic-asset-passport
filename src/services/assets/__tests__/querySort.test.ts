@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { makeViewDefinition } from '../../../__mocks__/cdf';
-import { SORT_BY_EXTERNAL_ID, SORT_BY_NEWEST, sortByName, sortByViewProperty } from '../querySort';
+import { SORT_BY_EXTERNAL_ID, sortByNewest, sortByName, sortByViewProperty } from '../querySort';
 
 const view = makeViewDefinition('Equipment', { name: {} }, 'v1', 'sp-model');
 
@@ -47,12 +47,11 @@ describe(sortByName.name, () => {
   });
 });
 
-describe('SORT_BY_NEWEST', () => {
-  it('sorts by when the instance was created, the newest first, in the one-part form CDF accepts', () => {
-    expect(SORT_BY_NEWEST).toEqual({
-      property: ['createdTime'],
-      direction: 'descending',
-      nullsFirst: false,
-    });
+describe(sortByNewest.name, () => {
+  it('sorts by the time property of the view, the newest first, then by external ID', () => {
+    expect(sortByNewest({ space: 'sp', externalId: 'Note', version: 'v1' }, 'createdAt')).toEqual([
+      { property: ['sp', 'Note/v1', 'createdAt'], direction: 'descending', nullsFirst: false },
+      SORT_BY_EXTERNAL_ID,
+    ]);
   });
 });

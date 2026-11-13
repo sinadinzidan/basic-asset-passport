@@ -149,7 +149,10 @@ the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines
 
 ## Asset notes
 
-- The Notes tab lists the notes written against the open asset, newest first.
+- The Notes tab lists the notes written against the open asset, newest first. The order comes from the
+  note's own `createdAt` property in the Note view, which the app sets when a note is added and CDF sorts by (CDF
+  cannot sort by its built-in created time). A note without `createdAt`, written before the property existed, comes
+  after the dated ones and shows the time CDF stored it.
   The list is sorted on the server and read 100 at a time: when the asset has
   more, a "Show more notes" button under the list reads the next 100 while the
   notes already shown stay. Each note shows its title, text, author (or "Unknown author") and

@@ -6,12 +6,19 @@ import { makeOfflineSdkClient, stubModelViews } from '../../../../__mocks__/cogn
 import { MODEL } from '../../../../config/model';
 import { NOTE_QUERY_LIMIT } from '../../../../constants/notes';
 import { TestPropertyType } from '../../../../enums/testPropertyType';
-import { SORT_BY_EXTERNAL_ID, SORT_BY_NEWEST } from '../../querySort';
+import { SORT_BY_EXTERNAL_ID } from '../../querySort';
 import { createAssetNoteService } from '../assetNote';
 
 const noteView = makeViewDefinition(
   'Note',
-  { title: {}, body: {}, author: {}, authorId: {}, asset: { type: TestPropertyType.DIRECT } },
+  {
+    title: {},
+    body: {},
+    author: {},
+    authorId: {},
+    createdAt: {},
+    asset: { type: TestPropertyType.DIRECT },
+  },
   'v1',
   'sp-asset-passport',
 );
@@ -57,13 +64,22 @@ describe('listAssetNotes', () => {
               ],
             },
           },
-          sort: [SORT_BY_NEWEST, SORT_BY_EXTERNAL_ID],
+          sort: [
+            {
+              property: ['sp-asset-passport', 'Note/v1', 'createdAt'],
+              direction: 'descending',
+              nullsFirst: false,
+            },
+            SORT_BY_EXTERNAL_ID,
+          ],
           limit: NOTE_QUERY_LIMIT + 1,
         },
       },
       select: {
         notes: {
-          sources: [{ source: noteReference, properties: ['title', 'body', 'author'] }],
+          sources: [
+            { source: noteReference, properties: ['title', 'body', 'author', 'createdAt'] },
+          ],
         },
       },
     });
@@ -126,6 +142,27 @@ describe('listAssetNotes', () => {
     ]);
   });
 
+  it('dates a note by its own created-at time, and by when CDF stored it when it has none', async () => {
+    stubModelViews(client, [noteView]);
+    vi.spyOn(client.instances, 'query').mockResolvedValue(
+      makeQueryResponse({
+        notes: [
+          makeNote('note-dated', 1_000, { title: 'Dated', createdAt: '2026-11-13T08:00:00.000Z' }),
+          makeNote('note-undated', 2_000, { title: 'Undated' }),
+          makeNote('note-broken', 3_000, { title: 'Broken', createdAt: 'not a time' }),
+        ],
+      }),
+    );
+
+    const notes = await createAssetNoteService(client).listAssetNotes(assetIdentifier);
+
+    expect(notes.items.map((note) => note.createdTime)).toEqual([
+      Date.parse('2026-11-13T08:00:00.000Z'),
+      2_000,
+      3_000,
+    ]);
+  });
+
   it('returns an empty list when the asset has no notes', async () => {
     stubModelViews(client, [noteView]);
     vi.spyOn(client.instances, 'query').mockResolvedValue(makeQueryResponse({}));
@@ -157,6 +194,7 @@ describe('listAssetNotes', () => {
 describe('createAssetNote', () => {
   let client: CogniteClient;
   const generateId = () => 'abc-123';
+  const now = () => Date.parse('2026-11-13T08:00:00.000Z');
 
   beforeEach(() => {
     client = makeOfflineSdkClient();
@@ -173,7 +211,7 @@ describe('createAssetNote', () => {
     const upsert = vi.spyOn(client.instances, 'upsert').mockResolvedValue({ items: [] });
 
     // Act
-    await createAssetNoteService(client, { generateId }).createAssetNote(assetIdentifier, {
+    await createAssetNoteService(client, { generateId, now }).createAssetNote(assetIdentifier, {
       title: ' Inspection ',
       body: ' Looks fine ',
     });
@@ -193,6 +231,7 @@ describe('createAssetNote', () => {
                 body: 'Looks fine',
                 author: 'Sam Operator',
                 authorId: 'user-1',
+                createdAt: '2026-11-13T08:00:00.000Z',
                 asset: assetIdentifier,
               },
             },
@@ -208,7 +247,7 @@ describe('createAssetNote', () => {
   it('saves a note without text with an empty text, as an edit does', async () => {
     const upsert = vi.spyOn(client.instances, 'upsert').mockResolvedValue({ items: [] });
 
-    await createAssetNoteService(client, { generateId }).createAssetNote(assetIdentifier, {
+    await createAssetNoteService(client, { generateId, now }).createAssetNote(assetIdentifier, {
       title: 'Title',
       body: '  ',
     });
@@ -223,7 +262,7 @@ describe('createAssetNote', () => {
 
     vi.spyOn(client.profiles, 'me').mockRejectedValue(new Error('no profile'));
 
-    await createAssetNoteService(client, { generateId }).createAssetNote(assetIdentifier, {
+    await createAssetNoteService(client, { generateId, now }).createAssetNote(assetIdentifier, {
       title: 'Title',
       body: '',
     });
@@ -256,7 +295,7 @@ describe('createAssetNote', () => {
     vi.spyOn(client.instances, 'upsert').mockRejectedValue(new Error('Forbidden'));
 
     await expect(
-      createAssetNoteService(client, { generateId }).createAssetNote(assetIdentifier, {
+      createAssetNoteService(client, { generateId, now }).createAssetNote(assetIdentifier, {
         title: 'Title',
         body: '',
       }),

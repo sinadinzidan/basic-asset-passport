@@ -68,12 +68,17 @@ describe('AssetIdentifierSchema', () => {
 });
 
 describe('NotePropertiesSchema', () => {
-  it('reads the title, text and author, with null for what is missing or blank', () => {
+  it('reads the title, text, author and created-at time, with null for what is missing or blank', () => {
     expect(NotePropertiesSchema.parse({ title: 'Seal', body: '  ' })).toEqual({
       title: 'Seal',
       body: null,
       author: null,
+      createdAt: null,
     });
+    expect(
+      NotePropertiesSchema.parse({ title: 'Seal', createdAt: '2026-11-13T08:00:00.000Z' })
+        .createdAt,
+    ).toBe('2026-11-13T08:00:00.000Z');
   });
 });
 

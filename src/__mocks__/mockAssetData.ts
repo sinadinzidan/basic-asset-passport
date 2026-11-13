@@ -56,6 +56,7 @@ const MOCK_NOTE_VIEW: ViewDefinition = makeViewDefinition(
     body: { label: 'Note' },
     author: { label: 'Author' },
     authorId: { label: 'Author ID' },
+    createdAt: { label: 'Created at' },
     asset: { label: 'Asset', type: TestPropertyType.DIRECT },
   },
   MOCK_VIEW_VERSION,
@@ -213,19 +214,22 @@ function makeMockNote(
   hoursAgo: number,
   properties: { title: string; body?: string; author?: string },
 ): NodeInstance {
+  const createdTime = Date.now() - hoursAgo * HOUR_MS;
+
   return {
     ...makeNodeInstance(
       MOCK_NOTE_VIEW,
       { space: MODEL.instanceSpace, externalId },
       {
         ...properties,
+        createdAt: new Date(createdTime).toISOString(),
         asset: {
           space: MOCK_ASSET_INSTANCE_SPACE,
           externalId: MOCK_ASSETS[assetIndex].externalId,
         },
       },
     ),
-    createdTime: Date.now() - hoursAgo * HOUR_MS,
+    createdTime,
   };
 }
 

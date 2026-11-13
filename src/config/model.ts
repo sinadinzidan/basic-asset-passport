@@ -29,6 +29,7 @@ export const MODEL = {
       body: 'body',
       author: 'author',
       authorId: 'authorId',
+      createdAt: 'createdAt',
     },
     document: {
       name: 'name',

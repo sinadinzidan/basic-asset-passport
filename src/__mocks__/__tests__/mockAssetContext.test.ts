@@ -824,13 +824,18 @@ describe(`${makeMockAssetContext.name} sorting and paging`, () => {
     expect(page.nextCursor).toEqual({});
   });
 
-  it('sorts by created time in the one-part form, the newest first', async () => {
+  it('sorts notes by their created-at property, the newest first', async () => {
     const client = makeMockAssetContext(0);
 
     const newestFirst = await client.instances.query(
       makeNotesRequest(firstAsset, {
         limit: 1000,
-        sort: [{ property: ['createdTime'], direction: 'descending' }],
+        sort: [
+          {
+            property: [MODEL.space, `${MODEL.views.note}/v1`, 'createdAt'],
+            direction: 'descending',
+          },
+        ],
       }),
     );
 
@@ -840,18 +845,21 @@ describe(`${makeMockAssetContext.name} sorting and paging`, () => {
     expect(times).toEqual([...times].sort((first, second) => second - first));
   });
 
-  it('rejects created time written as a node property, as CDF does', async () => {
-    const client = makeMockAssetContext(0);
+  it.each([[['createdTime']], [['node', 'createdTime']]])(
+    'rejects a sort by %j, as CDF does',
+    async (property) => {
+      const client = makeMockAssetContext(0);
 
-    await expect(
-      client.instances.query(
-        makeNotesRequest(firstAsset, {
-          limit: 1000,
-          sort: [{ property: ['node', 'createdTime'], direction: 'descending' }],
-        }),
-      ),
-    ).rejects.toThrow(/Invalid sort property/);
-  });
+      await expect(
+        client.instances.query(
+          makeNotesRequest(firstAsset, {
+            limit: 1000,
+            sort: [{ property, direction: 'descending' }],
+          }),
+        ),
+      ).rejects.toThrow(/Invalid sort property/);
+    },
+  );
 
   it('sorts a result set by a node property in the direction asked for', async () => {
     const client = makeMockAssetContext(0);

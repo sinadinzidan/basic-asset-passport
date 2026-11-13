@@ -13,7 +13,6 @@ import { MODEL } from '../config/model';
 import {
   DESCENDING_SORT_DIRECTION,
   INSTANCE_TYPE_NODE,
-  NODE_CREATED_TIME_PROPERTY,
   NODE_EXTERNAL_ID_PROPERTY,
   NODE_SPACE_PROPERTY,
   VIEW_SOURCE_TYPE,
@@ -339,16 +338,12 @@ function sortNodes(nodes: readonly NodeInstance[], sortRules: SortRule[]): reado
 }
 
 const INVALID_SORT_PROPERTY_MESSAGE =
-  'Invalid sort property. Created time sorts as [createdTime]; a node sorts by [node, externalId] or [node, space].';
+  'Invalid sort property. Sort by a view property, or by [node, externalId] or [node, space].';
 
 function readSortValue(node: NodeInstance, property: unknown[]): unknown {
   const [scope, group, name] = property;
 
-  if (property.length === 1) {
-    if (scope !== NODE_CREATED_TIME_PROPERTY) throw new Error(INVALID_SORT_PROPERTY_MESSAGE);
-
-    return node.createdTime;
-  }
+  if (property.length < 2) throw new Error(INVALID_SORT_PROPERTY_MESSAGE);
 
   if (scope === INSTANCE_TYPE_NODE) {
     if (group === NODE_EXTERNAL_ID_PROPERTY) return node.externalId;
