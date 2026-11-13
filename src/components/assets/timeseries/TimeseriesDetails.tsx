@@ -8,7 +8,7 @@ import {
   getTimeseriesDisplayProperties,
   getTimeseriesName,
 } from '../../../lib/timeseriesProperties';
-import { AssetProperties } from '../AssetProperties';
+import { PropertyGrid } from '../../general';
 
 import { TimeseriesPreview } from './TimeseriesPreview';
 
@@ -54,7 +54,7 @@ export function TimeseriesDetails({ item, onOpenChart }: TimeseriesDetailsProps)
       ) : (
         <TimeseriesPreview preview={preview} unit={unit} />
       )}
-      <AssetProperties properties={getTimeseriesDisplayProperties(timeseries)} />
+      <PropertyGrid properties={getTimeseriesDisplayProperties(timeseries)} />
     </section>
   );
 }

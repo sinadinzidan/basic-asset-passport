@@ -16,6 +16,7 @@ export { MockModeNotice } from './MockModeNotice';
 export { NeonStage } from './NeonStage';
 export { PageHeader } from './PageHeader';
 export { PageShell } from './PageShell';
+export { PropertyGrid } from './PropertyGrid';
 export { RetryAlert } from './RetryAlert';
 export { ShowMoreButton } from './ShowMoreButton';
 export { StatTile } from './StatTile';

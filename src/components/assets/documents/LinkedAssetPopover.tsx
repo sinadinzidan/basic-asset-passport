@@ -21,10 +21,10 @@ import {
   CriticalityPill,
   GeneralButton,
   LoadingNotice,
+  PropertyGrid,
   RetryAlert,
   StatusPill,
 } from '../../general';
-import { AssetProperties } from '../AssetProperties';
 
 export type LinkedAssetTarget = {
   asset: AssetIdentifier;
@@ -102,7 +102,7 @@ function OpenLinkedAssetPopover({ target, onClose, onOpenAsset }: OpenLinkedAsse
                 {criticality ? <CriticalityPill criticality={criticality} /> : null}
               </div>
             ) : null}
-            <AssetProperties properties={details} />
+            <PropertyGrid properties={details} />
             <GeneralButton className="self-start" onClick={handleOpenAsset} size="sm">
               Open asset
             </GeneralButton>

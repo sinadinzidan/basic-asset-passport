@@ -1,12 +1,12 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
-import { AssetProperties } from '../AssetProperties';
+import { PropertyGrid } from '../PropertyGrid';
 
-describe(AssetProperties.name, () => {
+describe(PropertyGrid.name, () => {
   it('lists each property label with its value', () => {
     render(
-      <AssetProperties
+      <PropertyGrid
         properties={[
           { identifier: 'name', label: 'Name', value: 'Pump' },
           { identifier: 'plantId', label: 'Plant ID', value: 'G307' },
@@ -19,7 +19,7 @@ describe(AssetProperties.name, () => {
   });
 
   it('renders an empty list without properties', () => {
-    const { container } = render(<AssetProperties properties={[]} />);
+    const { container } = render(<PropertyGrid properties={[]} />);
 
     expect(container.querySelectorAll('dt')).toHaveLength(0);
   });

@@ -2,7 +2,8 @@ import { MODEL } from '../../../../config/model';
 import { NODE_EXTERNAL_ID_PROPERTY } from '../../../../constants/cdfApi';
 import { FUNCTIONAL_LOCATION_LABEL } from '../../../../constants/labels';
 import { getPropertyValue } from '../../../../lib/assetProperties';
-import type { AssetIdentifier, AssetPropertyDisplay } from '../../../../types/asset';
+import type { AssetIdentifier } from '../../../../types/asset';
+import type { PropertyDisplay } from '../../../../types/property';
 import { useAssetDetails } from '../../useAssetDetails';
 
 const SHOWN_PROPERTY_IDENTIFIERS = [
@@ -13,7 +14,7 @@ const SHOWN_PROPERTY_IDENTIFIERS = [
 export function useAnnotatedAssetViewModel(asset: AssetIdentifier) {
   const { data, error, isError, isFetching, isPending, retry } = useAssetDetails(asset);
 
-  const details: AssetPropertyDisplay[] = [
+  const details: PropertyDisplay[] = [
     {
       identifier: NODE_EXTERNAL_ID_PROPERTY,
       label: FUNCTIONAL_LOCATION_LABEL,

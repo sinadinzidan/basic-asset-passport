@@ -4,7 +4,8 @@ import {
   TIMESERIES_DISPLAY_PROPERTIES,
   TIMESERIES_UNIT_PROPERTIES,
 } from '../constants/timeseries';
-import type { AssetInstanceDetails, AssetPropertyDisplay } from '../types/asset';
+import type { AssetInstanceDetails } from '../types/asset';
+import type { PropertyDisplay } from '../types/property';
 import type { TimeseriesIdentifier } from '../types/timeseries';
 
 import { getPropertyValue } from './assetProperties';
@@ -36,7 +37,7 @@ export function getTimeseriesUnit(timeseries: AssetInstanceDetails): string | nu
 
 export function getTimeseriesDisplayProperties(
   timeseries: AssetInstanceDetails,
-): AssetPropertyDisplay[] {
+): PropertyDisplay[] {
   const shown = TIMESERIES_DISPLAY_PROPERTIES.flatMap((identifier) => {
     const property = timeseries.properties.find((candidate) => candidate.identifier === identifier);
 

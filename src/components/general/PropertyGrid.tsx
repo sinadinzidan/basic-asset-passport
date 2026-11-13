@@ -1,10 +1,10 @@
-import type { AssetPropertyDisplay } from '../../types/asset';
+import type { PropertyDisplay } from '../../types/property';
 
-type AssetPropertiesProps = {
-  properties: AssetPropertyDisplay[];
+type PropertyGridProps = {
+  properties: PropertyDisplay[];
 };
 
-export function AssetProperties({ properties }: AssetPropertiesProps) {
+export function PropertyGrid({ properties }: PropertyGridProps) {
   return (
     <dl className="property-grid">
       {properties.map((property) => (

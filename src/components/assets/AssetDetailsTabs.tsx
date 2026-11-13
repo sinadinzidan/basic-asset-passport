@@ -7,9 +7,8 @@ import { useNavigationState } from '../../hooks/general/useNavigationState';
 import { formatTabCountBadge } from '../../lib/countBadge';
 import type { AssetInstanceDetails } from '../../types/asset';
 import type { CountState } from '../../types/countState';
-import { HudPanel } from '../general';
+import { HudPanel, PropertyGrid } from '../general';
 
-import { AssetProperties } from './AssetProperties';
 import { AssetDocuments } from './documents';
 import { AssetEquipment } from './equipment';
 import { AssetNotes } from './notes';
@@ -75,7 +74,7 @@ export function AssetDetailsTabs({ asset, tabCounts }: AssetDetailsTabsProps) {
             <header className="data-card__header">
               <p className="data-card__id">Asset ID: {asset.externalId}</p>
             </header>
-            <AssetProperties properties={asset.properties} />
+            <PropertyGrid properties={asset.properties} />
           </div>
         </TabsPanel>
         <TabsPanel value={AssetTab.EQUIPMENTS} className="p-4">

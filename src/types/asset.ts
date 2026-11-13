@@ -1,4 +1,5 @@
 import type { LimitedList } from './list';
+import type { PropertyDisplay } from './property';
 
 export type AssetListItem = {
   space: string;
@@ -14,16 +15,10 @@ export type AssetIdentifier = Pick<AssetListItem, 'space' | 'externalId'>;
 
 export type TimeseriesChartOptions = Record<string, string>;
 
-export type AssetPropertyDisplay = {
-  identifier: string;
-  label: string;
-  value: string;
-};
-
 export type AssetInstanceDetails = {
   space: string;
   externalId: string;
-  properties: AssetPropertyDisplay[];
+  properties: PropertyDisplay[];
 };
 
 export type AssetPage = LimitedList<AssetListItem> & {

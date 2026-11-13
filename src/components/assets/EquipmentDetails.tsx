@@ -3,8 +3,7 @@ import { IconTool } from '@tabler/icons-react';
 import { MODEL } from '../../config/model';
 import { getPropertyValue } from '../../lib/assetProperties';
 import type { AssetInstanceDetails } from '../../types/asset';
-
-import { AssetProperties } from './AssetProperties';
+import { PropertyGrid } from '../general';
 
 type EquipmentDetailsProps = {
   equipment: AssetInstanceDetails;
@@ -26,7 +25,7 @@ export function EquipmentDetails({ equipment }: EquipmentDetailsProps) {
         </div>
         <p className="data-card__id">Equipment ID: {equipment.externalId}</p>
       </header>
-      <AssetProperties properties={equipment.properties} />
+      <PropertyGrid properties={equipment.properties} />
     </section>
   );
 }
