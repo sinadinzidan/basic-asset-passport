@@ -2,7 +2,7 @@
   "name": "Asset Passport",
   "description": "Live equipment passport: specifications and documents from CDF",
   "externalId": "asset-passport",
-  "versionTag": "1.0.0",
+  "versionTag": "0.0.4",
   "infra": "appsApi",
   "deployments": [
     {
