@@ -12,7 +12,7 @@ import {
 } from '../../../constants/documents';
 import { AppAlertVariant } from '../../../enums/appAlertVariant';
 import { LoadingNoticeVariant } from '../../../enums/loadingNoticeVariant';
-import { useAssetDocumentListViewModel } from '../../../hooks/assets/documents/useAssetDocumentListViewModel';
+import { useAssetDocumentListViewModel } from '../../../hooks/assets/documents/view-models/useAssetDocumentListViewModel';
 import { getErrorReason } from '../../../lib/errorReason';
 import { getInstanceKey } from '../../../lib/instanceKey';
 import {

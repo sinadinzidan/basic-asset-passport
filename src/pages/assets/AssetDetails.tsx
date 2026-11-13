@@ -7,7 +7,7 @@ import {
   StatusPill,
 } from '../../components/general';
 import { ASSET_DETAILS_ERROR_DESCRIPTION, ASSET_DETAILS_ERROR_TITLE } from '../../constants/assets';
-import { useAssetDetailsViewModel } from '../../hooks/assets/useAssetDetailsViewModel';
+import { useAssetDetailsViewModel } from '../../hooks/assets/view-models/useAssetDetailsViewModel';
 import { getStatusTone } from '../../lib/assetStatus';
 import { getErrorReason } from '../../lib/errorReason';
 

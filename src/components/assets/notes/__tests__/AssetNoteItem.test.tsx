@@ -7,7 +7,7 @@ import { makeMockClient } from '../../../../__mocks__/cogniteClient';
 import { makeNavigationStore } from '../../../../__mocks__/navigation';
 import { makeAssetNote } from '../../../../__mocks__/notes';
 import { makeQueryClientWrapper } from '../../../../__mocks__/QueryClientWrapper';
-import { UseAssetNoteItemViewModelContext } from '../../../../hooks/assets/notes/useAssetNoteItemViewModel';
+import { UseAssetNoteItemViewModelContext } from '../../../../hooks/assets/notes/view-models/useAssetNoteItemViewModel';
 import { AssetContext } from '../../../../hooks/assets/useAssetContext';
 import { NavigationStoreContext } from '../../../../hooks/general/useNavigationState';
 import type { AssetNoteService } from '../../../../services/assets/notes/assetNote';

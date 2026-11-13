@@ -11,7 +11,7 @@ import {
 import { ESCAPE_KEY } from '../../constants/keyboard';
 import { AgentPanelView } from '../../enums/agentPanelView';
 import { PanelPhase } from '../../enums/panelPhase';
-import { useAgentHelperViewModel } from '../../hooks/agents/useAgentHelperViewModel';
+import { useAgentHelperViewModel } from '../../hooks/agents/view-models/useAgentHelperViewModel';
 
 import { AgentChat } from './AgentChat';
 import { AgentStatus } from './AgentStatus';

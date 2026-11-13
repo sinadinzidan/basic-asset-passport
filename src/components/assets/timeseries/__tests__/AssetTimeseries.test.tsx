@@ -10,12 +10,12 @@ import { makeLimitedList } from '../../../../__mocks__/lists';
 import { makeQueryClientWrapper } from '../../../../__mocks__/QueryClientWrapper';
 import { TIMESERIES_QUERY_LIMIT } from '../../../../constants/timeseries';
 import { UseAssetTimeseriesContext } from '../../../../hooks/assets/timeseries/useAssetTimeseries';
+import { TimeseriesContext } from '../../../../hooks/assets/timeseries/useTimeseriesContext';
+import { UseTimeseriesTrendsContext } from '../../../../hooks/assets/timeseries/useTimeseriesTrends';
 import {
   UseTimeseriesChartViewModelContext,
   type UseTimeseriesChartViewModelContextType,
-} from '../../../../hooks/assets/timeseries/useTimeseriesChartViewModel';
-import { TimeseriesContext } from '../../../../hooks/assets/timeseries/useTimeseriesContext';
-import { UseTimeseriesTrendsContext } from '../../../../hooks/assets/timeseries/useTimeseriesTrends';
+} from '../../../../hooks/assets/timeseries/view-models/useTimeseriesChartViewModel';
 import { AssetContext } from '../../../../hooks/assets/useAssetContext';
 import { NavigationStoreContext } from '../../../../hooks/general/useNavigationState';
 import { DEFAULT_NAVIGATION_STATE } from '../../../../lib/navigationState';

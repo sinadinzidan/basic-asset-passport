@@ -78,6 +78,12 @@ before deviating.
   file at the lowest level that covers everything using it, for example
   `src/types/dashboard/users/userTable.ts` for the components of one page,
   `src/types/dashboard/` across a group, and the folder root across groups.
+- Inside a hooks folder, ViewModel hooks live in a `view-models/` subfolder
+  (`src/hooks/assets/notes/view-models/useAssetNoteListViewModel.ts`), with
+  their tests in `view-models/__tests__/`. The query, mutation and reader
+  hooks they build on stay in the folder itself. A component imports its
+  ViewModel from `view-models/`; a ViewModel imports the hooks beside that
+  folder.
 - Type, constant, enum and service files are named after what they hold
   (`user.ts`, `userTable.ts` in `types/`; `userTable.ts` in `constants/`;
   `userStatus.ts` in `enums/`; `user.ts` in `services/users/`), without a

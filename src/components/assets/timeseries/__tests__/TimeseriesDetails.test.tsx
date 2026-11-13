@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { makeInstanceDetails } from '../../../../__mocks__/assets';
 import { TimeseriesPreviewKind } from '../../../../enums/timeseriesPreviewKind';
-import type { AssetTimeseriesItem } from '../../../../hooks/assets/timeseries/useAssetTimeseriesViewModel';
+import type { AssetTimeseriesItem } from '../../../../hooks/assets/timeseries/view-models/useAssetTimeseriesViewModel';
 import { TimeseriesDetails } from '../TimeseriesDetails';
 
 const pressure = makeInstanceDetails({

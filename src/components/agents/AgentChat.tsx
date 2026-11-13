@@ -11,7 +11,7 @@ import {
 import { ENTER_KEY } from '../../constants/keyboard';
 import { RETRY_LABEL } from '../../constants/labels';
 import { AppAlertVariant } from '../../enums/appAlertVariant';
-import { useAgentComposerViewModel } from '../../hooks/agents/useAgentComposerViewModel';
+import { useAgentComposerViewModel } from '../../hooks/agents/view-models/useAgentComposerViewModel';
 import { useScrollToEnd } from '../../hooks/general/useScrollToEnd';
 import { AppAlert, GeneralButton } from '../general';
 

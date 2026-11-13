@@ -10,7 +10,7 @@ import {
   ASSETS_LATER_PAGE_ERROR_DESCRIPTION,
 } from '../../constants/assets';
 import { HudShape } from '../../enums/hudShape';
-import { useAssetTableViewModel } from '../../hooks/assets/useAssetTableViewModel';
+import { useAssetTableViewModel } from '../../hooks/assets/view-models/useAssetTableViewModel';
 import { getErrorReason } from '../../lib/errorReason';
 import { getInstanceKey } from '../../lib/instanceKey';
 import type { AssetListItem } from '../../types/asset';

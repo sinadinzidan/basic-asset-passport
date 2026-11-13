@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 import { makeThemeModeStore } from '../../../__mocks__/themeMode';
 import { ThemeMode } from '../../../enums/themeMode';
-import { UseThemeModeViewModelContext } from '../../../hooks/general/useThemeModeViewModel';
+import { UseThemeModeViewModelContext } from '../../../hooks/general/view-models/useThemeModeViewModel';
 import type { ThemeModeStore } from '../../../types/theme';
 import { ThemeModeToggle } from '../ThemeModeToggle';
 

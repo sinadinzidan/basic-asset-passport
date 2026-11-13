@@ -13,7 +13,7 @@ import {
   LINKED_ASSET_PENDING_TITLE,
 } from '../../../constants/documents';
 import { LoadingNoticeVariant } from '../../../enums/loadingNoticeVariant';
-import { useLinkedAssetViewModel } from '../../../hooks/assets/documents/useLinkedAssetViewModel';
+import { useLinkedAssetViewModel } from '../../../hooks/assets/documents/view-models/useLinkedAssetViewModel';
 import { getStatusTone } from '../../../lib/assetStatus';
 import { getErrorReason } from '../../../lib/errorReason';
 import type { AssetIdentifier } from '../../../types/asset';

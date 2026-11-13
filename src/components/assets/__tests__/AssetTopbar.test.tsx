@@ -13,7 +13,7 @@ import { APP_LOGO_SOURCE } from '../../../constants/branding';
 import { AssetContext } from '../../../hooks/assets/useAssetContext';
 import { UseAssetDetailsContext } from '../../../hooks/assets/useAssetDetails';
 import { NavigationStoreContext } from '../../../hooks/general/useNavigationState';
-import { UseThemeModeViewModelContext } from '../../../hooks/general/useThemeModeViewModel';
+import { UseThemeModeViewModelContext } from '../../../hooks/general/view-models/useThemeModeViewModel';
 import type { AssetDetailsService } from '../../../services/assets/assetDetails';
 import type { NavigationStore } from '../../../types/navigation';
 import { AssetTopbar } from '../AssetTopbar';

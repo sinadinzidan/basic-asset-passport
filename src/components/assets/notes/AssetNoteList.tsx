@@ -9,7 +9,7 @@ import {
 } from '../../../constants/notes';
 import { AppAlertVariant } from '../../../enums/appAlertVariant';
 import { LoadingNoticeVariant } from '../../../enums/loadingNoticeVariant';
-import { useAssetNoteListViewModel } from '../../../hooks/assets/notes/useAssetNoteListViewModel';
+import { useAssetNoteListViewModel } from '../../../hooks/assets/notes/view-models/useAssetNoteListViewModel';
 import { getErrorReason } from '../../../lib/errorReason';
 import { getInstanceKey } from '../../../lib/instanceKey';
 import {

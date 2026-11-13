@@ -7,7 +7,7 @@ import {
   DOCUMENT_UPLOAD_RETRY_LABEL,
 } from '../../../constants/documents';
 import { AppAlertVariant } from '../../../enums/appAlertVariant';
-import { useAssetDocumentUploadViewModel } from '../../../hooks/assets/documents/useAssetDocumentUploadViewModel';
+import { useAssetDocumentUploadViewModel } from '../../../hooks/assets/documents/view-models/useAssetDocumentUploadViewModel';
 import { AppAlert, GeneralButton } from '../../general';
 
 export function AssetDocumentUpload() {

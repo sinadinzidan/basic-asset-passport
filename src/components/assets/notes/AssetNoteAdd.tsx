@@ -7,7 +7,7 @@ import {
   NOTE_SAVE_ERROR_TITLE,
 } from '../../../constants/notes';
 import { AppAlertVariant } from '../../../enums/appAlertVariant';
-import { useAssetNoteAddViewModel } from '../../../hooks/assets/notes/useAssetNoteAddViewModel';
+import { useAssetNoteAddViewModel } from '../../../hooks/assets/notes/view-models/useAssetNoteAddViewModel';
 import { AppAlert, GeneralButton, GeneralDialog } from '../../general';
 
 import { AssetNoteFields } from './AssetNoteFields';

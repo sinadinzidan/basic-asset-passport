@@ -10,8 +10,8 @@ import {
   TIMESERIES_QUERY_LIMIT,
 } from '../../../constants/timeseries';
 import { LoadingNoticeVariant } from '../../../enums/loadingNoticeVariant';
-import { useAssetTimeseriesViewModel } from '../../../hooks/assets/timeseries/useAssetTimeseriesViewModel';
-import { useTimeseriesChartViewModel } from '../../../hooks/assets/timeseries/useTimeseriesChartViewModel';
+import { useAssetTimeseriesViewModel } from '../../../hooks/assets/timeseries/view-models/useAssetTimeseriesViewModel';
+import { useTimeseriesChartViewModel } from '../../../hooks/assets/timeseries/view-models/useTimeseriesChartViewModel';
 import { useListLimit } from '../../../hooks/general/useListLimit';
 import { getErrorReason } from '../../../lib/errorReason';
 import { getTimeseriesKey, getTimeseriesName } from '../../../lib/timeseriesProperties';

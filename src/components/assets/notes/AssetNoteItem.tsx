@@ -7,7 +7,7 @@ import {
   UNKNOWN_AUTHOR_LABEL,
 } from '../../../constants/notes';
 import { IconActionVariant } from '../../../enums/iconActionVariant';
-import { useAssetNoteItemViewModel } from '../../../hooks/assets/notes/useAssetNoteItemViewModel';
+import { useAssetNoteItemViewModel } from '../../../hooks/assets/notes/view-models/useAssetNoteItemViewModel';
 import { formatNoteDate } from '../../../lib/formatNoteDate';
 import type { AssetNote, NewAssetNote } from '../../../types/note';
 import { ConfirmDeleteDialog, IconActionButton } from '../../general';

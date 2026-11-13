@@ -1,7 +1,7 @@
 import { IconMoon, IconSun, type Icon } from '@tabler/icons-react';
 
 import { ThemeMode } from '../../enums/themeMode';
-import { useThemeModeViewModel } from '../../hooks/general/useThemeModeViewModel';
+import { useThemeModeViewModel } from '../../hooks/general/view-models/useThemeModeViewModel';
 
 import { IconActionButton } from './IconActionButton';
 

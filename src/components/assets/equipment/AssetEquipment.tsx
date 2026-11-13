@@ -7,7 +7,7 @@ import {
 } from '../../../constants/assets';
 import { AppAlertVariant } from '../../../enums/appAlertVariant';
 import { LoadingNoticeVariant } from '../../../enums/loadingNoticeVariant';
-import { useAssetEquipmentViewModel } from '../../../hooks/assets/equipment/useAssetEquipmentViewModel';
+import { useAssetEquipmentViewModel } from '../../../hooks/assets/equipment/view-models/useAssetEquipmentViewModel';
 import { formatEquipmentTruncatedMessage } from '../../../lib/assetMessage';
 import { getErrorReason } from '../../../lib/errorReason';
 import { getInstanceKey } from '../../../lib/instanceKey';

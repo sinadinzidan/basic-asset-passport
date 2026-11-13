@@ -3,7 +3,7 @@ import { IconArrowsMaximize, IconChartLine } from '@tabler/icons-react';
 import { useId } from 'react';
 
 import { TimeseriesPreviewKind } from '../../../enums/timeseriesPreviewKind';
-import type { AssetTimeseriesItem } from '../../../hooks/assets/timeseries/useAssetTimeseriesViewModel';
+import type { AssetTimeseriesItem } from '../../../hooks/assets/timeseries/view-models/useAssetTimeseriesViewModel';
 import {
   getTimeseriesDisplayProperties,
   getTimeseriesName,
