@@ -1531,15 +1531,18 @@
   color: var(--hud-accent-light);
 }
 
-/* The count beside a tab label: a true circle with the digit centred. */
+/*
+ * The count beside a tab label: a circle for one or two digits that widens into a pill for longer
+ * counts (up to "1,000"), with the digits centred.
+ */
 .neon-stage [data-slot='tabs-trigger'] [data-slot='badge'] {
   box-sizing: border-box;
   display: inline-grid;
   place-items: center;
-  width: 1.25rem;
+  width: auto;
   min-width: 1.25rem;
   height: 1.25rem;
-  padding: 0;
+  padding: 0 0.3rem;
   margin-left: 0.3rem;
   font-size: 0.6875rem;
   font-variant-numeric: tabular-nums;
@@ -1548,7 +1551,8 @@
   /* Trim the line box to the digit's own height, so the circle centres the digit whatever the font's ascent and descent are. */
   text-box: trim-both cap alphabetic;
   color: var(--hud-ink);
-  border-radius: 50%;
+  border-radius: 999px;
+  white-space: nowrap;
   clip-path: none;
   background: color-mix(in srgb, var(--neon-cyan) 30%, transparent);
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--neon-cyan) 45%, transparent);
