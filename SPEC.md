@@ -306,6 +306,11 @@ the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines
   neither tinted nor picked. The asset under the pointer is found on the graphics card by drawing each asset's id
   into one pixel. If the nodes cannot be loaded the model still shows, without any tint. The tint is not
   host-synced.
+- Every contextualised asset whose geometry has loaded also carries a static marker: a small cyan dot with a dark
+  teal ring and the asset's name beside it, fixed at the centre of its geometry and following it as the camera
+  moves. Markers hide when their asset is behind the camera, never take mouse events, and appear as sectors load.
+  Markers of nearby assets overlap at the default view and separate as you zoom in; markers are not hidden by
+  geometry in front of them.
 - While an asset is hovered a small label with its name (for example WMT:23-TI-92524) follows the pointer,
   14 pixels down and to the right of it; it never takes mouse events and goes when the pointer leaves the
   asset or the view.

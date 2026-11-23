@@ -43,11 +43,13 @@ import type {
 } from '../../types/threeD';
 import type { ThreeDRenderer } from '../../types/threeDRenderer';
 
+import { createAnchorAccumulator } from './assetAnchors';
 import { zoomedPosition } from './cameraZoom';
 import { ElementPicker } from './elementPicker';
 import { createHighlightMaterial, createHighlightUniform } from './highlightMaterial';
 import { createHoverState } from './hoverState';
 import { applyInteractionMode } from './interactionMode';
+import { createMarkerLayer, type MarkerAnchor, type MarkerProjection } from './markerLayer';
 import { computeModelMatrix, transformBox } from './modelMatrix';
 import { createOutlineMaterial, createViewportUniform } from './outlineMaterial';
 import { createRenderGate } from './renderGate';
@@ -69,7 +71,13 @@ class SceneRenderer implements ThreeDRenderer {
   private readonly hover = createHoverState();
   private readonly picker: ElementPicker;
   private readonly resizeObserver: ResizeObserver;
-  private readonly parts: { geometry: BufferGeometry; treeIndices: Float32Array }[] = [];
+  private readonly parts: {
+    geometry: BufferGeometry;
+    positions: Float32Array;
+    treeIndices: Float32Array;
+  }[] = [];
+  private readonly anchors = createAnchorAccumulator();
+  private readonly markers: ReturnType<typeof createMarkerLayer>;
   private lookup: ThreeDAssetLookup | null = null;
   private hoverListener: (hover: ThreeDHover | null) => void = () => undefined;
   private readonly gate = createRenderGate();
@@ -116,6 +124,7 @@ class SceneRenderer implements ThreeDRenderer {
     this.frame(model, this.sun);
 
     this.container.appendChild(this.renderer.domElement);
+    this.markers = createMarkerLayer(this.container);
     this.resizeObserver = new ResizeObserver(() => this.resize());
     this.resizeObserver.observe(this.container);
     this.resize();
@@ -131,14 +140,15 @@ class SceneRenderer implements ThreeDRenderer {
     geometry.setAttribute('normal', new BufferAttribute(mesh.normals, VECTOR_SIZE));
     geometry.setAttribute('color', new BufferAttribute(mesh.colors, VECTOR_SIZE));
 
-    geometry.setAttribute(
-      'assetIndex',
-      new BufferAttribute(this.assetIndicesFor(mesh.treeIndices), 1),
-    );
+    const assetIndices = this.assetIndicesFor(mesh.treeIndices);
+
+    geometry.setAttribute('assetIndex', new BufferAttribute(assetIndices, 1));
 
     geometry.setIndex(new BufferAttribute(mesh.indices, 1));
     geometry.computeBoundingSphere();
-    this.parts.push({ geometry, treeIndices: mesh.treeIndices });
+    this.parts.push({ geometry, positions: mesh.positions, treeIndices: mesh.treeIndices });
+    this.anchors.add(mesh.positions, assetIndices);
+    this.refreshMarkers();
     this.group.add(new Mesh(geometry, this.material));
 
     const outline = new Mesh(geometry, this.outlineMaterial);
@@ -156,9 +166,16 @@ class SceneRenderer implements ThreeDRenderer {
 
     this.lookup = lookup;
 
-    this.parts.forEach(({ geometry, treeIndices }) => {
-      geometry.setAttribute('assetIndex', new BufferAttribute(lookup.indicesFor(treeIndices), 1));
+    this.anchors.reset();
+
+    this.parts.forEach(({ geometry, positions, treeIndices }) => {
+      const assetIndices = lookup.indicesFor(treeIndices);
+
+      geometry.setAttribute('assetIndex', new BufferAttribute(assetIndices, 1));
+      this.anchors.add(positions, assetIndices);
     });
+
+    this.refreshMarkers();
 
     this.setHighlighted(THREE_D_NO_HIGHLIGHT);
     this.hoverListener(null);
@@ -202,8 +219,36 @@ class SceneRenderer implements ThreeDRenderer {
     this.parts.forEach(({ geometry }) => geometry.dispose());
     this.material.dispose();
     this.outlineMaterial.dispose();
+    this.markers.dispose();
     this.renderer.dispose();
     this.renderer.domElement.remove();
+  }
+
+  private refreshMarkers(): void {
+    const { lookup } = this;
+
+    if (lookup === null) return;
+
+    const anchors = new Map(
+      [...this.anchors.anchors()].flatMap(([asset, position]) => {
+        const name = lookup.nameAt(asset);
+
+        return name === null ? [] : [[asset, { position, name }] as const];
+      }),
+    );
+
+    this.markers.setAnchors(anchors);
+  }
+
+  private projectMarker({ position }: MarkerAnchor): MarkerProjection {
+    const projected = new Vector3(...position).applyMatrix4(this.group.matrix).project(this.camera);
+    const { clientWidth, clientHeight } = this.container;
+
+    return {
+      x: (projected.x * HALF + HALF) * clientWidth,
+      y: (HALF - projected.y * HALF) * clientHeight,
+      isVisible: projected.z > -1 && projected.z < 1,
+    };
   }
 
   private assetIndicesFor(treeIndices: Float32Array): Float32Array {
@@ -316,6 +361,7 @@ class SceneRenderer implements ThreeDRenderer {
 
     if (this.gate.consume(hasControlsChanged)) {
       this.renderer.render(this.scene, this.camera);
+      this.markers.update((anchor) => this.projectMarker(anchor));
     }
 
     this.frameHandle = requestAnimationFrame(this.animate);
