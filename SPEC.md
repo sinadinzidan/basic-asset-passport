@@ -305,7 +305,10 @@ the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines
   where ranges nest. Geometry that no node maps (only about 94 nodes in Platform VPH, mostly small instruments) is
   neither tinted nor picked. The asset under the pointer is found on the graphics card by drawing each asset's id
   into one pixel. If the nodes cannot be loaded the model still shows, without any tint. The tint is not
-  host-synced and no asset name is shown as text yet.
+  host-synced.
+- While an asset is hovered a small label with its name (for example WMT:23-TI-92524) follows the pointer,
+  14 pixels down and to the right of it; it never takes mouse events and goes when the pointer leaves the
+  asset or the view.
 - A line under the view reads "Platform VPH · N of M parts" with ", K failed" and
   ", S skipped" when there are any, then " · loading" or " · loaded". Shapes the
   reader cannot draw are listed under it ("Unsupported shapes skipped: name:

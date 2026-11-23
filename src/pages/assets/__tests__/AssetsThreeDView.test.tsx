@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ComponentType, ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -51,6 +51,7 @@ describe(`${Assets.name} sub header`, () => {
       dispose: vi.fn(),
       setAssetLookup: vi.fn(),
       setInteractionMode: vi.fn(),
+      setHoverListener: vi.fn(),
       zoomIn: vi.fn(),
       zoomOut: vi.fn(),
       resetView: vi.fn(),
@@ -173,6 +174,23 @@ describe(`${Assets.name} sub header`, () => {
     expect(move).toHaveAttribute('aria-pressed', 'true');
     expect(orbit).toHaveAttribute('aria-pressed', 'false');
     expect(renderer.setInteractionMode).toHaveBeenLastCalledWith(ThreeDInteractionMode.MOVE);
+  });
+
+  it('labels the hovered asset next to the pointer and removes the label when it leaves', async () => {
+    renderApp(JSON.stringify({ activeView: AppView.THREE_D }));
+    await waitFor(() => expect(renderer.setHoverListener).toHaveBeenCalled());
+    const listener = vi.mocked(renderer.setHoverListener).mock.calls[0][0];
+
+    act(() => listener({ name: 'WMT:23-TI-92524', x: 40, y: 60 }));
+
+    const label = await screen.findByRole('tooltip');
+
+    expect(label).toHaveTextContent('WMT:23-TI-92524');
+    expect(label).toHaveStyle({ left: '40px', top: '60px' });
+
+    act(() => listener(null));
+
+    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
   });
 
   it('offers no control buttons while there is no model to control', async () => {

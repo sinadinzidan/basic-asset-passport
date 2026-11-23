@@ -9,6 +9,7 @@ import {
 import {
   THREE_D_ERROR_DESCRIPTION,
   THREE_D_ERROR_TITLE,
+  THREE_D_LABEL_OFFSET_PX,
   THREE_D_LOADING_MESSAGE,
   THREE_D_MOVE_LABEL,
   THREE_D_ORBIT_LABEL,
@@ -32,6 +33,7 @@ export function AssetThreeD() {
   const {
     error,
     hasModel,
+    hover,
     interactionMode,
     isError,
     isLoading,
@@ -80,6 +82,19 @@ export function AssetThreeD() {
           aria-label={`${THREE_D_VIEWPORT_LABEL}: ${modelName}`}
           className="data-card relative h-[60vh] min-h-96 w-full overflow-hidden"
         />
+        {hover ? (
+          <div
+            role="tooltip"
+            className="pointer-events-none absolute z-10 rounded-sm border border-border bg-popover px-2 py-1 text-xs text-popover-foreground shadow-md"
+            style={{
+              left: hover.x,
+              top: hover.y,
+              transform: `translate(${THREE_D_LABEL_OFFSET_PX}px, ${THREE_D_LABEL_OFFSET_PX}px)`,
+            }}
+          >
+            {hover.name}
+          </div>
+        ) : null}
         <div className="absolute right-3 top-3 z-10 flex flex-col gap-2">
           <IconActionButton
             label={THREE_D_ORBIT_LABEL}

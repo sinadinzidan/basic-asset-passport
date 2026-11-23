@@ -101,6 +101,7 @@ function setup({
     dispose: vi.fn(),
     setAssetLookup: vi.fn(),
     setInteractionMode: vi.fn(),
+    setHoverListener: vi.fn(),
     zoomIn: vi.fn(),
     zoomOut: vi.fn(),
     resetView: vi.fn(),

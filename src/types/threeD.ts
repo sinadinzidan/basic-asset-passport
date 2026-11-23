@@ -62,6 +62,12 @@ export type ThreeDAssetLookup = {
   nameAt: (assetIndex: number) => string | null;
 };
 
+export type ThreeDHover = {
+  name: string;
+  x: number;
+  y: number;
+};
+
 export type ThreeDModelReference = {
   name: string;
   modelId: number;

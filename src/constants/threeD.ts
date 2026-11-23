@@ -73,6 +73,7 @@ export const THREE_D_CAD_NODE_VIEW = {
 export const THREE_D_CAD_NODE_PAGE_LIMIT = 1000;
 export const THREE_D_ZOOM_IN_FACTOR = 0.8;
 export const THREE_D_ZOOM_OUT_FACTOR = 1.25;
+export const THREE_D_LABEL_OFFSET_PX = 14;
 export const THREE_D_ORBIT_LABEL = 'Orbit';
 export const THREE_D_MOVE_LABEL = 'Move';
 export const THREE_D_ZOOM_IN_LABEL = 'Zoom in';

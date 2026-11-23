@@ -35,7 +35,12 @@ import {
   THREE_D_ZOOM_OUT_FACTOR,
 } from '../../constants/threeD';
 import { ThreeDInteractionMode } from '../../enums/threeDInteractionMode';
-import type { TessellatedMesh, ThreeDAssetLookup, ThreeDModel } from '../../types/threeD';
+import type {
+  TessellatedMesh,
+  ThreeDAssetLookup,
+  ThreeDHover,
+  ThreeDModel,
+} from '../../types/threeD';
 import type { ThreeDRenderer } from '../../types/threeDRenderer';
 
 import { zoomedPosition } from './cameraZoom';
@@ -66,6 +71,7 @@ class SceneRenderer implements ThreeDRenderer {
   private readonly resizeObserver: ResizeObserver;
   private readonly parts: { geometry: BufferGeometry; treeIndices: Float32Array }[] = [];
   private lookup: ThreeDAssetLookup | null = null;
+  private hoverListener: (hover: ThreeDHover | null) => void = () => undefined;
   private readonly gate = createRenderGate();
   private frameHandle = 0;
   private isDisposed = false;
@@ -155,7 +161,12 @@ class SceneRenderer implements ThreeDRenderer {
     });
 
     this.setHighlighted(THREE_D_NO_HIGHLIGHT);
+    this.hoverListener(null);
     this.hover.viewChanged();
+  }
+
+  setHoverListener(listener: (hover: ThreeDHover | null) => void): void {
+    this.hoverListener = listener;
   }
 
   setInteractionMode(mode: ThreeDInteractionMode): void {
@@ -276,6 +287,7 @@ class SceneRenderer implements ThreeDRenderer {
   private clearHover = (): void => {
     if (this.hover.pointerLeft()) {
       this.setHighlighted(THREE_D_NO_HIGHLIGHT);
+      this.hoverListener(null);
     }
   };
 
@@ -289,6 +301,10 @@ class SceneRenderer implements ThreeDRenderer {
     if (this.hover.setHovered(assetIndex)) {
       this.setHighlighted(assetIndex ?? THREE_D_NO_HIGHLIGHT);
     }
+
+    const name = assetIndex === null ? null : (this.lookup?.nameAt(assetIndex) ?? null);
+
+    this.hoverListener(name === null ? null : { name, x: point.x, y: point.y });
   }
 
   private animate = (): void => {

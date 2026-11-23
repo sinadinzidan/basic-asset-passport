@@ -30,6 +30,8 @@ export function useAssetThreeDViewModel() {
 
   const interactionMode = useThreeDInteractionStore((state) => state.mode);
   const setInteractionMode = useThreeDInteractionStore((state) => state.setMode);
+  const hover = useThreeDInteractionStore((state) => state.hover);
+  const setHover = useThreeDInteractionStore((state) => state.setHover);
 
   const model = modelQuery.data;
 
@@ -42,6 +44,7 @@ export function useAssetThreeDViewModel() {
     const renderer = createRenderer(container, model);
 
     rendererReference.current = renderer;
+    renderer.setHoverListener(setHover);
 
     resetProgress();
     void loadAllSectors({
@@ -55,9 +58,10 @@ export function useAssetThreeDViewModel() {
     return () => {
       controller.abort();
       rendererReference.current = null;
+      setHover(null);
       renderer.dispose();
     };
-  }, [model, client, createRenderer, loadAllSectors, setProgress, resetProgress]);
+  }, [model, client, createRenderer, loadAllSectors, setProgress, resetProgress, setHover]);
 
   useEffect(() => {
     if (!model || !assetNodes) return;
@@ -76,6 +80,7 @@ export function useAssetThreeDViewModel() {
   const resetView = useCallback(() => rendererReference.current?.resetView(), []);
 
   return {
+    hover,
     interactionMode,
     setInteractionMode,
     zoomIn,
