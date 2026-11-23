@@ -30,6 +30,7 @@ import {
   THREE_D_MAX_PIXEL_RATIO,
   THREE_D_NO_ASSET,
   THREE_D_NO_HIGHLIGHT,
+  THREE_D_OUTLINE_LAYER,
   THREE_D_ZOOM_IN_FACTOR,
   THREE_D_ZOOM_OUT_FACTOR,
 } from '../../constants/threeD';
@@ -43,6 +44,7 @@ import { createHighlightMaterial, createHighlightUniform } from './highlightMate
 import { createHoverState } from './hoverState';
 import { applyInteractionMode } from './interactionMode';
 import { computeModelMatrix, transformBox } from './modelMatrix';
+import { createOutlineMaterial, createViewportUniform } from './outlineMaterial';
 import { createRenderGate } from './renderGate';
 
 const VECTOR_SIZE = 3;
@@ -56,6 +58,9 @@ class SceneRenderer implements ThreeDRenderer {
   private readonly group = new Group();
   private readonly highlighted = createHighlightUniform();
   private readonly material = createHighlightMaterial(this.highlighted);
+  private readonly viewport = createViewportUniform();
+  private readonly outlineMaterial = createOutlineMaterial(this.highlighted, this.viewport);
+  private readonly outlines: Mesh[] = [];
   private readonly hover = createHoverState();
   private readonly picker: ElementPicker;
   private readonly resizeObserver: ResizeObserver;
@@ -82,6 +87,7 @@ class SceneRenderer implements ThreeDRenderer {
       THREE_D_CAMERA_INITIAL_FAR,
     );
 
+    this.camera.layers.enable(THREE_D_OUTLINE_LAYER);
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.controls.enableDamping = true;
     applyInteractionMode(this.controls, ThreeDInteractionMode.ORBIT);
@@ -128,6 +134,13 @@ class SceneRenderer implements ThreeDRenderer {
     geometry.computeBoundingSphere();
     this.parts.push({ geometry, treeIndices: mesh.treeIndices });
     this.group.add(new Mesh(geometry, this.material));
+
+    const outline = new Mesh(geometry, this.outlineMaterial);
+
+    outline.layers.set(THREE_D_OUTLINE_LAYER);
+    outline.visible = this.highlighted.value >= 0;
+    this.outlines.push(outline);
+    this.group.add(outline);
     this.hover.viewChanged();
     this.gate.markDirty();
   }
@@ -141,9 +154,8 @@ class SceneRenderer implements ThreeDRenderer {
       geometry.setAttribute('assetIndex', new BufferAttribute(lookup.indicesFor(treeIndices), 1));
     });
 
-    this.highlighted.value = THREE_D_NO_HIGHLIGHT;
+    this.setHighlighted(THREE_D_NO_HIGHLIGHT);
     this.hover.viewChanged();
-    this.gate.markDirty();
   }
 
   setInteractionMode(mode: ThreeDInteractionMode): void {
@@ -178,6 +190,7 @@ class SceneRenderer implements ThreeDRenderer {
     this.picker.dispose();
     this.parts.forEach(({ geometry }) => geometry.dispose());
     this.material.dispose();
+    this.outlineMaterial.dispose();
     this.renderer.dispose();
     this.renderer.domElement.remove();
   }
@@ -230,6 +243,7 @@ class SceneRenderer implements ThreeDRenderer {
     if (clientWidth === 0 || clientHeight === 0) return;
 
     this.renderer.setSize(clientWidth, clientHeight);
+    this.viewport.value.set(clientWidth, clientHeight);
     this.camera.aspect = clientWidth / clientHeight;
     this.camera.updateProjectionMatrix();
     this.gate.markDirty();
@@ -247,10 +261,21 @@ class SceneRenderer implements ThreeDRenderer {
     this.hover.viewChanged();
   };
 
+  private setHighlighted(assetIndex: number): void {
+    this.highlighted.value = assetIndex;
+
+    const isOutlined = assetIndex >= 0;
+
+    this.outlines.forEach((outline) => {
+      outline.visible = isOutlined;
+    });
+
+    this.gate.markDirty();
+  }
+
   private clearHover = (): void => {
     if (this.hover.pointerLeft()) {
-      this.highlighted.value = THREE_D_NO_HIGHLIGHT;
-      this.gate.markDirty();
+      this.setHighlighted(THREE_D_NO_HIGHLIGHT);
     }
   };
 
@@ -262,8 +287,7 @@ class SceneRenderer implements ThreeDRenderer {
     const assetIndex = this.picker.pick(point);
 
     if (this.hover.setHovered(assetIndex)) {
-      this.highlighted.value = assetIndex ?? THREE_D_NO_HIGHLIGHT;
-      this.gate.markDirty();
+      this.setHighlighted(assetIndex ?? THREE_D_NO_HIGHLIGHT);
     }
   }
 

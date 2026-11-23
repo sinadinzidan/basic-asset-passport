@@ -299,7 +299,7 @@ the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines
   from the point it orbits, and "Reset view" frames the whole model again. They
   show only while a model is shown, and they are not host-synced.
 - Contextualised assets are always shown tinted cyan, so the parts of the model that are linked to an asset stand
-  out without hovering. Hovering one turns all of its geometry near-white; moving off it, leaving the view or
+  out without hovering. Hovering one turns all of its geometry near-white and draws a dark teal outline, about 3 pixels wide, around it; moving off it, leaving the view or
   pressing a mouse button to drag restores the cyan. Assets come from the model's CogniteCADNode instances for the
   revision (space energy_instances), each mapping an object to the tree ranges it owns; the innermost range wins
   where ranges nest. Geometry that no node maps (only about 94 nodes in Platform VPH, mostly small instruments) is

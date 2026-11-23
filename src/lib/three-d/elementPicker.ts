@@ -1,6 +1,8 @@
 import type { PerspectiveCamera, Scene, WebGLRenderer } from 'three';
 import { Color, DoubleSide, ShaderMaterial, UnsignedByteType, WebGLRenderTarget } from 'three';
 
+import { THREE_D_OUTLINE_LAYER } from '../../constants/threeD';
+
 import type { PickPoint } from './hoverState';
 import { decodePickColor } from './pickCodec';
 
@@ -61,6 +63,7 @@ export class ElementPicker {
     this.camera.setViewOffset(clientWidth, clientHeight, x, y, PIXEL_SIZE, PIXEL_SIZE);
     this.scene.background = null;
     this.scene.overrideMaterial = this.material;
+    this.camera.layers.disable(THREE_D_OUTLINE_LAYER);
     this.renderer.setClearColor(0x00_00_00, 0);
     this.renderer.setRenderTarget(this.target);
     this.renderer.clear();
@@ -71,6 +74,7 @@ export class ElementPicker {
     this.scene.overrideMaterial = null;
     this.scene.background = background;
     this.camera.clearViewOffset();
+    this.camera.layers.enable(THREE_D_OUTLINE_LAYER);
 
     return decodePickColor(this.pixel[RED], this.pixel[GREEN], this.pixel[BLUE]);
   }
