@@ -35,6 +35,7 @@ import type { TessellatedMesh, ThreeDModel } from '../../types/threeD';
 import type { ThreeDRenderer } from '../../types/threeDRenderer';
 
 import { computeModelMatrix, transformBox } from './modelMatrix';
+import { createRenderGate } from './renderGate';
 
 const VECTOR_SIZE = 3;
 const HALF = 0.5;
@@ -48,6 +49,7 @@ class SceneRenderer implements ThreeDRenderer {
   private readonly material = new MeshLambertMaterial({ vertexColors: true, side: DoubleSide });
   private readonly resizeObserver: ResizeObserver;
   private readonly geometries: BufferGeometry[] = [];
+  private readonly gate = createRenderGate();
   private frameHandle = 0;
   private isDisposed = false;
 
@@ -100,6 +102,7 @@ class SceneRenderer implements ThreeDRenderer {
     geometry.computeBoundingSphere();
     this.geometries.push(geometry);
     this.group.add(new Mesh(geometry, this.material));
+    this.gate.markDirty();
   }
 
   dispose(): void {
@@ -141,13 +144,18 @@ class SceneRenderer implements ThreeDRenderer {
     this.renderer.setSize(clientWidth, clientHeight);
     this.camera.aspect = clientWidth / clientHeight;
     this.camera.updateProjectionMatrix();
+    this.gate.markDirty();
   }
 
   private animate = (): void => {
     if (this.isDisposed) return;
 
-    this.controls.update();
-    this.renderer.render(this.scene, this.camera);
+    const hasControlsChanged = this.controls.update();
+
+    if (this.gate.consume(hasControlsChanged)) {
+      this.renderer.render(this.scene, this.camera);
+    }
+
     this.frameHandle = requestAnimationFrame(this.animate);
   };
 }
