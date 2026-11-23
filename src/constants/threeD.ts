@@ -55,7 +55,15 @@ export const TRIANGLE_VERTEX_COUNT = 3;
 export const THREE_D_ERROR_DESCRIPTION = 'The model could not be fetched from CDF.';
 export const THREE_D_HIGHLIGHT_COLOR = 0x22_d3_ee;
 export const THREE_D_HIGHLIGHT_MIX = 0.75;
-export const THREE_D_NO_HIGHLIGHT = -1;
+export const THREE_D_NO_HIGHLIGHT = -2;
+export const THREE_D_NO_ASSET = -1;
+export const THREE_D_INSTANCE_SPACE = 'energy_instances';
+export const THREE_D_CAD_NODE_VIEW = {
+  space: 'cdf_cdm',
+  externalId: 'CogniteCADNode',
+  version: 'v1',
+} as const;
+export const THREE_D_CAD_NODE_PAGE_LIMIT = 1000;
 export const THREE_D_ZOOM_IN_FACTOR = 0.8;
 export const THREE_D_ZOOM_OUT_FACTOR = 1.25;
 export const THREE_D_ZOOM_IN_LABEL = 'Zoom in';

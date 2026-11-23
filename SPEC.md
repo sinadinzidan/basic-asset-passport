@@ -295,12 +295,16 @@ the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines
   a label: "Zoom in" and "Zoom out" move the camera 20% closer to or 25% further
   from the point it orbits, and "Reset view" frames the whole model again. They
   show only while a model is shown, and they are not host-synced.
-- Hovering an element of the model with the pointer tints it cyan so it stands
-  out; moving off it, leaving the view or pressing a mouse button to drag
-  removes the tint. An element is one node of the model's tree (a beam, a
-  plate, a pipe), found on the graphics card by drawing each element's id into
-  one pixel under the pointer. The tint is not host-synced and nothing is shown
-  as text yet: tying elements to assets comes with contextualisation.
+- Hovering a contextualised asset of the model with the pointer tints all of
+  its geometry cyan, wherever its parts sit in the model; moving off it,
+  leaving the view or pressing a mouse button to drag removes the tint. Assets
+  come from the model's CogniteCADNode instances for the revision (space
+  energy_instances), each mapping an object to the tree ranges it owns; the
+  innermost range wins where ranges nest. Geometry that no node maps (about 94
+  nodes in Platform VPH) is neither picked nor tinted. The asset under the
+  pointer is found on the graphics card by drawing each asset's id into one
+  pixel. If the nodes cannot be loaded the model still shows, without the tint.
+  The tint is not host-synced and no asset name is shown as text yet.
 - A line under the view reads "Platform VPH · N of M parts" with ", K failed" and
   ", S skipped" when there are any, then " · loading" or " · loaded". Shapes the
   reader cannot draw are listed under it ("Unsupported shapes skipped: name:
@@ -309,8 +313,8 @@ the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines
   (including a model or revision that does not exist) shows "Could not load the
   3D model." with the reason and Retry.
 - Known limits: slanted cylinder end planes are drawn flat; textured meshes are
-  drawn untextured; there is no highlight of the open asset in the model (the
-  contextualisation of nodes to assets is a later stage); the geometry is
+  drawn untextured; the model's nodes are not yet linked to the app's own assets, so the open
+  asset is not highlighted; the geometry is
   tessellated on the main thread.
 - In mock mode the tab shows a small synthetic model made of six boxes.
 

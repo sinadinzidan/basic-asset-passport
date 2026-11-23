@@ -1,19 +1,33 @@
 import type { CogniteClient } from '@cognite/sdk';
 
-import { THREE_D_OUTPUT_FORMAT, THREE_D_SCENE_FILE_NAME } from '../../constants/threeD';
+import {
+  THREE_D_CAD_NODE_PAGE_LIMIT,
+  THREE_D_CAD_NODE_VIEW,
+  THREE_D_INSTANCE_SPACE,
+  THREE_D_OUTPUT_FORMAT,
+  THREE_D_SCENE_FILE_NAME,
+} from '../../constants/threeD';
+import { isRecord } from '../../lib/isRecord';
 import { cdfTaskRunner } from '../../lib/queuedTaskRunner';
-import { OutputsResponseSchema, SceneFileSchema, type SceneFile } from '../../schemas/threeD';
+import {
+  CadNodePageSchema,
+  CadNodePropertiesSchema,
+  OutputsResponseSchema,
+  SceneFileSchema,
+  type SceneFile,
+} from '../../schemas/threeD';
 import type {
+  ThreeDAssetNode,
   ThreeDBox,
   ThreeDModel,
-  ThreeDModelReference as ThreeDModelReference,
+  ThreeDModelReference,
   ThreeDScene,
   ThreeDSector,
   Vector,
 } from '../../types/threeD';
 import type { ThreeDContextType } from '../../types/threeDContext';
 
-type ThreeDSdk = Pick<CogniteClient, 'project' | 'get' | 'revisions3D'>;
+type ThreeDSdk = Pick<CogniteClient, 'project' | 'get' | 'post' | 'revisions3D'>;
 
 type ThreeDDeps = {
   schedule: <Result>(task: () => Promise<Result>) => Promise<Result>;
@@ -57,6 +71,20 @@ class CdfThreeDContext implements ThreeDContextType {
     };
   };
 
+  loadAssetNodes = async ({ revisionId }: ThreeDModelReference): Promise<ThreeDAssetNode[]> => {
+    const nodes: ThreeDAssetNode[] = [];
+    let cursor: string | undefined;
+
+    do {
+      const page = await this.loadCadNodePage(revisionId, cursor);
+
+      nodes.push(...page.nodes);
+      cursor = page.nextCursor;
+    } while (cursor !== undefined);
+
+    return nodes;
+  };
+
   loadSector = async (blobId: number, fileName: string): Promise<ArrayBuffer> => {
     const response = await this.deps.schedule(() =>
       this.sdk.get<ArrayBuffer>(this.filePath(blobId, fileName), { responseType: 'arraybuffer' }),
@@ -64,6 +92,41 @@ class CdfThreeDContext implements ThreeDContextType {
 
     return response.data;
   };
+
+  private async loadCadNodePage(
+    revisionId: number,
+    cursor: string | undefined,
+  ): Promise<{ nodes: ThreeDAssetNode[]; nextCursor: string | undefined }> {
+    const response = await this.deps.schedule(() =>
+      this.sdk.post<unknown>(`/api/v1/projects/${this.sdk.project}/models/instances/list`, {
+        data: {
+          instanceType: 'node',
+          limit: THREE_D_CAD_NODE_PAGE_LIMIT,
+          sources: [{ source: { type: 'view', ...THREE_D_CAD_NODE_VIEW } }],
+          filter: {
+            containsAny: {
+              property: [
+                THREE_D_CAD_NODE_VIEW.space,
+                `${THREE_D_CAD_NODE_VIEW.externalId}/${THREE_D_CAD_NODE_VIEW.version}`,
+                'revisions',
+              ],
+              values: [
+                { space: THREE_D_INSTANCE_SPACE, externalId: `cog_3d_revision_${revisionId}` },
+              ],
+            },
+          },
+          ...(cursor === undefined ? {} : { cursor }),
+        },
+      }),
+    );
+
+    const page = CadNodePageSchema.parse(response.data);
+
+    return {
+      nodes: page.items.flatMap((item) => toAssetNodes(item)),
+      nextCursor: page.nextCursor ?? undefined,
+    };
+  }
 
   private filePath(blobId: number, fileName?: string): string {
     const base = `/api/v1/projects/${this.sdk.project}/3d/files/${blobId}`;
@@ -109,6 +172,31 @@ export function createThreeDContext(
   overrides?: Partial<ThreeDDeps>,
 ): ThreeDContextType {
   return new CdfThreeDContext(sdk, { ...defaultDeps, ...overrides });
+}
+
+function toAssetNodes(item: unknown): ThreeDAssetNode[] {
+  const viewKey = `${THREE_D_CAD_NODE_VIEW.externalId}/${THREE_D_CAD_NODE_VIEW.version}`;
+  const properties = readProperties(item, THREE_D_CAD_NODE_VIEW.space, viewKey);
+  const parsed = CadNodePropertiesSchema.safeParse(properties);
+
+  if (!parsed.success) return [];
+
+  const { name, object3D, treeIndexes, subTreeSizes } = parsed.data;
+  const ranges = treeIndexes.map((start, index) => ({ start, size: subTreeSizes[index] ?? 1 }));
+
+  if (ranges.length === 0) return [];
+
+  return [
+    { key: `${object3D.space}:${object3D.externalId}`, name: name ?? object3D.externalId, ranges },
+  ];
+}
+
+function readProperties(item: unknown, space: string, viewKey: string): unknown {
+  if (!isRecord(item) || !isRecord(item.properties)) return undefined;
+
+  const bySpace = item.properties[space];
+
+  return isRecord(bySpace) ? bySpace[viewKey] : undefined;
 }
 
 function toVector(values: readonly number[] | undefined): Vector | null {

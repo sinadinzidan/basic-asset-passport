@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ComponentType, ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -40,11 +40,15 @@ describe(`${Assets.name} sub header`, () => {
     threeD = {
       project: 'p',
       loadModel: vi.fn(() => Promise.resolve(makeModel())),
+      loadAssetNodes: vi.fn(() =>
+        Promise.resolve([{ key: 's:a', name: 'WMT:1', ranges: [{ start: 1, size: 1 }] }]),
+      ),
       loadSector: vi.fn(() => Promise.resolve(new ArrayBuffer(1))),
     };
     renderer = {
       addSector: vi.fn(),
       dispose: vi.fn(),
+      setAssetLookup: vi.fn(),
       zoomIn: vi.fn(),
       zoomOut: vi.fn(),
       resetView: vi.fn(),
@@ -157,6 +161,22 @@ describe(`${Assets.name} sub header`, () => {
 
     expect(await screen.findByText('Could not load the 3D model.')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Zoom in' })).not.toBeInTheDocument();
+  });
+
+  it('gives the renderer the contextualised assets once they have loaded', async () => {
+    renderApp(JSON.stringify({ activeView: AppView.THREE_D }));
+
+    await waitFor(() => expect(renderer.setAssetLookup).toHaveBeenCalled());
+    expect(threeD.loadAssetNodes).toHaveBeenCalledWith(THREE_D_MODEL_REFERENCE);
+  });
+
+  it('still shows the model when the contextualised assets cannot be loaded', async () => {
+    vi.mocked(threeD.loadAssetNodes).mockRejectedValue(new Error('no access'));
+    renderApp(JSON.stringify({ activeView: AppView.THREE_D }));
+
+    expect(await screen.findByText(/Platform VPH · /)).toBeInTheDocument();
+    await waitFor(() => expect(threeD.loadAssetNodes).toHaveBeenCalled());
+    expect(renderer.setAssetLookup).not.toHaveBeenCalled();
   });
 
   function renderApp(initialState?: string) {

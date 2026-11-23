@@ -1,7 +1,8 @@
-import type { TessellatedMesh, ThreeDModel } from './threeD';
+import type { TessellatedMesh, ThreeDAssetLookup, ThreeDModel } from './threeD';
 
 export interface ThreeDRenderer {
   addSector(mesh: TessellatedMesh): void;
+  setAssetLookup(lookup: ThreeDAssetLookup): void;
   zoomIn(): void;
   zoomOut(): void;
   resetView(): void;

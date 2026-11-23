@@ -1,8 +1,10 @@
 import { createContext, useCallback, useContext, useEffect, useRef } from 'react';
 
+import { createAssetLookup } from '../../../lib/three-d/assetLookup';
 import { createSceneRenderer } from '../../../lib/three-d/sceneRenderer';
 import { loadSectors } from '../../../lib/three-d/sectorLoader';
 import type { ThreeDRenderer } from '../../../types/threeDRenderer';
+import { useThreeDAssetNodes } from '../useThreeDAssetNodes';
 import { useThreeDClient } from '../useThreeDClient';
 import { useThreeDLoadProgress } from '../useThreeDLoadProgress';
 import { useThreeDModel } from '../useThreeDModel';
@@ -22,6 +24,8 @@ export function useAssetThreeDViewModel() {
   const { progress, setProgress, resetProgress } = useThreeDLoadProgress();
   const viewportReference = useRef<HTMLDivElement>(null);
   const rendererReference = useRef<ThreeDRenderer | null>(null);
+
+  const assetNodes = useThreeDAssetNodes().data;
 
   const model = modelQuery.data;
 
@@ -50,6 +54,12 @@ export function useAssetThreeDViewModel() {
       renderer.dispose();
     };
   }, [model, client, createRenderer, loadAllSectors, setProgress, resetProgress]);
+
+  useEffect(() => {
+    if (!model || !assetNodes) return;
+
+    rendererReference.current?.setAssetLookup(createAssetLookup(assetNodes));
+  }, [model, assetNodes, createRenderer]);
 
   const zoomIn = useCallback(() => rendererReference.current?.zoomIn(), []);
   const zoomOut = useCallback(() => rendererReference.current?.zoomOut(), []);

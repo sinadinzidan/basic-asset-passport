@@ -46,6 +46,22 @@ export type ThreeDScene = {
   boundingBox: ThreeDBox;
 };
 
+export type ThreeDTreeRange = {
+  start: number;
+  size: number;
+};
+
+export type ThreeDAssetNode = {
+  key: string;
+  name: string;
+  ranges: ThreeDTreeRange[];
+};
+
+export type ThreeDAssetLookup = {
+  indicesFor: (treeIndices: Float32Array) => Float32Array;
+  nameAt: (assetIndex: number) => string | null;
+};
+
 export type ThreeDModelReference = {
   name: string;
   modelId: number;

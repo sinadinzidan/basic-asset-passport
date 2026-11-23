@@ -23,18 +23,18 @@ export function createHighlightMaterial(highlighted: HighlightUniform): MeshLamb
     shader.vertexShader = shader.vertexShader
       .replace(
         '#include <common>',
-        '#include <common>\nattribute float treeIndex;\nvarying float vTreeIndex;',
+        '#include <common>\nattribute float assetIndex;\nvarying float vAssetIndex;',
       )
-      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvTreeIndex = treeIndex;');
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvAssetIndex = assetIndex;');
 
     shader.fragmentShader = shader.fragmentShader
       .replace(
         '#include <common>',
-        '#include <common>\nvarying float vTreeIndex;\nuniform float uHighlightedIndex;\nuniform vec3 uHighlightColor;\nuniform float uHighlightMix;',
+        '#include <common>\nvarying float vAssetIndex;\nuniform float uHighlightedIndex;\nuniform vec3 uHighlightColor;\nuniform float uHighlightMix;',
       )
       .replace(
         '#include <color_fragment>',
-        '#include <color_fragment>\nif (abs(vTreeIndex - uHighlightedIndex) < 0.5) {\n  diffuseColor.rgb = mix(diffuseColor.rgb, uHighlightColor, uHighlightMix);\n}',
+        '#include <color_fragment>\nif (abs(vAssetIndex - uHighlightedIndex) < 0.5) {\n  diffuseColor.rgb = mix(diffuseColor.rgb, uHighlightColor, uHighlightMix);\n}',
       );
   };
 

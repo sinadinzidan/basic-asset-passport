@@ -26,4 +26,16 @@ export const SceneFileSchema = z.object({
     .min(1),
 });
 
+export const CadNodePageSchema = z.object({
+  items: z.array(z.unknown()),
+  nextCursor: z.string().nullish(),
+});
+
+export const CadNodePropertiesSchema = z.object({
+  name: z.string().nullish(),
+  object3D: z.object({ space: z.string(), externalId: z.string() }),
+  treeIndexes: z.array(z.number()),
+  subTreeSizes: z.array(z.number()),
+});
+
 export type SceneFile = z.infer<typeof SceneFileSchema>;

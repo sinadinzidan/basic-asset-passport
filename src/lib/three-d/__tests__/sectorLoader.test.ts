@@ -86,6 +86,7 @@ function setup({
   const renderer = {
     addSector: vi.fn(),
     dispose: vi.fn(),
+    setAssetLookup: vi.fn(),
     zoomIn: vi.fn(),
     zoomOut: vi.fn(),
     resetView: vi.fn(),

@@ -1,4 +1,4 @@
-import type { ThreeDModel } from '../types/threeD';
+import type { ThreeDAssetNode, ThreeDModel } from '../types/threeD';
 import type { ThreeDContextType } from '../types/threeDContext';
 
 import { makeGlb, type FixtureNode } from './glb';
@@ -66,6 +66,7 @@ export function makeMockThreeDContext(latencyMs: number = MOCK_LATENCY_MS): Thre
     project: MOCK_PROJECT,
     isSimulated: true,
     loadModel: () => delay(model, latencyMs),
+    loadAssetNodes: () => delay(MOCK_ASSET_NODES, latencyMs),
     loadSector: (_blobId, fileName) => {
       const index = Number.parseInt(fileName, 10);
 
@@ -73,6 +74,12 @@ export function makeMockThreeDContext(latencyMs: number = MOCK_LATENCY_MS): Thre
     },
   };
 }
+
+const MOCK_ASSET_NODES: ThreeDAssetNode[] = BLOCKS.map((_block, index) => ({
+  key: `mock:block_${index}`,
+  name: `Mock asset ${index + 1}`,
+  ranges: [{ start: index, size: 1 }],
+}));
 
 function delay<Value>(value: Value, ms: number): Promise<Value> {
   return new Promise((resolve) => setTimeout(() => resolve(value), ms));

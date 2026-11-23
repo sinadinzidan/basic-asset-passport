@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { createThreeDContext } from '../threeDContext';
 
-type FakeSdk = Pick<CogniteClient, 'project' | 'get' | 'revisions3D'>;
+type FakeSdk = Pick<CogniteClient, 'project' | 'get' | 'post' | 'revisions3D'>;
 
 const MODEL_REF = { name: 'Platform VPH', modelId: 7, revisionId: 2 };
 
@@ -56,6 +56,7 @@ function makeSdk(
     revision?: Revision3D;
     outputs?: unknown;
     scene?: unknown;
+    nodePages?: unknown[];
   } = {},
 ) {
   const revision = overrides.revision ?? makeRevision();
@@ -77,15 +78,18 @@ function makeSdk(
     return Promise.resolve(response(overrides.scene ?? SCENE_JSON));
   });
   const retrieve = vi.fn(() => Promise.resolve(revision));
+  const pages = [...(overrides.nodePages ?? [])];
+  const post = vi.fn(() => Promise.resolve(response(pages.shift() ?? { items: [] })));
   const sdk = {
     project: 'flows-builder',
     get,
+    post,
     revisions3D: { retrieve } as Partial<
       CogniteClient['revisions3D']
     > as CogniteClient['revisions3D'],
   } as Partial<CogniteClient> as FakeSdk;
 
-  return { sdk, get, retrieve };
+  return { sdk, get, post, retrieve };
 }
 
 const runNow = { schedule: <Result>(task: () => Promise<Result>) => task() };
@@ -171,6 +175,113 @@ describe('createThreeDContext', () => {
       }).loadModel(MODEL_REF);
 
       expect(schedule).toHaveBeenCalledTimes(3);
+    });
+  });
+
+  describe('loadAssetNodes', () => {
+    const nodeItem = (name: string, objectId: string, treeIndexes: number[], sizes: number[]) => ({
+      properties: {
+        cdf_cdm: {
+          'CogniteCADNode/v1': {
+            name,
+            object3D: { space: 'energy_instances', externalId: objectId },
+            treeIndexes,
+            subTreeSizes: sizes,
+          },
+        },
+      },
+    });
+
+    it('reads the contextualised nodes of the revision with their tree ranges', async () => {
+      const { sdk, post } = makeSdk({
+        nodePages: [
+          {
+            items: [
+              nodeItem('WMT:1', 'obj_1', [10], [3]),
+              nodeItem('WMT:2', 'obj_2', [20, 40], [1, 2]),
+            ],
+          },
+        ],
+      });
+
+      const nodes = await createThreeDContext(sdk, runNow).loadAssetNodes(MODEL_REF);
+
+      expect(nodes).toEqual([
+        { key: 'energy_instances:obj_1', name: 'WMT:1', ranges: [{ start: 10, size: 3 }] },
+        {
+          key: 'energy_instances:obj_2',
+          name: 'WMT:2',
+          ranges: [
+            { start: 20, size: 1 },
+            { start: 40, size: 2 },
+          ],
+        },
+      ]);
+      expect(post).toHaveBeenCalledWith(
+        '/api/v1/projects/flows-builder/models/instances/list',
+        expect.objectContaining({
+          data: expect.objectContaining({
+            instanceType: 'node',
+            filter: {
+              containsAny: {
+                property: ['cdf_cdm', 'CogniteCADNode/v1', 'revisions'],
+                values: [{ space: 'energy_instances', externalId: 'cog_3d_revision_2' }],
+              },
+            },
+          }),
+        }),
+      );
+    });
+
+    it('follows the cursor until the last page', async () => {
+      const { sdk, post } = makeSdk({
+        nodePages: [
+          { items: [nodeItem('A', 'a', [1], [1])], nextCursor: 'c2' },
+          { items: [nodeItem('B', 'b', [2], [1])] },
+        ],
+      });
+
+      const nodes = await createThreeDContext(sdk, runNow).loadAssetNodes(MODEL_REF);
+
+      expect(nodes.map((found) => found.name)).toEqual(['A', 'B']);
+      expect(post).toHaveBeenCalledTimes(2);
+      expect(post).toHaveBeenLastCalledWith(
+        expect.any(String),
+        expect.objectContaining({ data: expect.objectContaining({ cursor: 'c2' }) }),
+      );
+    });
+
+    it('skips a node that has no object or no tree range', async () => {
+      const { sdk } = makeSdk({
+        nodePages: [
+          {
+            items: [
+              { properties: { cdf_cdm: { 'CogniteCADNode/v1': { name: 'x', treeIndexes: [1] } } } },
+              nodeItem('empty', 'e', [], []),
+              nodeItem('ok', 'o', [5], [1]),
+            ],
+          },
+        ],
+      });
+
+      const nodes = await createThreeDContext(sdk, runNow).loadAssetNodes(MODEL_REF);
+
+      expect(nodes.map((found) => found.name)).toEqual(['ok']);
+    });
+
+    it('goes through the limiter for every page', async () => {
+      const schedule = vi.fn();
+
+      schedule.mockImplementation((task: () => Promise<unknown>) => task());
+
+      await createThreeDContext(
+        makeSdk({
+          nodePages: [{ items: [], nextCursor: 'c2' }, { items: [] }],
+        }).sdk,
+        { schedule: <Result>(task: () => Promise<Result>) => schedule(task) },
+      ).loadAssetNodes(MODEL_REF);
+
+      expect(schedule).toHaveBeenCalledTimes(2);
     });
   });
 

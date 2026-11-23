@@ -28,11 +28,12 @@ import {
   THREE_D_CAMERA_NEAR_RATIO,
   THREE_D_DIRECTIONAL_LIGHT_INTENSITY,
   THREE_D_MAX_PIXEL_RATIO,
+  THREE_D_NO_ASSET,
   THREE_D_NO_HIGHLIGHT,
   THREE_D_ZOOM_IN_FACTOR,
   THREE_D_ZOOM_OUT_FACTOR,
 } from '../../constants/threeD';
-import type { TessellatedMesh, ThreeDModel } from '../../types/threeD';
+import type { TessellatedMesh, ThreeDAssetLookup, ThreeDModel } from '../../types/threeD';
 import type { ThreeDRenderer } from '../../types/threeDRenderer';
 
 import { zoomedPosition } from './cameraZoom';
@@ -56,7 +57,8 @@ class SceneRenderer implements ThreeDRenderer {
   private readonly hover = createHoverState();
   private readonly picker: ElementPicker;
   private readonly resizeObserver: ResizeObserver;
-  private readonly geometries: BufferGeometry[] = [];
+  private readonly parts: { geometry: BufferGeometry; treeIndices: Float32Array }[] = [];
+  private lookup: ThreeDAssetLookup | null = null;
   private readonly gate = createRenderGate();
   private frameHandle = 0;
   private isDisposed = false;
@@ -113,11 +115,30 @@ class SceneRenderer implements ThreeDRenderer {
     geometry.setAttribute('position', new BufferAttribute(mesh.positions, VECTOR_SIZE));
     geometry.setAttribute('normal', new BufferAttribute(mesh.normals, VECTOR_SIZE));
     geometry.setAttribute('color', new BufferAttribute(mesh.colors, VECTOR_SIZE));
-    geometry.setAttribute('treeIndex', new BufferAttribute(mesh.treeIndices, 1));
+
+    geometry.setAttribute(
+      'assetIndex',
+      new BufferAttribute(this.assetIndicesFor(mesh.treeIndices), 1),
+    );
+
     geometry.setIndex(new BufferAttribute(mesh.indices, 1));
     geometry.computeBoundingSphere();
-    this.geometries.push(geometry);
+    this.parts.push({ geometry, treeIndices: mesh.treeIndices });
     this.group.add(new Mesh(geometry, this.material));
+    this.hover.viewChanged();
+    this.gate.markDirty();
+  }
+
+  setAssetLookup(lookup: ThreeDAssetLookup): void {
+    if (this.isDisposed) return;
+
+    this.lookup = lookup;
+
+    this.parts.forEach(({ geometry, treeIndices }) => {
+      geometry.setAttribute('assetIndex', new BufferAttribute(lookup.indicesFor(treeIndices), 1));
+    });
+
+    this.highlighted.value = THREE_D_NO_HIGHLIGHT;
     this.hover.viewChanged();
     this.gate.markDirty();
   }
@@ -146,10 +167,16 @@ class SceneRenderer implements ThreeDRenderer {
     this.renderer.domElement.removeEventListener('pointerleave', this.clearHover);
     this.controls.dispose();
     this.picker.dispose();
-    this.geometries.forEach((geometry) => geometry.dispose());
+    this.parts.forEach(({ geometry }) => geometry.dispose());
     this.material.dispose();
     this.renderer.dispose();
     this.renderer.domElement.remove();
+  }
+
+  private assetIndicesFor(treeIndices: Float32Array): Float32Array {
+    return this.lookup === null
+      ? new Float32Array(treeIndices.length).fill(THREE_D_NO_ASSET)
+      : this.lookup.indicesFor(treeIndices);
   }
 
   private zoomBy(factor: number): void {
@@ -223,10 +250,10 @@ class SceneRenderer implements ThreeDRenderer {
 
     if (point === null) return;
 
-    const treeIndex = this.picker.pick(point);
+    const assetIndex = this.picker.pick(point);
 
-    if (this.hover.setHovered(treeIndex)) {
-      this.highlighted.value = treeIndex ?? THREE_D_NO_HIGHLIGHT;
+    if (this.hover.setHovered(assetIndex)) {
+      this.highlighted.value = assetIndex ?? THREE_D_NO_HIGHLIGHT;
       this.gate.markDirty();
     }
   }

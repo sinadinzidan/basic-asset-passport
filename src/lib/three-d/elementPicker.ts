@@ -5,18 +5,18 @@ import type { PickPoint } from './hoverState';
 import { decodePickColor } from './pickCodec';
 
 const PICK_VERTEX_SHADER = `
-attribute float treeIndex;
-varying float vTreeIndex;
+attribute float assetIndex;
+varying float vAssetIndex;
 void main() {
-  vTreeIndex = treeIndex;
+  vAssetIndex = assetIndex;
   gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
 }
 `;
 
 const PICK_FRAGMENT_SHADER = `
-varying float vTreeIndex;
+varying float vAssetIndex;
 void main() {
-  float id = floor(vTreeIndex + 0.5) + 1.0;
+  float id = floor(vAssetIndex + 0.5) + 1.0;
   float red = mod(id, 256.0);
   float green = mod(floor(id / 256.0), 256.0);
   float blue = floor(id / 65536.0);
