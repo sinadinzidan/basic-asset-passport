@@ -298,16 +298,14 @@ the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines
   a label: "Zoom in" and "Zoom out" move the camera 20% closer to or 25% further
   from the point it orbits, and "Reset view" frames the whole model again. They
   show only while a model is shown, and they are not host-synced.
-- Hovering a contextualised asset of the model with the pointer tints all of
-  its geometry cyan, wherever its parts sit in the model; moving off it,
-  leaving the view or pressing a mouse button to drag removes the tint. Assets
-  come from the model's CogniteCADNode instances for the revision (space
-  energy_instances), each mapping an object to the tree ranges it owns; the
-  innermost range wins where ranges nest. Geometry that no node maps (about 94
-  nodes in Platform VPH) is neither picked nor tinted. The asset under the
-  pointer is found on the graphics card by drawing each asset's id into one
-  pixel. If the nodes cannot be loaded the model still shows, without the tint.
-  The tint is not host-synced and no asset name is shown as text yet.
+- Contextualised assets are always shown tinted cyan, so the parts of the model that are linked to an asset stand
+  out without hovering. Hovering one turns all of its geometry near-white; moving off it, leaving the view or
+  pressing a mouse button to drag restores the cyan. Assets come from the model's CogniteCADNode instances for the
+  revision (space energy_instances), each mapping an object to the tree ranges it owns; the innermost range wins
+  where ranges nest. Geometry that no node maps (only about 94 nodes in Platform VPH, mostly small instruments) is
+  neither tinted nor picked. The asset under the pointer is found on the graphics card by drawing each asset's id
+  into one pixel. If the nodes cannot be loaded the model still shows, without any tint. The tint is not
+  host-synced and no asset name is shown as text yet.
 - A line under the view reads "Platform VPH · N of M parts" with ", K failed" and
   ", S skipped" when there are any, then " · loading" or " · loaded". Shapes the
   reader cannot draw are listed under it ("Unsupported shapes skipped: name:

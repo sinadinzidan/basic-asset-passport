@@ -1,8 +1,10 @@
 import { Color, DoubleSide, MeshLambertMaterial } from 'three';
 
 import {
-  THREE_D_HIGHLIGHT_COLOR,
-  THREE_D_HIGHLIGHT_MIX,
+  THREE_D_ASSET_COLOR,
+  THREE_D_ASSET_MIX,
+  THREE_D_HOVER_COLOR,
+  THREE_D_HOVER_MIX,
   THREE_D_NO_HIGHLIGHT,
 } from '../../constants/threeD';
 
@@ -17,8 +19,10 @@ export function createHighlightMaterial(highlighted: HighlightUniform): MeshLamb
 
   material.onBeforeCompile = (shader) => {
     shader.uniforms.uHighlightedIndex = highlighted;
-    shader.uniforms.uHighlightColor = { value: new Color(THREE_D_HIGHLIGHT_COLOR) };
-    shader.uniforms.uHighlightMix = { value: THREE_D_HIGHLIGHT_MIX };
+    shader.uniforms.uAssetColor = { value: new Color(THREE_D_ASSET_COLOR) };
+    shader.uniforms.uAssetMix = { value: THREE_D_ASSET_MIX };
+    shader.uniforms.uHoverColor = { value: new Color(THREE_D_HOVER_COLOR) };
+    shader.uniforms.uHoverMix = { value: THREE_D_HOVER_MIX };
 
     shader.vertexShader = shader.vertexShader
       .replace(
@@ -30,11 +34,11 @@ export function createHighlightMaterial(highlighted: HighlightUniform): MeshLamb
     shader.fragmentShader = shader.fragmentShader
       .replace(
         '#include <common>',
-        '#include <common>\nvarying float vAssetIndex;\nuniform float uHighlightedIndex;\nuniform vec3 uHighlightColor;\nuniform float uHighlightMix;',
+        '#include <common>\nvarying float vAssetIndex;\nuniform float uHighlightedIndex;\nuniform vec3 uAssetColor;\nuniform float uAssetMix;\nuniform vec3 uHoverColor;\nuniform float uHoverMix;',
       )
       .replace(
         '#include <color_fragment>',
-        '#include <color_fragment>\nif (abs(vAssetIndex - uHighlightedIndex) < 0.5) {\n  diffuseColor.rgb = mix(diffuseColor.rgb, uHighlightColor, uHighlightMix);\n}',
+        '#include <color_fragment>\nif (vAssetIndex > -0.5) {\n  diffuseColor.rgb = mix(diffuseColor.rgb, uAssetColor, uAssetMix);\n}\nif (abs(vAssetIndex - uHighlightedIndex) < 0.5) {\n  diffuseColor.rgb = mix(diffuseColor.rgb, uHoverColor, uHoverMix);\n}',
       );
   };
 
