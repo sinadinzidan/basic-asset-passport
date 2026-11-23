@@ -17,6 +17,19 @@ describe(loadSectors.name, () => {
     expect(result).toMatchObject({ loadedSectors: 3, failedSectors: 0, triangleCount: 6 });
   });
 
+  it('tessellates through the worker pool and disposes it when done', async () => {
+    const pool = { tessellate: vi.fn(() => Promise.resolve(makeMesh({}))), dispose: vi.fn() };
+    const { renderer, model, source, signal, onProgress } = setup({ sectorCount: 2 });
+
+    await loadSectors(
+      { model, source, renderer, signal, onProgress },
+      { createPool: () => pool, yieldToBrowser: () => Promise.resolve() },
+    );
+
+    expect(pool.tessellate).toHaveBeenCalledTimes(2);
+    expect(pool.dispose).toHaveBeenCalledOnce();
+  });
+
   it('reports progress after each sector', async () => {
     const { onProgress, run } = setup({ sectorCount: 2 });
 
@@ -97,6 +110,9 @@ function setup({
   return {
     renderer,
     onProgress,
+    model,
+    source: { loadSector },
+    signal,
     run: () =>
       loadSectors(
         { model, source: { loadSector }, renderer, signal, onProgress },

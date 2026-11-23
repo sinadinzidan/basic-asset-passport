@@ -314,8 +314,10 @@ the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines
   3D model." with the reason and Retry.
 - Known limits: slanted cylinder end planes are drawn flat; textured meshes are
   drawn untextured; the model's nodes are not yet linked to the app's own assets, so the open
-  asset is not highlighted; the geometry is
-  tessellated on the main thread.
+  asset is not highlighted; sectors load in order
+  from coarse to fine, and each is parsed and tessellated in a pool of web
+  workers (up to four, fewer on small machines) so the page stays responsive
+  while the model fills in; loading time is mostly the download.
 - In mock mode the tab shows a small synthetic model made of six boxes.
 
 ## Agent helper

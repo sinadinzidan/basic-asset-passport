@@ -7,18 +7,17 @@ import type { ThreeDLoadProgress, ThreeDModel, TessellatedMesh } from '../../typ
 import type { ThreeDContextType } from '../../types/threeDContext';
 import type { ThreeDRenderer } from '../../types/threeDRenderer';
 
-import { parseSector } from './sectorParser';
-import { tessellateSector } from './tessellateSector';
+import { createBrowserTessellationPool } from './browserTessellationPool';
+import type { TessellationPool } from './tessellationPool';
 
 type SectorLoaderDeps = {
-  parse: typeof parseSector;
-  tessellate: (buffer: ArrayBuffer) => TessellatedMesh;
+  createPool: () => TessellationPool;
+  tessellate?: (buffer: ArrayBuffer) => TessellatedMesh | Promise<TessellatedMesh>;
   yieldToBrowser: () => Promise<void>;
 };
 
 const defaultDeps: SectorLoaderDeps = {
-  parse: parseSector,
-  tessellate: (buffer) => tessellateSector(parseSector(buffer)),
+  createPool: createBrowserTessellationPool,
   yieldToBrowser: () => new Promise((resolve) => setTimeout(resolve, 0)),
 };
 
@@ -34,7 +33,20 @@ export async function loadSectors(
   { model, source, renderer, signal, onProgress }: LoadSectorsProps,
   overrides?: Partial<SectorLoaderDeps>,
 ): Promise<ThreeDLoadProgress> {
-  const { tessellate, yieldToBrowser } = { ...defaultDeps, ...overrides };
+  const {
+    createPool,
+    tessellate: tessellateOverride,
+    yieldToBrowser,
+  } = {
+    ...defaultDeps,
+    ...overrides,
+  };
+
+  const pool: TessellationPool =
+    tessellateOverride === undefined
+      ? createPool()
+      : { tessellate: async (buffer) => tessellateOverride(buffer), dispose: () => undefined };
+
   const unsupported: Record<string, number> = {};
 
   const progress: ThreeDLoadProgress = {
@@ -68,7 +80,9 @@ export async function loadSectors(
 
         if (signal.aborted) return;
 
-        const mesh = tessellate(buffer);
+        const mesh = await pool.tessellate(buffer);
+
+        if (signal.aborted) return;
 
         renderer.addSector(mesh);
         progress.loadedSectors += 1;
@@ -86,7 +100,11 @@ export async function loadSectors(
     }
   }
 
-  await Promise.all(Array.from({ length: THREE_D_SECTOR_CONCURRENCY }, worker));
+  try {
+    await Promise.all(Array.from({ length: THREE_D_SECTOR_CONCURRENCY }, worker));
+  } finally {
+    pool.dispose();
+  }
 
   return { ...progress, unsupported: { ...unsupported } };
 }
