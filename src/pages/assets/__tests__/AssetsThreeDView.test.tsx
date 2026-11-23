@@ -7,6 +7,7 @@ import { makeAssetPage } from '../../../__mocks__/assets';
 import { makeAssetSummaryContext } from '../../../__mocks__/assetSummary';
 import { makeMockClient } from '../../../__mocks__/cogniteClient';
 import { makeQueryClientWrapper } from '../../../__mocks__/QueryClientWrapper';
+import { THREE_D_MODEL_REFERENCE } from '../../../constants/threeD';
 import { AppView } from '../../../enums/appView';
 import { AssetClientContext } from '../../../hooks/assets/useAssetClient';
 import { UseAssetsContext } from '../../../hooks/assets/useAssets';
@@ -38,7 +39,7 @@ describe(`${Assets.name} sub header`, () => {
     };
     threeD = {
       project: 'p',
-      findModel: vi.fn(() => Promise.resolve(makeModel())),
+      loadModel: vi.fn(() => Promise.resolve(makeModel())),
       loadSector: vi.fn(() => Promise.resolve(new ArrayBuffer(1))),
     };
     renderer = {
@@ -106,7 +107,7 @@ describe(`${Assets.name} sub header`, () => {
     await user.click(await screen.findByRole('tab', { name: '3D' }));
 
     expect(await screen.findByText(/Platform VPH · /)).toBeInTheDocument();
-    expect(threeD.findModel).toHaveBeenCalledWith('Platform VPH');
+    expect(threeD.loadModel).toHaveBeenCalledWith(THREE_D_MODEL_REFERENCE);
     expect(screen.queryByRole('heading', { name: 'Asset register' })).not.toBeInTheDocument();
   });
 
@@ -151,10 +152,10 @@ describe(`${Assets.name} sub header`, () => {
   });
 
   it('offers no control buttons while there is no model to control', async () => {
-    vi.mocked(threeD.findModel).mockResolvedValue(null);
+    vi.mocked(threeD.loadModel).mockRejectedValue(new Error('network down'));
     renderApp(JSON.stringify({ activeView: AppView.THREE_D }));
 
-    expect(await screen.findByText('No 3D model')).toBeInTheDocument();
+    expect(await screen.findByText('Could not load the 3D model.')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Zoom in' })).not.toBeInTheDocument();
   });
 

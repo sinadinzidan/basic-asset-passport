@@ -65,7 +65,7 @@ export function makeMockThreeDContext(latencyMs: number = MOCK_LATENCY_MS): Thre
   return {
     project: MOCK_PROJECT,
     isSimulated: true,
-    findModel: () => delay(model, latencyMs),
+    loadModel: () => delay(model, latencyMs),
     loadSector: (_blobId, fileName) => {
       const index = Number.parseInt(fileName, 10);
 

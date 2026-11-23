@@ -274,12 +274,12 @@ the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines
   gets a sixth tab, "3D", after Documents. Assets of other plants have no such
   tab; a link that asks for it on another plant opens Properties instead. The
   chosen tab is synced to the URL like the others.
-- The tab shows the project's 3D model named "Platform VPH": the app lists the
-  project's 3D models, takes the one named exactly "Platform VPH" (ignoring
-  case) or else the first whose name contains it, then its newest revision
-  whose processing is done (published or not), then that revision's newest
-  `gltf-directory` output and its `scene.json` (version 9 only). The same model
-  is shown for every Ruwais asset; it is not yet tied to the asset.
+- The tab shows the 3D model "Platform VPH", read directly by its ids (model
+  2784752287179751, revision 1423667588626776) with no search: the app reads the
+  revision (its rotation, scale and translation; its processing must be done,
+  published or not), then the revision's newest `gltf-directory` output and its
+  `scene.json` (version 9 only). The same model is shown for every Ruwais
+  asset; it is not yet tied to the asset.
 - The model is drawn by the app itself with three.js, not by the Cognite viewer.
   The sector `.glb` files are read, their shape collections (boxes, circles,
   cones, eccentric cones, cylinders, rings, quads, torus segments, trapeziums,
@@ -299,9 +299,9 @@ the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines
   ", S skipped" when there are any, then " · loading" or " · loaded". Shapes the
   reader cannot draw are listed under it ("Unsupported shapes skipped: name:
   count") so gaps can be traced.
-- While the model is being found the tab shows "Loading 3D model…"; a failed
-  lookup shows "Could not load the 3D model." with the reason and Retry; no
-  matching model shows "No 3D model".
+- While the model is being loaded the tab shows "Loading 3D model…"; a failure
+  (including a model or revision that does not exist) shows "Could not load the
+  3D model." with the reason and Retry.
 - Known limits: slanted cylinder end planes are drawn flat; textured meshes are
   drawn untextured; there is no highlight of the open asset in the model (the
   contextualisation of nodes to assets is a later stage); the geometry is

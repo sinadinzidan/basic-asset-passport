@@ -1,40 +1,27 @@
-import type {
-  CogniteClient,
-  CursorAndAsyncIterator,
-  HttpResponse,
-  Model3D,
-  Revision3D,
-} from '@cognite/sdk';
+import type { CogniteClient, HttpResponse, Revision3D } from '@cognite/sdk';
 import { describe, expect, it, vi } from 'vitest';
 
-import { createThreeDContext, pickModel, pickRevision } from '../threeDContext';
+import { createThreeDContext } from '../threeDContext';
 
-type FakeSdk = Pick<CogniteClient, 'project' | 'get' | 'models3D' | 'revisions3D'>;
+type FakeSdk = Pick<CogniteClient, 'project' | 'get' | 'revisions3D'>;
 
-function makeModel(id: number, name: string): Model3D {
-  return { id, name, createdTime: new Date(0) };
-}
+const MODEL_REF = { name: 'Platform VPH', modelId: 7, revisionId: 2 };
 
-function makeRevision(id: number, overrides: Partial<Revision3D> = {}): Revision3D {
+function makeRevision(overrides: Partial<Revision3D> = {}): Revision3D {
   return {
-    id,
+    id: MODEL_REF.revisionId,
     fileId: 1,
-    published: true,
+    published: false,
     status: 'Done',
-    createdTime: new Date(id * 1000),
+    createdTime: new Date(0),
     assetMappingCount: 0,
+    rotation: [1, 2, 3],
     ...overrides,
   };
 }
 
 function response(data: unknown): HttpResponse<never> {
   return { data } as Partial<HttpResponse<unknown>> as HttpResponse<never>;
-}
-
-function listing<Item>(items: Item[]): CursorAndAsyncIterator<Item> {
-  return {
-    autoPagingToArray: vi.fn(() => Promise.resolve(items)),
-  } as Partial<CursorAndAsyncIterator<Item>> as CursorAndAsyncIterator<Item>;
 }
 
 const SCENE_JSON = {
@@ -66,17 +53,12 @@ const SCENE_JSON = {
 
 function makeSdk(
   overrides: {
-    models?: Model3D[];
-    revisions?: Revision3D[];
+    revision?: Revision3D;
     outputs?: unknown;
     scene?: unknown;
   } = {},
 ) {
-  const models = overrides.models ?? [makeModel(1, 'Other'), makeModel(7, 'Platform VPH')];
-  const revisions = overrides.revisions ?? [
-    makeRevision(1),
-    makeRevision(2, { rotation: [1, 2, 3] }),
-  ];
+  const revision = overrides.revision ?? makeRevision();
   const get = vi.fn((path: string) => {
     if (path.endsWith('/outputs')) {
       return Promise.resolve(
@@ -94,76 +76,30 @@ function makeSdk(
 
     return Promise.resolve(response(overrides.scene ?? SCENE_JSON));
   });
+  const retrieve = vi.fn(() => Promise.resolve(revision));
   const sdk = {
     project: 'flows-builder',
     get,
-    models3D: { list: vi.fn(() => listing(models)) } as Partial<
-      CogniteClient['models3D']
-    > as CogniteClient['models3D'],
-    revisions3D: { list: vi.fn(() => listing(revisions)) } as Partial<
+    revisions3D: { retrieve } as Partial<
       CogniteClient['revisions3D']
     > as CogniteClient['revisions3D'],
   } as Partial<CogniteClient> as FakeSdk;
 
-  return { sdk, get };
+  return { sdk, get, retrieve };
 }
 
 const runNow = { schedule: <Result>(task: () => Promise<Result>) => task() };
-
-describe(pickModel.name, () => {
-  const models = [
-    makeModel(1, 'Platform VPH Full'),
-    makeModel(2, 'PLATFORM VPH '),
-    makeModel(3, 'Other'),
-  ];
-
-  it('prefers a model named exactly like it, ignoring case and spaces', () => {
-    expect(pickModel(models, 'platform vph')?.id).toBe(2);
-  });
-
-  it('falls back to a model whose name contains it', () => {
-    expect(pickModel(models.slice(0, 1), 'platform vph')?.id).toBe(1);
-  });
-
-  it('finds nothing when no name matches', () => {
-    expect(pickModel(models, 'ekofisk')).toBeUndefined();
-  });
-});
-
-describe(pickRevision.name, () => {
-  it('takes the newest revision that is ready', () => {
-    const revisions = [makeRevision(1), makeRevision(3), makeRevision(2)];
-
-    expect(pickRevision(revisions)?.id).toBe(3);
-  });
-
-  it('takes a revision that is not published', () => {
-    const revisions = [makeRevision(1), makeRevision(2, { published: false })];
-
-    expect(pickRevision(revisions)?.id).toBe(2);
-  });
-
-  it('skips a revision that is not done', () => {
-    const revisions = [makeRevision(1), makeRevision(3, { status: 'Processing' })];
-
-    expect(pickRevision(revisions)?.id).toBe(1);
-  });
-
-  it('finds nothing when no revision is ready', () => {
-    expect(pickRevision([makeRevision(1, { status: 'Failed' })])).toBeUndefined();
-  });
-});
 
 describe('createThreeDContext', () => {
   it('names its project', () => {
     expect(createThreeDContext(makeSdk().sdk, runNow).project).toBe('flows-builder');
   });
 
-  describe('findModel', () => {
-    it('finds the model by name, its newest ready revision, its newest glTF output and its scene', async () => {
-      const { sdk, get } = makeSdk();
+  describe('loadModel', () => {
+    it('reads the model by its ids: the revision placement, the newest glTF output and the scene', async () => {
+      const { sdk, get, retrieve } = makeSdk();
 
-      const model = await createThreeDContext(sdk, runNow).findModel('Platform VPH');
+      const model = await createThreeDContext(sdk, runNow).loadModel(MODEL_REF);
 
       expect(model).toMatchObject({
         modelId: 7,
@@ -174,6 +110,7 @@ describe('createThreeDContext', () => {
         scale: null,
         translation: null,
       });
+      expect(retrieve).toHaveBeenCalledWith(7, 2);
       expect(get).toHaveBeenCalledWith(
         '/api/v1/projects/flows-builder/3d/models/7/revisions/2/outputs',
         {
@@ -184,41 +121,27 @@ describe('createThreeDContext', () => {
     });
 
     it('lists the sectors with a file, the coarsest first, and covers every box', async () => {
-      const model = await createThreeDContext(makeSdk().sdk, runNow).findModel('Platform VPH');
+      const model = await createThreeDContext(makeSdk().sdk, runNow).loadModel(MODEL_REF);
 
-      expect(model?.scene.sectors).toEqual([
+      expect(model.scene.sectors).toEqual([
         { id: 0, depth: 0, fileName: '0.glb', downloadSize: 10 },
         { id: 2, depth: 1, fileName: '2.glb', downloadSize: 20 },
       ]);
-      expect(model?.scene.boundingBox).toEqual({ min: [-1, -2, -3], max: [10, 10, 10] });
-      expect(model?.scene.unit).toBe('Meters');
+      expect(model.scene.boundingBox).toEqual({ min: [-1, -2, -3], max: [10, 10, 10] });
+      expect(model.scene.unit).toBe('Meters');
     });
 
-    it('lists models and revisions without filtering on published', async () => {
-      const { sdk } = makeSdk();
+    it('accepts a revision that is not published', async () => {
+      const { sdk } = makeSdk({ revision: makeRevision({ published: false }) });
 
-      await createThreeDContext(sdk, runNow).findModel('Platform VPH');
-
-      expect(sdk.models3D.list).toHaveBeenCalledWith(
-        expect.not.objectContaining({ published: expect.anything() }),
-      );
-      expect(sdk.revisions3D.list).toHaveBeenCalledWith(
-        expect.anything(),
-        expect.not.objectContaining({ published: expect.anything() }),
-      );
+      await expect(createThreeDContext(sdk, runNow).loadModel(MODEL_REF)).resolves.toBeDefined();
     });
 
-    it('returns nothing when the project has no such model', async () => {
-      const { sdk } = makeSdk({ models: [makeModel(1, 'Other')] });
+    it('says so when the revision is not ready', async () => {
+      const { sdk } = makeSdk({ revision: makeRevision({ status: 'Processing' }) });
 
-      await expect(createThreeDContext(sdk, runNow).findModel('Platform VPH')).resolves.toBeNull();
-    });
-
-    it('says so when the model has no revision that is ready', async () => {
-      const { sdk } = makeSdk({ revisions: [makeRevision(1, { status: 'Processing' })] });
-
-      await expect(createThreeDContext(sdk, runNow).findModel('Platform VPH')).rejects.toThrow(
-        'The Platform VPH model has no revision that is ready.',
+      await expect(createThreeDContext(sdk, runNow).loadModel(MODEL_REF)).rejects.toThrow(
+        'The Platform VPH revision is not ready.',
       );
     });
 
@@ -227,7 +150,7 @@ describe('createThreeDContext', () => {
         outputs: { items: [{ format: 'reveal-directory', version: 8, blobId: 5 }] },
       });
 
-      await expect(createThreeDContext(sdk, runNow).findModel('Platform VPH')).rejects.toThrow(
+      await expect(createThreeDContext(sdk, runNow).loadModel(MODEL_REF)).rejects.toThrow(
         'The revision has no gltf-directory output to show.',
       );
     });
@@ -235,7 +158,7 @@ describe('createThreeDContext', () => {
     it('refuses a scene file of a version it cannot read', async () => {
       const { sdk } = makeSdk({ scene: { ...SCENE_JSON, version: 8 } });
 
-      await expect(createThreeDContext(sdk, runNow).findModel('Platform VPH')).rejects.toThrow();
+      await expect(createThreeDContext(sdk, runNow).loadModel(MODEL_REF)).rejects.toThrow();
     });
 
     it('goes through the limiter for every call it makes', async () => {
@@ -245,9 +168,9 @@ describe('createThreeDContext', () => {
 
       await createThreeDContext(makeSdk().sdk, {
         schedule: <Result>(task: () => Promise<Result>) => schedule(task),
-      }).findModel('Platform VPH');
+      }).loadModel(MODEL_REF);
 
-      expect(schedule).toHaveBeenCalledTimes(4);
+      expect(schedule).toHaveBeenCalledTimes(3);
     });
   });
 

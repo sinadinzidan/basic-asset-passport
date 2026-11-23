@@ -46,6 +46,12 @@ export type ThreeDScene = {
   boundingBox: ThreeDBox;
 };
 
+export type ThreeDModelReference = {
+  name: string;
+  modelId: number;
+  revisionId: number;
+};
+
 export type ThreeDModel = {
   modelId: number;
   revisionId: number;

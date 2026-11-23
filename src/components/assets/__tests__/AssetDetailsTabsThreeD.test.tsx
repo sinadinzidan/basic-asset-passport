@@ -9,6 +9,7 @@ import { makeInstanceDetails } from '../../../__mocks__/assets';
 import { makeNavigationStore } from '../../../__mocks__/navigation';
 import { makeQueryClientWrapper } from '../../../__mocks__/QueryClientWrapper';
 import { MODEL } from '../../../config/model';
+import { THREE_D_MODEL_REFERENCE } from '../../../constants/threeD';
 import { AssetTab } from '../../../enums/assetTab';
 import { NavigationStoreContext } from '../../../hooks/general/useNavigationState';
 import { ThreeDClientContext } from '../../../hooks/three-d/useThreeDClient';
@@ -35,7 +36,7 @@ describe(`${AssetDetailsTabs.name} 3D`, () => {
     });
     threeD = {
       project: 'p',
-      findModel: vi.fn(() => Promise.resolve(makeModel())),
+      loadModel: vi.fn(() => Promise.resolve(makeModel())),
       loadSector: vi.fn(() => Promise.resolve(new ArrayBuffer(1))),
     };
     deps = {
@@ -109,24 +110,15 @@ describe(`${AssetDetailsTabs.name} 3D`, () => {
 
     expect(await screen.findByText(/Platform VPH · 1 of 1 parts · loaded/)).toBeInTheDocument();
     expect(screen.getByText(/Unsupported shapes skipped: Foo: 3/)).toBeInTheDocument();
-    expect(threeD.findModel).toHaveBeenCalledWith('Platform VPH');
+    expect(threeD.loadModel).toHaveBeenCalledWith(THREE_D_MODEL_REFERENCE);
     expect(deps.createRenderer).toHaveBeenCalledOnce();
-  });
-
-  it('says so when the project has no such model', async () => {
-    store = makeNavigationStore({ activeAssetTab: AssetTab.THREE_D });
-    vi.mocked(threeD.findModel).mockResolvedValue(null);
-    render(<AssetDetailsTabs asset={ruwaisAsset} tabCounts={NO_TAB_COUNTS} />, { wrapper });
-
-    expect(await screen.findByText('No 3D model')).toBeInTheDocument();
-    expect(deps.createRenderer).not.toHaveBeenCalled();
   });
 
   it('shows the reason and lets the user retry when the model cannot be fetched', async () => {
     const user = userEvent.setup();
 
     store = makeNavigationStore({ activeAssetTab: AssetTab.THREE_D });
-    vi.mocked(threeD.findModel).mockRejectedValueOnce(new Error('network down'));
+    vi.mocked(threeD.loadModel).mockRejectedValueOnce(new Error('network down'));
     render(<AssetDetailsTabs asset={ruwaisAsset} tabCounts={NO_TAB_COUNTS} />, { wrapper });
 
     expect(await screen.findByText('Could not load the 3D model.')).toBeInTheDocument();

@@ -63,7 +63,6 @@ export function useAssetThreeDViewModel() {
     isLoading: modelQuery.isPending,
     isError: modelQuery.isError,
     error: modelQuery.error,
-    isNotFound: model === null,
     hasModel: Boolean(model),
     progress,
     viewportRef: viewportReference,

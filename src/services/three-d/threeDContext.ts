@@ -1,17 +1,19 @@
-import type { CogniteClient, Model3D, Revision3D } from '@cognite/sdk';
+import type { CogniteClient } from '@cognite/sdk';
 
-import {
-  THREE_D_MODEL_LIST_LIMIT,
-  THREE_D_OUTPUT_FORMAT,
-  THREE_D_REVISION_LIST_LIMIT,
-  THREE_D_SCENE_FILE_NAME,
-} from '../../constants/threeD';
+import { THREE_D_OUTPUT_FORMAT, THREE_D_SCENE_FILE_NAME } from '../../constants/threeD';
 import { cdfTaskRunner } from '../../lib/queuedTaskRunner';
 import { OutputsResponseSchema, SceneFileSchema, type SceneFile } from '../../schemas/threeD';
-import type { ThreeDBox, ThreeDModel, ThreeDScene, ThreeDSector, Vector } from '../../types/threeD';
+import type {
+  ThreeDBox,
+  ThreeDModel,
+  ThreeDModelReference as ThreeDModelReference,
+  ThreeDScene,
+  ThreeDSector,
+  Vector,
+} from '../../types/threeD';
 import type { ThreeDContextType } from '../../types/threeDContext';
 
-type ThreeDSdk = Pick<CogniteClient, 'project' | 'get' | 'models3D' | 'revisions3D'>;
+type ThreeDSdk = Pick<CogniteClient, 'project' | 'get' | 'revisions3D'>;
 
 type ThreeDDeps = {
   schedule: <Result>(task: () => Promise<Result>) => Promise<Result>;
@@ -31,36 +33,22 @@ class CdfThreeDContext implements ThreeDContextType {
     return this.sdk.project;
   }
 
-  findModel = async (name: string): Promise<ThreeDModel | null> => {
-    const models = await this.deps.schedule(() =>
-      this.sdk.models3D
-        .list({ limit: THREE_D_MODEL_LIST_LIMIT })
-        .autoPagingToArray({ limit: THREE_D_MODEL_LIST_LIMIT }),
+  loadModel = async ({ name, modelId, revisionId }: ThreeDModelReference): Promise<ThreeDModel> => {
+    const revision = await this.deps.schedule(() =>
+      this.sdk.revisions3D.retrieve(modelId, revisionId),
     );
 
-    const model = pickModel(models, name);
-
-    if (model === undefined) return null;
-
-    const revisions = await this.deps.schedule(() =>
-      this.sdk.revisions3D
-        .list(model.id, { limit: THREE_D_REVISION_LIST_LIMIT })
-        .autoPagingToArray({ limit: THREE_D_REVISION_LIST_LIMIT }),
-    );
-
-    const revision = pickRevision(revisions);
-
-    if (revision === undefined) {
-      throw new Error(`The ${model.name} model has no revision that is ready.`);
+    if (revision.status !== READY_STATUS) {
+      throw new Error(`The ${name} revision is not ready.`);
     }
 
-    const blobId = await this.findOutputBlobId(model.id, revision.id);
+    const blobId = await this.findOutputBlobId(modelId, revisionId);
     const scene = await this.loadScene(blobId);
 
     return {
-      modelId: model.id,
-      revisionId: revision.id,
-      name: model.name,
+      modelId,
+      revisionId,
+      name,
       blobId,
       rotation: toVector(revision.rotation),
       scale: toVector(revision.scale),
@@ -121,29 +109,6 @@ export function createThreeDContext(
   overrides?: Partial<ThreeDDeps>,
 ): ThreeDContextType {
   return new CdfThreeDContext(sdk, { ...defaultDeps, ...overrides });
-}
-
-function normalizeName(name: string): string {
-  return name.trim().toLowerCase();
-}
-
-export function pickModel(models: readonly Model3D[], name: string): Model3D | undefined {
-  const wanted = normalizeName(name);
-
-  return (
-    models.find((model) => normalizeName(model.name) === wanted) ??
-    models.find((model) => normalizeName(model.name).includes(wanted))
-  );
-}
-
-export function pickRevision(revisions: readonly Revision3D[]): Revision3D | undefined {
-  return revisions
-    .filter((revision) => revision.status === READY_STATUS)
-    .reduce<Revision3D | undefined>(
-      (newest, revision) =>
-        newest === undefined || revision.createdTime > newest.createdTime ? revision : newest,
-      undefined,
-    );
 }
 
 function toVector(values: readonly number[] | undefined): Vector | null {

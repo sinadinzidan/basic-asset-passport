@@ -4,8 +4,6 @@ import {
   THREE_D_ERROR_DESCRIPTION,
   THREE_D_ERROR_TITLE,
   THREE_D_LOADING_MESSAGE,
-  THREE_D_NOT_FOUND_DESCRIPTION,
-  THREE_D_NOT_FOUND_TITLE,
   THREE_D_RESET_VIEW_LABEL,
   THREE_D_VIEWPORT_LABEL,
   THREE_D_ZOOM_IN_LABEL,
@@ -19,7 +17,7 @@ import {
   formatUnsupportedShapes,
   isThreeDLoadingDone,
 } from '../../../lib/three-d/progressMessage';
-import { EmptyStateMessage, IconActionButton, LoadingNotice, RetryAlert } from '../../general';
+import { IconActionButton, LoadingNotice, RetryAlert } from '../../general';
 
 export function AssetThreeD() {
   const {
@@ -27,7 +25,6 @@ export function AssetThreeD() {
     hasModel,
     isError,
     isLoading,
-    isNotFound,
     modelName,
     progress,
     resetView,
@@ -59,14 +56,7 @@ export function AssetThreeD() {
     );
   }
 
-  if (isNotFound || !hasModel) {
-    return (
-      <EmptyStateMessage
-        title={THREE_D_NOT_FOUND_TITLE}
-        description={THREE_D_NOT_FOUND_DESCRIPTION}
-      />
-    );
-  }
+  if (!hasModel) return null;
 
   const unsupported = formatUnsupportedShapes(progress);
 
