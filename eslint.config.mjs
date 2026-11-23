@@ -27,6 +27,7 @@ const EXTERNAL_BOOLEAN_NAMES = [
   'writable',
   'queryable',
   'nullsFirst',
+  'published',
   'inlineViews',
   'ignoreUnknownIds',
   'autoCreateDirectRelations',
