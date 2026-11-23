@@ -267,12 +267,12 @@ the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines
   gets a sixth tab, "3D", after Documents. Assets of other plants have no such
   tab; a link that asks for it on another plant opens Properties instead. The
   chosen tab is synced to the URL like the others.
-- The tab shows the project's 3D model named "Valhall": the app lists the
-  project's published 3D models, takes the one named exactly "Valhall" (ignoring
-  case) or else the first whose name contains it, then its newest published
-  revision whose processing is done, then that revision's newest `gltf-directory`
-  output and its `scene.json` (version 9 only). The same model is shown for every
-  Ruwais asset; it is not yet tied to the asset.
+- The tab shows the project's 3D model named "Platform VPH": the app lists the
+  project's 3D models, takes the one named exactly "Platform VPH" (ignoring
+  case) or else the first whose name contains it, then its newest revision
+  whose processing is done (published or not), then that revision's newest
+  `gltf-directory` output and its `scene.json` (version 9 only). The same model
+  is shown for every Ruwais asset; it is not yet tied to the asset.
 - The model is drawn by the app itself with three.js, not by the Cognite viewer.
   The sector `.glb` files are read, their shape collections (boxes, circles,
   cones, eccentric cones, cylinders, rings, quads, torus segments, trapeziums,
@@ -284,7 +284,7 @@ the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines
   scene's unit are applied, with the CDF Z-up axes turned to the viewer's Y-up.
 - The view is an orbit view: drag to rotate, scroll to zoom, right-drag to pan.
   The camera starts framed on the whole model.
-- A line under the view reads "Valhall · N of M parts" with ", K failed" and
+- A line under the view reads "Platform VPH · N of M parts" with ", K failed" and
   ", S skipped" when there are any, then " · loading" or " · loaded". Shapes the
   reader cannot draw are listed under it ("Unsupported shapes skipped: name:
   count") so gaps can be traced.

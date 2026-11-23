@@ -1,4 +1,4 @@
-export const THREE_D_MODEL_NAME = 'Valhall';
+export const THREE_D_MODEL_NAME = 'Platform VPH';
 export const THREE_D_PLANT_NAME = 'Ruwais';
 export const THREE_D_OUTPUT_FORMAT = 'gltf-directory';
 export const THREE_D_SCENE_FILE_NAME = 'scene.json';
@@ -40,7 +40,7 @@ export const THREE_D_CAMERA_DIRECTION: readonly [number, number, number] = [
 export const THREE_D_LOADING_MESSAGE = 'Loading 3D model…';
 export const THREE_D_ERROR_TITLE = 'Could not load the 3D model.';
 export const THREE_D_NOT_FOUND_DESCRIPTION =
-  'No 3D model named Valhall is published in this project.';
+  'No 3D model named Platform VPH was found in this project.';
 export const THREE_D_CAMERA_INITIAL_NEAR = 0.1;
 export const THREE_D_CAMERA_INITIAL_FAR = 1000;
 export const THREE_D_CAMERA_MIN_NEAR = 0.01;

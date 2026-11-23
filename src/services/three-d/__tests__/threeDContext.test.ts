@@ -72,7 +72,7 @@ function makeSdk(
     scene?: unknown;
   } = {},
 ) {
-  const models = overrides.models ?? [makeModel(1, 'Other'), makeModel(7, 'Valhall')];
+  const models = overrides.models ?? [makeModel(1, 'Other'), makeModel(7, 'Platform VPH')];
   const revisions = overrides.revisions ?? [
     makeRevision(1),
     makeRevision(2, { rotation: [1, 2, 3] }),
@@ -111,14 +111,18 @@ function makeSdk(
 const runNow = { schedule: <Result>(task: () => Promise<Result>) => task() };
 
 describe(pickModel.name, () => {
-  const models = [makeModel(1, 'Valhall Full'), makeModel(2, 'VALHALL '), makeModel(3, 'Other')];
+  const models = [
+    makeModel(1, 'Platform VPH Full'),
+    makeModel(2, 'PLATFORM VPH '),
+    makeModel(3, 'Other'),
+  ];
 
   it('prefers a model named exactly like it, ignoring case and spaces', () => {
-    expect(pickModel(models, 'valhall')?.id).toBe(2);
+    expect(pickModel(models, 'platform vph')?.id).toBe(2);
   });
 
   it('falls back to a model whose name contains it', () => {
-    expect(pickModel(models.slice(0, 1), 'valhall')?.id).toBe(1);
+    expect(pickModel(models.slice(0, 1), 'platform vph')?.id).toBe(1);
   });
 
   it('finds nothing when no name matches', () => {
@@ -127,18 +131,20 @@ describe(pickModel.name, () => {
 });
 
 describe(pickRevision.name, () => {
-  it('takes the newest revision that is published and ready', () => {
+  it('takes the newest revision that is ready', () => {
     const revisions = [makeRevision(1), makeRevision(3), makeRevision(2)];
 
     expect(pickRevision(revisions)?.id).toBe(3);
   });
 
-  it('skips a revision that is not published or not done', () => {
-    const revisions = [
-      makeRevision(1),
-      makeRevision(2, { published: false }),
-      makeRevision(3, { status: 'Processing' }),
-    ];
+  it('takes a revision that is not published', () => {
+    const revisions = [makeRevision(1), makeRevision(2, { published: false })];
+
+    expect(pickRevision(revisions)?.id).toBe(2);
+  });
+
+  it('skips a revision that is not done', () => {
+    const revisions = [makeRevision(1), makeRevision(3, { status: 'Processing' })];
 
     expect(pickRevision(revisions)?.id).toBe(1);
   });
@@ -157,12 +163,12 @@ describe('createThreeDContext', () => {
     it('finds the model by name, its newest ready revision, its newest glTF output and its scene', async () => {
       const { sdk, get } = makeSdk();
 
-      const model = await createThreeDContext(sdk, runNow).findModel('Valhall');
+      const model = await createThreeDContext(sdk, runNow).findModel('Platform VPH');
 
       expect(model).toMatchObject({
         modelId: 7,
         revisionId: 2,
-        name: 'Valhall',
+        name: 'Platform VPH',
         blobId: 200,
         rotation: [1, 2, 3],
         scale: null,
@@ -178,7 +184,7 @@ describe('createThreeDContext', () => {
     });
 
     it('lists the sectors with a file, the coarsest first, and covers every box', async () => {
-      const model = await createThreeDContext(makeSdk().sdk, runNow).findModel('Valhall');
+      const model = await createThreeDContext(makeSdk().sdk, runNow).findModel('Platform VPH');
 
       expect(model?.scene.sectors).toEqual([
         { id: 0, depth: 0, fileName: '0.glb', downloadSize: 10 },
@@ -188,17 +194,31 @@ describe('createThreeDContext', () => {
       expect(model?.scene.unit).toBe('Meters');
     });
 
+    it('lists models and revisions without filtering on published', async () => {
+      const { sdk } = makeSdk();
+
+      await createThreeDContext(sdk, runNow).findModel('Platform VPH');
+
+      expect(sdk.models3D.list).toHaveBeenCalledWith(
+        expect.not.objectContaining({ published: expect.anything() }),
+      );
+      expect(sdk.revisions3D.list).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.not.objectContaining({ published: expect.anything() }),
+      );
+    });
+
     it('returns nothing when the project has no such model', async () => {
       const { sdk } = makeSdk({ models: [makeModel(1, 'Other')] });
 
-      await expect(createThreeDContext(sdk, runNow).findModel('Valhall')).resolves.toBeNull();
+      await expect(createThreeDContext(sdk, runNow).findModel('Platform VPH')).resolves.toBeNull();
     });
 
     it('says so when the model has no revision that is ready', async () => {
       const { sdk } = makeSdk({ revisions: [makeRevision(1, { status: 'Processing' })] });
 
-      await expect(createThreeDContext(sdk, runNow).findModel('Valhall')).rejects.toThrow(
-        'The Valhall model has no published revision that is ready.',
+      await expect(createThreeDContext(sdk, runNow).findModel('Platform VPH')).rejects.toThrow(
+        'The Platform VPH model has no revision that is ready.',
       );
     });
 
@@ -207,7 +227,7 @@ describe('createThreeDContext', () => {
         outputs: { items: [{ format: 'reveal-directory', version: 8, blobId: 5 }] },
       });
 
-      await expect(createThreeDContext(sdk, runNow).findModel('Valhall')).rejects.toThrow(
+      await expect(createThreeDContext(sdk, runNow).findModel('Platform VPH')).rejects.toThrow(
         'The revision has no gltf-directory output to show.',
       );
     });
@@ -215,7 +235,7 @@ describe('createThreeDContext', () => {
     it('refuses a scene file of a version it cannot read', async () => {
       const { sdk } = makeSdk({ scene: { ...SCENE_JSON, version: 8 } });
 
-      await expect(createThreeDContext(sdk, runNow).findModel('Valhall')).rejects.toThrow();
+      await expect(createThreeDContext(sdk, runNow).findModel('Platform VPH')).rejects.toThrow();
     });
 
     it('goes through the limiter for every call it makes', async () => {
@@ -225,7 +245,7 @@ describe('createThreeDContext', () => {
 
       await createThreeDContext(makeSdk().sdk, {
         schedule: <Result>(task: () => Promise<Result>) => schedule(task),
-      }).findModel('Valhall');
+      }).findModel('Platform VPH');
 
       expect(schedule).toHaveBeenCalledTimes(4);
     });

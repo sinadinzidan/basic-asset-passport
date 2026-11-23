@@ -101,9 +101,9 @@ describe(`${AssetDetailsTabs.name} 3D`, () => {
     render(<AssetDetailsTabs asset={ruwaisAsset} tabCounts={NO_TAB_COUNTS} />, { wrapper });
     await user.click(screen.getByRole('tab', { name: '3D' }));
 
-    expect(await screen.findByText(/Valhall · 1 of 1 parts · loaded/)).toBeInTheDocument();
+    expect(await screen.findByText(/Platform VPH · 1 of 1 parts · loaded/)).toBeInTheDocument();
     expect(screen.getByText(/Unsupported shapes skipped: Foo: 3/)).toBeInTheDocument();
-    expect(threeD.findModel).toHaveBeenCalledWith('Valhall');
+    expect(threeD.findModel).toHaveBeenCalledWith('Platform VPH');
     expect(deps.createRenderer).toHaveBeenCalledOnce();
   });
 
@@ -127,7 +127,7 @@ describe(`${AssetDetailsTabs.name} 3D`, () => {
 
     await user.click(screen.getByRole('button', { name: /retry/i }));
 
-    expect(await screen.findByText(/Valhall · /)).toBeInTheDocument();
+    expect(await screen.findByText(/Platform VPH · /)).toBeInTheDocument();
   });
 });
 
@@ -143,7 +143,7 @@ function makeModel(): ThreeDModel {
   return {
     modelId: 1,
     revisionId: 1,
-    name: 'Valhall',
+    name: 'Platform VPH',
     blobId: 1,
     rotation: null,
     scale: null,

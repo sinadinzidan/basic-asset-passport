@@ -34,7 +34,7 @@ class CdfThreeDContext implements ThreeDContextType {
   findModel = async (name: string): Promise<ThreeDModel | null> => {
     const models = await this.deps.schedule(() =>
       this.sdk.models3D
-        .list({ published: true, limit: THREE_D_MODEL_LIST_LIMIT })
+        .list({ limit: THREE_D_MODEL_LIST_LIMIT })
         .autoPagingToArray({ limit: THREE_D_MODEL_LIST_LIMIT }),
     );
 
@@ -44,14 +44,14 @@ class CdfThreeDContext implements ThreeDContextType {
 
     const revisions = await this.deps.schedule(() =>
       this.sdk.revisions3D
-        .list(model.id, { published: true, limit: THREE_D_REVISION_LIST_LIMIT })
+        .list(model.id, { limit: THREE_D_REVISION_LIST_LIMIT })
         .autoPagingToArray({ limit: THREE_D_REVISION_LIST_LIMIT }),
     );
 
     const revision = pickRevision(revisions);
 
     if (revision === undefined) {
-      throw new Error(`The ${model.name} model has no published revision that is ready.`);
+      throw new Error(`The ${model.name} model has no revision that is ready.`);
     }
 
     const blobId = await this.findOutputBlobId(model.id, revision.id);
@@ -138,7 +138,7 @@ export function pickModel(models: readonly Model3D[], name: string): Model3D | u
 
 export function pickRevision(revisions: readonly Revision3D[]): Revision3D | undefined {
   return revisions
-    .filter((revision) => revision.published && revision.status === READY_STATUS)
+    .filter((revision) => revision.status === READY_STATUS)
     .reduce<Revision3D | undefined>(
       (newest, revision) =>
         newest === undefined || revision.createdTime > newest.createdTime ? revision : newest,

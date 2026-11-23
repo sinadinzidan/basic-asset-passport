@@ -50,7 +50,7 @@ export function makeMockThreeDContext(latencyMs: number = MOCK_LATENCY_MS): Thre
   const model: ThreeDModel = {
     modelId: 1,
     revisionId: 1,
-    name: 'Valhall',
+    name: 'Platform VPH',
     blobId: 1,
     rotation: null,
     scale: null,

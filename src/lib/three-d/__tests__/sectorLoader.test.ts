@@ -105,7 +105,7 @@ function makeModel(sectorCount: number, downloadSize: number): ThreeDModel {
   return {
     modelId: 1,
     revisionId: 1,
-    name: 'Valhall',
+    name: 'Platform VPH',
     blobId: 9,
     rotation: null,
     scale: null,
