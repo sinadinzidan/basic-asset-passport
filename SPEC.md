@@ -306,8 +306,10 @@ the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines
   neither tinted nor picked. The asset under the pointer is found on the graphics card by drawing each asset's id
   into one pixel. If the nodes cannot be loaded the model still shows, without any tint. The tint is not
   host-synced.
-- Every contextualised asset whose geometry has loaded also carries a static marker: a small cyan dot with a dark
-  teal ring and the asset's name beside it, fixed at the centre of its geometry and following it as the camera
+- Every contextualised asset whose geometry has loaded also carries a static marker: a dot coloured by the asset's
+  criticality (A red, B amber, C green) and a frosted dark badge beside it with the asset's name and a small
+  coloured A, B or C chip. The criticality is dummy data for now: a stable class derived from the asset's name,
+  not read from CDF. The marker sits fixed at the centre of its geometry and following it as the camera
   moves. Markers hide when their asset is behind the camera and appear as sectors load. A marker is a button
   ("Zoom to <name>", reachable with Tab, Enter or Space): clicking it flies the camera in about 0.6 seconds to
   look at that asset's centre, keeping the current viewing direction, from a distance that fits the asset

@@ -47,6 +47,7 @@ import type { ThreeDRenderer } from '../../types/threeDRenderer';
 import { createAnchorAccumulator } from './assetAnchors';
 import { easeInOut, focusPose, type CameraPose } from './cameraFocus';
 import { zoomedPosition } from './cameraZoom';
+import { dummyCriticality } from './dummyCriticality';
 import { ElementPicker } from './elementPicker';
 import { createHighlightMaterial, createHighlightUniform } from './highlightMaterial';
 import { createHoverState } from './hoverState';
@@ -302,7 +303,9 @@ class SceneRenderer implements ThreeDRenderer {
       [...this.anchors.anchors()].flatMap(([asset, position]) => {
         const name = lookup.nameAt(asset);
 
-        return name === null ? [] : [[asset, { position, name }] as const];
+        return name === null
+          ? []
+          : [[asset, { position, name, criticality: dummyCriticality(name) }] as const];
       }),
     );
 

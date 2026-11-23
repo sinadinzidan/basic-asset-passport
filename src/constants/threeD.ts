@@ -77,6 +77,12 @@ export const THREE_D_FOCUS_MARGIN = 3;
 export const THREE_D_FOCUS_MIN_DISTANCE = 0.5;
 export const THREE_D_FOCUS_DURATION_MS = 600;
 export const THREE_D_FOCUS_LABEL = 'Zoom to';
+export const THREE_D_TONE_COLORS = {
+  ERROR: 0xef_44_44,
+  WARNING: 0xf5_9e_0b,
+  SUCCESS: 0x22_c5_5e,
+  NEUTRAL: 0x94_a3_b8,
+} as const;
 export const THREE_D_MARKER_SIZE_PX = 10;
 export const THREE_D_LABEL_OFFSET_PX = 14;
 export const THREE_D_ORBIT_LABEL = 'Orbit';

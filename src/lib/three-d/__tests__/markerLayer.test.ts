@@ -64,6 +64,23 @@ describe(createMarkerLayer.name, () => {
     expect(container.querySelector('[data-asset-marker]')).toHaveTextContent('WMT:1');
   });
 
+  it('shows the criticality as a badge coloured by its tone', () => {
+    const { layer } = setup();
+
+    layer.setAnchors(
+      new Map([
+        [0, { position: [0, 0, 0], name: 'WMT:1', criticality: 'A' }],
+        [1, { position: [0, 0, 0], name: 'WMT:2', criticality: 'C' }],
+      ]),
+    );
+
+    const badges = [...container.querySelectorAll<HTMLElement>('[data-criticality]')];
+
+    expect(badges.map((badge) => badge.textContent)).toEqual(['A', 'C']);
+    expect(badges.map((badge) => badge.dataset.tone)).toEqual(['ERROR', 'SUCCESS']);
+    expect(badges[0].style.background).not.toBe(badges[1].style.background);
+  });
+
   it('lets the pointer through everywhere except on a marker', () => {
     const { layer } = setup();
 
@@ -94,7 +111,7 @@ describe(createMarkerLayer.name, () => {
 
     expect(marker).toHaveAttribute('role', 'button');
     expect(marker).toHaveAttribute('tabindex', '0');
-    expect(marker).toHaveAccessibleName('Zoom to WMT:1');
+    expect(marker).toHaveAccessibleName('Zoom to WMT:1, criticality A');
   });
 
   it('removes every marker on dispose', () => {
@@ -107,7 +124,7 @@ describe(createMarkerLayer.name, () => {
   });
 
   function anchor(position: [number, number, number]) {
-    return { position, name: 'WMT:1' };
+    return { position, name: 'WMT:1', criticality: 'A' };
   }
 
   function setup() {
