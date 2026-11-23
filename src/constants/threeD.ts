@@ -27,3 +27,26 @@ export const TORUS_TUBE_SEGMENTS = 8;
 export const TORUS_ARC_SEGMENTS = 16;
 export const ELLIPSOID_RINGS = 8;
 export const THREE_D_DEFAULT_COLOR_COMPONENT = 0.7;
+export const THREE_D_AMBIENT_LIGHT_INTENSITY = 0.9;
+export const THREE_D_DIRECTIONAL_LIGHT_INTENSITY = 1.4;
+export const THREE_D_LIGHT_DISTANCE_RATIO = 1;
+export const THREE_D_MAX_PIXEL_RATIO = 2;
+export const THREE_D_CAMERA_ELEVATION = 0.7;
+export const THREE_D_CAMERA_DIRECTION: readonly [number, number, number] = [
+  1,
+  THREE_D_CAMERA_ELEVATION,
+  1,
+];
+export const THREE_D_LOADING_MESSAGE = 'Loading 3D model…';
+export const THREE_D_ERROR_TITLE = 'Could not load the 3D model.';
+export const THREE_D_NOT_FOUND_DESCRIPTION =
+  'No 3D model named Valhall is published in this project.';
+export const THREE_D_CAMERA_INITIAL_NEAR = 0.1;
+export const THREE_D_CAMERA_INITIAL_FAR = 1000;
+export const THREE_D_CAMERA_MIN_NEAR = 0.01;
+export const THREE_D_LIGHT_COLOR = 0xff_ff_ff;
+export const DEGREES_PER_HALF_TURN = 180;
+export const TRIANGLE_VERTEX_COUNT = 3;
+export const THREE_D_ERROR_DESCRIPTION = 'The model could not be fetched from CDF.';
+export const THREE_D_NOT_FOUND_TITLE = 'No 3D model';
+export const THREE_D_VIEWPORT_LABEL = '3D model viewport';

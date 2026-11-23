@@ -28,6 +28,8 @@ const EXTERNAL_BOOLEAN_NAMES = [
   'queryable',
   'nullsFirst',
   'published',
+  'vertexColors',
+  'antialias',
   'inlineViews',
   'ignoreUnknownIds',
   'autoCreateDirectRelations',
