@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { AppView } from '../../enums/appView';
 import { AssetTab } from '../../enums/assetTab';
 import { DEFAULT_NAVIGATION_STATE, parseNavigationState } from '../navigationState';
 
@@ -124,5 +125,23 @@ describe(parseNavigationState.name, () => {
     const state = parseNavigationState(JSON.stringify({ isAssistantOpen: value }));
 
     expect(state).not.toHaveProperty('isAssistantOpen');
+  });
+
+  it('restores the 3D view', () => {
+    const initialState = JSON.stringify({ selectedAsset, activeView: AppView.THREE_D });
+
+    expect(parseNavigationState(initialState)).toMatchObject({ activeView: AppView.THREE_D });
+  });
+
+  it('leaves the assets view out of the state', () => {
+    const initialState = JSON.stringify({ selectedAsset, activeView: AppView.ASSETS });
+
+    expect(parseNavigationState(initialState)).not.toHaveProperty('activeView');
+  });
+
+  it('falls back to the assets view for an unknown view', () => {
+    expect(parseNavigationState(JSON.stringify({ activeView: 'MAP' }))).not.toHaveProperty(
+      'activeView',
+    );
   });
 });

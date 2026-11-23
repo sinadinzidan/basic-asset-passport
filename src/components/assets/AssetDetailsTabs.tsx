@@ -1,7 +1,5 @@
 import { Tabs, TabsList, TabsPanel, TabsTrigger } from '@cognite/aura/components/tabs';
-import { lazy, Suspense } from 'react';
 
-import { THREE_D_LOADING_MESSAGE } from '../../constants/threeD';
 import { ASSET_TAB_LABELS, AssetTab, isAssetTab } from '../../enums/assetTab';
 import { HudShape } from '../../enums/hudShape';
 import type { AssetDetailsTabCounts } from '../../hooks/assets/useAssetDetailsTabCounts';
@@ -10,16 +8,13 @@ import { formatTabCountBadge } from '../../lib/countBadge';
 import { hasThreeDModel } from '../../lib/threeDAsset';
 import type { AssetInstanceDetails } from '../../types/asset';
 import type { CountState } from '../../types/countState';
-import { HudPanel, LoadingNotice, PropertyGrid } from '../general';
+import { HudPanel, PropertyGrid } from '../general';
 
 import { AssetDocuments } from './documents';
 import { AssetEquipment } from './equipment';
 import { AssetNotes } from './notes';
+import { LazyAssetThreeD } from './three-d/LazyAssetThreeD';
 import { AssetTimeseries } from './timeseries';
-
-const AssetThreeD = lazy(() =>
-  import('./three-d/AssetThreeD').then((module) => ({ default: module.AssetThreeD })),
-);
 
 type AssetDetailsTabsProps = {
   asset: AssetInstanceDetails;
@@ -105,9 +100,7 @@ export function AssetDetailsTabs({ asset, tabCounts }: AssetDetailsTabsProps) {
         </TabsPanel>
         {isThreeDShown ? (
           <TabsPanel value={AssetTab.THREE_D} className="p-4">
-            <Suspense fallback={<LoadingNotice message={THREE_D_LOADING_MESSAGE} />}>
-              <AssetThreeD />
-            </Suspense>
+            <LazyAssetThreeD />
           </TabsPanel>
         ) : null}
       </Tabs>

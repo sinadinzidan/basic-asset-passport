@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { NOTE_BODY_MAX_LENGTH, NOTE_TITLE_MAX_LENGTH } from '../../constants/notes';
+import { AppView } from '../../enums/appView';
 import { AssetTab } from '../../enums/assetTab';
 import {
   AgentListResponseSchema,
@@ -223,6 +224,7 @@ describe('NavigationStateSchema', () => {
     const state = {
       selectedAsset: { space: 's', externalId: 'x' },
       activeAssetTab: AssetTab.NOTES,
+      activeView: AppView.THREE_D,
       searchQuery: 'pump',
       assetTableCursors: ['c2'],
       timeseriesChart: { sig: 'ts:PI.1' },
@@ -237,6 +239,7 @@ describe('NavigationStateSchema', () => {
       NavigationStateSchema.parse({
         selectedAsset: 'x',
         activeAssetTab: 'NOPE',
+        activeView: 'MAP',
         searchQuery: 7,
         assetTableCursors: ['c2', ''],
         timeseriesChart: {},
@@ -245,6 +248,7 @@ describe('NavigationStateSchema', () => {
     ).toEqual({
       selectedAsset: null,
       activeAssetTab: AssetTab.PROPERTIES,
+      activeView: AppView.ASSETS,
       searchQuery: '',
       assetTableCursors: [],
     });

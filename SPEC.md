@@ -263,6 +263,13 @@ the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines
 
 ## Asset 3D
 
+- A sub header under the topbar has two tabs, "Assets" and "3D", on every
+  screen of the app. "Assets" is the register or the open asset. "3D" replaces
+  the page with the same Platform VPH model described below, for any user and
+  without an asset: a "3D model" kicker, the model's name as the title and the
+  view. The selected asset is kept while 3D is shown, and choosing "Assets"
+  returns to it. The chosen view (`activeView`, only written when it is 3D) is
+  host-synced like the tabs, so a reload or shared link reopens it.
 - An asset whose plant is Ruwais (compared ignoring case and surrounding spaces)
   gets a sixth tab, "3D", after Documents. Assets of other plants have no such
   tab; a link that asks for it on another plant opens Properties instead. The
@@ -394,7 +401,8 @@ the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines
 - The selected asset, the active tab, the register's search, the
   register's page and whether the assistant's panel is open are host-synced: they are restored
   from the Fusion `initialState` and pushed with `syncInternalState` on every
-  change, so reloads and shared links open the same screen. Tab values are
+  change, so reloads and shared links open the same screen. The sub header's
+  view (`ASSETS`, `THREE_D`) is synced too. Tab values are
   `PROPERTIES`, `EQUIPMENTS`, `TIMESERIES`, `NOTES` and `DOCUMENTS`; unknown or malformed state falls back to the
   register on the Properties tab. A failed sync is logged and does not block
   navigation.

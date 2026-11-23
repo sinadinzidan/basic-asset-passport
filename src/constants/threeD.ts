@@ -49,4 +49,5 @@ export const DEGREES_PER_HALF_TURN = 180;
 export const TRIANGLE_VERTEX_COUNT = 3;
 export const THREE_D_ERROR_DESCRIPTION = 'The model could not be fetched from CDF.';
 export const THREE_D_NOT_FOUND_TITLE = 'No 3D model';
+export const THREE_D_VIEW_KICKER = '3D model';
 export const THREE_D_VIEWPORT_LABEL = '3D model viewport';

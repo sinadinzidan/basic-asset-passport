@@ -1,5 +1,6 @@
 import { createStore, type StoreApi } from 'zustand/vanilla';
 
+import { AppView } from '../enums/appView';
 import { AssetTab } from '../enums/assetTab';
 import { DEFAULT_NAVIGATION_STATE } from '../lib/navigationState';
 import type { NavigationState, NavigationStore } from '../types/navigation';
@@ -15,13 +16,21 @@ export function createNavigationStore({
 }: NavigationStoreOptions = {}): StoreApi<NavigationStore> {
   return createStore<NavigationStore>()((set, get) => {
     function update(patch: Partial<NavigationState>): void {
-      const { timeseriesChart, searchQuery, assetTableCursors, isAssistantOpen, ...rest } = {
+      const {
+        timeseriesChart,
+        searchQuery,
+        assetTableCursors,
+        isAssistantOpen,
+        activeView,
+        ...rest
+      } = {
         ...get().navigationState,
         ...patch,
       };
 
       const navigationState: NavigationState = {
         ...rest,
+        ...(activeView === AppView.THREE_D ? { activeView } : {}),
         ...(searchQuery ? { searchQuery } : {}),
         ...(timeseriesChart ? { timeseriesChart } : {}),
         ...(assetTableCursors && assetTableCursors.length > 0 ? { assetTableCursors } : {}),
@@ -56,6 +65,7 @@ export function createNavigationStore({
             timeseriesChart: undefined,
           }),
         clearSelectedAsset: () => update({ selectedAsset: null, timeseriesChart: undefined }),
+        changeAppView: (activeView) => update({ activeView }),
         changeAssetTab: (activeAssetTab) => update({ activeAssetTab, timeseriesChart: undefined }),
         changeTimeseriesChart: (timeseriesChart) =>
           update({ timeseriesChart: timeseriesChart ?? undefined }),

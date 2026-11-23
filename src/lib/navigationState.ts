@@ -1,3 +1,4 @@
+import { AppView } from '../enums/appView';
 import { AssetTab } from '../enums/assetTab';
 import { NavigationStateSchema } from '../schemas/navigation';
 import type { NavigationState } from '../types/navigation';
@@ -14,12 +15,19 @@ export function parseNavigationState(initialState: string | undefined): Navigati
 
   if (!parsed.success) return DEFAULT_NAVIGATION_STATE;
 
-  const { selectedAsset, activeAssetTab, searchQuery, assetTableCursors, timeseriesChart } =
-    parsed.data;
+  const {
+    selectedAsset,
+    activeAssetTab,
+    activeView,
+    searchQuery,
+    assetTableCursors,
+    timeseriesChart,
+  } = parsed.data;
 
   return {
     selectedAsset,
     activeAssetTab,
+    ...(activeView === AppView.THREE_D ? { activeView } : {}),
     ...(searchQuery ? { searchQuery } : {}),
     ...(selectedAsset && timeseriesChart ? { timeseriesChart } : {}),
     ...(!searchQuery && assetTableCursors.length > 0 ? { assetTableCursors } : {}),

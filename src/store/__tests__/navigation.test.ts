@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { AppView } from '../../enums/appView';
 import { AssetTab } from '../../enums/assetTab';
 import { parseNavigationState } from '../../lib/navigationState';
 import type { NavigationState } from '../../types/navigation';
@@ -252,5 +253,26 @@ describe(createNavigationStore.name, () => {
     store.getState().actions.selectAsset(selectedAsset);
 
     expect(store.getState().navigationState.isAssistantOpen).toBe(true);
+  });
+
+  it('opens the 3D view, keeps the selected asset and reports the change', () => {
+    const store = makeStore({ selectedAsset });
+
+    store.getState().actions.changeAppView(AppView.THREE_D);
+
+    expect(store.getState().navigationState).toEqual({
+      selectedAsset,
+      activeAssetTab: AssetTab.PROPERTIES,
+      activeView: AppView.THREE_D,
+    });
+    expect(onChange).toHaveBeenLastCalledWith(store.getState().navigationState);
+  });
+
+  it('drops the view from the state when it returns to the assets view', () => {
+    const store = makeStore({ activeView: AppView.THREE_D });
+
+    store.getState().actions.changeAppView(AppView.ASSETS);
+
+    expect(store.getState().navigationState).toEqual(FIRST_PAGE_STATE);
   });
 });
