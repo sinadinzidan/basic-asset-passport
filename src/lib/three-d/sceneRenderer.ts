@@ -4,10 +4,8 @@ import {
   BufferGeometry,
   Color,
   DirectionalLight,
-  DoubleSide,
   Group,
   Mesh,
-  MeshLambertMaterial,
   PerspectiveCamera,
   Scene,
   Vector3,
@@ -30,6 +28,7 @@ import {
   THREE_D_CAMERA_NEAR_RATIO,
   THREE_D_DIRECTIONAL_LIGHT_INTENSITY,
   THREE_D_MAX_PIXEL_RATIO,
+  THREE_D_NO_HIGHLIGHT,
   THREE_D_ZOOM_IN_FACTOR,
   THREE_D_ZOOM_OUT_FACTOR,
 } from '../../constants/threeD';
@@ -37,6 +36,9 @@ import type { TessellatedMesh, ThreeDModel } from '../../types/threeD';
 import type { ThreeDRenderer } from '../../types/threeDRenderer';
 
 import { zoomedPosition } from './cameraZoom';
+import { ElementPicker } from './elementPicker';
+import { createHighlightMaterial, createHighlightUniform } from './highlightMaterial';
+import { createHoverState } from './hoverState';
 import { computeModelMatrix, transformBox } from './modelMatrix';
 import { createRenderGate } from './renderGate';
 
@@ -49,7 +51,10 @@ class SceneRenderer implements ThreeDRenderer {
   private readonly camera: PerspectiveCamera;
   private readonly controls: OrbitControls;
   private readonly group = new Group();
-  private readonly material = new MeshLambertMaterial({ vertexColors: true, side: DoubleSide });
+  private readonly highlighted = createHighlightUniform();
+  private readonly material = createHighlightMaterial(this.highlighted);
+  private readonly hover = createHoverState();
+  private readonly picker: ElementPicker;
   private readonly resizeObserver: ResizeObserver;
   private readonly geometries: BufferGeometry[] = [];
   private readonly gate = createRenderGate();
@@ -75,6 +80,11 @@ class SceneRenderer implements ThreeDRenderer {
 
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.controls.enableDamping = true;
+    this.picker = new ElementPicker(this.renderer, this.scene, this.camera, this.container);
+    this.controls.addEventListener('end', this.handleCameraSettled);
+    this.renderer.domElement.addEventListener('pointermove', this.handlePointerMove);
+    this.renderer.domElement.addEventListener('pointerdown', this.clearHover);
+    this.renderer.domElement.addEventListener('pointerleave', this.clearHover);
 
     const matrix = computeModelMatrix({ ...model, unit: model.scene.unit });
 
@@ -103,10 +113,12 @@ class SceneRenderer implements ThreeDRenderer {
     geometry.setAttribute('position', new BufferAttribute(mesh.positions, VECTOR_SIZE));
     geometry.setAttribute('normal', new BufferAttribute(mesh.normals, VECTOR_SIZE));
     geometry.setAttribute('color', new BufferAttribute(mesh.colors, VECTOR_SIZE));
+    geometry.setAttribute('treeIndex', new BufferAttribute(mesh.treeIndices, 1));
     geometry.setIndex(new BufferAttribute(mesh.indices, 1));
     geometry.computeBoundingSphere();
     this.geometries.push(geometry);
     this.group.add(new Mesh(geometry, this.material));
+    this.hover.viewChanged();
     this.gate.markDirty();
   }
 
@@ -120,6 +132,7 @@ class SceneRenderer implements ThreeDRenderer {
 
   resetView(): void {
     this.frame(this.model, this.sun);
+    this.hover.viewChanged();
     this.gate.markDirty();
   }
 
@@ -127,7 +140,12 @@ class SceneRenderer implements ThreeDRenderer {
     this.isDisposed = true;
     cancelAnimationFrame(this.frameHandle);
     this.resizeObserver.disconnect();
+    this.controls.removeEventListener('end', this.handleCameraSettled);
+    this.renderer.domElement.removeEventListener('pointermove', this.handlePointerMove);
+    this.renderer.domElement.removeEventListener('pointerdown', this.clearHover);
+    this.renderer.domElement.removeEventListener('pointerleave', this.clearHover);
     this.controls.dispose();
+    this.picker.dispose();
     this.geometries.forEach((geometry) => geometry.dispose());
     this.material.dispose();
     this.renderer.dispose();
@@ -146,6 +164,7 @@ class SceneRenderer implements ThreeDRenderer {
 
     this.camera.position.set(next[0], next[1], next[2]);
     this.controls.update();
+    this.hover.viewChanged();
     this.gate.markDirty();
   }
 
@@ -180,10 +199,44 @@ class SceneRenderer implements ThreeDRenderer {
     this.gate.markDirty();
   }
 
+  private handlePointerMove = (event: PointerEvent): void => {
+    if (event.buttons !== 0) return;
+
+    const bounds = this.renderer.domElement.getBoundingClientRect();
+
+    this.hover.pointerMoved(event.clientX - bounds.left, event.clientY - bounds.top);
+  };
+
+  private handleCameraSettled = (): void => {
+    this.hover.viewChanged();
+  };
+
+  private clearHover = (): void => {
+    if (this.hover.pointerLeft()) {
+      this.highlighted.value = THREE_D_NO_HIGHLIGHT;
+      this.gate.markDirty();
+    }
+  };
+
+  private updateHover(): void {
+    const point = this.hover.takePendingPoint();
+
+    if (point === null) return;
+
+    const treeIndex = this.picker.pick(point);
+
+    if (this.hover.setHovered(treeIndex)) {
+      this.highlighted.value = treeIndex ?? THREE_D_NO_HIGHLIGHT;
+      this.gate.markDirty();
+    }
+  }
+
   private animate = (): void => {
     if (this.isDisposed) return;
 
     const hasControlsChanged = this.controls.update();
+
+    this.updateHover();
 
     if (this.gate.consume(hasControlsChanged)) {
       this.renderer.render(this.scene, this.camera);

@@ -295,6 +295,12 @@ the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines
   a label: "Zoom in" and "Zoom out" move the camera 20% closer to or 25% further
   from the point it orbits, and "Reset view" frames the whole model again. They
   show only while a model is shown, and they are not host-synced.
+- Hovering an element of the model with the pointer tints it cyan so it stands
+  out; moving off it, leaving the view or pressing a mouse button to drag
+  removes the tint. An element is one node of the model's tree (a beam, a
+  plate, a pipe), found on the graphics card by drawing each element's id into
+  one pixel under the pointer. The tint is not host-synced and nothing is shown
+  as text yet: tying elements to assets comes with contextualisation.
 - A line under the view reads "Platform VPH · N of M parts" with ", K failed" and
   ", S skipped" when there are any, then " · loading" or " · loaded". Shapes the
   reader cannot draw are listed under it ("Unsupported shapes skipped: name:
