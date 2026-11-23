@@ -2,6 +2,7 @@ import { AgentClientContext } from '../../hooks/agents/useAgentClient';
 import { DocumentFileClientContext } from '../../hooks/assets/documents/useDocumentFileClient';
 import { TimeseriesClientContext } from '../../hooks/assets/timeseries/useTimeseriesClient';
 import { AssetClientContext } from '../../hooks/assets/useAssetClient';
+import { ThreeDClientContext } from '../../hooks/three-d/useThreeDClient';
 import { Assets } from '../../pages/assets/Assets';
 import { NavigationProvider } from '../../providers/general/NavigationProvider';
 import type { MockContexts } from '../../types/mockContext';
@@ -20,7 +21,9 @@ export function MockAppContent({ mockContexts }: MockAppContentProps) {
       <AssetClientContext.Provider value={mockContexts.assetContext}>
         <DocumentFileClientContext.Provider value={mockContexts.documentFileContext}>
           <TimeseriesClientContext.Provider value={mockContexts.timeseriesContext}>
-            <Assets />
+            <ThreeDClientContext.Provider value={mockContexts.threeDContext}>
+              <Assets />
+            </ThreeDClientContext.Provider>
           </TimeseriesClientContext.Provider>
         </DocumentFileClientContext.Provider>
       </AssetClientContext.Provider>

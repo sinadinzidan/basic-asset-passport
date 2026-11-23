@@ -1,18 +1,25 @@
 import { Tabs, TabsList, TabsPanel, TabsTrigger } from '@cognite/aura/components/tabs';
+import { lazy, Suspense } from 'react';
 
+import { THREE_D_LOADING_MESSAGE } from '../../constants/threeD';
 import { ASSET_TAB_LABELS, AssetTab, isAssetTab } from '../../enums/assetTab';
 import { HudShape } from '../../enums/hudShape';
 import type { AssetDetailsTabCounts } from '../../hooks/assets/useAssetDetailsTabCounts';
 import { useNavigationState } from '../../hooks/general/useNavigationState';
 import { formatTabCountBadge } from '../../lib/countBadge';
+import { hasThreeDModel } from '../../lib/threeDAsset';
 import type { AssetInstanceDetails } from '../../types/asset';
 import type { CountState } from '../../types/countState';
-import { HudPanel, PropertyGrid } from '../general';
+import { HudPanel, LoadingNotice, PropertyGrid } from '../general';
 
 import { AssetDocuments } from './documents';
 import { AssetEquipment } from './equipment';
 import { AssetNotes } from './notes';
 import { AssetTimeseries } from './timeseries';
+
+const AssetThreeD = lazy(() =>
+  import('./three-d/AssetThreeD').then((module) => ({ default: module.AssetThreeD })),
+);
 
 type AssetDetailsTabsProps = {
   asset: AssetInstanceDetails;
@@ -20,8 +27,12 @@ type AssetDetailsTabsProps = {
 };
 
 export function AssetDetailsTabs({ asset, tabCounts }: AssetDetailsTabsProps) {
-  const activeTab = useNavigationState((store) => store.navigationState.activeAssetTab);
+  const requestedTab = useNavigationState((store) => store.navigationState.activeAssetTab);
   const changeAssetTab = useNavigationState((store) => store.actions.changeAssetTab);
+
+  const isThreeDShown = hasThreeDModel(asset);
+  const activeTab =
+    requestedTab === AssetTab.THREE_D && !isThreeDShown ? AssetTab.PROPERTIES : requestedTab;
 
   function isTabWaitingForCount(tab: AssetTab, count: CountState): boolean {
     return count.isLoading && tab !== activeTab;
@@ -68,6 +79,9 @@ export function AssetDetailsTabs({ asset, tabCounts }: AssetDetailsTabsProps) {
           >
             {ASSET_TAB_LABELS[AssetTab.DOCUMENTS]}
           </TabsTrigger>
+          {isThreeDShown ? (
+            <TabsTrigger value={AssetTab.THREE_D}>{ASSET_TAB_LABELS[AssetTab.THREE_D]}</TabsTrigger>
+          ) : null}
         </TabsList>
         <TabsPanel value={AssetTab.PROPERTIES} className="p-4">
           <div className="data-card">
@@ -89,6 +103,13 @@ export function AssetDetailsTabs({ asset, tabCounts }: AssetDetailsTabsProps) {
         <TabsPanel value={AssetTab.DOCUMENTS} className="p-4">
           <AssetDocuments />
         </TabsPanel>
+        {isThreeDShown ? (
+          <TabsPanel value={AssetTab.THREE_D} className="p-4">
+            <Suspense fallback={<LoadingNotice message={THREE_D_LOADING_MESSAGE} />}>
+              <AssetThreeD />
+            </Suspense>
+          </TabsPanel>
+        ) : null}
       </Tabs>
     </HudPanel>
   );

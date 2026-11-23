@@ -4,6 +4,7 @@ export enum AssetTab {
   TIMESERIES = 'TIMESERIES',
   NOTES = 'NOTES',
   DOCUMENTS = 'DOCUMENTS',
+  THREE_D = 'THREE_D',
 }
 
 export const ASSET_TAB_LABELS: Record<AssetTab, string> = {
@@ -12,6 +13,7 @@ export const ASSET_TAB_LABELS: Record<AssetTab, string> = {
   [AssetTab.TIMESERIES]: 'Timeseries',
   [AssetTab.NOTES]: 'Notes',
   [AssetTab.DOCUMENTS]: 'Documents',
+  [AssetTab.THREE_D]: '3D',
 };
 
 export function isAssetTab(value: unknown): value is AssetTab {
@@ -20,6 +22,7 @@ export function isAssetTab(value: unknown): value is AssetTab {
     value === AssetTab.EQUIPMENTS ||
     value === AssetTab.TIMESERIES ||
     value === AssetTab.NOTES ||
-    value === AssetTab.DOCUMENTS
+    value === AssetTab.DOCUMENTS ||
+    value === AssetTab.THREE_D
   );
 }

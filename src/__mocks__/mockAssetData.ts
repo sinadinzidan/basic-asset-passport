@@ -134,7 +134,7 @@ export const MOCK_DATA_MODEL: DataModel = {
 const PLANTS = [
   { name: 'North Plant', id: 'G307' },
   { name: 'South Plant', id: 'G412' },
-  { name: 'East Plant', id: 'G518' },
+  { name: 'Ruwais', id: 'G518' },
 ];
 
 const ASSET_TYPES = [

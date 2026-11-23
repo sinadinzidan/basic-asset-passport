@@ -20,6 +20,7 @@ describe('ASSET_TAB_LABELS', () => {
       [AssetTab.TIMESERIES]: 'Timeseries',
       [AssetTab.NOTES]: 'Notes',
       [AssetTab.DOCUMENTS]: 'Documents',
+      [AssetTab.THREE_D]: '3D',
     });
   });
 });

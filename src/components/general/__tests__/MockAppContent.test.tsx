@@ -7,6 +7,7 @@ import {
   makeMockAssetContext,
   makeMockDocumentFileContext,
 } from '../../../__mocks__/mockAssetContext';
+import { makeMockThreeDContext } from '../../../__mocks__/mockThreeDContext';
 import { makeMockTimeseriesContext } from '../../../__mocks__/mockTimeseriesContext';
 import { makeQueryClientWrapper } from '../../../__mocks__/QueryClientWrapper';
 import { ASSISTANT_LABEL } from '../../../constants/agents';
@@ -53,6 +54,7 @@ function makeMockContexts(): MockContexts {
     assetContext,
     documentFileContext: makeMockDocumentFileContext(assetContext),
     timeseriesContext: makeMockTimeseriesContext(),
+    threeDContext: makeMockThreeDContext(),
     agentContext: makeMockAgentContext(),
   };
 }

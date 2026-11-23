@@ -10,9 +10,11 @@ import {
 } from '../../hooks/assets/documents/useDocumentPreviewRenderer';
 import { TimeseriesClientContext } from '../../hooks/assets/timeseries/useTimeseriesClient';
 import { AssetClientContext } from '../../hooks/assets/useAssetClient';
+import { ThreeDClientContext } from '../../hooks/three-d/useThreeDClient';
 import { limitCdfCalls } from '../../lib/limitedCdfClient';
 import { createDocumentFileContext } from '../../services/assets/documents/documentFileContext';
 import { createTimeseriesContext } from '../../services/assets/timeseries/timeseriesContext';
+import { createThreeDContext } from '../../services/three-d/threeDContext';
 
 const DocumentPreview = lazy(() =>
   import('../../components/assets/documents/DocumentPreview').then((module) => ({
@@ -40,13 +42,17 @@ export function AssetProvider({ children }: AssetProviderProps) {
   );
   const timeseriesContext = useMemo(() => createTimeseriesContext(limitedClient), [limitedClient]);
 
+  const threeDContext = useMemo(() => createThreeDContext(client), [client]);
+
   return (
     <AssetClientContext.Provider value={limitedClient}>
       <DocumentFileClientContext.Provider value={documentFileContext}>
         <TimeseriesClientContext.Provider value={timeseriesContext}>
-          <DocumentPreviewRendererContext.Provider value={renderDocumentPreview}>
-            {children}
-          </DocumentPreviewRendererContext.Provider>
+          <ThreeDClientContext.Provider value={threeDContext}>
+            <DocumentPreviewRendererContext.Provider value={renderDocumentPreview}>
+              {children}
+            </DocumentPreviewRendererContext.Provider>
+          </ThreeDClientContext.Provider>
         </TimeseriesClientContext.Provider>
       </DocumentFileClientContext.Provider>
     </AssetClientContext.Provider>
