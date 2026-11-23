@@ -177,7 +177,7 @@ describe('listAssetNotes', () => {
     stubModelViews(client, [makeViewDefinition('Asset')]);
 
     await expect(createAssetNoteService(client).listAssetNotes(assetIdentifier)).rejects.toThrow(
-      'The Note view was not found in the Asset_Passport data model.',
+      'The Note view was not found in the dm_idi_asset_passport data model.',
     );
   });
 
@@ -288,7 +288,7 @@ describe('createAssetNote', () => {
 
     await expect(
       createAssetNoteService(client).createAssetNote(assetIdentifier, { title: 'Title', body: '' }),
-    ).rejects.toThrow('The Note view was not found in the Asset_Passport data model.');
+    ).rejects.toThrow('The Note view was not found in the dm_idi_asset_passport data model.');
   });
 
   it('propagates a failed write', async () => {
@@ -376,7 +376,7 @@ describe('updateAssetNote', () => {
 
     await expect(
       createAssetNoteService(client).updateAssetNote(note, { title: 'Title', body: '' }),
-    ).rejects.toThrow('The Note view was not found in the Asset_Passport data model.');
+    ).rejects.toThrow('The Note view was not found in the dm_idi_asset_passport data model.');
   });
 
   it('propagates a failed write', async () => {

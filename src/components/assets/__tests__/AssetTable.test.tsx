@@ -125,14 +125,14 @@ describe(AssetTable.name, () => {
 
   it('shows the reason assets cannot be loaded', async () => {
     vi.mocked(mockContext.listAssets).mockRejectedValue(
-      new Error('The Asset_Passport data model was not found in sp-asset-passport.'),
+      new Error('The dm_idi_asset_passport data model was not found in sp-asset-passport.'),
     );
 
     renderTable();
 
     expect(
       await screen.findByText(
-        'Reason: The Asset_Passport data model was not found in sp-asset-passport.',
+        'Reason: The dm_idi_asset_passport data model was not found in sp-asset-passport.',
       ),
     ).toBeInTheDocument();
     expect(screen.getByText('Check access to the Asset view, then try again.')).toBeInTheDocument();

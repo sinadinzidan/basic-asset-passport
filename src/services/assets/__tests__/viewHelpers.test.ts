@@ -14,7 +14,7 @@ import {
 } from '../viewHelpers';
 
 describe(listAssetPassportViews.name, () => {
-  it('retrieves the Asset_Passport data model with its views inlined', async () => {
+  it('retrieves the dm_idi_asset_passport data model with its views inlined', async () => {
     // Arrange
     const client = makeOfflineSdkClient();
     const views = [makeViewDefinition('Asset')];

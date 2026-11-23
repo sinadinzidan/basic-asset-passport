@@ -156,7 +156,9 @@ describe('listAssetTimeseries', () => {
 
     await expect(
       createAssetTimeseriesService(client).listAssetTimeseries(assetIdentifier),
-    ).rejects.toThrow('The PI_Timeseries view was not found in the Asset_Passport data model.');
+    ).rejects.toThrow(
+      'The PI_Timeseries view was not found in the dm_idi_asset_passport data model.',
+    );
   });
 });
 

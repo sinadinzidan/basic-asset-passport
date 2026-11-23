@@ -170,7 +170,7 @@ describe('listAssetEquipment', () => {
 
     await expect(
       createAssetEquipmentService(client).listAssetEquipment(assetIdentifier),
-    ).rejects.toThrow('The Equipment view was not found in the Asset_Passport data model.');
+    ).rejects.toThrow('The Equipment view was not found in the dm_idi_asset_passport data model.');
   });
 
   it('propagates query failures', async () => {

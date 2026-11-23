@@ -1,7 +1,7 @@
 export const MODEL = {
   space: 'sp-asset-passport',
-  externalId: 'Asset_Passport',
-  version: '1',
+  externalId: 'dm_idi_asset_passport',
+  version: 'v1',
   instanceSpace: 'sp-asset-passport-data',
   views: {
     asset: 'Asset',

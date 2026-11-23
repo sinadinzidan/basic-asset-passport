@@ -5,10 +5,12 @@ import { getErrorReason } from '../errorReason';
 
 describe(getErrorReason.name, () => {
   it('is the message of an error', () => {
-    const error = new Error('The Asset_Passport data model was not found in sp-asset-passport.');
+    const error = new Error(
+      'The dm_idi_asset_passport data model was not found in sp-asset-passport.',
+    );
 
     expect(getErrorReason(error)).toBe(
-      'The Asset_Passport data model was not found in sp-asset-passport.',
+      'The dm_idi_asset_passport data model was not found in sp-asset-passport.',
     );
   });
 

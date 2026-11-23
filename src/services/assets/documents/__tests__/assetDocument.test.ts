@@ -218,7 +218,7 @@ describe('listAssetDocuments', () => {
 
     await expect(
       createAssetDocumentService(client).listAssetDocuments(assetIdentifier),
-    ).rejects.toThrow('The Document view was not found in the Asset_Passport data model.');
+    ).rejects.toThrow('The Document view was not found in the dm_idi_asset_passport data model.');
   });
 });
 
@@ -385,7 +385,7 @@ describe('listAssetLinkedFiles', () => {
     expect(files.items.map((file) => file.externalId)).toEqual(['file-1', 'file-2']);
   });
 
-  it('reads the RMDM view by reference, without the Asset_Passport data model', async () => {
+  it('reads the RMDM view by reference, without the dm_idi_asset_passport data model', async () => {
     const retrieve = vi.spyOn(client.dataModels, 'retrieve');
 
     vi.spyOn(client.instances, 'query').mockResolvedValue(makeQueryResponse({ files: [] }));

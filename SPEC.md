@@ -10,13 +10,13 @@ data appears only in the opt-in mock mode below, which is off by default and
 labelled on screen.
 
 Assets, equipment, timeseries, notes and documents are all read through one solution data
-model, `Asset_Passport` (space `sp-asset-passport`, version `1`). It references
+model, `dm_idi_asset_passport` (space `sp-asset-passport`, version `v1`). It references
 the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines the `Note` and
 `Document` views.
 
 ## Asset register
 
-- The first screen lists assets from the `Asset` view of the `Asset_Passport`
+- The first screen lists assets from the `Asset` view of the `dm_idi_asset_passport`
   data model, in pages of 10, with columns Plant, Functional
   location (external ID), Asset name, Description, Status and Criticality.
   Missing values show an explicit label ("Not provided", "Unnamed asset",
@@ -69,7 +69,7 @@ the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines
   the table panel (the search box stays usable); it is never shown as an empty
   list. Under "Check access to the Asset view, then try again." the alert gives
   the reason the load failed, as "Reason: ..." (see "Load errors" below), for
-  example "Reason: The Asset_Passport data model was not found in
+  example "Reason: The dm_idi_asset_passport data model was not found in
   sp-asset-passport."
 
 ## Asset details
@@ -100,7 +100,7 @@ the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines
 ## Asset timeseries
 
 - The Timeseries tab, between Equipment and Notes, lists the time series linked to the open asset: the
-  `PI_Timeseries` nodes (`sp-dm-idi-rmdm`, `v1`, referenced by the `Asset_Passport` model) whose `assets`
+  `PI_Timeseries` nodes (`sp-dm-idi-rmdm`, `v1`, referenced by the `dm_idi_asset_passport` model) whose `assets`
   relation list contains the asset, sorted by name on the server, 200 at a time: when the asset has more, a
   "Show more timeseries" button under the cards reads the next 200 while the cards already shown stay.
 - The cards are laid out two to a row (one on a narrow screen). Each series is a card with its name (or its
@@ -199,7 +199,7 @@ the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines
   exist for the asset in RMDM (the `Files` view, matched through its `assets` relation, newest upload first). Both
   lists are sorted on the server and read 100 at a time: when the asset has more, a "Show more uploaded documents"
   or "Show more existing files" button under that list reads the next 100 while the rows already shown stay. The app reads RMDM's `Files` view `sp-dm-idi-rmdm` `v1`
-  directly by reference; it is not part of the `Asset_Passport` model. An existing file shows an "Existing file" pill and can
+  directly by reference; it is not part of the `dm_idi_asset_passport` model. An existing file shows an "Existing file" pill and can
   be viewed but not deleted, and it cannot be replaced or renamed here; uploads always create a `Document`. A
   file linked to equipment only, not to the asset, is not listed. The existing files are read separately: if they
   cannot be read, "Existing files could not be loaded" with Retry shows above the list and the uploaded
@@ -540,7 +540,7 @@ the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines
 
 - Use the existing `CogniteSdkProvider` for authentication; never hardcode the
   project, base URL or token.
-- Resolve the `Asset`, `Equipment`, `PI_Timeseries`, `Note` and `Document` views from the `Asset_Passport`
+- Resolve the `Asset`, `Equipment`, `PI_Timeseries`, `Note` and `Document` views from the `dm_idi_asset_passport`
   data model (`sp-asset-passport`, version `1`, views inlined) at run time and query
   through `client.instances.query()` with TanStack Query. The tab badges are counted by the server
   through `client.instances.aggregate()` (a `count` of the nodes the list's filter matches), with the

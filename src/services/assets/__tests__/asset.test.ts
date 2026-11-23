@@ -130,7 +130,7 @@ describe('listAssets', () => {
     stubModelViews(client, [makeViewDefinition('Equipment')]);
 
     await expect(createAssetService(client).listAssets()).rejects.toThrow(
-      'The Asset view was not found in the Asset_Passport data model.',
+      'The Asset view was not found in the dm_idi_asset_passport data model.',
     );
   });
 
@@ -237,7 +237,7 @@ describe('searchAssets', () => {
     stubModelViews(client, [makeViewDefinition('Equipment')]);
 
     await expect(createAssetService(client).searchAssets('pump')).rejects.toThrow(
-      'The Asset view was not found in the Asset_Passport data model.',
+      'The Asset view was not found in the dm_idi_asset_passport data model.',
     );
   });
 

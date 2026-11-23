@@ -90,7 +90,7 @@ describe('asset count service', () => {
 
       await expect(
         createAssetDetailsTabCountService(client).countAssetNotes(assetIdentifier),
-      ).rejects.toThrow('The Note view was not found in the Asset_Passport data model.');
+      ).rejects.toThrow('The Note view was not found in the dm_idi_asset_passport data model.');
     });
 
     it('passes on a failure of the aggregate request', async () => {

@@ -60,7 +60,7 @@ describe('asset summary count service', () => {
       stubModelViews(client, []);
 
       await expect(createAssetSummaryService(client).countAllAssets()).rejects.toThrow(
-        'The Asset view was not found in the Asset_Passport data model.',
+        'The Asset view was not found in the dm_idi_asset_passport data model.',
       );
     });
 
@@ -150,7 +150,7 @@ describe('asset summary count service', () => {
       stubModelViews(client, [assetView]);
 
       await expect(createAssetSummaryService(client).countAllEquipment()).rejects.toThrow(
-        'The Equipment view was not found in the Asset_Passport data model.',
+        'The Equipment view was not found in the dm_idi_asset_passport data model.',
       );
     });
   });
