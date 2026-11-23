@@ -291,6 +291,10 @@ the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines
   scene's unit are applied, with the CDF Z-up axes turned to the viewer's Y-up.
 - The view is an orbit view: drag to rotate, scroll to zoom, right-drag to pan.
   The camera starts framed on the whole model.
+- Three icon buttons sit in the view's top right corner, each with a tooltip and
+  a label: "Zoom in" and "Zoom out" move the camera 20% closer to or 25% further
+  from the point it orbits, and "Reset view" frames the whole model again. They
+  show only while a model is shown, and they are not host-synced.
 - A line under the view reads "Platform VPH · N of M parts" with ", K failed" and
   ", S skipped" when there are any, then " · loading" or " · loaded". Shapes the
   reader cannot draw are listed under it ("Unsupported shapes skipped: name:

@@ -20,11 +20,13 @@ import { NavigationProvider } from '../../../providers/general/NavigationProvide
 import type { StateSyncApi } from '../../../types/host';
 import type { ThreeDModel } from '../../../types/threeD';
 import type { ThreeDContextType } from '../../../types/threeDContext';
+import type { ThreeDRenderer } from '../../../types/threeDRenderer';
 import { Assets } from '../Assets';
 
 describe(`${Assets.name} sub header`, () => {
   let api: StateSyncApi;
   let threeD: ThreeDContextType;
+  let renderer: ThreeDRenderer;
   let wrapper: ComponentType<{ children: ReactNode }>;
 
   beforeEach(() => {
@@ -39,8 +41,15 @@ describe(`${Assets.name} sub header`, () => {
       findModel: vi.fn(() => Promise.resolve(makeModel())),
       loadSector: vi.fn(() => Promise.resolve(new ArrayBuffer(1))),
     };
+    renderer = {
+      addSector: vi.fn(),
+      dispose: vi.fn(),
+      zoomIn: vi.fn(),
+      zoomOut: vi.fn(),
+      resetView: vi.fn(),
+    };
     const deps: UseAssetThreeDViewModelContextType = {
-      createRenderer: vi.fn(() => ({ addSector: vi.fn(), dispose: vi.fn() })),
+      createRenderer: vi.fn(() => renderer),
       loadSectors: vi.fn(() =>
         Promise.resolve({
           loadedSectors: 0,
@@ -126,6 +135,27 @@ describe(`${Assets.name} sub header`, () => {
     await user.click(await screen.findByRole('tab', { name: 'Assets' }));
 
     expect(await screen.findByRole('heading', { name: 'Asset register' })).toBeInTheDocument();
+  });
+
+  it('zooms in, zooms out and resets the view from the control buttons', async () => {
+    const user = userEvent.setup();
+
+    renderApp(JSON.stringify({ activeView: AppView.THREE_D }));
+    await user.click(await screen.findByRole('button', { name: 'Zoom in' }));
+    await user.click(screen.getByRole('button', { name: 'Zoom out' }));
+    await user.click(screen.getByRole('button', { name: 'Reset view' }));
+
+    expect(renderer.zoomIn).toHaveBeenCalledOnce();
+    expect(renderer.zoomOut).toHaveBeenCalledOnce();
+    expect(renderer.resetView).toHaveBeenCalledOnce();
+  });
+
+  it('offers no control buttons while there is no model to control', async () => {
+    vi.mocked(threeD.findModel).mockResolvedValue(null);
+    renderApp(JSON.stringify({ activeView: AppView.THREE_D }));
+
+    expect(await screen.findByText('No 3D model')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Zoom in' })).not.toBeInTheDocument();
   });
 
   function renderApp(initialState?: string) {

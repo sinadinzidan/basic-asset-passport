@@ -1,7 +1,8 @@
-import { createContext, useContext, useEffect, useRef } from 'react';
+import { createContext, useCallback, useContext, useEffect, useRef } from 'react';
 
 import { createSceneRenderer } from '../../../lib/three-d/sceneRenderer';
 import { loadSectors } from '../../../lib/three-d/sectorLoader';
+import type { ThreeDRenderer } from '../../../types/threeDRenderer';
 import { useThreeDClient } from '../useThreeDClient';
 import { useThreeDLoadProgress } from '../useThreeDLoadProgress';
 import { useThreeDModel } from '../useThreeDModel';
@@ -20,6 +21,7 @@ export function useAssetThreeDViewModel() {
   const modelQuery = useThreeDModel();
   const { progress, setProgress, resetProgress } = useThreeDLoadProgress();
   const viewportReference = useRef<HTMLDivElement>(null);
+  const rendererReference = useRef<ThreeDRenderer | null>(null);
 
   const model = modelQuery.data;
 
@@ -30,6 +32,8 @@ export function useAssetThreeDViewModel() {
 
     const controller = new AbortController();
     const renderer = createRenderer(container, model);
+
+    rendererReference.current = renderer;
 
     resetProgress();
     void loadAllSectors({
@@ -42,11 +46,19 @@ export function useAssetThreeDViewModel() {
 
     return () => {
       controller.abort();
+      rendererReference.current = null;
       renderer.dispose();
     };
   }, [model, client, createRenderer, loadAllSectors, setProgress, resetProgress]);
 
+  const zoomIn = useCallback(() => rendererReference.current?.zoomIn(), []);
+  const zoomOut = useCallback(() => rendererReference.current?.zoomOut(), []);
+  const resetView = useCallback(() => rendererReference.current?.resetView(), []);
+
   return {
+    zoomIn,
+    zoomOut,
+    resetView,
     modelName: model?.name,
     isLoading: modelQuery.isPending,
     isError: modelQuery.isError,

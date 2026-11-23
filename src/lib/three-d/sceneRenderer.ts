@@ -30,10 +30,13 @@ import {
   THREE_D_CAMERA_NEAR_RATIO,
   THREE_D_DIRECTIONAL_LIGHT_INTENSITY,
   THREE_D_MAX_PIXEL_RATIO,
+  THREE_D_ZOOM_IN_FACTOR,
+  THREE_D_ZOOM_OUT_FACTOR,
 } from '../../constants/threeD';
 import type { TessellatedMesh, ThreeDModel } from '../../types/threeD';
 import type { ThreeDRenderer } from '../../types/threeDRenderer';
 
+import { zoomedPosition } from './cameraZoom';
 import { computeModelMatrix, transformBox } from './modelMatrix';
 import { createRenderGate } from './renderGate';
 
@@ -53,9 +56,11 @@ class SceneRenderer implements ThreeDRenderer {
   private frameHandle = 0;
   private isDisposed = false;
 
+  private readonly sun: DirectionalLight;
+
   constructor(
     private readonly container: HTMLElement,
-    model: ThreeDModel,
+    private readonly model: ThreeDModel,
   ) {
     this.renderer = new WebGLRenderer({ antialias: true });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, THREE_D_MAX_PIXEL_RATIO));
@@ -78,10 +83,10 @@ class SceneRenderer implements ThreeDRenderer {
     this.scene.add(this.group);
     this.scene.add(new AmbientLight(THREE_D_LIGHT_COLOR, THREE_D_AMBIENT_LIGHT_INTENSITY));
 
-    const sun = new DirectionalLight(THREE_D_LIGHT_COLOR, THREE_D_DIRECTIONAL_LIGHT_INTENSITY);
+    this.sun = new DirectionalLight(THREE_D_LIGHT_COLOR, THREE_D_DIRECTIONAL_LIGHT_INTENSITY);
 
-    this.scene.add(sun);
-    this.frame(model, sun);
+    this.scene.add(this.sun);
+    this.frame(model, this.sun);
 
     this.container.appendChild(this.renderer.domElement);
     this.resizeObserver = new ResizeObserver(() => this.resize());
@@ -105,6 +110,19 @@ class SceneRenderer implements ThreeDRenderer {
     this.gate.markDirty();
   }
 
+  zoomIn(): void {
+    this.zoomBy(THREE_D_ZOOM_IN_FACTOR);
+  }
+
+  zoomOut(): void {
+    this.zoomBy(THREE_D_ZOOM_OUT_FACTOR);
+  }
+
+  resetView(): void {
+    this.frame(this.model, this.sun);
+    this.gate.markDirty();
+  }
+
   dispose(): void {
     this.isDisposed = true;
     cancelAnimationFrame(this.frameHandle);
@@ -114,6 +132,21 @@ class SceneRenderer implements ThreeDRenderer {
     this.material.dispose();
     this.renderer.dispose();
     this.renderer.domElement.remove();
+  }
+
+  private zoomBy(factor: number): void {
+    const { position } = this.camera;
+    const { target } = this.controls;
+
+    const next = zoomedPosition(
+      [position.x, position.y, position.z],
+      [target.x, target.y, target.z],
+      factor,
+    );
+
+    this.camera.position.set(next[0], next[1], next[2]);
+    this.controls.update();
+    this.gate.markDirty();
   }
 
   private frame(model: ThreeDModel, sun: DirectionalLight): void {

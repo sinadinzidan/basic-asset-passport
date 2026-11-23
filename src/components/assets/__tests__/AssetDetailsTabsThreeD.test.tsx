@@ -39,7 +39,13 @@ describe(`${AssetDetailsTabs.name} 3D`, () => {
       loadSector: vi.fn(() => Promise.resolve(new ArrayBuffer(1))),
     };
     deps = {
-      createRenderer: vi.fn(() => ({ addSector: vi.fn(), dispose: vi.fn() })),
+      createRenderer: vi.fn(() => ({
+        addSector: vi.fn(),
+        dispose: vi.fn(),
+        zoomIn: vi.fn(),
+        zoomOut: vi.fn(),
+        resetView: vi.fn(),
+      })),
       loadSectors: vi.fn((props) => {
         props.onProgress({
           loadedSectors: 1,

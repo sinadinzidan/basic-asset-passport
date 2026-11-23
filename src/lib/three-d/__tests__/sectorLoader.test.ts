@@ -83,7 +83,13 @@ function setup({
   signal = new AbortController().signal,
   loadSector = () => Promise.resolve(new ArrayBuffer(1)),
 }: SetupOptions) {
-  const renderer = { addSector: vi.fn(), dispose: vi.fn() } satisfies ThreeDRenderer;
+  const renderer = {
+    addSector: vi.fn(),
+    dispose: vi.fn(),
+    zoomIn: vi.fn(),
+    zoomOut: vi.fn(),
+    resetView: vi.fn(),
+  } satisfies ThreeDRenderer;
   const onProgress = vi.fn<(progress: ThreeDLoadProgress) => void>();
   const model = makeModel(sectorCount, downloadSize);
 
