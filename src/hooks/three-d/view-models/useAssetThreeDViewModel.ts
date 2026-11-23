@@ -3,6 +3,7 @@ import { createContext, useCallback, useContext, useEffect, useRef } from 'react
 import { createAssetLookup } from '../../../lib/three-d/assetLookup';
 import { createSceneRenderer } from '../../../lib/three-d/sceneRenderer';
 import { loadSectors } from '../../../lib/three-d/sectorLoader';
+import { useThreeDInteractionStore } from '../../../store/threeDInteraction';
 import type { ThreeDRenderer } from '../../../types/threeDRenderer';
 import { useThreeDAssetNodes } from '../useThreeDAssetNodes';
 import { useThreeDClient } from '../useThreeDClient';
@@ -26,6 +27,9 @@ export function useAssetThreeDViewModel() {
   const rendererReference = useRef<ThreeDRenderer | null>(null);
 
   const assetNodes = useThreeDAssetNodes().data;
+
+  const interactionMode = useThreeDInteractionStore((state) => state.mode);
+  const setInteractionMode = useThreeDInteractionStore((state) => state.setMode);
 
   const model = modelQuery.data;
 
@@ -61,11 +65,19 @@ export function useAssetThreeDViewModel() {
     rendererReference.current?.setAssetLookup(createAssetLookup(assetNodes));
   }, [model, assetNodes, createRenderer]);
 
+  useEffect(() => {
+    if (!model) return;
+
+    rendererReference.current?.setInteractionMode(interactionMode);
+  }, [model, interactionMode, createRenderer]);
+
   const zoomIn = useCallback(() => rendererReference.current?.zoomIn(), []);
   const zoomOut = useCallback(() => rendererReference.current?.zoomOut(), []);
   const resetView = useCallback(() => rendererReference.current?.resetView(), []);
 
   return {
+    interactionMode,
+    setInteractionMode,
     zoomIn,
     zoomOut,
     resetView,

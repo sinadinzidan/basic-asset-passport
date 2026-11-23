@@ -289,9 +289,12 @@ the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines
   are counted as skipped. A sector that cannot be read is counted as failed and
   the others still show. The revision's rotation, scale and translation and the
   scene's unit are applied, with the CDF Z-up axes turned to the viewer's Y-up.
-- The view is an orbit view: drag to rotate, scroll to zoom, right-drag to pan.
+- The view starts as an orbit view: drag (or one finger) rotates, scroll or pinch zooms, right-drag or two fingers
+  move the view, and the middle button zooms. Two toggle buttons, "Orbit" and "Move", pick what a left-button
+  drag or one finger does: Orbit rotates, Move pans (right-drag then rotates). Pinch and two-finger moving work
+  in both modes. The mode is kept while the app is open and is not host-synced.
   The camera starts framed on the whole model.
-- Three icon buttons sit in the view's top right corner, each with a tooltip and
+- Five icon buttons sit in the view's top right corner (Orbit, Move, then three more), each with a tooltip and
   a label: "Zoom in" and "Zoom out" move the camera 20% closer to or 25% further
   from the point it orbits, and "Reset view" frames the whole model again. They
   show only while a model is shown, and they are not host-synced.

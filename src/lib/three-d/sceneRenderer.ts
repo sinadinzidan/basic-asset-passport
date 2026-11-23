@@ -33,6 +33,7 @@ import {
   THREE_D_ZOOM_IN_FACTOR,
   THREE_D_ZOOM_OUT_FACTOR,
 } from '../../constants/threeD';
+import { ThreeDInteractionMode } from '../../enums/threeDInteractionMode';
 import type { TessellatedMesh, ThreeDAssetLookup, ThreeDModel } from '../../types/threeD';
 import type { ThreeDRenderer } from '../../types/threeDRenderer';
 
@@ -40,6 +41,7 @@ import { zoomedPosition } from './cameraZoom';
 import { ElementPicker } from './elementPicker';
 import { createHighlightMaterial, createHighlightUniform } from './highlightMaterial';
 import { createHoverState } from './hoverState';
+import { applyInteractionMode } from './interactionMode';
 import { computeModelMatrix, transformBox } from './modelMatrix';
 import { createRenderGate } from './renderGate';
 
@@ -82,6 +84,7 @@ class SceneRenderer implements ThreeDRenderer {
 
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.controls.enableDamping = true;
+    applyInteractionMode(this.controls, ThreeDInteractionMode.ORBIT);
     this.picker = new ElementPicker(this.renderer, this.scene, this.camera, this.container);
     this.controls.addEventListener('end', this.handleCameraSettled);
     this.renderer.domElement.addEventListener('pointermove', this.handlePointerMove);
@@ -141,6 +144,12 @@ class SceneRenderer implements ThreeDRenderer {
     this.highlighted.value = THREE_D_NO_HIGHLIGHT;
     this.hover.viewChanged();
     this.gate.markDirty();
+  }
+
+  setInteractionMode(mode: ThreeDInteractionMode): void {
+    if (this.isDisposed) return;
+
+    applyInteractionMode(this.controls, mode);
   }
 
   zoomIn(): void {

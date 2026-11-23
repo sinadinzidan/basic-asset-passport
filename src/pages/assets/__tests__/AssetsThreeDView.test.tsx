@@ -9,6 +9,7 @@ import { makeMockClient } from '../../../__mocks__/cogniteClient';
 import { makeQueryClientWrapper } from '../../../__mocks__/QueryClientWrapper';
 import { THREE_D_MODEL_REFERENCE } from '../../../constants/threeD';
 import { AppView } from '../../../enums/appView';
+import { ThreeDInteractionMode } from '../../../enums/threeDInteractionMode';
 import { AssetClientContext } from '../../../hooks/assets/useAssetClient';
 import { UseAssetsContext } from '../../../hooks/assets/useAssets';
 import { UseAssetSummaryContext } from '../../../hooks/assets/useAssetSummary';
@@ -49,6 +50,7 @@ describe(`${Assets.name} sub header`, () => {
       addSector: vi.fn(),
       dispose: vi.fn(),
       setAssetLookup: vi.fn(),
+      setInteractionMode: vi.fn(),
       zoomIn: vi.fn(),
       zoomOut: vi.fn(),
       resetView: vi.fn(),
@@ -153,6 +155,24 @@ describe(`${Assets.name} sub header`, () => {
     expect(renderer.zoomIn).toHaveBeenCalledOnce();
     expect(renderer.zoomOut).toHaveBeenCalledOnce();
     expect(renderer.resetView).toHaveBeenCalledOnce();
+  });
+
+  it('starts in orbit mode and switches to move mode from the buttons', async () => {
+    const user = userEvent.setup();
+
+    renderApp(JSON.stringify({ activeView: AppView.THREE_D }));
+    const orbit = await screen.findByRole('button', { name: 'Orbit' });
+    const move = screen.getByRole('button', { name: 'Move' });
+
+    expect(orbit).toHaveAttribute('aria-pressed', 'true');
+    expect(move).toHaveAttribute('aria-pressed', 'false');
+    expect(renderer.setInteractionMode).toHaveBeenLastCalledWith(ThreeDInteractionMode.ORBIT);
+
+    await user.click(move);
+
+    expect(move).toHaveAttribute('aria-pressed', 'true');
+    expect(orbit).toHaveAttribute('aria-pressed', 'false');
+    expect(renderer.setInteractionMode).toHaveBeenLastCalledWith(ThreeDInteractionMode.MOVE);
   });
 
   it('offers no control buttons while there is no model to control', async () => {

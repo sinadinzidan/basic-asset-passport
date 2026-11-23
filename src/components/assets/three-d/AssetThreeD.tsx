@@ -1,15 +1,24 @@
-import { IconFocusCentered, IconZoomIn, IconZoomOut } from '@tabler/icons-react';
+import {
+  IconArrowsMove,
+  IconFocusCentered,
+  IconRotate3d,
+  IconZoomIn,
+  IconZoomOut,
+} from '@tabler/icons-react';
 
 import {
   THREE_D_ERROR_DESCRIPTION,
   THREE_D_ERROR_TITLE,
   THREE_D_LOADING_MESSAGE,
+  THREE_D_MOVE_LABEL,
+  THREE_D_ORBIT_LABEL,
   THREE_D_RESET_VIEW_LABEL,
   THREE_D_VIEWPORT_LABEL,
   THREE_D_ZOOM_IN_LABEL,
   THREE_D_ZOOM_OUT_LABEL,
 } from '../../../constants/threeD';
 import { LoadingNoticeVariant } from '../../../enums/loadingNoticeVariant';
+import { ThreeDInteractionMode } from '../../../enums/threeDInteractionMode';
 import { useAssetThreeDViewModel } from '../../../hooks/three-d/view-models/useAssetThreeDViewModel';
 import { getErrorReason } from '../../../lib/errorReason';
 import {
@@ -23,12 +32,14 @@ export function AssetThreeD() {
   const {
     error,
     hasModel,
+    interactionMode,
     isError,
     isLoading,
     modelName,
     progress,
     resetView,
     retry,
+    setInteractionMode,
     viewportRef,
     zoomIn,
     zoomOut,
@@ -70,6 +81,18 @@ export function AssetThreeD() {
           className="data-card relative h-[60vh] min-h-96 w-full overflow-hidden"
         />
         <div className="absolute right-3 top-3 z-10 flex flex-col gap-2">
+          <IconActionButton
+            label={THREE_D_ORBIT_LABEL}
+            icon={<IconRotate3d aria-hidden className="size-4" />}
+            isPressed={interactionMode === ThreeDInteractionMode.ORBIT}
+            onClick={() => setInteractionMode(ThreeDInteractionMode.ORBIT)}
+          />
+          <IconActionButton
+            label={THREE_D_MOVE_LABEL}
+            icon={<IconArrowsMove aria-hidden className="size-4" />}
+            isPressed={interactionMode === ThreeDInteractionMode.MOVE}
+            onClick={() => setInteractionMode(ThreeDInteractionMode.MOVE)}
+          />
           <IconActionButton
             label={THREE_D_ZOOM_IN_LABEL}
             icon={<IconZoomIn aria-hidden className="size-4" />}

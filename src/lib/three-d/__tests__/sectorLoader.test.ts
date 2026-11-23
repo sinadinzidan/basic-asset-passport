@@ -100,6 +100,7 @@ function setup({
     addSector: vi.fn(),
     dispose: vi.fn(),
     setAssetLookup: vi.fn(),
+    setInteractionMode: vi.fn(),
     zoomIn: vi.fn(),
     zoomOut: vi.fn(),
     resetView: vi.fn(),

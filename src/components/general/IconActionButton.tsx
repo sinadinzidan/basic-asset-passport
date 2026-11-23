@@ -15,6 +15,7 @@ type IconActionButtonProps = {
   icon: ReactNode;
   onClick: () => void;
   isDisabled?: boolean;
+  isPressed?: boolean;
   variant?: IconActionVariant;
   className?: string;
 };
@@ -24,6 +25,7 @@ export function IconActionButton({
   icon,
   onClick,
   isDisabled = false,
+  isPressed,
   variant = IconActionVariant.OUTLINE,
   className,
 }: IconActionButtonProps) {
@@ -33,6 +35,7 @@ export function IconActionButton({
         render={
           <GeneralButton
             aria-label={label}
+            aria-pressed={isPressed}
             className={className}
             disabled={isDisabled}
             onClick={onClick}
