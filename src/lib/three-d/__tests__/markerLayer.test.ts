@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom/vitest';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { createMarkerLayer } from '../markerLayer';
 
@@ -64,14 +64,37 @@ describe(createMarkerLayer.name, () => {
     expect(container.querySelector('[data-asset-marker]')).toHaveTextContent('WMT:1');
   });
 
-  it('leaves the pointer alone', () => {
+  it('lets the pointer through everywhere except on a marker', () => {
     const { layer } = setup();
 
     layer.setAnchors(new Map([[0, anchor([0, 0, 0])]]));
 
     expect(container.querySelector<HTMLElement>('[data-asset-marker]')?.style.pointerEvents).toBe(
-      'none',
+      'auto',
     );
+    expect(container.firstElementChild).toHaveStyle({ pointerEvents: 'none' });
+  });
+
+  it('tells which asset was clicked', () => {
+    const { layer, onSelect } = setup();
+
+    layer.setAnchors(new Map([[7, anchor([0, 0, 0])]]));
+    container.querySelector<HTMLElement>('[data-asset-marker]')?.click();
+
+    expect(onSelect).toHaveBeenCalledExactlyOnceWith(7);
+  });
+
+  it('can be reached with the keyboard and named for screen readers', () => {
+    const { layer } = setup();
+
+    layer.setAnchors(new Map([[0, anchor([0, 0, 0])]]));
+    layer.update(() => ({ x: 0, y: 0, isVisible: true }));
+
+    const marker = container.querySelector<HTMLElement>('[data-asset-marker]');
+
+    expect(marker).toHaveAttribute('role', 'button');
+    expect(marker).toHaveAttribute('tabindex', '0');
+    expect(marker).toHaveAccessibleName('Zoom to WMT:1');
   });
 
   it('removes every marker on dispose', () => {
@@ -91,6 +114,8 @@ describe(createMarkerLayer.name, () => {
     container = document.createElement('div');
     document.body.append(container);
 
-    return { layer: createMarkerLayer(container) };
+    const onSelect = vi.fn();
+
+    return { layer: createMarkerLayer(container, onSelect), onSelect };
   }
 });

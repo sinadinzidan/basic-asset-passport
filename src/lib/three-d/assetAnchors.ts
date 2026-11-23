@@ -48,6 +48,14 @@ export function createAnchorAccumulator() {
         ]),
       );
     },
+    radii(): Map<number, number> {
+      return new Map(
+        [...bounds].map(([asset, { min, max }]) => [
+          asset,
+          Math.hypot(max[0] - min[0], max[1] - min[1], max[Z_OFFSET] - min[Z_OFFSET]) * HALF,
+        ]),
+      );
+    },
     reset(): void {
       bounds.clear();
     },

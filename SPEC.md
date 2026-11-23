@@ -308,7 +308,11 @@ the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines
   host-synced.
 - Every contextualised asset whose geometry has loaded also carries a static marker: a small cyan dot with a dark
   teal ring and the asset's name beside it, fixed at the centre of its geometry and following it as the camera
-  moves. Markers hide when their asset is behind the camera, never take mouse events, and appear as sectors load.
+  moves. Markers hide when their asset is behind the camera and appear as sectors load. A marker is a button
+  ("Zoom to <name>", reachable with Tab, Enter or Space): clicking it flies the camera in about 0.6 seconds to
+  look at that asset's centre, keeping the current viewing direction, from a distance that fits the asset
+  (at least 0.5 metres); dragging or Reset view cancels the flight. The rest of the marker layer lets mouse
+  events through to the model.
   Markers of nearby assets overlap at the default view and separate as you zoom in; markers are not hidden by
   geometry in front of them.
 - While an asset is hovered a small label with its name (for example WMT:23-TI-92524) follows the pointer,

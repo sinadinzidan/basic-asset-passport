@@ -1,5 +1,6 @@
 import {
   THREE_D_ASSET_COLOR,
+  THREE_D_FOCUS_LABEL,
   THREE_D_MARKER_SIZE_PX,
   THREE_D_OUTLINE_COLOR,
 } from '../../constants/threeD';
@@ -11,15 +12,27 @@ export type MarkerProjection = { x: number; y: number; isVisible: boolean };
 const HEX_RADIX = 16;
 const HEX_DIGITS = 6;
 const HALF = 0.5;
+const ACTIVATION_KEYS = new Set(['Enter', ' ']);
 
 const toCss = (hex: number): string => `#${hex.toString(HEX_RADIX).padStart(HEX_DIGITS, '0')}`;
 
-function createMarker(name: string): HTMLElement {
+function createMarker(name: string, onSelect: () => void): HTMLElement {
   const marker = document.createElement('div');
   const dot = document.createElement('span');
   const label = document.createElement('span');
 
   marker.dataset.assetMarker = '';
+  marker.setAttribute('role', 'button');
+  marker.setAttribute('tabindex', '0');
+  marker.setAttribute('aria-label', `${THREE_D_FOCUS_LABEL} ${name}`);
+  marker.addEventListener('click', onSelect);
+
+  marker.addEventListener('keydown', (event) => {
+    if (ACTIVATION_KEYS.has(event.key)) {
+      event.preventDefault();
+      onSelect();
+    }
+  });
 
   Object.assign(marker.style, {
     position: 'absolute',
@@ -28,7 +41,8 @@ function createMarker(name: string): HTMLElement {
     display: 'none',
     alignItems: 'center',
     gap: '4px',
-    pointerEvents: 'none',
+    pointerEvents: 'auto',
+    cursor: 'pointer',
     whiteSpace: 'nowrap',
     fontSize: '10px',
     lineHeight: '1',
@@ -52,7 +66,7 @@ function createMarker(name: string): HTMLElement {
   return marker;
 }
 
-export function createMarkerLayer(container: HTMLElement) {
+export function createMarkerLayer(container: HTMLElement, onSelect: (asset: number) => void) {
   const layer = document.createElement('div');
   const markers = new Map<number, { element: HTMLElement; anchor: MarkerAnchor }>();
 
@@ -76,7 +90,7 @@ export function createMarkerLayer(container: HTMLElement) {
           return;
         }
 
-        const element = createMarker(anchor.name);
+        const element = createMarker(anchor.name, () => onSelect(asset));
 
         layer.append(element);
         markers.set(asset, { element, anchor });

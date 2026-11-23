@@ -37,6 +37,14 @@ describe(createAnchorAccumulator.name, () => {
     expect(accumulator.anchors().get(1)).toEqual([8, 8, 8]);
   });
 
+  it('measures how big an asset is', () => {
+    const accumulator = createAnchorAccumulator();
+
+    accumulator.add(new Float32Array([0, 0, 0, 6, 8, 0]), new Float32Array([0, 0]));
+
+    expect(accumulator.radii().get(0)).toBeCloseTo(5);
+  });
+
   it('forgets everything on reset', () => {
     const accumulator = createAnchorAccumulator();
 
