@@ -84,7 +84,7 @@ the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines
   asset's properties in the same grid of label and value cells as each equipment), Equipment (the
   `Equipment` nodes whose `asset` relation points to the asset, sorted by name on the server, the first 1000,
   loaded when the tab opens, with a count badge on the tab; when the asset has more than 1,000, the tab says "Showing the
-  first 1,000 equipment, sorted by name. This asset has more."), Timeseries (see below), Notes and Documents (see below). Each equipment is a card with its name,
+  first 1,000 equipment, sorted by name. This asset has more."), Timeseries (see below), Notes and Documents (see below), and for Ruwais assets 3D (see below). Each equipment is a card with its name,
   "Equipment ID: <external ID>" and its properties as a grid of label and value
   cells. With no linked equipment the tab shows
   "No equipment linked"; a failed load shows "Equipment could not be loaded" with the reason and Retry. The Timeseries, Notes and Documents tabs carry a count badge too. The server counts all four lists (an aggregate request per list, with the same filter the list uses and no row read), so each badge is the whole number, with a thousands separator and no "+": the equipment of the asset, the series linked to it, the notes, and the uploaded documents plus the files already linked to the asset. The counts start together with the request for the asset itself, without waiting for it. While a tab's list is being counted the tab is disabled and shows no badge, except the tab that is open (Properties is never disabled). A list that could not be counted shows no badge and its tab stays open; a list with nothing in it shows "0". Adding, editing or deleting a note or document counts again.
@@ -260,6 +260,42 @@ the `Asset`, `Equipment` and `PI_Timeseries` views of the RMDM model and defines
   to read files with, so the preview dialog says "Preview is not available
   here.", centred in a padded section of its own under a crossed-out eye
   icon; the document list, upload and delete still work.
+
+## Asset 3D
+
+- An asset whose plant is Ruwais (compared ignoring case and surrounding spaces)
+  gets a sixth tab, "3D", after Documents. Assets of other plants have no such
+  tab; a link that asks for it on another plant opens Properties instead. The
+  chosen tab is synced to the URL like the others.
+- The tab shows the project's 3D model named "Valhall": the app lists the
+  project's published 3D models, takes the one named exactly "Valhall" (ignoring
+  case) or else the first whose name contains it, then its newest published
+  revision whose processing is done, then that revision's newest `gltf-directory`
+  output and its `scene.json` (version 9 only). The same model is shown for every
+  Ruwais asset; it is not yet tied to the asset.
+- The model is drawn by the app itself with three.js, not by the Cognite viewer.
+  The sector `.glb` files are read, their shape collections (boxes, circles,
+  cones, eccentric cones, cylinders, rings, quads, torus segments, trapeziums,
+  nuts, ellipsoid segments and triangle meshes) are turned into triangles in
+  the browser, and each sector is added to the scene as it arrives. Up to six
+  sectors download at once and downloads stop at 200 MB; the remaining sectors
+  are counted as skipped. A sector that cannot be read is counted as failed and
+  the others still show. The revision's rotation, scale and translation and the
+  scene's unit are applied, with the CDF Z-up axes turned to the viewer's Y-up.
+- The view is an orbit view: drag to rotate, scroll to zoom, right-drag to pan.
+  The camera starts framed on the whole model.
+- A line under the view reads "Valhall · N of M parts" with ", K failed" and
+  ", S skipped" when there are any, then " · loading" or " · loaded". Shapes the
+  reader cannot draw are listed under it ("Unsupported shapes skipped: name:
+  count") so gaps can be traced.
+- While the model is being found the tab shows "Loading 3D model…"; a failed
+  lookup shows "Could not load the 3D model." with the reason and Retry; no
+  matching model shows "No 3D model".
+- Known limits: slanted cylinder end planes are drawn flat; textured meshes are
+  drawn untextured; there is no highlight of the open asset in the model (the
+  contextualisation of nodes to assets is a later stage); the geometry is
+  tessellated on the main thread.
+- In mock mode the tab shows a small synthetic model made of six boxes.
 
 ## Agent helper
 
